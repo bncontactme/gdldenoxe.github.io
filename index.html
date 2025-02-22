@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDLDENOXE</title>
+    <link rel="icon" href="/indexPage/indexImages/cursor_gdn.png" type="image/x-icon">
+    <meta name="description" content="La verdadera movida tapatia, Top restaurantes Guadalajara, Top 10 movidas tapatias,
+     Mejores antros de Guadalajara, Junior H, TE QUIERO MUCHO, Top mejores momentos Guadalajara, Duende caminando en San Juan De Dios (Real)">
+    <link rel="stylesheet" href="indexPage/styles.css">
+</head>
+
+<body>
+    <!-- Screen Resolution Wrapper -->
+    <div class="screen-resolution">
+        <!-- Image (Rectangle) -->
+        <img id="randomImage" 
+        class="positioned-crowdImage" />
+
+        <script>
+            // Array of image paths
+            const imagePaths = [
+                "indexPage/indexImages/2 Intro.jpeg",
+                "indexPage/indexImages/3 Intro.jpeg",
+                "indexPage/indexImages/4 Intro.jpeg",
+                "indexPage/indexImages/6 Intro.jpeg",
+                "indexPage/indexImages/7 Intro.JPG"
+            ];
+    
+            // Select a random image
+            const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+    
+            // Set the random image as the src
+            document.getElementById('randomImage').src = randomImage;
+        </script>
+
+        <!-- Positioned Links -->
+        <a href="tiendaPage/tiendaPage.html" class="positioned-link tienda">TIENDA</a>
+        <a href="archivoPage/archivoPage.html" class="positioned-link archivo">ARCHIVO</a>
+        <a href="https://linktr.ee/guadalajaradenoche" class="positioned-link soundcloud">LINKS</a>
+        <a href="mailto:gdldenoxe@gmail.com" class="positioned-link email">GDLDENOXE@GMAIL.COM</a>
+    </div>
+</body>
+
+</html>

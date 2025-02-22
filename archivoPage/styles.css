@@ -1,0 +1,163 @@
+/* Universal reset and box-sizing */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Force scrollbar */
+html {
+    overflow-y: scroll;
+}
+
+/* Set body font */
+body {
+    font-family: sans-serif;
+    margin: 0;  /* Remove body margin */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* ---- Grid Layout ---- */
+.grid {
+    background: #DDD;
+    display: flex;
+    flex-wrap: wrap;  /* Ensures items wrap on smaller screens */
+    justify-content: flex-start; /* Align items to the left */
+    width: 100vw;  /* Set grid container to 100% of viewport width */
+    height: 100vh; /* Optional: Ensure grid fills the screen height */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    box-sizing: border-box; /* Include padding and border in width/height calculation */
+}
+
+/* ---- .grid-item ---- */
+.grid-item {
+    width: 33.333%; /* Default width (3 items per row) */
+    padding: 0; /* Ensure no padding */
+    box-sizing: border-box; /* Include padding and border in width/height calculation */
+}
+
+/* Images inside grid items */
+.grid-item img {
+    display: block;
+    max-width: 100%; /* Make sure images are responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* ---- Loading Screen Styles ---- */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeOut 4s 4s forwards;
+}
+
+#loading-screen h1 {
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Three-dot animation */
+#loading-screen .dots {
+    display: flex;
+    gap: 5px;
+}
+
+#loading-screen .dots span {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    animation: blink 1.5s infinite ease-in-out;
+}
+
+#loading-screen .dots span:nth-child(2) {
+    animation-delay: 0.7s;
+}
+
+#loading-screen .dots span:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+/* Keyframes for blinking dots */
+@keyframes blink {
+    0%, 80%, 100% {
+        opacity: 0;
+    }
+    40% {
+        opacity: 1;
+    }
+}
+
+/* Fade-out animation for the loading screen */
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* ---- Dice Button Styling ---- */
+
+/* Positioning the dice icon in the bottom-right corner */
+#sort-options {
+    position: fixed;
+    bottom: 30px; /* Space from bottom */
+    right: 30px; /* Space from right */
+    z-index: 1000; /* Make sure it stays on top */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Styling the dice icon */
+.rizz-button {
+    width: 75px; /* Size of the button */
+    height: 75px; /* Size of the button */
+    border-radius: 50%; /* Round shape */
+    background-color: #ffffff; /* New yellow color */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a little shadow */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* No extra padding to keep the image centered */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+}
+
+/* Adjustments for the dice image */
+.rizz-button img {
+    width: 50%; /* Make the image 50% smaller */
+    height: 50%; /* Make the image 50% smaller */
+    object-fit: contain; /* Keep aspect ratio and avoid cropping */
+    object-position: center; /* Center the image */
+}
+
+/* Hover effect to add some style */
+.rizz-button:hover {
+    transform: scale(1.1); /* Slightly enlarge the button */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Add a stronger shadow on hover */
+}
+
+/* Change cursor on hover for a better user experience */
+.rizz-button:hover {
+    cursor: pointer;
+}
+
+
