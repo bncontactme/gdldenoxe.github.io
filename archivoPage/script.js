@@ -67,16 +67,20 @@ async function displayImages(randomOrder = false) {
 
   galleryContainer.appendChild(fragment);
 
-  // Initialize Packery after images are added
+  // Initialize Packery after all images are loaded
   const grid = document.querySelector('.grid');
-  const pckry = new Packery(grid, {
-    itemSelector: '.grid-item',
-    percentPosition: true
-  });
-
-  // Layout Packery after each image loads
-  imagesLoaded(grid).on('progress', function () {
+  imagesLoaded(grid, function () {
+    const pckry = new Packery(grid, {
+      itemSelector: '.grid-item',
+      percentPosition: true,
+      gutter: 0 // Removes spacing between items
+    });
     pckry.layout();
+
+    // Force layout refresh on window resize
+    window.addEventListener('resize', () => {
+      pckry.layout();
+    });
   });
 }
 

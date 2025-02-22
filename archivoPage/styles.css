@@ -29,6 +29,7 @@ body {
     height: 100vh; /* Optional: Ensure grid fills the screen height */
     padding: 0; /* Remove padding */
     margin: 0; /* Remove margin */
+    gap: 0; /* Remove gaps between grid items */
     box-sizing: border-box; /* Include padding and border in width/height calculation */
 }
 
@@ -42,8 +43,9 @@ body {
 /* Images inside grid items */
 .grid-item img {
     display: block;
-    max-width: 100%; /* Make sure images are responsive */
-    height: auto; /* Maintain aspect ratio */
+    width: 100%; /* Make sure images are responsive */
+    height: 100%; /* Stretch to fill the container */
+    object-fit: cover; /* Maintain aspect ratio while covering the container */
 }
 
 /* ---- Loading Screen Styles ---- */
@@ -132,32 +134,26 @@ body {
     width: 75px; /* Size of the button */
     height: 75px; /* Size of the button */
     border-radius: 50%; /* Round shape */
-    background-color: #ffffff; /* New yellow color */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a little shadow */
+    background-color: #ffffff; /* Button color */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0; /* No extra padding to keep the image centered */
+    padding: 0; /* No extra padding */
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
 }
 
 /* Adjustments for the dice image */
 .rizz-button img {
-    width: 50%; /* Make the image 50% smaller */
-    height: 50%; /* Make the image 50% smaller */
-    object-fit: contain; /* Keep aspect ratio and avoid cropping */
+    width: 50%; /* Smaller image size */
+    height: 50%; /* Smaller image size */
+    object-fit: contain; /* Keep aspect ratio */
     object-position: center; /* Center the image */
 }
 
-/* Hover effect to add some style */
+/* Hover effect */
 .rizz-button:hover {
-    transform: scale(1.1); /* Slightly enlarge the button */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Add a stronger shadow on hover */
-}
-
-/* Change cursor on hover for a better user experience */
-.rizz-button:hover {
+    transform: scale(1.1); /* Enlarge button on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Stronger shadow */
     cursor: pointer;
 }
-
-
