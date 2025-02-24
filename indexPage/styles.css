@@ -16,7 +16,7 @@ html, body {
     align-items: center;
     background-color: #f0f0f0;
     overflow: hidden; /* Prevent scrolling */
-    cursor: url('indexImages/cursor_gdn.png') 16 16, auto;
+    cursor: url('indexImages/cursorgdnv2.png') 16 16, auto;
 }
 
 /* Screen Resolution Container */
