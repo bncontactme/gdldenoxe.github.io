@@ -14,26 +14,17 @@
 <body>
     <!-- Screen Resolution Wrapper -->
     <div class="screen-resolution">
-        <!-- Image (Rectangle) -->
-        <img id="randomImage" 
-        class="positioned-crowdImage" />
-
-        <script>
-            // Array of image paths
-            const imagePaths = [
-                "indexPage/indexImages/2 Intro.jpeg",
-                "indexPage/indexImages/3 Intro.jpeg",
-                "indexPage/indexImages/4 Intro.jpeg",
-                "indexPage/indexImages/6 Intro.jpeg",
-                "indexPage/indexImages/7 Intro.JPG"
-            ];
-    
-            // Select a random image
-            const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-    
-            // Set the random image as the src
-            document.getElementById('randomImage').src = randomImage;
-        </script>
+        <!-- Responsive YouTube Video -->
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube.com/embed/FMdBr54XHss?si=T_l91ArTRl7Puzqu"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+            </iframe>
+        </div>
 
         <!-- Positioned Links -->
         <a href="tiendaPage/tiendaPage.html" class="positioned-link tienda">TIENDA</a>
@@ -41,7 +32,6 @@
         <a href="https://linktr.ee/guadalajaradenoche" class="positioned-link soundcloud">LINKS</a>
         <a href="mailto:gdldenoxe@gmail.com" class="positioned-link email">GDLDENOXE@GMAIL.COM</a>
     </div>
-    <script src="radioTool/audioToWeb.js"></script>
 </body>
 
 </html>
