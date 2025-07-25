@@ -9,16 +9,25 @@ link.style.zIndex = '9999';
 link.style.pointerEvents = 'auto';
 
 const gif = document.createElement('img');
+
 gif.src = 'radioTool/Animated-Flag-Palestine.gif';
-gif.style.width = '180px';
-gif.style.height = '120px';
 gif.style.pointerEvents = 'auto';
+
+// Responsive size
+let gifWidth = 180;
+let gifHeight = 120;
+if (window.innerWidth <= 768) {
+    gifWidth = Math.round(gifWidth * 0.75);
+    gifHeight = Math.round(gifHeight * 0.75);
+}
+gif.style.width = gifWidth + 'px';
+gif.style.height = gifHeight + 'px';
 
 link.appendChild(gif);
 document.body.appendChild(link);
 
-let x = Math.random() * (window.innerWidth - 180);
-let y = Math.random() * (window.innerHeight - 120);
+let x = Math.random() * (window.innerWidth - gifWidth);
+let y = Math.random() * (window.innerHeight - gifHeight);
 let dx = 1.5;
 let dy = 1;
 
@@ -26,10 +35,10 @@ function moveGif() {
     x += dx;
     y += dy;
 
-    if (x <= 0 || x + 180 >= window.innerWidth) {
+    if (x <= 0 || x + gifWidth >= window.innerWidth) {
         dx = -dx;
     }
-    if (y <= 0 || y + 120 >= window.innerHeight) {
+    if (y <= 0 || y + gifHeight >= window.innerHeight) {
         dy = -dy;
     }
 
