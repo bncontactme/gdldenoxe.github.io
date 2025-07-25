@@ -17,8 +17,8 @@ gif.style.pointerEvents = 'auto';
 let gifWidth = 180;
 let gifHeight = 120;
 if (window.innerWidth <= 768) {
-    gifWidth = Math.round(gifWidth * 0.75);
-    gifHeight = Math.round(gifHeight * 0.75);
+    gifWidth = 50;
+    gifHeight = 33;
 }
 gif.style.width = gifWidth + 'px';
 gif.style.height = gifHeight + 'px';
