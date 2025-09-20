@@ -40,6 +40,58 @@
         <a href="archivoPage/archivoPage.html" class="positioned-link archivo">ARCHIVO</a>
         <a href="https://linktr.ee/guadalajaradenoche" class="positioned-link soundcloud">LINKS</a>
         <a href="mailto:gdldenoxe@gmail.com" class="positioned-link email">GDLDENOXE@GMAIL.COM</a>
+                                <!-- Brutalist minimal radio UI: only buttons, no background -->
+                                <div id="radio-widget" style="position:fixed;left:12px;bottom:12px;z-index:1000;display:flex;gap:6px;align-items:center;">
+                                    <button id="radio-play" aria-label="Play" title="Play" style="background:transparent;border:2px solid #000;color:#000;padding:6px 8px;cursor:pointer;font-size:13px;font-weight:700;line-height:1;border-radius:0;">►</button>
+                                    <button id="radio-mute" aria-label="Mute" title="Mute" style="background:transparent;border:2px solid #000;color:#000;padding:6px 8px;cursor:pointer;font-size:13px;font-weight:700;line-height:1;border-radius:0;">🔊</button>
+                                    <audio id="site-radio" preload="none" style="display:none;">
+                                        <source src="http://104.248.10.199:8000/stream.mp3" type="audio/mpeg">
+                                        Your browser does not support the audio element. Visit <a href="http://104.248.10.199:8000/stream.mp3">the stream</a> to listen.
+                                    </audio>
+                                </div>
+
+                                <script>
+                                    (function(){
+                                        const audio = document.getElementById('site-radio');
+                                        const playBtn = document.getElementById('radio-play');
+                                        const muteBtn = document.getElementById('radio-mute');
+
+                                        // Load persisted volume and muted
+                                        const savedVol = localStorage.getItem('gdldenoxe_radio_volume');
+                                        const savedMuted = localStorage.getItem('gdldenoxe_radio_muted');
+                                        if(savedVol !== null){ audio.volume = parseFloat(savedVol); }
+                                        if(savedMuted !== null){ audio.muted = savedMuted === 'true'; muteBtn.textContent = audio.muted ? '🔇' : '🔊'; }
+
+                                        function updatePlayState(){
+                                            if(audio.paused){ playBtn.textContent = '►'; playBtn.title = 'Play'; }
+                                            else { playBtn.textContent = '❚❚'; playBtn.title = 'Pause'; }
+                                        }
+
+                                        // Attempt autoplay once; if blocked, user clicks will work
+                                        audio.play().then(updatePlayState).catch(()=>{ updatePlayState(); });
+
+                                        playBtn.addEventListener('click', ()=>{
+                                            if(audio.paused){ audio.play(); }
+                                            else { audio.pause(); }
+                                            updatePlayState();
+                                        });
+
+                                        muteBtn.addEventListener('click', ()=>{
+                                            audio.muted = !audio.muted;
+                                            localStorage.setItem('gdldenoxe_radio_muted', audio.muted);
+                                            muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+                                        });
+
+                                        // save volume on change via keyboard or programmatic changes
+                                        audio.addEventListener('volumechange', ()=>{
+                                            localStorage.setItem('gdldenoxe_radio_volume', audio.volume);
+                                        });
+
+                                        // reflect remote play/pause
+                                        audio.addEventListener('play', updatePlayState);
+                                        audio.addEventListener('pause', updatePlayState);
+                                    })();
+                                </script>
         <!-- Fixed Palestine Flag in top right corner (no shadow, no border radius) -->
         <a href="https://www.unrwa.org/" target="_blank" style="position:fixed;top:12px;right:12px;z-index:1000;">
           <img src="indexPage/indexImages/Animated-Flag-Palestine.gif" alt="Palestine Flag" style="width:90px;height:auto;">
