@@ -4,113 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TIENDA X GDN</title>
-  <link rel="icon" href="/indexPage/indexImages/cursor_gdn.png" type="image/x-icon">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background: #fff;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Roboto', Arial, sans-serif;
+      color: #111;
+    }
+    .center-img {
+      max-width: 95vw;
+      width: 320px;
+      height: auto;
+      display: block;
+      margin: 0 auto 2rem auto;
+    }
+    .poem {
+      font-size: 1.2rem;
+      text-align: center;
+      max-width: 500px;
+      margin: 0 auto;
+      color: #222;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-
-  <!-- Container for the images -->
-  <div id="image-container">
-    <!-- Example of adding product data to an element with price and buy link -->
-    <div class="product" 
-          data-title="ZERO X GDN" 
-         data-main="tiendaImages/blueGDNJacketMain (1).jpg"
-         data-sub='["tiendaImages/blueGDNJacketMain (1).jpg", "tiendaImages/blueGDNJacketSub (1).jpg", "tiendaImages/blueGDNJacketSub (2).jpg"]'
-         data-description="Zip-up Zero intervenida con cristales y parche de Guadalajara de Noche (L/XL)"
-         data-price="$1050"
-         data-buy-url="https://www.paypal.com/invoice/p/#5YZLK6ZCDHZ4W427">
-    </div>
-    <div class="product" 
-          data-title="AZUL x GDN" 
-         data-main="tiendaImages/blueGDNShirtMain (1).jpg"
-         data-sub='["tiendaImages/blueGDNShirtMain (1).jpg", "tiendaImages/blueGDNShirtSub (1).jpg"]'
-         data-description="Camisa de botones azul cielo con intervención textil en letras góticas (M/L)"
-         data-price="$450"
-         data-buy-url=""
-         data-stock="out">
-    </div>
-    <div class="product" 
-          data-title="GRIS X GDN" 
-         data-main="tiendaImages/grayGDNShirtMain (1).jpg"
-         data-sub='["tiendaImages/grayGDNShirtMain (1).jpg", "tiendaImages/grayGDNShirtSub (1).jpg"]'
-         data-description="Camisa de botones color gris con intervención textil color morado (XL)"
-         data-price="$450"
-         data-buy-url=""
-         data-stock="out">
-    </div>
-    <div class="product" 
-          data-title="DIAMANTE ROSA X GDN" 
-         data-main="tiendaImages/orangeGDNJacketMain (1).jpg"
-         data-sub='["tiendaImages/orangeGDNJacketMain (1).jpg", "tiendaImages/orangeGDNJacketSub (1).jpg", "tiendaImages/orangeGDNJacketSub (2).jpg"]'
-         data-description="Zip-up Adidas intervenida con cristales rosa y parche de Guadalajara de Noche (L)"
-         data-price="$1250"
-         data-buy-url="https://www.paypal.com/invoice/p/#Q9SDQG9MWHYBGJK7">
-    </div>
-    <div class="product" 
-         data-title="DENIM X GDN" 
-         data-main="tiendaImages/pinGDNJacketMain (1).jpg"
-         data-sub='["tiendaImages/pinGDNJacketMain (1).jpg", "tiendaImages/pinGDNJacketSub (1).jpg", "tiendaImages/pinGDNJacketSub (2).jpg"]'
-         data-description="Chamarra de Denim/mezclilla con 6 pines (M)"
-         data-price="$550"
-         data-buy-url="https://www.paypal.com/invoice/p/#ZLW3PL7SVUD4TZJR"
-         data-stock="out">
-    </div>
-    <div class="product" 
-         data-title="DIAMANTE BLANCO X GDN" 
-         data-main="tiendaImages/redGDNJacketMain (1).jpg"
-         data-sub='["tiendaImages/redGDNJacketMain (1).jpg", "tiendaImages/redGDNJacketSub (1).jpg", "tiendaImages/redGDNJacketSub (2).jpg"]'
-         data-description="Zip-up Adidas intervenida con cristales blancos y parche de Guadalajara de Noche (M/L)"
-         data-price="$1250"
-         data-buy-url="https://www.paypal.com/invoice/p/#ZTR2V9SED5FKJM5Q"
-         data-stock="out">
-    </div>
-    <!-- Bolsa X GDN -->
-<div class="product" 
-data-title="Bolsa X GDN" 
-data-main="tiendaImages/bolsaGDN (1).jpg"
-data-sub='["tiendaImages/bolsaGDN (1).jpg", "tiendaImages/bolsaGDN (2).jpg", "tiendaImages/bolsaGDN (3).jpg"]'
-data-description="Bolso baguette color camello con intervención cocida a mano de 'Guadalajara de Noche' estilo graffiti"
-data-price="$450"
-data-buy-url="https://www.paypal.com/invoice/p/#SWP89SG7J4U38Y2S"
->
-</div>
-
-<!-- Pin X GDN -->
-<div class="product" 
-data-title="Pin X GDN" 
-data-main="tiendaImages/pinGDN (1).jpg"
-data-sub='["tiendaImages/pinGDN (1).jpg", "tiendaImages/pinGDN (2).jpg"]'
-data-description="Pin con el diseño de 'Guadalajara de Noche'"
-data-price="$100"
-data-buy-url=""
-data-stock="out">
-</div>
-
-<!-- Bufanda X GDN -->
-<div class="product" 
-data-title="Bufanda X GDN" 
-data-main="tiendaImages/bufandaGDN (1).jpg"
-data-sub='["tiendaImages/bufandaGDN (1).jpg", "tiendaImages/bufandaGDN (2).jpg", "tiendaImages/bufandaGDN (3).jpg"]'
-data-description="Bufanda suave y cálida con diseño de 'Guadalajara de Noche'"
-data-price="$250"
-data-buy-url=""
-data-stock="out">
-</div>
-
-<!-- Bufanda X GDN -->
-<div class="product" 
-data-title="DISCLAIMER X GDN" 
-data-main="tiendaImages/disclaimerGDN (1).jpg"
-data-sub='["tiendaImages/disclaimerGDN (1).jpg", "tiendaImages/disclaimerGDN (2).gif"]'
-data-description="TE KIERO MUCHO"
-data-price="POR SIEMPRE"
-data-buy-url=""
-data-stock="out">
-</div>
-
-
+  <img src="/tiendaPage/tiendaImages/typing-typing-emoji.gif" class="center-img" style="align-self: center;">
+  <div class="poem">
+    <span style="font-size:1em;">EL CHANGARRO DUERME UN RATO<br></span>
+    <span style="font-size:0.85em;">REGRESAMOS PRONTO, CABRONXS<br>
+      <span style="font-size:0.75em; display:block; margin-top:0.5em; font-weight: bold;">GUADALAJARA DE NOCHE</span>
+    </span>
   </div>
-
-  <script src="script.js"></script>
 </body>
 </html>
