@@ -40,6 +40,44 @@
         <a href="https://www.unrwa.org/" target="_blank" style="position:fixed;top:12px;right:12px;z-index:1000;">
           <img src="indexPage/indexImages/Animated-Flag-Palestine.gif" alt="Palestine Flag" style="width:90px;height:auto;">
         </a>
+
+        <!-- Brutalist Radio UI -->
+        <div id="radio-widget" style="position:fixed;left:10px;top:10px;z-index:1000;display:flex;flex-direction:column;align-items:flex-start;font-family:Roboto,system-ui,Arial,sans-serif;">
+            <div style="display:flex;align-items:center;gap:5px;">
+                <span style="font-size:10.2px;font-weight:700;letter-spacing:0.425px;background:#fff;padding:0.85px 4.25px;border:1.275px solid #000;">RADIO GDN</span>
+                <button id="radio-play" aria-label="Play" title="Play" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">►</button>
+                <button id="radio-mute" aria-label="Mute" title="Mute" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">🔊</button>
+            </div>
+            <audio id="site-radio" preload="none" style="display:none;">
+                <source src="https://soil-copy-effort-cio.trycloudflare.com/stream.mp3" type="audio/mpeg">
+                Your browser does not support the audio element. Visit <a href="https://soil-copy-effort-cio.trycloudflare.com/stream.mp3">the stream</a> to listen.
+            </audio>
+        </div>
+        <script>
+        (function(){
+            const audio = document.getElementById('site-radio');
+            const playBtn = document.getElementById('radio-play');
+            const muteBtn = document.getElementById('radio-mute');
+            function updatePlayState(){
+                if(audio.paused){ playBtn.textContent = '►'; playBtn.title = 'Play'; }
+                else { playBtn.textContent = '❚❚'; playBtn.title = 'Pause'; }
+            }
+            playBtn.addEventListener('click', ()=>{
+                if(audio.paused){
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+                updatePlayState();
+            });
+            muteBtn.addEventListener('click', ()=>{
+                audio.muted = !audio.muted;
+                muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+            });
+            audio.addEventListener('play', updatePlayState);
+            audio.addEventListener('pause', updatePlayState);
+        })();
+        </script>
     </div>
 </body>
 
