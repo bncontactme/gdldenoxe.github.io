@@ -122,3 +122,12 @@ html, body {
     transform-origin: center center;
     transform: scale(1); /* Prevent zoom affecting proportions */
 }
+
+/* Brutalist Radio Widget Aspect Ratio */
+.radio-widget {
+    aspect-ratio: 4 / 1; /* Mantiene proporción horizontal brutalista */
+    min-width: 320px;
+    max-width: 480px;
+    width: 100%;
+    height: auto;
+}
