@@ -23,7 +23,7 @@ html, body {
 .screen-resolution {
     position: relative;
     width: 100%; /* Make the rectangle slightly smaller */
-    max-width: 700px; /* Cap the size on large screens (was 900px) */
+    max-width: 900px; /* Cap the size on large screens */
     aspect-ratio: 901 / 492; /* Maintain aspect ratio */
     transform-origin: center center; /* Scaling starts from the center */
 }
