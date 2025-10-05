@@ -50,7 +50,7 @@
             </div>
             <audio id="site-radio" preload="none" style="display:none;">
                 <!-- radio source intentionally left empty to disable/hide the radio widget -->
-                <source id="radio-src" src="" type="audio/mpeg">
+                <source id="radio-src" src="https://radio.guadalajaradenoxe.com/stream.mp3" type="audio/mpeg">
                 Your browser does not support the audio element.
             </audio>
         </div>
@@ -63,6 +63,8 @@
             var audio = document.getElementById('site-radio');
             var playBtn = document.getElementById('radio-play');
             var muteBtn = document.getElementById('radio-mute');
+            var streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';
+            var statusUrl = 'https://radio.guadalajaradenoxe.com/status-json.xsl';
 
             function getUrl(){
                 if(!srcEl) return '';
@@ -78,9 +80,7 @@
             function showWidget(url){
                 if(widget) widget.style.display = 'flex';
                 if(label){ label.style.background = '#e53935'; label.style.color = '#fff'; }
-                // if audio has no source children, set audio.src to url so play() works
                 if(audio && url){
-                    // Do not overwrite if already set to same value
                     try{
                         if((audio.currentSrc || '').trim() === '' ){
                             audio.src = url;
@@ -98,6 +98,35 @@
                 showWidget(url);
                 return true;
             }
+
+            // Check Icecast status and update widget
+            function checkIcecastStatus(){
+                fetch(statusUrl)
+                    .then(function(response){ return response.json(); })
+                    .then(function(data){
+                        var sources = (data && data.icestats && data.icestats.source) || [];
+                        if(!Array.isArray(sources)) sources = [sources];
+                        var live = sources.some(function(src){
+                            return src.listenurl && src.listenurl.endsWith('/stream.mp3'); // ignore listeners count
+                        });
+                        if(live){
+                            if(srcEl) srcEl.setAttribute('src', streamUrl);
+                        }else{
+                            if(srcEl) srcEl.setAttribute('src', '');
+                        }
+                        updateVisibility();
+                    })
+                    .catch(function(){
+                        // On error, hide widget
+                        if(srcEl) srcEl.setAttribute('src', '');
+                        updateVisibility();
+                    });
+            }
+
+            // Initial check
+            checkIcecastStatus();
+            // Optionally, poll every minute
+            setInterval(checkIcecastStatus, 60000);
 
             // Initial visibility check
             var visible = updateVisibility();
