@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDLDENOXE</title>
+    <link rel="icon" href="indexPage\indexImages\cursorgdnv2.png" type="image/x-icon">
+    <meta name="description" content="La verdadera movida tapatia, Top restaurantes Guadalajara, Top 10 movidas tapatias,
+     Mejores antros de Guadalajara, Junior H, TE QUIERO MUCHO, Top mejores momentos Guadalajara, Duende caminando en San Juan De Dios (Real)">
+    <link rel="stylesheet" href="indexPage/styles.css">
+</head>
+
+<body>
+    <!-- Screen Resolution Wrapper -->
+    <div class="screen-resolution">
+        <!-- Image (Rectangle) -->
+        <img id="randomImage" class="positioned-crowdImage" />
+        <script>
+            // Array of image paths
+            const imagePaths = [
+                "indexPage/indexImages/2 Intro.jpeg",
+                "indexPage/indexImages/3 Intro.jpeg",
+                "indexPage/indexImages/4 Intro.jpeg",
+                "indexPage/indexImages/6 Intro.jpeg",
+                "indexPage/indexImages/7 Intro.JPG"
+            ];
+            // Select a random image
+            const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+            // Set the random image as the src
+            document.getElementById('randomImage').src = randomImage;
+        </script>
+
+        <!-- Positioned Links -->
+        <a href="tiendaPage/tiendaPage.html" class="positioned-link tienda">TIENDA</a>
+        <a href="archivoPage/archivoPage.html" class="positioned-link archivo">ARCHIVO</a>
+        <a href="https://linktr.ee/guadalajaradenoche" class="positioned-link soundcloud">LINKS</a>
+        <a href="mailto:gdldenoxe@gmail.com" class="positioned-link email">GDLDENOXE@GMAIL.COM</a>
+        <!-- Fixed Palestine Flag in top right corner (no shadow, no border radius) -->
+        <a href="https://www.unrwa.org/" target="_blank" style="position:fixed;top:12px;right:12px;z-index:1000;">
+          <img src="indexPage/indexImages/Animated-Flag-Palestine.gif" alt="Palestine Flag" style="width:90px;height:auto;">
+        </a>
+
+        <!-- Brutalist Radio UI -->
+        <div id="radio-widget" class="radio-widget" style="position:fixed;left:10px;top:10px;z-index:1000;display:none;flex-direction:column;align-items:flex-start;font-family:Roboto,system-ui,Arial,sans-serif;">
+            <div style="display:flex;align-items:center;gap:5px;">
+                <span id="radio-label" style="font-size:10.2px;font-weight:700;letter-spacing:0.425px;background:#e53935;color:#fff;padding:0.85px 4.25px;border:1.275px solid #000;">RADIO GDN</span>
+                <button id="radio-play" aria-label="Play" title="Play" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">►</button>
+                <button id="radio-mute" aria-label="Mute" title="Mute" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">🔊</button>
+            </div>
+            <audio id="site-radio" preload="none" style="display:none;">
+                <!-- radio source intentionally left empty to disable/hide the radio widget -->
+                <source id="radio-src" src="" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        <script>
+        (function(){
+            // Elements
+            var srcEl = document.getElementById('radio-src');
+            var widget = document.getElementById('radio-widget');
+            var label = document.getElementById('radio-label');
+            var audio = document.getElementById('site-radio');
+            var playBtn = document.getElementById('radio-play');
+            var muteBtn = document.getElementById('radio-mute');
+
+            function getUrl(){
+                if(!srcEl) return '';
+                return (srcEl.getAttribute('src') || '').trim();
+            }
+
+            function hideWidget(){
+                if(widget) widget.style.display = 'none';
+                if(srcEl) srcEl.removeAttribute('src');
+                if(audio){ try{ audio.pause && audio.pause(); }catch(e){} audio.removeAttribute && audio.removeAttribute('src'); }
+            }
+
+            function showWidget(url){
+                if(widget) widget.style.display = 'flex';
+                if(label){ label.style.background = '#e53935'; label.style.color = '#fff'; }
+                // if audio has no source children, set audio.src to url so play() works
+                if(audio && url){
+                    // Do not overwrite if already set to same value
+                    try{
+                        if((audio.currentSrc || '').trim() === '' ){
+                            audio.src = url;
+                        }
+                    }catch(e){}
+                }
+            }
+
+            function updateVisibility(){
+                var url = getUrl();
+                if(!url){
+                    hideWidget();
+                    return false;
+                }
+                showWidget(url);
+                return true;
+            }
+
+            // Initial visibility check
+            var visible = updateVisibility();
+
+            // Observe future changes to the src attribute so UI updates if src is added/removed dynamically
+            if(srcEl && window.MutationObserver){
+                var mo = new MutationObserver(function(mutations){
+                    mutations.forEach(function(m){
+                        if(m.type === 'attributes' && m.attributeName === 'src'){
+                            visible = updateVisibility();
+                        }
+                    });
+                });
+                mo.observe(srcEl, { attributes: true });
+            }
+
+            // Wire up controls regardless; they will only be usable when widget is shown
+            function updatePlayState(){
+                if(!audio) return;
+                if(audio.paused){
+                    playBtn.textContent = '►';
+                    playBtn.title = 'Play';
+                    if(label) label.textContent = 'RADIO GDN';
+                } else {
+                    playBtn.textContent = '❚❚';
+                    playBtn.title = 'Pause';
+                    if(label) label.textContent = 'LIVE';
+                }
+            }
+
+            if(playBtn){
+                playBtn.addEventListener('click', function(){
+                    if(!audio) return;
+                    if(audio.paused){
+                        audio.play().catch(function(){});
+                    } else {
+                        audio.pause();
+                    }
+                    updatePlayState();
+                });
+            }
+
+            if(muteBtn){
+                muteBtn.addEventListener('click', function(){
+                    if(!audio) return;
+                    audio.muted = !audio.muted;
+                    muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+                });
+            }
+
+            if(audio){
+                audio.addEventListener('play', updatePlayState);
+                audio.addEventListener('pause', updatePlayState);
+            }
+
+            // Ensure UI state reflects actual audio state at load
+            updatePlayState();
+
+        })();
+        </script>
+    </div>
+</body>
+
+</html>
