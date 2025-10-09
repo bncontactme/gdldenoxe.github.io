@@ -1,150 +1,89 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const imageContainer = document.getElementById("image-container");
+/** Rotator-only script for tienda drop page **/
 
-  const getProductData = () => {
-    const products = [];
-    const productElements = document.querySelectorAll('.product');
-    
-    productElements.forEach(productElement => {
-      const title = productElement.getAttribute('data-title');
-      const main = productElement.getAttribute('data-main');
-      const sub = JSON.parse(productElement.getAttribute('data-sub'));
-      const description = productElement.getAttribute('data-description');
-      const price = productElement.getAttribute('data-price');
-      const buyUrl = productElement.getAttribute('data-buy-url');
-      const stock = productElement.getAttribute('data-stock') || "in"; // Default to "in" if not specified
-  
-      products.push({ title, main, sub, description, price, buyUrl, stock });
+document.addEventListener('DOMContentLoaded', () => {
+  const DROP_INTERVAL = 5000;
+  const dropBlock = document.getElementById('drop-block');
+  if (!dropBlock) return;
+
+  const dropImagesContainer = document.getElementById('drop-images');
+  const captionEl = document.getElementById('drop-caption');
+  const prevBtn = document.getElementById('drop-prev');
+  const nextBtn = document.getElementById('drop-next');
+
+  let sources = [];
+
+  // collect hidden images first
+  if (dropImagesContainer) {
+    const imgs = dropImagesContainer.querySelectorAll('img');
+    imgs.forEach(img => { if (img.src) sources.push({ src: img.src, alt: img.alt || '' }); });
+  }
+
+  // fallback: read from product elements with data-main
+  if (sources.length === 0) {
+    const productEls = document.querySelectorAll('.product');
+    productEls.forEach(p => {
+      const main = p.getAttribute('data-main');
+      const title = p.getAttribute('data-title') || '';
+      if (main) sources.push({ src: main, alt: title });
     });
-  
-    return products;
-  };
+  }
 
-  const desktopImageSize = { width: 180, height: 180 };
-  const mobileImageSize = { width: 70, height: 70 };
+  if (sources.length === 0) {
+    if (captionEl) captionEl.textContent = 'No drops yet';
+    return;
+  }
 
-  const getRandomPosition = () => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const x = Math.random() * screenWidth;
-    const y = Math.random() * screenHeight;
-    return { x, y };
-  };
+  let currentIndex = Math.floor(Math.random() * sources.length);
+  let timer = null;
+  let isPaused = false;
 
-  const createImageElement = (product, isMobile) => {
-    const img = document.createElement("img");
-    img.src = product.main;
-    img.classList.add("image");
-
-    const { width, height } = isMobile ? mobileImageSize : desktopImageSize;
-    img.style.width = `${width}px`;
-    img.style.height = `${height}px`;
-    
-    const { x, y } = getRandomPosition();
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
-
-    const randomZIndex = Math.floor(Math.random() * 1000);
-    img.style.zIndex = randomZIndex;
-
-    if (product.stock === "out") {
-      img.style.opacity = "1";
-      img.style.cursor = "allowed";
-    }
-
-    img.addEventListener("click", () => {
-      showPreview(product);
-    });
-
+  function createImageEl(item) {
+    const img = document.createElement('img');
+    img.className = 'current-drop';
+    img.src = item.src;
+    img.alt = item.alt || '';
+    img.style.opacity = '0';
     return img;
-  };
+  }
 
-  const showPreview = (product) => {
-    const previewModal = document.createElement("div");
-    previewModal.classList.add("preview-modal");
+  function showIndex(idx, immediate) {
+    idx = (idx + sources.length) % sources.length;
+    currentIndex = idx;
+    const item = sources[idx];
+    const newImg = createImageEl(item);
+    if (captionEl) captionEl.textContent = item.alt || `Drop ${idx + 1}`;
 
-    const modalContent = document.createElement("div");
-    modalContent.classList.add("modal-content");
+    dropBlock.appendChild(newImg);
+    // trigger transition
+    void newImg.offsetWidth;
+    newImg.style.opacity = '1';
 
-    const previewImage = document.createElement("img");
-    previewImage.src = product.main;
-    previewImage.classList.add("preview-image");
-
-    const carouselContainer = document.createElement("div");
-    carouselContainer.classList.add("carousel-container");
-
-    product.sub.forEach(subImage => {
-      const carouselImage = document.createElement("img");
-      carouselImage.src = subImage;
-      carouselImage.classList.add("carousel-image");
-      carouselImage.addEventListener("click", () => {
-        previewImage.src = subImage;
-      });
-      carouselContainer.appendChild(carouselImage);
-    });
-
-    const titleText = document.createElement("p");
-    titleText.classList.add("product-title");
-    titleText.textContent = product.title;
-
-    const descriptionText = document.createElement("p");
-    descriptionText.classList.add("description-text");
-    descriptionText.textContent = product.description;
-
-    const priceText = document.createElement("p");
-    priceText.classList.add("price-text");
-    if (product.stock === "out") {
-      priceText.textContent = `${product.price}`;
-      priceText.style.color = "red";
-    } else {
-      priceText.textContent = `${product.price}`;
+    // remove previous images (keep only newest)
+    const others = dropBlock.querySelectorAll('img.current-drop');
+    for (let i = 0; i < others.length - 1; i++) {
+      const old = others[i];
+      old.style.opacity = '0';
+      setTimeout(() => old.remove(), 450);
     }
 
-    const payButton = document.createElement("button");
-    payButton.classList.add("pay-button");
-    payButton.textContent = "Buy Now";
-    if (product.stock === "out") {
-      payButton.style.backgroundColor = "red";
-      payButton.textContent = "Out Of Stock";
-      payButton.disabled = true;
-      payButton.style.cursor = "not-allowed";
-    } else {
-      payButton.addEventListener("click", () => {
-        window.location.href = product.buyUrl;
-      });
+    if (immediate) {
+      newImg.style.transition = 'none';
+      requestAnimationFrame(() => { newImg.style.transition = 'opacity 400ms ease-in-out, transform 400ms ease'; });
     }
+  }
 
-    const closeButton = document.createElement("button");
-    closeButton.textContent = "X";
-    closeButton.classList.add("close-preview");
-    closeButton.addEventListener("click", () => {
-      previewModal.remove();
-    });
+  function next() { showIndex(currentIndex + 1); }
+  function prev() { showIndex(currentIndex - 1); }
 
-    modalContent.appendChild(closeButton);
-    modalContent.appendChild(previewImage);
-    modalContent.appendChild(carouselContainer);
-    modalContent.appendChild(titleText);
-    modalContent.appendChild(descriptionText);
-    modalContent.appendChild(priceText);
-    modalContent.appendChild(payButton);
-    previewModal.appendChild(modalContent);
-    document.body.appendChild(previewModal);
-  };
+  function startTimer() { stopTimer(); timer = setInterval(() => { if (!isPaused) next(); }, DROP_INTERVAL); }
+  function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
 
-  const loadRandomImages = () => {
-    const isMobile = window.innerWidth <= 768;
-    const imageCount = 45;
+  if (nextBtn) nextBtn.addEventListener('click', () => { next(); startTimer(); });
+  if (prevBtn) prevBtn.addEventListener('click', () => { prev(); startTimer(); });
 
-    const products = getProductData();
+  dropBlock.addEventListener('mouseenter', () => { isPaused = true; });
+  dropBlock.addEventListener('mouseleave', () => { isPaused = false; });
 
-    products.forEach(product => {
-      for (let i = 0; i < imageCount; i++) {
-        const img = createImageElement(product, isMobile);
-        imageContainer.appendChild(img);
-      }
-    });
-  };
-
-  loadRandomImages();
+  showIndex(currentIndex, true);
+  startTimer();
 });

@@ -31,15 +31,77 @@
       color: #222;
       line-height: 1.6;
     }
+    /* Drop block styles */
+    .drop-block {
+      width: min(85vw, 900px);
+      height: auto;
+      aspect-ratio: 16 / 9; /* keep a nice rectangular shape, images will fit inside */
+      background: #f4f4f4;
+      border: 4px solid #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: 1.5rem 0;
+      overflow: hidden;
+    }
+
+    .drop-block img.current-drop {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transition: opacity 400ms ease-in-out, transform 400ms ease;
+      opacity: 1;
+      position: absolute;
+    }
+
+    .drop-controls {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .drop-controls button {
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      padding: 8px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .drop-caption {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(255,255,255,0.85);
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      z-index: 20;
+    }
   </style>
 </head>
 <body>
-  <img src="/tiendaPage/tiendaImages/typing-typing-emoji.gif" class="center-img" style="align-self: center;">
-  <div class="poem">
-    <span style="font-size:1em;">EL CHANGARRO DUERME UN RATO<br></span>
-    <span style="font-size:0.85em;">REGRESAMOS PRONTO, CABRONXS<br>
-      <span style="font-size:0.75em; display:block; margin-top:0.5em; font-weight: bold;">GUADALAJARA DE NOCHE</span>
-    </span>
+  <div class="drop-block" id="drop-block" title="Random Boxer Drop - rotates every 5s">
+    <div class="drop-caption" id="drop-caption">New Drop</div>
+    <div class="drop-controls">
+      <button id="drop-prev" aria-label="Previous">◀</button>
+      <button id="drop-next" aria-label="Next">▶</button>
+    </div>
   </div>
+
+  <div id="drop-images" aria-hidden="true">
+    <!-- Add your drop images here as hidden <img> entries, for example:
+         <img src="/tiendaPage/tiendaImages/boxer1.jpg" alt="Boxer #1">
+    -->
+  </div>
+
+  <script src="./script.js"></script>
 </body>
 </html>
