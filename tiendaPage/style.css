@@ -202,9 +202,8 @@ input {
     z-index: 100;
 }
 
-/* Prevent flipping forward from the last two pages */
-#page4 .back_page label[for="page5_checkbox"],
-#page5 .front_page label {
+/* Prevent flipping forward from the last page, regardless of page count */
+.page:last-of-type .front_page label {
     pointer-events: none;
     display: none;
 }
