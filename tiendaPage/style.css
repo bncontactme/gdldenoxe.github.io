@@ -122,8 +122,10 @@ input {
     width: 298px;
     height: 420px;
     position: relative;
-    transition-duration: 1s;
+    transition: transform 0.6s ease; /* smooth centering animation */
     perspective: 2000px;
+    transform-origin: center center;
+    perspective-origin: center center;
 }
 
 .front_cover,
@@ -139,16 +141,12 @@ input {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-color: rgb(220, 20, 60);
+    background-color: transparent;
     box-shadow: 0 0 5px 0 rgb(25, 25, 25, 0.25);
 }
 
 .front_cover {
-    position: absolute;
-    cursor: pointer;
-    transform-origin: center left;
-    transition: transform 0.5s;
-    z-index: 99;
+    display: none; /* hide the implemented cover so only page images control navigation */
 }
 
 .front_cover label {
@@ -166,7 +164,7 @@ input {
     left: 1px;
     border-radius: 0 5px 5px 0;
     background-color: white;
-    transform-origin: left;
+    transform-origin: left center;
     transform-style: preserve-3d;
     transform: rotateY(0deg);
     transition-duration: 0.5s;
@@ -231,8 +229,7 @@ input {
 }
 
 .back_cover {
-    position: relative;
-    z-index: -1;
+    display: none; /* hide back cover so only pages remain */
 }
 
 #page1 {
@@ -255,21 +252,7 @@ input {
     z-index: 2;
 }
 
-#cover_checkbox:checked~#flip_book {
-    transform: translateX(144px)
-}
-
-#cover_checkbox:checked~#flip_book .front_cover {
-    transform: rotateY(-180deg);
-    transition: transform 1.5s, z-index 0.5s 0.5s;
-    z-index: 1;
-}
-
-#cover_checkbox:checked~#flip_book #cover {
-    width: 80%;
-    height: 80%;
-    position: absolute;
-}
+/* Cover checkbox removed; cover-related checked styles disabled */
 
 #page1_checkbox:checked~#flip_book #page1 {
     transform: rotateY(-180deg);
@@ -294,4 +277,13 @@ input {
 #page5_checkbox:checked~#flip_book #page5 {
     transform: rotateY(-180deg);
     z-index: 9;
+}
+
+/* Center & zoom the flipbook when any page is opened (smooth open/close animation) */
+#page1_checkbox:checked~#flip_book,
+#page2_checkbox:checked~#flip_book,
+#page3_checkbox:checked~#flip_book,
+#page4_checkbox:checked~#flip_book,
+#page5_checkbox:checked~#flip_book {
+    transform: translateX(144px) scale(1.03);
 }
