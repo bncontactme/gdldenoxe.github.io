@@ -7,8 +7,9 @@ const collageContainer = document.getElementById('live-collage-container');
 let lastImagePosition = { top: null, left: null, size: null };
 // Track z-index to ensure new images are always on top
 let currentZIndex = 1;
-// Track last archive image index to avoid repetition
-let lastArchiveImageIndex = null;
+// Track last 5 archive image indices to avoid repetition
+let recentArchiveImageIndices = [];
+const maxRecentHistory = 5;
 
 // Helper: Calculate distance between two points
 function calculateDistance(x1, y1, x2, y2) {
@@ -135,12 +136,25 @@ function loadArchiveImages() {
     function addNextArchiveImage() {
       if (archiveImages.length > 0) {
         let randomIndex;
-        // Make sure we don't repeat the last image
+        let attempts = 0;
+        const maxAttempts = 100; // Prevent infinite loop
+        
+        // Make sure we don't repeat any of the last 5 images
         do {
           randomIndex = Math.floor(Math.random() * archiveImages.length);
-        } while (randomIndex === lastArchiveImageIndex && archiveImages.length > 1);
+          attempts++;
+        } while (
+          recentArchiveImageIndices.includes(randomIndex) && 
+          archiveImages.length > recentArchiveImageIndices.length &&
+          attempts < maxAttempts
+        );
         
-        lastArchiveImageIndex = randomIndex;
+        // Add to recent history, maintaining max size
+        recentArchiveImageIndices.push(randomIndex);
+        if (recentArchiveImageIndices.length > maxRecentHistory) {
+          recentArchiveImageIndices.shift(); // Remove oldest
+        }
+        
         placeImageRandomly(archiveImages[randomIndex]);
         setTimeout(addNextArchiveImage, 2000); // cada 2 segundos
       }
