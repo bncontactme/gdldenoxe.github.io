@@ -129,9 +129,19 @@
 }
 #live-collage-container img {
     transition: none;
-    cursor: pointer;
+    cursor: default;
     border: none;
     box-shadow: none;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
 }
 body {
     margin: 0;

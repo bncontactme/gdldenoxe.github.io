@@ -69,6 +69,8 @@ function placeImageRandomly(imgSrc) {
   img.style.transform = 'rotate(0deg)'; // No rotation
   img.style.boxShadow = 'none';
   img.style.border = 'none';
+  img.draggable = false;
+  img.style.pointerEvents = 'none';
   // Always increment z-index so new images appear on top
   currentZIndex++;
   img.style.zIndex = currentZIndex;
