@@ -1,4 +1,21 @@
 /*********************
+* MARQUEE BAR SETUP *
+*********************/
+
+const marqueeContent = document.querySelector('.marquee-content');
+const marqueeText = document.querySelector('.marquee-text');
+
+if (marqueeContent && marqueeText) {
+    // Duplicate text for seamless scrolling
+    const text = marqueeText.textContent;
+    marqueeContent.setAttribute('data-text', text);
+    
+    // Clone the text element for seamless loop
+    const clonedText = marqueeText.cloneNode(true);
+    marqueeContent.appendChild(clonedText);
+}
+
+/*********************
 * RESPONSIVE WARNING *
 *********************/
 
@@ -18,7 +35,6 @@ if (!responsiveDesign && window.innerWidth <= 768) {
 
 // Get elements that change with the mode.
 const toggleModeBtn = document.getElementById("toggle-mode-btn");
-const portfolioLink = document.getElementById("portfolio-link");
 const body = document.body;
 
 // Function to apply mode.
@@ -31,15 +47,11 @@ function applyMode(mode) {
 		toggleModeBtn.style.color = "rgb(245, 245, 245)";
 		toggleModeBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
 
-		portfolioLink.style.color = "rgb(245, 245, 245)";
-
 		responsiveWarning.style.backgroundColor = "rgb(2, 4, 8)";
 	} else {
 		// Set light mode styles.
 		toggleModeBtn.style.color = "rgb(2, 4, 8)";
 		toggleModeBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
-
-		portfolioLink.style.color = "rgb(2, 4, 8)";
 
 		responsiveWarning.style.backgroundColor = "rgb(245, 245, 245)";
 	}
