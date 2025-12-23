@@ -1,6 +1,5 @@
 // Live Collage Gallery using Laptop Camera
 const video = document.getElementById('collage-video');
-const captureBtn = document.getElementById('capture-btn');
 const collageContainer = document.getElementById('live-collage-container');
 
 // Track last placed image position
@@ -124,7 +123,7 @@ function loadArchiveImages() {
     
     // Start displaying once discovery is complete
     startDisplayingImages();
-  }
+    }
   
   // Start displaying images once discovery is complete
   function startDisplayingImages() {
@@ -133,8 +132,8 @@ function loadArchiveImages() {
       return;
     }
     
-    function addNextArchiveImage() {
-      if (archiveImages.length > 0) {
+  function addNextArchiveImage() {
+    if (archiveImages.length > 0) {
         let randomIndex;
         let attempts = 0;
         const maxAttempts = 100; // Prevent infinite loop
@@ -155,11 +154,11 @@ function loadArchiveImages() {
           recentArchiveImageIndices.shift(); // Remove oldest
         }
         
-        placeImageRandomly(archiveImages[randomIndex]);
+      placeImageRandomly(archiveImages[randomIndex]);
         setTimeout(addNextArchiveImage, 2000); // cada 2 segundos
-      }
     }
-    addNextArchiveImage();
+  }
+  addNextArchiveImage();
   }
   
   // Start discovery process
@@ -183,7 +182,8 @@ function startCameraCollage() {
       }, 5600); // every 5.6 seconds (30% faster)
     })
     .catch(err => {
-      alert('No se pudo acceder a la cámara: ' + err.message);
+      // Silently handle camera access denial - archive images will still display
+      console.log('Camera access denied or not available');
     });
 }
 
@@ -192,17 +192,8 @@ function initializeGallery() {
   const collageContainer = document.getElementById('live-collage-container');
   collageContainer.style.display = 'block';
   loadArchiveImages();
+  // Request webcam permissions only after popup is dismissed
   startCameraCollage();
-
-  // Capture image and add to collage
-  captureBtn.addEventListener('click', () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    placeImageRandomly(canvas.toDataURL('image/jpeg'));
-  });
 }
 
 // Windows XP Popup handler
