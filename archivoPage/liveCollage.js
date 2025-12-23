@@ -187,16 +187,45 @@ function startCameraCollage() {
     });
 }
 
-// Init
-loadArchiveImages();
-startCameraCollage();
+// Initialize gallery (only called after popup is dismissed)
+function initializeGallery() {
+  const collageContainer = document.getElementById('live-collage-container');
+  collageContainer.style.display = 'block';
+  loadArchiveImages();
+  startCameraCollage();
 
-// Capture image and add to collage
-captureBtn.addEventListener('click', () => {
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  placeImageRandomly(canvas.toDataURL('image/jpeg'));
-});
+  // Capture image and add to collage
+  captureBtn.addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    placeImageRandomly(canvas.toDataURL('image/jpeg'));
+  });
+}
+
+// Windows XP Popup handler
+function setupXPPopup() {
+  const popupOverlay = document.getElementById('xp-popup-overlay');
+  const popupOk = document.getElementById('xp-popup-ok');
+  const popupClose = document.getElementById('xp-popup-close');
+
+  function dismissPopup() {
+    popupOverlay.style.display = 'none';
+    initializeGallery();
+  }
+
+  popupOk.addEventListener('click', dismissPopup);
+  popupClose.addEventListener('click', dismissPopup);
+  
+  // Show popup on page load
+  popupOverlay.style.display = 'flex';
+}
+
+// Initialize popup when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupXPPopup);
+} else {
+  setupXPPopup();
+}

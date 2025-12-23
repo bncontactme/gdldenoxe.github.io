@@ -1,5 +1,34 @@
+<link rel="stylesheet" href="styles.css">
+<!-- Windows XP Disclaimer Popup -->
+<div id="xp-popup-overlay">
+  <div id="xp-popup-window">
+    <div id="xp-popup-titlebar">
+      <span id="xp-popup-title">Mensaje</span>
+      <button id="xp-popup-close">×</button>
+    </div>
+    <div id="xp-popup-content">
+      <div id="xp-popup-icon">
+        <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" fill="#316AC5" stroke="#000000" stroke-width="1"/>
+          <text x="16" y="22" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">i</text>
+        </svg>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column;">
+        <div id="xp-popup-message">
+          Esta es nuestra galeria virtual, puedes optar por tomar parte de ella usando tu webcam, de otra manera, gracias por estar aqui.<br><br>
+          Esperemos te encuentres en alguna de las fotos
+        </div>
+        <div id="xp-popup-buttons">
+          <button id="xp-popup-ok">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Live Collage Gallery - Minimal Brutalist -->
-<div id="live-collage-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;overflow:hidden;">
+<div id="live-collage-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;overflow:hidden;display:none;">
   <video id="collage-video" autoplay playsinline style="display:none;"></video>
+  <button id="capture-btn" style="position:fixed;bottom:20px;right:20px;padding:10px 20px;background:#333;color:#fff;border:none;cursor:pointer;z-index:10000;">Capturar</button>
 </div>
 <script src="liveCollage.js"></script>
