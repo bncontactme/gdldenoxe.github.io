@@ -1,4 +1,96 @@
 /*********************
+* BACKGROUND MUSIC *
+*********************/
+
+const backgroundMusic = document.getElementById("background-music");
+const START_TIME = 5; // Start from second 5
+const END_OFFSET = 5; // Cut 5 seconds before the end
+const FADE_DURATION = 1.5; // Fade in/out duration in seconds
+const OVERLAP_DURATION = 0.5; // Overlap duration for smooth transition
+
+if (backgroundMusic) {
+    let duration = 0;
+    let endTime = 0;
+    let fadeInterval = null;
+    
+    // Set initial volume
+    backgroundMusic.volume = 0;
+    
+    // Wait for metadata to load to get duration
+    backgroundMusic.addEventListener('loadedmetadata', function() {
+        duration = backgroundMusic.duration;
+        endTime = duration - END_OFFSET;
+        
+        // Set initial start time
+        backgroundMusic.currentTime = START_TIME;
+        
+        // Start playing
+        backgroundMusic.play().catch(function(error) {
+            // Autoplay might be blocked, user will need to interact first
+            console.log("Autoplay blocked. User interaction required.");
+        });
+    });
+    
+    // Update volume based on current time
+    function updateVolume() {
+        if (fadeInterval) {
+            clearInterval(fadeInterval);
+        }
+        
+        fadeInterval = setInterval(function() {
+            const currentTime = backgroundMusic.currentTime;
+            const fadeOutStart = endTime - FADE_DURATION;
+            const fadeInEnd = START_TIME + FADE_DURATION;
+            
+            // Handle fade in at the start
+            if (currentTime >= START_TIME && currentTime <= fadeInEnd) {
+                const progress = (currentTime - START_TIME) / FADE_DURATION;
+                // Start from a small volume for overlap (not 0)
+                const overlapVolume = OVERLAP_DURATION / FADE_DURATION * 0.3;
+                backgroundMusic.volume = overlapVolume + (1 - overlapVolume) * progress;
+            }
+            // Handle fade out before the end
+            else if (currentTime >= fadeOutStart && currentTime <= endTime) {
+                const progress = (currentTime - fadeOutStart) / FADE_DURATION;
+                // End at a small volume for overlap (not 0)
+                const overlapVolume = OVERLAP_DURATION / FADE_DURATION * 0.3;
+                backgroundMusic.volume = 1 - (1 - overlapVolume) * progress;
+            }
+            // Full volume in the middle
+            else if (currentTime > fadeInEnd && currentTime < fadeOutStart) {
+                backgroundMusic.volume = 1;
+            }
+        }, 50);
+    }
+    
+    // Listen for time updates to create seamless loop with fade
+    backgroundMusic.addEventListener('timeupdate', function() {
+        const currentTime = backgroundMusic.currentTime;
+        
+        // If we've reached the end time, loop back to start
+        if (currentTime >= endTime) {
+            // Set volume to overlap level before jumping
+            const overlapVolume = OVERLAP_DURATION / FADE_DURATION * 0.3;
+            backgroundMusic.volume = overlapVolume;
+            backgroundMusic.currentTime = START_TIME;
+            // Volume will continue to fade in from overlap level
+        }
+    });
+    
+    // Start volume management
+    updateVolume();
+    
+    // Handle user interaction to start music if autoplay was blocked
+    document.addEventListener('click', function() {
+        if (backgroundMusic.paused && backgroundMusic.readyState >= 2) {
+            backgroundMusic.currentTime = START_TIME;
+            backgroundMusic.volume = 0;
+            backgroundMusic.play();
+        }
+    }, { once: true });
+}
+
+/*********************
 * MARQUEE BAR SETUP *
 *********************/
 
