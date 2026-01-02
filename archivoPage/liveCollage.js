@@ -6,9 +6,19 @@ const collageContainer = document.getElementById('live-collage-container');
 let lastImagePosition = { top: null, left: null, size: null };
 // Track z-index to ensure new images are always on top
 let currentZIndex = 1;
-// Track last 5 archive image indices to avoid repetition
-let recentArchiveImageIndices = [];
-const maxRecentHistory = 5;
+// Track last 15 non-GIF image paths to avoid repetition
+let recentNonGifPaths = [];
+const maxRecentNonGifHistory = 15;
+// Track last 3 GIF paths to avoid repeating same GIF
+let recentGifPaths = [];
+const maxRecentGifHistory = 3;
+
+// Performance reset: Track intervals and timeouts for cleanup
+let archiveImageTimeout = null;
+let cameraInterval = null;
+let cameraStream = null;
+let resetTimer = null;
+const RESET_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 // Helper: Calculate distance between two points
 function calculateDistance(x1, y1, x2, y2) {
@@ -108,9 +118,19 @@ function loadArchiveImages() {
         const imagePath = `archiveImages/archiveImage${currentNumber}.${ext}`;
         const exists = await checkImageExists(imagePath);
         if (exists) {
-          archiveImages.push(imagePath);
-          foundAny = true;
-          break; // Found one, no need to check other extensions for this number
+          // Limit GIFs to 65% probability to keep them limited
+          if (ext.toLowerCase() === 'gif') {
+            if (Math.random() < 0.65) {
+              archiveImages.push(imagePath);
+            }
+            // Mark as found even if GIF wasn't added (to avoid incrementing consecutiveFailures)
+            foundAny = true;
+            break; // Found GIF (added or not), no need to check other extensions
+          } else {
+            archiveImages.push(imagePath);
+            foundAny = true;
+            break; // Found non-GIF image, no need to check other extensions
+          }
         }
       }
       
@@ -140,24 +160,53 @@ function loadArchiveImages() {
         let attempts = 0;
         const maxAttempts = 100; // Prevent infinite loop
         
-        // Make sure we don't repeat any of the last 5 images
+        // Make sure we don't repeat images:
+        // - GIFs: don't repeat same GIF in last 3 positions
+        // - Non-GIFs: don't repeat same image in last 15 positions
         do {
           randomIndex = Math.floor(Math.random() * archiveImages.length);
           attempts++;
-        } while (
-          recentArchiveImageIndices.includes(randomIndex) && 
-          archiveImages.length > recentArchiveImageIndices.length &&
-          attempts < maxAttempts
-        );
+          
+          const selectedImagePath = archiveImages[randomIndex];
+          const isGif = selectedImagePath.toLowerCase().endsWith('.gif');
+          
+          // Check if it's a GIF and if it's in the recent GIF history
+          const isRecentGif = isGif && recentGifPaths.includes(selectedImagePath);
+          
+          // Check if it's a non-GIF and if it's in the recent non-GIF history
+          const isRecentNonGif = !isGif && recentNonGifPaths.includes(selectedImagePath);
+          
+          // Check if we should skip this image
+          const shouldSkip = isRecentGif || isRecentNonGif;
+          
+          // If we shouldn't skip, break out of the loop
+          if (!shouldSkip) {
+            break;
+          }
+          
+        } while (attempts < maxAttempts);
         
-        // Add to recent history, maintaining max size
-        recentArchiveImageIndices.push(randomIndex);
-        if (recentArchiveImageIndices.length > maxRecentHistory) {
-          recentArchiveImageIndices.shift(); // Remove oldest
+        // Track image paths based on type
+        const selectedImagePath = archiveImages[randomIndex];
+        const isGif = selectedImagePath.toLowerCase().endsWith('.gif');
+        
+        if (isGif) {
+          // Track GIF paths (last 3)
+          recentGifPaths.push(selectedImagePath);
+          if (recentGifPaths.length > maxRecentGifHistory) {
+            recentGifPaths.shift(); // Remove oldest GIF
+          }
+        } else {
+          // Track non-GIF paths (last 15)
+          recentNonGifPaths.push(selectedImagePath);
+          if (recentNonGifPaths.length > maxRecentNonGifHistory) {
+            recentNonGifPaths.shift(); // Remove oldest non-GIF
+          }
         }
         
       placeImageRandomly(archiveImages[randomIndex]);
-        setTimeout(addNextArchiveImage, 2000); // cada 2 segundos
+        // Store timeout reference for cleanup
+        archiveImageTimeout = setTimeout(addNextArchiveImage, 2000); // cada 2 segundos
     }
   }
   addNextArchiveImage();
@@ -171,8 +220,9 @@ function loadArchiveImages() {
 function startCameraCollage() {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
+      cameraStream = stream;
       video.srcObject = stream;
-      setInterval(() => {
+      cameraInterval = setInterval(() => {
         if (video.videoWidth && video.videoHeight) {
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
@@ -189,6 +239,56 @@ function startCameraCollage() {
     });
 }
 
+// Reset function to clear everything and restart (performance optimization)
+function resetGallery() {
+  console.log('Resetting gallery after 5 minutes for performance...');
+  
+  // Clear all timeouts and intervals
+  if (archiveImageTimeout) {
+    clearTimeout(archiveImageTimeout);
+    archiveImageTimeout = null;
+  }
+  if (cameraInterval) {
+    clearInterval(cameraInterval);
+    cameraInterval = null;
+  }
+  if (resetTimer) {
+    clearTimeout(resetTimer);
+    resetTimer = null;
+  }
+  
+  // Stop camera stream
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+    if (video.srcObject) {
+      video.srcObject = null;
+    }
+  }
+  
+  // Remove all images from DOM
+  const images = collageContainer.querySelectorAll('img');
+  images.forEach(img => {
+    if (img.parentNode) {
+      img.parentNode.removeChild(img);
+    }
+  });
+  
+  // Reset all state variables
+  lastImagePosition = { top: null, left: null, size: null };
+  currentZIndex = 1;
+  recentNonGifPaths = [];
+  recentGifPaths = [];
+  
+  // Restart gallery
+  console.log('Restarting gallery...');
+  loadArchiveImages();
+  startCameraCollage();
+  
+  // Schedule next reset
+  resetTimer = setTimeout(resetGallery, RESET_INTERVAL);
+}
+
 // Initialize gallery (only called after popup is dismissed)
 function initializeGallery() {
   const collageContainer = document.getElementById('live-collage-container');
@@ -196,6 +296,9 @@ function initializeGallery() {
   loadArchiveImages();
   // Request webcam permissions only after popup is dismissed
   startCameraCollage();
+  
+  // Schedule first reset after 5 minutes
+  resetTimer = setTimeout(resetGallery, RESET_INTERVAL);
 }
 
 // Windows XP Popup handler
