@@ -3,57 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Columnas Creativas</title>
+    <title>Columnas Creativas - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="desktop">
-        <div class="articles-container">
-            
-            <!-- Componente de artículo -->
-            <div class="win95-window">
-                <div class="title-bar">
-                    <div class="title-bar-text">Artículo #1</div>
-                    <div class="title-bar-controls">
-                        <button class="minimize-btn">_</button>
-                        <button class="maximize-btn">□</button>
-                        <button class="close-btn">✕</button>
-                    </div>
-                </div>
-                <div class="window-body">
-                    <div class="article-image">
-                        <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
-                    </div>
-                    <div class="article-description">
-                        <h3>Título del artículo</h3>
-                        <p>Esta es una pequeña descripción del artículo. Aquí va el contenido que describe el tema de la columna creativa.</p>
-                        <button class="read-more-btn">Leer más</button>
-                    </div>
+        
+        <!-- Ventanas de artículos -->
+        <div class="win95-window hidden" data-window-id="1" style="left: 50px; top: 50px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #1</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
                 </div>
             </div>
-
-            <!-- Otro componente de artículo -->
-            <div class="win95-window">
-                <div class="title-bar">
-                    <div class="title-bar-text">Artículo #2</div>
-                    <div class="title-bar-controls">
-                        <button class="minimize-btn">_</button>
-                        <button class="maximize-btn">□</button>
-                        <button class="close-btn">✕</button>
-                    </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
                 </div>
-                <div class="window-body">
-                    <div class="article-image">
-                        <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
-                    </div>
-                    <div class="article-description">
-                        <h3>Título del artículo</h3>
-                        <p>Esta es una pequeña descripción del artículo. Aquí va el contenido que describe el tema de la columna creativa.</p>
-                        <button class="read-more-btn">Leer más</button>
-                    </div>
+                <div class="article-description">
+                    <h3>Primera Columna</h3>
+                    <p>Esta es una pequeña descripción del artículo. Aquí va el contenido que describe el tema de la columna creativa.</p>
+                    <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
+        </div>
 
+        <div class="win95-window hidden" data-window-id="2" style="left: 520px; top: 50px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #2</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                </div>
+                <div class="article-description">
+                    <h3>Segunda Columna</h3>
+                    <p>Otra columna creativa con contenido interesante para compartir con los lectores.</p>
+                    <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window hidden" data-window-id="3" style="left: 285px; top: 320px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #3</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                </div>
+                <div class="article-description">
+                    <h3>Tercera Columna</h3>
+                    <p>Una tercera perspectiva sobre temas creativos y reflexiones personales.</p>
+                    <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window" data-window-id="4" style="left: 100px; top: 80px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #4</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                </div>
+                <div class="article-description">
+                    <h3>Cuarta Columna</h3>
+                    <p>Explorando nuevas ideas y conceptos creativos para compartir.</p>
+                    <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window" data-window-id="5" style="left: 570px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #5</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                </div>
+                <div class="article-description">
+                    <h3>Quinta Columna</h3>
+                    <p>Reflexiones profundas sobre arte, cultura y creatividad contemporánea.</p>
+                    <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window" data-window-id="6" style="left: 330px; top: 350px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #6</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                </div>
+                <div class="article-description">
+                    <h3>Sexta Columna</h3>
+                    <p>Últimas tendencias y pensamientos sobre el mundo creativo actual.</p>
+                    <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Barra de tareas estilo Windows 95 -->
+    <div class="taskbar">
+        <button class="start-button">Inicio</button>
+        <div class="taskbar-items" id="taskbar-items"></div>
+        <div class="system-tray">
+            <span class="clock" id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- Menú de inicio -->
+    <div class="start-menu" id="start-menu">
+        <div class="start-menu-header">Windows 95</div>
+        <div class="start-menu-items">
+            <div class="menu-item" data-action="restore-all">📄 Abrir todos los artículos</div>
+            <div class="menu-separator"></div>
+            <div class="menu-item" data-window="1">📝 Artículo #1</div>
+            <div class="menu-item" data-window="2">📝 Artículo #2</div>
+            <div class="menu-item" data-window="3">📝 Artículo #3</div>
+            <div class="menu-item" data-window="4">📝 Artículo #4</div>
+            <div class="menu-item" data-window="5">📝 Artículo #5</div>
+            <div class="menu-item" data-window="6">📝 Artículo #6</div>
         </div>
     </div>
 
