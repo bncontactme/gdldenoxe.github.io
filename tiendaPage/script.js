@@ -1,150 +1,166 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const imageContainer = document.getElementById("image-container");
+/*********************
+* ADVERTISEMENT SYSTEM *
+*********************/
 
-  const getProductData = () => {
-    const products = [];
-    const productElements = document.querySelectorAll('.product');
-    
-    productElements.forEach(productElement => {
-      const title = productElement.getAttribute('data-title');
-      const main = productElement.getAttribute('data-main');
-      const sub = JSON.parse(productElement.getAttribute('data-sub'));
-      const description = productElement.getAttribute('data-description');
-      const price = productElement.getAttribute('data-price');
-      const buyUrl = productElement.getAttribute('data-buy-url');
-      const stock = productElement.getAttribute('data-stock') || "in"; // Default to "in" if not specified
-  
-      products.push({ title, main, sub, description, price, buyUrl, stock });
-    });
-  
-    return products;
-  };
+const adAudio = document.getElementById("ad-audio");
+const AD_INTERVAL_MINUTES = 2;
+const AD_VOLUME_RATIO = 0.35;
+let adTimer = null;
+let adsList = ['Anuncio1.mp3'];
 
-  const desktopImageSize = { width: 180, height: 180 };
-  const mobileImageSize = { width: 70, height: 70 };
+if (adAudio) {
+    adAudio.volume = 0;
 
-  const getRandomPosition = () => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const x = Math.random() * screenWidth;
-    const y = Math.random() * screenHeight;
-    return { x, y };
-  };
-
-  const createImageElement = (product, isMobile) => {
-    const img = document.createElement("img");
-    img.src = product.main;
-    img.classList.add("image");
-
-    const { width, height } = isMobile ? mobileImageSize : desktopImageSize;
-    img.style.width = `${width}px`;
-    img.style.height = `${height}px`;
-    
-    const { x, y } = getRandomPosition();
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
-
-    const randomZIndex = Math.floor(Math.random() * 1000);
-    img.style.zIndex = randomZIndex;
-
-    if (product.stock === "out") {
-      img.style.opacity = "1";
-      img.style.cursor = "allowed";
+    function playRandomAd() {
+        const backgroundMusic = document.getElementById("background-music");
+        if (backgroundMusic) {
+            adAudio.volume = backgroundMusic.volume * AD_VOLUME_RATIO;
+            adAudio.currentTime = 0;
+            adAudio.play().catch(() => {});
+        }
     }
 
-    img.addEventListener("click", () => {
-      showPreview(product);
+    function scheduleNextAd() {
+        const randomDelay = (1.5 + Math.random()) * 60 * 1000;
+        clearTimeout(adTimer);
+        adTimer = setTimeout(() => {
+            playRandomAd();
+            scheduleNextAd();
+        }, randomDelay);
+    }
+
+    window.startAds = function () {
+        setTimeout(scheduleNextAd, 30000);
+    };
+}
+
+/*********************
+* BACKGROUND MUSIC (FIXED OVERLAP LOOP)
+*********************/
+
+const backgroundMusic = document.getElementById("background-music");
+const START_TIME = 5;
+const END_OFFSET = 5;
+const FADE_DURATION = 7;
+
+if (backgroundMusic) {
+    // clone SAME element, SAME src, SAME path
+    const backgroundMusicClone = backgroundMusic.cloneNode(true);
+    backgroundMusic.parentNode.appendChild(backgroundMusicClone);
+
+    let active = backgroundMusic;
+    let inactive = backgroundMusicClone;
+
+    function fade(audio, from, to, duration) {
+        const steps = 30;
+        const stepTime = (duration * 1000) / steps;
+        const step = (to - from) / steps;
+        let volume = from;
+
+        audio.volume = from;
+
+        const interval = setInterval(() => {
+            volume += step;
+            audio.volume = Math.max(0, Math.min(1, volume));
+            if ((step > 0 && volume >= to) || (step < 0 && volume <= to)) {
+                audio.volume = to;
+                clearInterval(interval);
+            }
+        }, stepTime);
+    }
+
+    function scheduleNextLoop(audio) {
+        const loopDelay =
+            (audio.duration - END_OFFSET - FADE_DURATION) * 1000;
+
+        setTimeout(crossfade, loopDelay);
+    }
+
+    function crossfade() {
+        inactive.currentTime = START_TIME;
+        inactive.play();
+
+        fade(inactive, 0, 1, FADE_DURATION);
+        fade(active, 1, 0, FADE_DURATION);
+
+        [active, inactive] = [inactive, active];
+
+        scheduleNextLoop(active);
+    }
+
+    backgroundMusic.addEventListener("loadedmetadata", () => {
+        backgroundMusic.currentTime = START_TIME;
+        backgroundMusic.volume = 0;
+
+        backgroundMusic.play().then(() => {
+            fade(backgroundMusic, 0, 1, FADE_DURATION);
+            scheduleNextLoop(backgroundMusic);
+
+            if (window.startAds) window.startAds();
+        }).catch(() => {});
     });
 
-    return img;
-  };
+    document.addEventListener("click", () => {
+        if (backgroundMusic.paused) {
+            backgroundMusic.currentTime = START_TIME;
+            backgroundMusic.play();
+        }
+    }, { once: true });
+}
 
-  const showPreview = (product) => {
-    const previewModal = document.createElement("div");
-    previewModal.classList.add("preview-modal");
+/*********************
+* MARQUEE BAR SETUP *
+*********************/
 
-    const modalContent = document.createElement("div");
-    modalContent.classList.add("modal-content");
+const marqueeContent = document.querySelector('.marquee-content');
+const marqueeText = document.querySelector('.marquee-text');
 
-    const previewImage = document.createElement("img");
-    previewImage.src = product.main;
-    previewImage.classList.add("preview-image");
+if (marqueeContent && marqueeText) {
+    const clonedText = marqueeText.cloneNode(true);
+    marqueeContent.appendChild(clonedText);
+}
 
-    const carouselContainer = document.createElement("div");
-    carouselContainer.classList.add("carousel-container");
+/*********************
+* RESPONSIVE WARNING *
+*********************/
 
-    product.sub.forEach(subImage => {
-      const carouselImage = document.createElement("img");
-      carouselImage.src = subImage;
-      carouselImage.classList.add("carousel-image");
-      carouselImage.addEventListener("click", () => {
-        previewImage.src = subImage;
-      });
-      carouselContainer.appendChild(carouselImage);
-    });
+const responsiveWarning = document.getElementById("responsive-warning");
+const responsiveDesign = false;
 
-    const titleText = document.createElement("p");
-    titleText.classList.add("product-title");
-    titleText.textContent = product.title;
+if (!responsiveDesign && window.innerWidth <= 768) {
+    responsiveWarning.classList.add("show");
+}
 
-    const descriptionText = document.createElement("p");
-    descriptionText.classList.add("description-text");
-    descriptionText.textContent = product.description;
+/***********************
+* MODE TOGGLE BEHAVIOR *
+***********************/
 
-    const priceText = document.createElement("p");
-    priceText.classList.add("price-text");
-    if (product.stock === "out") {
-      priceText.textContent = `${product.price}`;
-      priceText.style.color = "red";
+const toggleModeBtn = document.getElementById("toggle-mode-btn");
+const body = document.body;
+
+function applyMode(mode) {
+    body.classList.remove("light-mode", "dark-mode");
+    body.classList.add(mode);
+
+    if (mode === "dark-mode") {
+        toggleModeBtn.style.color = "rgb(245, 245, 245)";
+        toggleModeBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+        responsiveWarning.style.backgroundColor = "rgb(2, 4, 8)";
     } else {
-      priceText.textContent = `${product.price}`;
+        toggleModeBtn.style.color = "rgb(2, 4, 8)";
+        toggleModeBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+        responsiveWarning.style.backgroundColor = "rgb(245, 245, 245)";
     }
+}
 
-    const payButton = document.createElement("button");
-    payButton.classList.add("pay-button");
-    payButton.textContent = "Buy Now";
-    if (product.stock === "out") {
-      payButton.style.backgroundColor = "red";
-      payButton.textContent = "Out Of Stock";
-      payButton.disabled = true;
-      payButton.style.cursor = "not-allowed";
-    } else {
-      payButton.addEventListener("click", () => {
-        window.location.href = product.buyUrl;
-      });
-    }
+let savedMode = localStorage.getItem("mode") || "light-mode";
+applyMode(savedMode);
 
-    const closeButton = document.createElement("button");
-    closeButton.textContent = "X";
-    closeButton.classList.add("close-preview");
-    closeButton.addEventListener("click", () => {
-      previewModal.remove();
-    });
+toggleModeBtn.addEventListener("click", () => {
+    const newMode = body.classList.contains("light-mode")
+        ? "dark-mode"
+        : "light-mode";
 
-    modalContent.appendChild(closeButton);
-    modalContent.appendChild(previewImage);
-    modalContent.appendChild(carouselContainer);
-    modalContent.appendChild(titleText);
-    modalContent.appendChild(descriptionText);
-    modalContent.appendChild(priceText);
-    modalContent.appendChild(payButton);
-    previewModal.appendChild(modalContent);
-    document.body.appendChild(previewModal);
-  };
-
-  const loadRandomImages = () => {
-    const isMobile = window.innerWidth <= 768;
-    const imageCount = 45;
-
-    const products = getProductData();
-
-    products.forEach(product => {
-      for (let i = 0; i < imageCount; i++) {
-        const img = createImageElement(product, isMobile);
-        imageContainer.appendChild(img);
-      }
-    });
-  };
-
-  loadRandomImages();
+    applyMode(newMode);
+    localStorage.setItem("mode", newMode);
 });

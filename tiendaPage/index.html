@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GDLDENOXE - Tienda</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Script -->
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+    <!-- Marquee Bar - Old School Electronic Display -->
+    <div id="marquee-bar">
+        <div class="marquee-content">
+            <span class="marquee-text">*** BIENVENIDO A LA TIENDA GDLDENOXE *** NUEVOS PRODUCTOS DISPONIBLES *** ENVÍOS A TODO MÉXICO *** SIGUENOS EN NUESTRAS REDES ***</span>
+        </div>
+    </div>
+
+    <main>
+        <input type="checkbox" id="page1_checkbox">
+        <input type="checkbox" id="page2_checkbox">
+        <input type="checkbox" id="page3_checkbox">
+        <input type="checkbox" id="page4_checkbox">
+        <input type="checkbox" id="page5_checkbox">
+
+        <!-- Flip Book -->
+        <div id="flip_book">
+            <!-- front cover removed so only page images control navigation -->
+
+            <div class="page" id="page1">
+                <div class="front_page">
+                    <label for="page1_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/front_page_edge_shading.webp" alt="Front page edge shading">
+                    <img class="front_content" src="./assets/images/pages/page1.webp" alt="Front content">
+                </div>
+
+                <div class="back_page">
+                    <label for="page1_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/back_page_edge_shading.webp" alt="Back page edge shading">
+                    <img class="back_content" src="./assets/images/pages/page2.webp" alt="Back content">
+                </div>
+            </div>
+
+            <div class="page" id="page2">
+                <div class="front_page">
+                    <label for="page2_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/front_page_edge_shading.webp" alt="Front page edge shading">
+                    <img class="front_content" src="./assets/images/pages/page3.webp" alt="Front content">
+                </div>
+
+                <div class="back_page">
+                    <label for="page2_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/back_page_edge_shading.webp" alt="Back page edge shading">
+                    <img class="back_content" src="./assets/images/pages/page4.webp" alt="Back content">
+                </div>
+            </div>
+
+            <div class="page" id="page3">
+                <div class="front_page">
+                    <label for="page3_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/front_page_edge_shading.webp" alt="Front page edge shading">
+                    <img class="front_content" src="./assets/images/pages/page5.webp" alt="Front content">
+                </div>
+
+                <div class="back_page">
+                    <label for="page3_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/back_page_edge_shading.webp" alt="Back page edge shading">
+                    <img class="back_content" src="./assets/images/pages/page6.webp" alt="Back content">
+                </div>
+            </div>
+
+            <div class="page" id="page4">
+                <div class="front_page">
+                    <label for="page4_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/front_page_edge_shading.webp" alt="Front page edge shading">
+                    <img class="front_content" src="./assets/images/pages/page7.webp" alt="Front content">
+                </div>
+
+                <div class="back_page">
+                    <label for="page4_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/back_page_edge_shading.webp" alt="Back page edge shading">
+                    <img class="back_content" src="./assets/images/pages/page8.webp" alt="Back content">
+                </div>
+            </div>
+
+            <div class="page" id="page5">
+                <div class="front_page">
+                    <label for="page5_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/front_page_edge_shading.webp" alt="Front page edge shading">
+                    <img class="front_content" src="./assets/images/pages/page9.webp" alt="Front content">
+                </div>
+
+                <div class="back_page">
+                    <label for="page5_checkbox"></label>
+                    <img class="edge_shading" src="./assets/images/back_page_edge_shading.webp" alt="Back page edge shading">
+                    <img class="back_content" src="./assets/images/pages/page10.webp" alt="Back content">
+                </div>
+            </div>
+
+            <!-- back cover removed -->
+        </div>
+
+        <!-- Toggle mode button -->
+        <button id="toggle-mode-btn">
+            <i class="bi bi-moon-stars-fill"></i>
+        </button>
+
+        <!-- Responsive Warning -->
+        <div id="responsive-warning">
+            <i class="ri-error-warning-line warning-icons"></i>
+            <p>This web application is not optimized for mobile.</p>
+            <p>Please visit it on a desktop computer for the best experience.</p>
+        </div>
+
+        <!-- Background Music -->
+        <audio id="background-music" loop>
+            <source src="./assets/images/BACKGROUND WEB TIENDA MUSIC.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Advertisement Audio -->
+        <audio id="ad-audio">
+            <source src="./assets/images/Anuncio1.mp3" type="audio/mpeg">
+        </audio>
+    </main>
+</body>
+
+</html>
