@@ -9,8 +9,31 @@
 <body>
     <div class="desktop">
         
+        <!-- Iconos del escritorio -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" data-link="../archivoPage/archivoPage.html">
+                <div class="icon-image">🖼️</div>
+                <div class="icon-label">Galería</div>
+            </div>
+            
+            <div class="desktop-icon" data-link="../tiendaPage/tiendaPage.html">
+                <div class="icon-image">🛒</div>
+                <div class="icon-label">Tienda</div>
+            </div>
+            
+            <div class="desktop-icon" data-folder="articulos">
+                <div class="icon-image">📁</div>
+                <div class="icon-label">Artículos</div>
+            </div>
+            
+            <div class="desktop-icon" data-link="../index.html">
+                <div class="icon-image">🔗</div>
+                <div class="icon-label">Links</div>
+            </div>
+        </div>
+        
         <!-- Ventanas de artículos -->
-        <div class="win95-window" data-window-id="1" style="left: 50px; top: 50px;">
+        <div class="win95-window hidden" data-window-id="1" style="left: 50px; top: 50px;">
             <div class="title-bar">
                 <div class="title-bar-text">Artículo #1</div>
                 <div class="title-bar-controls">
@@ -20,11 +43,11 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="1" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Primera Columna</h3>
-                    <p>Esta es una pequeña descripción del artículo. Aquí va el contenido que describe el tema de la columna creativa.</p>
+                    <h3>La Noche es Joven</h3>
+                    <p>Cuando el sol se oculta, Guadalajara despierta. Aquí te contamos las movidas que definen la escena nocturna tapatía, donde cada esquina tiene su historia y cada bar su leyenda.</p>
                     <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
@@ -40,11 +63,11 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="2" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Segunda Columna</h3>
-                    <p>Otra columna creativa con contenido interesante para compartir con los lectores.</p>
+                    <h3>Sabor Tapatío After Dark</h3>
+                    <p>De los tacos al pastor a las 3AM hasta los spots más exclusivos. Te llevamos por los rincones gastronómicos que cobran vida cuando todos duermen.</p>
                     <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
@@ -60,11 +83,11 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="3" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Tercera Columna</h3>
-                    <p>Una tercera perspectiva sobre temas creativos y reflexiones personales.</p>
+                    <h3>Underground Vibes</h3>
+                    <p>Más allá del mainstream. Exploramos los eventos clandestinos, las fiestas que no están en Instagram y los artistas que están cambiando el juego desde las sombras.</p>
                     <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
@@ -80,17 +103,17 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="4" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Cuarta Columna</h3>
-                    <p>Explorando nuevas ideas y conceptos creativos para compartir.</p>
+                    <h3>Puro Pinche Ambiente</h3>
+                    <p>Las historias que nacen en la pista, los amores de una noche y las amistades que duran para siempre. Esto es lo que pasa cuando la ciudad no duerme.</p>
                     <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
         </div>
 
-        <div class="win95-window" data-window-id="5" style="left: 570px; top: 100px;">
+        <div class="win95-window hidden" data-window-id="5" style="left: 570px; top: 100px;">
             <div class="title-bar">
                 <div class="title-bar-text">Artículo #5</div>
                 <div class="title-bar-controls">
@@ -100,17 +123,17 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="5" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Quinta Columna</h3>
-                    <p>Reflexiones profundas sobre arte, cultura y creatividad contemporánea.</p>
+                    <h3>De la Calle pa' la Gente</h3>
+                    <p>Crónicas urbanas directas y sin filtro. Aquí contamos lo que realmente pasa en las calles de GDL cuando cae la noche - lo bueno, lo malo y lo increíble.</p>
                     <button class="read-more-btn">Leer más</button>
                 </div>
             </div>
         </div>
 
-        <div class="win95-window" data-window-id="6" style="left: 330px; top: 350px;">
+        <div class="win95-window hidden" data-window-id="6" style="left: 330px; top: 350px;">
             <div class="title-bar">
                 <div class="title-bar-text">Artículo #6</div>
                 <div class="title-bar-controls">
@@ -120,12 +143,113 @@
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="columnaImages/placeholder.jpg" alt="Imagen del artículo">
+                    <img class="article-random-img" data-article="6" src="" alt="Imagen del artículo">
                 </div>
                 <div class="article-description">
-                    <h3>Sexta Columna</h3>
-                    <p>Últimas tendencias y pensamientos sobre el mundo creativo actual.</p>
+                    <h3>Después de las 12</h3>
+                    <p>Cuando los demás se van a dormir, nosotros apenas empezamos. Un recorrido por los lugares que siguen activos hasta que sale el sol y las historias que ahí se tejen.</p>
                     <button class="read-more-btn">Leer más</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de imagen random -->
+        <div class="win95-window" data-window-id="random" style="left: 200px; top: 150px;">
+            <div class="title-bar">
+                <div class="title-bar-text">GDL DE NOCHE</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="random-image-container">
+                    <img id="randomWindowImage" src="" alt="Imagen aleatoria">
+                </div>
+            </div>
+        </div>
+
+        <!-- Poemas -->
+        <div class="win95-window" data-window-id="poema1" style="left: 250px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Poema.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window hidden" data-window-id="poema2" style="left: 400px; top: 200px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Versos.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window hidden" data-window-id="poema3" style="left: 300px; top: 300px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Rimas.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de carpeta Artículos -->
+        <div class="win95-window hidden" data-window-id="folder-articulos" style="left: 150px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">📁 Artículos</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="folder-content">
+                    <div class="folder-item" data-open-article="1">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">La Noche es Joven.txt</span>
+                    </div>
+                    <div class="folder-item" data-open-article="2">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">Sabor Tapatío After Dark.txt</span>
+                    </div>
+                    <div class="folder-item" data-open-article="3">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">Underground Vibes.txt</span>
+                    </div>
+                    <div class="folder-item" data-open-article="4">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">Puro Pinche Ambiente.txt</span>
+                    </div>
+                    <div class="folder-item" data-open-article="5">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">De la Calle pa' la Gente.txt</span>
+                    </div>
+                    <div class="folder-item" data-open-article="6">
+                        <span class="folder-icon">📄</span>
+                        <span class="folder-name">Después de las 12.txt</span>
+                    </div>
                 </div>
             </div>
         </div>

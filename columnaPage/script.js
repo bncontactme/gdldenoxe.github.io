@@ -7,6 +7,174 @@ document.addEventListener('DOMContentLoaded', () => {
     let offsetX = 0;
     let offsetY = 0;
 
+    // Funcionalidad de iconos del escritorio
+    const desktopIcons = document.querySelectorAll('.desktop-icon');
+    let selectedIcon = null;
+
+    desktopIcons.forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Deseleccionar todos
+            desktopIcons.forEach(i => i.classList.remove('selected'));
+            // Seleccionar este
+            icon.classList.add('selected');
+            selectedIcon = icon;
+        });
+
+        icon.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            const link = icon.dataset.link;
+            const folder = icon.dataset.folder;
+            
+            if (link) {
+                window.location.href = link;
+            } else if (folder === 'articulos') {
+                // Abrir ventana de carpeta de artículos
+                const folderWindow = document.querySelector('[data-window-id="folder-articulos"]');
+                if (folderWindow) {
+                    folderWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(folderWindow);
+                    updateTaskbar();
+                }
+            }
+        });
+    });
+
+    // Funcionalidad de carpeta de artículos
+    const folderItems = document.querySelectorAll('.folder-item');
+    let selectedFolderItem = null;
+
+    folderItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            folderItems.forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedFolderItem = item;
+        });
+
+        item.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            const articleId = item.dataset.openArticle;
+            const articleWindow = document.querySelector(`[data-window-id="${articleId}"]`);
+            
+            if (articleWindow) {
+                articleWindow.classList.remove('hidden', 'minimized');
+                bringToFront(articleWindow);
+                updateTaskbar();
+            }
+        });
+    });
+
+    // Deseleccionar al hacer click en el escritorio
+    document.querySelector('.desktop').addEventListener('click', () => {
+        desktopIcons.forEach(i => i.classList.remove('selected'));
+        selectedIcon = null;
+    });
+
+    // Deseleccionar items de carpeta al hacer click en window-body
+    document.querySelectorAll('.folder-content').forEach(folder => {
+        folder.addEventListener('click', (e) => {
+            if (e.target === folder) {
+                folderItems.forEach(i => i.classList.remove('selected'));
+                selectedFolderItem = null;
+            }
+        });
+    });
+
+    // Funcionalidad de imagen random
+    const imagePaths = [
+        "../indexPage/indexImages/2 Intro.jpeg",
+        "../indexPage/indexImages/3 Intro.jpeg",
+        "../indexPage/indexImages/4 Intro.jpeg",
+        "../indexPage/indexImages/6 Intro.jpeg",
+        "../indexPage/indexImages/7 Intro.JPG"
+    ];
+
+    function loadRandomImage() {
+        const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+        document.getElementById('randomWindowImage').src = randomImage;
+    }
+
+    // Cargar imagen inicial
+    loadRandomImage();
+
+    // Cargar imágenes random para artículos
+    const articleImages = document.querySelectorAll('.article-random-img');
+    articleImages.forEach(img => {
+        const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+        img.src = randomImage;
+    });
+
+    // Sistema de poemas random
+    const poemas = [
+        `En la noche tapatía,
+donde el mezcal fluye libre,
+las calles cobran vida
+y el alma se vuelve fibre.
+
+Entre luces y neones,
+historias se van tejiendo,
+la ciudad que no duerme
+sigue su ritmo creciendo.`,
+
+        `Después de las doce,
+cuando la luna se asoma,
+Guadalajara despierta
+con su propio idioma.
+
+De Chapultepec al centro,
+la movida está encendida,
+cada rincón un encuentro,
+cada encuentro una vida.`,
+
+        `Tacos al pastor a las tres,
+amistades que nacen al azar,
+la noche tapatía es
+un eterno despertar.
+
+No hay reloj que nos detenga,
+ni mañana que nos asuste,
+somos dueños del momento
+antes de que el día nos ajuste.`,
+
+        `En cada bar una historia,
+en cada copa un sueño,
+GDL de noche es gloria,
+puro pinche diseño.
+
+Underground o mainstream,
+todos somos iguales,
+cuando cae la noche, wey,
+no existen los niveles.`,
+
+        `La ciudad respira trap,
+respira corridos, respira amor,
+desde San Juan hasta Tlaquepaque
+todo es puro sabor.
+
+Aquí no hay pretensiones,
+solo ganas de vivir,
+Guadalajara de noche
+es imposible de describir.`,
+
+        `Cuando el sol se despide
+y las estrellas aparecen,
+los que saben, saben
+dónde las cosas suceden.
+
+No está en el mapa,
+no está en Google tampoco,
+está en el corazón
+de los que viven el rollo loco.`
+    ];
+
+    // Cargar poemas random en los frames
+    const poemTexts = document.querySelectorAll('.poem-text');
+    poemTexts.forEach(poemElement => {
+        const randomPoem = poemas[Math.floor(Math.random() * poemas.length)];
+        poemElement.textContent = randomPoem;
+    });
+
     // Posicionar ventanas aleatoriamente al inicio
     function randomizeWindowPositions() {
         const windows = document.querySelectorAll('.win95-window:not(.hidden)');
@@ -14,6 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const screenHeight = globalThis.innerHeight;
         const windowWidth = 420;
         const windowHeight = 500;
+        const iconAreaWidth = 150; // Espacio reservado para iconos a la izquierda
+        const minPadding = 50; // Espacio mínimo entre ventanas
         const positions = [];
         
         windows.forEach(win => {
@@ -21,19 +191,20 @@ document.addEventListener('DOMContentLoaded', () => {
             let attempts = 0;
             
             do {
-                x = Math.random() * (screenWidth - windowWidth - 40) + 20;
-                y = Math.random() * (screenHeight - windowHeight - 100) + 20;
+                // Solo posicionar en el lado derecho (después del área de iconos)
+                x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
+                y = Math.random() * (screenHeight - windowHeight - 150) + 30;
                 
                 // Verificar que no se superponga con ninguna ventana ya colocada
                 hasOverlap = positions.some(pos => {
-                    return !(x + windowWidth < pos.x || 
-                             x > pos.x + windowWidth ||
-                             y + windowHeight < pos.y || 
-                             y > pos.y + windowHeight);
+                    const dx = Math.abs(pos.x - x);
+                    const dy = Math.abs(pos.y - y);
+                    // Usar distancia para asegurar separación
+                    return dx < (windowWidth + minPadding) && dy < (windowHeight + minPadding);
                 });
                 
                 attempts++;
-            } while (hasOverlap && attempts < 200);
+            } while (hasOverlap && attempts < 300);
             
             positions.push({ x, y });
             win.style.left = Math.floor(x) + 'px';

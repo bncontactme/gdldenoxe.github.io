@@ -23,6 +23,52 @@ body {
     color: initial;
 }
 
+/* Iconos del escritorio */
+.desktop-icons {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    z-index: 1;
+}
+
+.desktop-icon {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    border: 2px solid transparent;
+    user-select: none;
+}
+
+.desktop-icon:hover {
+    background: rgba(0, 0, 128, 0.2);
+}
+
+.desktop-icon.selected {
+    background: rgba(0, 0, 128, 0.3);
+    border: 2px dotted #ffffff;
+}
+
+.icon-image {
+    font-size: 48px;
+    margin-bottom: 5px;
+    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+.icon-label {
+    color: #ffffff;
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    word-wrap: break-word;
+    width: 100%;
+}
+
 /* Ventana estilo Windows 95 */
 .win95-window {
     background: #c0c0c0;
@@ -180,6 +226,88 @@ body {
 
 .read-more-btn:hover {
     background: #d0d0d0;
+}
+
+/* Ventana de imagen random */
+.random-image-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.random-image-container img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+}
+
+/* Poemas estilo notepad */
+.poem-content {
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    padding: 15px;
+    min-height: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.poem-text {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #000000;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+/* Carpeta de archivos */
+.folder-content {
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    padding: 10px;
+    min-height: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.folder-item:hover {
+    background: #000080;
+    color: #ffffff;
+}
+
+.folder-item.selected {
+    background: #000080;
+    color: #ffffff;
+    border: 1px dotted #ffffff;
+}
+
+.folder-icon {
+    font-size: 16px;
+}
+
+.folder-name {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
 }
 
 /* Barra de tareas */
