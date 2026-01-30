@@ -7,6 +7,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let offsetX = 0;
     let offsetY = 0;
 
+    // Posicionar ventanas aleatoriamente al inicio
+    function randomizeWindowPositions() {
+        const windows = document.querySelectorAll('.win95-window:not(.hidden)');
+        const screenWidth = globalThis.innerWidth;
+        const screenHeight = globalThis.innerHeight;
+        const windowWidth = 420;
+        const windowHeight = 500;
+        const positions = [];
+        
+        windows.forEach(win => {
+            let x, y, hasOverlap;
+            let attempts = 0;
+            
+            do {
+                x = Math.random() * (screenWidth - windowWidth - 40) + 20;
+                y = Math.random() * (screenHeight - windowHeight - 100) + 20;
+                
+                // Verificar que no se superponga con ninguna ventana ya colocada
+                hasOverlap = positions.some(pos => {
+                    return !(x + windowWidth < pos.x || 
+                             x > pos.x + windowWidth ||
+                             y + windowHeight < pos.y || 
+                             y > pos.y + windowHeight);
+                });
+                
+                attempts++;
+            } while (hasOverlap && attempts < 200);
+            
+            positions.push({ x, y });
+            win.style.left = Math.floor(x) + 'px';
+            win.style.top = Math.floor(y) + 'px';
+        });
+    }
+
     // Hacer las ventanas arrastrables
     function makeDraggable(windowElement) {
         const titleBar = windowElement.querySelector('.title-bar');
@@ -166,4 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar taskbar
     updateTaskbar();
+    
+    // Posicionar ventanas aleatoriamente
+    randomizeWindowPositions();
 });
