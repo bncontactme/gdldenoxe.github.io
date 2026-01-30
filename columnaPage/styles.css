@@ -1,0 +1,168 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    background: #008080;
+    padding: 20px;
+}
+
+.desktop {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.articles-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+/* Ventana estilo Windows 95 */
+.win95-window {
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Barra de título */
+.title-bar {
+    background: linear-gradient(to right, #000080, #1084d0);
+    color: white;
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.title-bar-text {
+    flex-grow: 1;
+    padding-left: 3px;
+}
+
+.title-bar-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.title-bar-controls button {
+    width: 18px;
+    height: 18px;
+    background: #c0c0c0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.title-bar-controls button:active {
+    border-top: 1px solid #000000;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+    padding-top: 2px;
+}
+
+.close-btn {
+    color: #000;
+}
+
+/* Cuerpo de la ventana */
+.window-body {
+    padding: 10px;
+    background: #c0c0c0;
+}
+
+.article-image {
+    width: 100%;
+    height: 250px;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.article-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.article-description {
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    padding: 10px;
+}
+
+.article-description h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #000080;
+}
+
+.article-description p {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    color: #000000;
+}
+
+/* Botón estilo Windows 95 */
+.read-more-btn {
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    padding: 5px 15px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 80px;
+}
+
+.read-more-btn:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    padding-top: 7px;
+    padding-left: 17px;
+}
+
+.read-more-btn:hover {
+    background: #d0d0d0;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .articles-container {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+    
+    body {
+        padding: 10px;
+    }
+}
