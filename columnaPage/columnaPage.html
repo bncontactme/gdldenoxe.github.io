@@ -11,12 +11,12 @@
         
         <!-- Iconos del escritorio -->
         <div class="desktop-icons">
-            <div class="desktop-icon" data-link="../archivoPage/archivoPage.html">
+            <div class="desktop-icon" data-folder="galeria">
                 <div class="icon-image">🖼️</div>
                 <div class="icon-label">Galería</div>
             </div>
             
-            <div class="desktop-icon" data-link="../tiendaPage/tiendaPage.html">
+            <div class="desktop-icon" data-folder="tienda">
                 <div class="icon-image">🛒</div>
                 <div class="icon-label">Tienda</div>
             </div>
@@ -250,6 +250,38 @@
                         <span class="folder-icon">📄</span>
                         <span class="folder-name">Después de las 12.txt</span>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de Galería -->
+        <div class="win95-window hidden" data-window-id="galeria" style="left: 200px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">🖼️ Galería</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe src="../archivoPage/archivoPage.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de Tienda -->
+        <div class="win95-window hidden" data-window-id="tienda" style="left: 250px; top: 120px;">
+            <div class="title-bar">
+                <div class="title-bar-text">🛒 Tienda</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe src="../tiendaPage/tiendaPage.html" frameborder="0"></iframe>
                 </div>
             </div>
         </div>

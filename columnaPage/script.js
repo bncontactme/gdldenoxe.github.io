@@ -36,6 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     bringToFront(folderWindow);
                     updateTaskbar();
                 }
+            } else if (folder === 'galeria') {
+                // Abrir ventana de galería
+                const galeriaWindow = document.querySelector('[data-window-id="galeria"]');
+                if (galeriaWindow) {
+                    galeriaWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(galeriaWindow);
+                    updateTaskbar();
+                }
+            } else if (folder === 'tienda') {
+                // Abrir ventana de tienda
+                const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
+                if (tiendaWindow) {
+                    tiendaWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(tiendaWindow);
+                    updateTaskbar();
+                }
             }
         });
     });

@@ -310,6 +310,30 @@ body {
     font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
 }
 
+/* Iframe para Galería y Tienda */
+.iframe-container {
+    width: 100%;
+    height: 500px;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    overflow: hidden;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Ventanas de Galería y Tienda más grandes */
+[data-window-id="galeria"],
+[data-window-id="tienda"] {
+    width: 600px;
+}
+
 /* Barra de tareas */
 .taskbar {
     position: fixed;
