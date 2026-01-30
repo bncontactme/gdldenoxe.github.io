@@ -41,7 +41,7 @@ body {
     display: none;
 }
 
-.win95-window.minimized .window-body {
+.win95-window.minimized {
     display: none;
 }
 

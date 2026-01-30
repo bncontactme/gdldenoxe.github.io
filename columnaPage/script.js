@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const window = btn.closest('.win95-window');
-            window.classList.toggle('minimized');
+            window.classList.add('minimized');
             updateTaskbar();
         });
     });
