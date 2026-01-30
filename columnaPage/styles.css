@@ -91,6 +91,18 @@ body {
     display: none;
 }
 
+.win95-window.maximized {
+    width: 100% !important;
+    height: calc(100vh - 40px) !important;
+    left: 0 !important;
+    top: 0 !important;
+}
+
+.win95-window.maximized .window-body {
+    height: calc(100% - 30px);
+    overflow: auto;
+}
+
 .win95-window.active {
     z-index: 100;
 }

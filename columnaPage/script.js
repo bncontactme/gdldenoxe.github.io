@@ -300,6 +300,34 @@ de los que viven el rollo loco.`
         });
     });
 
+    // Funcionalidad del botón maximizar
+    document.querySelectorAll('.maximize-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const window = btn.closest('.win95-window');
+            window.classList.toggle('maximized');
+            
+            if (window.classList.contains('maximized')) {
+                // Guardar posición y tamaño original
+                window.dataset.originalLeft = window.style.left;
+                window.dataset.originalTop = window.style.top;
+                window.dataset.originalWidth = window.style.width || '';
+                
+                // Maximizar
+                window.style.left = '0';
+                window.style.top = '0';
+                window.style.width = '100%';
+                window.style.height = 'calc(100vh - 40px)';
+            } else {
+                // Restaurar posición y tamaño original
+                window.style.left = window.dataset.originalLeft;
+                window.style.top = window.dataset.originalTop;
+                window.style.width = window.dataset.originalWidth;
+                window.style.height = '';
+            }
+        });
+    });
+
     // Funcionalidad del botón "Leer más"
     document.querySelectorAll('.read-more-btn').forEach(btn => {
         btn.addEventListener('click', () => {
