@@ -1,5 +1,4 @@
-// Live Collage Gallery using Laptop Camera
-const video = document.getElementById('collage-video');
+// Live Collage Gallery - Archive Images Only
 const collageContainer = document.getElementById('live-collage-container');
 
 // Track last placed image position
@@ -15,8 +14,6 @@ const maxRecentGifHistory = 3;
 
 // Performance reset: Track intervals and timeouts for cleanup
 let archiveImageTimeout = null;
-let cameraInterval = null;
-let cameraStream = null;
 let resetTimer = null;
 const RESET_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -216,32 +213,6 @@ function loadArchiveImages() {
   discoverImages();
 }
 
-// 2. Camera logic: take image every 8 seconds and add to collage
-// COMENTADO - Funcionalidad de webcam deshabilitada
-/*
-function startCameraCollage() {
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      cameraStream = stream;
-      video.srcObject = stream;
-      cameraInterval = setInterval(() => {
-        if (video.videoWidth && video.videoHeight) {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          placeImageRandomly(canvas.toDataURL('image/jpeg'));
-        }
-      }, 5600); // every 5.6 seconds (30% faster)
-    })
-    .catch(err => {
-      // Silently handle camera access denial - archive images will still display
-      console.log('Camera access denied or not available');
-    });
-}
-*/
-
 // Reset function to clear everything and restart (performance optimization)
 function resetGallery() {
   console.log('Resetting gallery after 5 minutes for performance...');
@@ -251,22 +222,9 @@ function resetGallery() {
     clearTimeout(archiveImageTimeout);
     archiveImageTimeout = null;
   }
-  if (cameraInterval) {
-    clearInterval(cameraInterval);
-    cameraInterval = null;
-  }
   if (resetTimer) {
     clearTimeout(resetTimer);
     resetTimer = null;
-  }
-  
-  // Stop camera stream
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
-    if (video.srcObject) {
-      video.srcObject = null;
-    }
   }
   
   // Remove all images from DOM
@@ -286,7 +244,6 @@ function resetGallery() {
   // Restart gallery
   console.log('Restarting gallery...');
   loadArchiveImages();
-  // startCameraCollage(); // DESHABILITADO - Webcam comentada
   
   // Schedule next reset
   resetTimer = setTimeout(resetGallery, RESET_INTERVAL);
@@ -297,8 +254,6 @@ function initializeGallery() {
   const collageContainer = document.getElementById('live-collage-container');
   collageContainer.style.display = 'block';
   loadArchiveImages();
-  // Request webcam permissions only after popup is dismissed
-  // startCameraCollage(); // DESHABILITADO - Webcam comentada
   
   // Schedule first reset after 5 minutes
   resetTimer = setTimeout(resetGallery, RESET_INTERVAL);
