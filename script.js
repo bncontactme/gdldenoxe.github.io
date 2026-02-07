@@ -460,19 +460,47 @@ de los que viven el rollo loco.`
     // Elementos del menú
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', () => {
-            const action = item.dataset.action;
-            const windowId = item.dataset.window;
+            const shortcut = item.dataset.shortcut;
             
-            if (action === 'restore-all') {
-                document.querySelectorAll('.win95-window').forEach(w => {
-                    w.classList.remove('hidden', 'minimized');
-                });
-            } else if (windowId) {
-                const window = document.querySelector(`[data-window-id="${windowId}"]`);
-                if (window) {
-                    window.classList.remove('hidden', 'minimized');
-                    bringToFront(window);
+            if (shortcut === 'galeria') {
+                const galeriaWindow = document.querySelector('[data-window-id="galeria"]');
+                if (galeriaWindow) {
+                    galeriaWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(galeriaWindow);
                 }
+            } else if (shortcut === 'tienda') {
+                const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
+                if (tiendaWindow) {
+                    // Posicionar aleatoriamente
+                    const screenWidth = globalThis.innerWidth;
+                    const screenHeight = globalThis.innerHeight;
+                    const windowWidth = 750;
+                    const windowHeight = 650;
+                    const taskbarHeight = 40;
+                    const iconAreaWidth = 150;
+                    
+                    const x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
+                    const y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
+                    
+                    tiendaWindow.style.left = Math.floor(Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20))) + 'px';
+                    tiendaWindow.style.top = Math.floor(Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20))) + 'px';
+                    
+                    tiendaWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(tiendaWindow);
+                    setTimeout(() => playTiendaAudio(), 500);
+                }
+            } else if (shortcut === 'articulos') {
+                const folderWindow = document.querySelector('[data-window-id="folder-articulos"]');
+                if (folderWindow) {
+                    folderWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(folderWindow);
+                }
+            } else if (shortcut === 'links') {
+                window.location.href = 'https://linktr.ee/guadalajaradenoche';
+            } else if (shortcut === 'radio') {
+                musicPlayer.classList.remove('hidden');
+                const radioBtn = document.getElementById('taskbar-radio');
+                if (radioBtn) radioBtn.remove();
             }
             
             startMenu.classList.remove('active');
@@ -645,6 +673,19 @@ de los que viven el rollo loco.`
     // Minimizar reproductor
     playerMinimizeBtn.addEventListener('click', () => {
         musicPlayer.classList.add('hidden');
+        // Agregar botón a taskbar
+        const taskbarItems = document.getElementById('taskbar-items');
+        if (!document.getElementById('taskbar-radio')) {
+            const radioBtn = document.createElement('button');
+            radioBtn.id = 'taskbar-radio';
+            radioBtn.className = 'taskbar-item';
+            radioBtn.textContent = '🎵 LaMovida95';
+            radioBtn.addEventListener('click', () => {
+                musicPlayer.classList.remove('hidden');
+                radioBtn.remove();
+            });
+            taskbarItems.appendChild(radioBtn);
+        }
     });
     
     // Cerrar reproductor (pausa audio también)
@@ -653,6 +694,9 @@ de los que viven el rollo loco.`
         isPlaying = false;
         playBtn.textContent = '▶';
         musicPlayer.classList.add('hidden');
+        // Remover botón de taskbar si existe
+        const radioBtn = document.getElementById('taskbar-radio');
+        if (radioBtn) radioBtn.remove();
     });
     
     // Hacer el reproductor draggable
