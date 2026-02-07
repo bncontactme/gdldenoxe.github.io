@@ -507,34 +507,45 @@ de los que viven el rollo loco.`
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const volumeSlider = document.getElementById('volumeSlider');
     const progressFill = document.getElementById('progressFill');
     const trackInfo = document.getElementById('trackInfo');
     const timeDisplay = document.getElementById('timeDisplay');
     const playerMinimizeBtn = musicPlayer.querySelector('.player-minimize-btn');
     const playerCloseBtn = musicPlayer.querySelector('.player-close-btn');
     
-    // Lista de canciones (puede expandirse más adelante)
+    // Playlist: Radio en vivo + tracks locales
     const playlist = [
         {
+            title: "RADIO GDN 🔴 LIVE",
+            url: "https://soil-copy-effort-cio.trycloudflare.com/stream.mp3",
+            isLive: true
+        },
+        {
             title: "GDL Nights Vol.1",
-            url: "../tiendaPage/audio/background-music.mp3" // Reutilizar el audio de la tienda
+            url: "../tiendaPage/audio/background-music.mp3",
+            isLive: false
         }
     ];
     
     let currentTrackIndex = 0;
     let isPlaying = false;
     let audioPlayer = new Audio();
+    audioPlayer.volume = 0.5;
     
-    // Cargar track inicial
+    // Cargar track
     function loadTrack(index) {
         if (index >= 0 && index < playlist.length) {
             currentTrackIndex = index;
             const track = playlist[currentTrackIndex];
             audioPlayer.src = track.url;
-            trackInfo.textContent = `♪ ${track.title}`;
-            audioPlayer.volume = volumeSlider.value / 100;
-            updateTimeDisplay();
+            
+            if (track.isLive) {
+                trackInfo.textContent = `🔴 ${track.title}`;
+                timeDisplay.textContent = 'STREAMING...';
+            } else {
+                trackInfo.textContent = `♪ ${track.title}`;
+                updateTimeDisplay();
+            }
         }
     }
     
@@ -544,10 +555,16 @@ de los que viven el rollo loco.`
             audioPlayer.pause();
             playBtn.textContent = '▶';
             isPlaying = false;
+            if (playlist[currentTrackIndex].isLive) {
+                trackInfo.textContent = `⏸ ${playlist[currentTrackIndex].title}`;
+            }
         } else {
             audioPlayer.play();
             playBtn.textContent = '⏸';
             isPlaying = true;
+            if (playlist[currentTrackIndex].isLive) {
+                trackInfo.textContent = `🔴 ${playlist[currentTrackIndex].title}`;
+            }
         }
     });
     
@@ -564,8 +581,9 @@ de los que viven el rollo loco.`
     // Anterior
     prevBtn.addEventListener('click', () => {
         currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        const wasPlaying = isPlaying;
         loadTrack(currentTrackIndex);
-        if (isPlaying) {
+        if (wasPlaying) {
             audioPlayer.play();
         }
     });
@@ -573,37 +591,37 @@ de los que viven el rollo loco.`
     // Siguiente
     nextBtn.addEventListener('click', () => {
         currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        const wasPlaying = isPlaying;
         loadTrack(currentTrackIndex);
-        if (isPlaying) {
+        if (wasPlaying) {
             audioPlayer.play();
         }
     });
     
-    // Control de volumen
-    volumeSlider.addEventListener('input', (e) => {
-        audioPlayer.volume = e.target.value / 100;
-    });
-    
-    // Actualizar barra de progreso
+    // Actualizar barra de progreso (solo para tracks no-live)
     audioPlayer.addEventListener('timeupdate', () => {
-        if (audioPlayer.duration) {
+        if (!playlist[currentTrackIndex].isLive && audioPlayer.duration) {
             const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
             progressFill.style.width = progress + '%';
             updateTimeDisplay();
         }
     });
     
-    // Click en barra de progreso para saltar
+    // Click en barra de progreso para saltar (solo tracks no-live)
     const progressBar = document.querySelector('.progress-bar');
     progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        audioPlayer.currentTime = percent * audioPlayer.duration;
+        if (!playlist[currentTrackIndex].isLive && audioPlayer.duration) {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        }
     });
     
-    // Cuando termina la canción, pasar a la siguiente
+    // Cuando termina una canción no-live, pasar a la siguiente
     audioPlayer.addEventListener('ended', () => {
-        nextBtn.click();
+        if (!playlist[currentTrackIndex].isLive) {
+            nextBtn.click();
+        }
     });
     
     // Formatear tiempo
@@ -615,9 +633,13 @@ de los que viven el rollo loco.`
     }
     
     function updateTimeDisplay() {
-        const current = formatTime(audioPlayer.currentTime);
-        const total = formatTime(audioPlayer.duration);
-        timeDisplay.textContent = `${current} / ${total}`;
+        if (!playlist[currentTrackIndex].isLive) {
+            const current = formatTime(audioPlayer.currentTime);
+            const total = formatTime(audioPlayer.duration);
+            timeDisplay.textContent = `${current} / ${total}`;
+        } else {
+            timeDisplay.textContent = 'STREAMING...';
+        }
     }
     
     // Minimizar reproductor
