@@ -159,11 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funcionalidad de imagen random
     const imagePaths = [
-        "../indexPage/indexImages/2 Intro.jpeg",
-        "../indexPage/indexImages/3 Intro.jpeg",
-        "../indexPage/indexImages/4 Intro.jpeg",
-        "../indexPage/indexImages/6 Intro.jpeg",
-        "../indexPage/indexImages/7 Intro.JPG"
+        "indexPage/indexImages/2 Intro.jpeg",
+        "indexPage/indexImages/3 Intro.jpeg",
+        "indexPage/indexImages/4 Intro.jpeg",
+        "indexPage/indexImages/6 Intro.jpeg",
+        "indexPage/indexImages/7 Intro.JPG"
     ];
 
     function loadRandomImage() {
@@ -522,7 +522,7 @@ de los que viven el rollo loco.`
         },
         {
             title: "GDL Nights Vol.1",
-            url: "../tiendaPage/audio/background-music.mp3",
+            url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3",
             isLive: false
         }
     ];
