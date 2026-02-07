@@ -217,6 +217,8 @@ function loadArchiveImages() {
 }
 
 // 2. Camera logic: take image every 8 seconds and add to collage
+// COMENTADO - Funcionalidad de webcam deshabilitada
+/*
 function startCameraCollage() {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
@@ -238,6 +240,7 @@ function startCameraCollage() {
       console.log('Camera access denied or not available');
     });
 }
+*/
 
 // Reset function to clear everything and restart (performance optimization)
 function resetGallery() {
@@ -283,7 +286,7 @@ function resetGallery() {
   // Restart gallery
   console.log('Restarting gallery...');
   loadArchiveImages();
-  startCameraCollage();
+  // startCameraCollage(); // DESHABILITADO - Webcam comentada
   
   // Schedule next reset
   resetTimer = setTimeout(resetGallery, RESET_INTERVAL);
@@ -295,7 +298,7 @@ function initializeGallery() {
   collageContainer.style.display = 'block';
   loadArchiveImages();
   // Request webcam permissions only after popup is dismissed
-  startCameraCollage();
+  // startCameraCollage(); // DESHABILITADO - Webcam comentada
   
   // Schedule first reset after 5 minutes
   resetTimer = setTimeout(resetGallery, RESET_INTERVAL);

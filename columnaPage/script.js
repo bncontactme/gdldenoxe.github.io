@@ -7,6 +7,49 @@ document.addEventListener('DOMContentLoaded', () => {
     let offsetX = 0;
     let offsetY = 0;
 
+    // Funciones para controlar audio de tienda
+    function pauseTiendaAudio() {
+        try {
+            const tiendaIframe = document.getElementById('tienda-iframe');
+            if (tiendaIframe && tiendaIframe.contentWindow) {
+                const audio = tiendaIframe.contentWindow.document.getElementById('background-music');
+                if (audio) {
+                    audio.pause();
+                }
+            }
+        } catch (e) {
+            // Ignorar errores de cross-origin
+        }
+    }
+
+    function playTiendaAudio() {
+        try {
+            const tiendaIframe = document.getElementById('tienda-iframe');
+            if (tiendaIframe && tiendaIframe.contentWindow) {
+                const audio = tiendaIframe.contentWindow.document.getElementById('background-music');
+                if (audio) {
+                    audio.muted = false; // Quitar mute
+                    audio.volume = 0.15; // 15% del volumen
+                    // Iniciar en un punto aleatorio (entre 0 y la duración del audio)
+                    if (audio.duration && !isNaN(audio.duration)) {
+                        audio.currentTime = Math.random() * audio.duration;
+                    }
+                    audio.play();
+                }
+            }
+        } catch (e) {
+            // Ignorar errores de cross-origin
+        }
+    }
+
+    // Pausar audio de tienda al cargar
+    setTimeout(() => {
+        const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
+        if (tiendaWindow && tiendaWindow.classList.contains('hidden')) {
+            pauseTiendaAudio();
+        }
+    }, 1000);
+
     // Funcionalidad de iconos del escritorio
     const desktopIcons = document.querySelectorAll('.desktop-icon');
     let selectedIcon = null;
@@ -48,9 +91,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Abrir ventana de tienda
                 const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
                 if (tiendaWindow) {
+                    // Posicionar aleatoriamente antes de mostrar
+                    const screenWidth = globalThis.innerWidth;
+                    const screenHeight = globalThis.innerHeight;
+                    const windowWidth = 750; // Ancho de la tienda
+                    const windowHeight = 650; // Alto de la tienda
+                    const taskbarHeight = 40;
+                    const iconAreaWidth = 150;
+                    
+                    const x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
+                    const y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
+                    
+                    // Asegurar que no toque los bordes ni la taskbar
+                    tiendaWindow.style.left = Math.floor(Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20))) + 'px';
+                    tiendaWindow.style.top = Math.floor(Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20))) + 'px';
+                    
                     tiendaWindow.classList.remove('hidden', 'minimized');
                     bringToFront(tiendaWindow);
                     updateTaskbar();
+                    // Reproducir audio cuando se abre
+                    setTimeout(() => playTiendaAudio(), 500);
                 }
             }
         });
@@ -200,6 +260,7 @@ de los que viven el rollo loco.`
         const windowHeight = 500;
         const iconAreaWidth = 150; // Espacio reservado para iconos a la izquierda
         const minPadding = 50; // Espacio mínimo entre ventanas
+        const taskbarHeight = 40; // Altura de la barra de tareas
         const positions = [];
         
         windows.forEach(win => {
@@ -209,7 +270,11 @@ de los que viven el rollo loco.`
             do {
                 // Solo posicionar en el lado derecho (después del área de iconos)
                 x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
-                y = Math.random() * (screenHeight - windowHeight - 150) + 30;
+                y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
+                
+                // Asegurar que no toque los bordes ni la taskbar
+                x = Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20));
+                y = Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20));
                 
                 // Verificar que no se superponga con ninguna ventana ya colocada
                 hasOverlap = positions.some(pos => {
@@ -286,6 +351,12 @@ de los que viven el rollo loco.`
             e.stopPropagation();
             const window = btn.closest('.win95-window');
             window.classList.add('hidden');
+            
+            // Pausar audio de tienda si se cierra
+            if (window.dataset.windowId === 'tienda') {
+                pauseTiendaAudio();
+            }
+            
             updateTaskbar();
         });
     });
@@ -296,6 +367,12 @@ de los que viven el rollo loco.`
             e.stopPropagation();
             const window = btn.closest('.win95-window');
             window.classList.add('minimized');
+            
+            // Pausar audio de tienda si se minimiza
+            if (window.dataset.windowId === 'tienda') {
+                pauseTiendaAudio();
+            }
+            
             updateTaskbar();
         });
     });
@@ -351,6 +428,10 @@ de los que viven el rollo loco.`
             item.addEventListener('click', () => {
                 if (window.classList.contains('minimized')) {
                     window.classList.remove('minimized');
+                    // Reproducir audio si es tienda
+                    if (window.dataset.windowId === 'tienda') {
+                        setTimeout(() => playTiendaAudio(), 500);
+                    }
                 }
                 bringToFront(window);
             });
@@ -418,4 +499,178 @@ de los que viven el rollo loco.`
     
     // Posicionar ventanas aleatoriamente
     randomizeWindowPositions();
+
+    // ==================== REPRODUCTOR DE MÚSICA ====================
+    
+    const musicPlayer = document.getElementById('musicPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const progressFill = document.getElementById('progressFill');
+    const trackInfo = document.getElementById('trackInfo');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const playerMinimizeBtn = musicPlayer.querySelector('.player-minimize-btn');
+    const playerCloseBtn = musicPlayer.querySelector('.player-close-btn');
+    
+    // Lista de canciones (puede expandirse más adelante)
+    const playlist = [
+        {
+            title: "GDL Nights Vol.1",
+            url: "../tiendaPage/audio/background-music.mp3" // Reutilizar el audio de la tienda
+        }
+    ];
+    
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+    let audioPlayer = new Audio();
+    
+    // Cargar track inicial
+    function loadTrack(index) {
+        if (index >= 0 && index < playlist.length) {
+            currentTrackIndex = index;
+            const track = playlist[currentTrackIndex];
+            audioPlayer.src = track.url;
+            trackInfo.textContent = `♪ ${track.title}`;
+            audioPlayer.volume = volumeSlider.value / 100;
+            updateTimeDisplay();
+        }
+    }
+    
+    // Play/Pause
+    playBtn.addEventListener('click', () => {
+        if (isPlaying) {
+            audioPlayer.pause();
+            playBtn.textContent = '▶';
+            isPlaying = false;
+        } else {
+            audioPlayer.play();
+            playBtn.textContent = '⏸';
+            isPlaying = true;
+        }
+    });
+    
+    // Stop
+    stopBtn.addEventListener('click', () => {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        playBtn.textContent = '▶';
+        isPlaying = false;
+        progressFill.style.width = '0%';
+        updateTimeDisplay();
+    });
+    
+    // Anterior
+    prevBtn.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        loadTrack(currentTrackIndex);
+        if (isPlaying) {
+            audioPlayer.play();
+        }
+    });
+    
+    // Siguiente
+    nextBtn.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        loadTrack(currentTrackIndex);
+        if (isPlaying) {
+            audioPlayer.play();
+        }
+    });
+    
+    // Control de volumen
+    volumeSlider.addEventListener('input', (e) => {
+        audioPlayer.volume = e.target.value / 100;
+    });
+    
+    // Actualizar barra de progreso
+    audioPlayer.addEventListener('timeupdate', () => {
+        if (audioPlayer.duration) {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressFill.style.width = progress + '%';
+            updateTimeDisplay();
+        }
+    });
+    
+    // Click en barra de progreso para saltar
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audioPlayer.currentTime = percent * audioPlayer.duration;
+    });
+    
+    // Cuando termina la canción, pasar a la siguiente
+    audioPlayer.addEventListener('ended', () => {
+        nextBtn.click();
+    });
+    
+    // Formatear tiempo
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    function updateTimeDisplay() {
+        const current = formatTime(audioPlayer.currentTime);
+        const total = formatTime(audioPlayer.duration);
+        timeDisplay.textContent = `${current} / ${total}`;
+    }
+    
+    // Minimizar reproductor
+    playerMinimizeBtn.addEventListener('click', () => {
+        musicPlayer.classList.add('hidden');
+    });
+    
+    // Cerrar reproductor (pausa audio también)
+    playerCloseBtn.addEventListener('click', () => {
+        audioPlayer.pause();
+        isPlaying = false;
+        playBtn.textContent = '▶';
+        musicPlayer.classList.add('hidden');
+    });
+    
+    // Hacer el reproductor draggable
+    let isDraggingPlayer = false;
+    let playerOffsetX = 0;
+    let playerOffsetY = 0;
+    
+    const playerTitleBar = musicPlayer.querySelector('.player-title-bar');
+    
+    playerTitleBar.addEventListener('mousedown', (e) => {
+        isDraggingPlayer = true;
+        playerOffsetX = e.clientX - musicPlayer.offsetLeft;
+        playerOffsetY = e.clientY - musicPlayer.offsetTop;
+        musicPlayer.style.cursor = 'grabbing';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDraggingPlayer) {
+            const x = e.clientX - playerOffsetX;
+            const y = e.clientY - playerOffsetY;
+            
+            // Mantener dentro de los límites
+            const maxX = window.innerWidth - musicPlayer.offsetWidth;
+            const maxY = window.innerHeight - musicPlayer.offsetHeight;
+            
+            musicPlayer.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            musicPlayer.style.bottom = 'auto';
+            musicPlayer.style.right = 'auto';
+            musicPlayer.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDraggingPlayer = false;
+        musicPlayer.style.cursor = 'default';
+    });
+    
+    // Cargar primera canción
+    loadTrack(0);
+    
+    // DEBUG: Dejar siempre visible
+    musicPlayer.classList.remove('hidden');
 });

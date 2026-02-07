@@ -294,7 +294,33 @@
             </div>
             <div class="window-body">
                 <div class="iframe-container">
-                    <iframe src="../tiendaPage/index.html" frameborder="0"></iframe>
+                    <iframe id="tienda-iframe" src="../tiendaPage/index.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reproductor de música estilo Windows 95 -->
+        <div class="music-player" id="musicPlayer">
+            <div class="player-title-bar">
+                <div class="player-title-text">🎵 Media Player</div>
+                <div class="player-controls-top">
+                    <button class="player-minimize-btn">_</button>
+                    <button class="player-close-btn">✕</button>
+                </div>
+            </div>
+            <div class="player-body">
+                <div class="player-display">
+                    <div class="track-info" id="trackInfo">♪ No Track Loaded</div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                </div>
+                <div class="player-controls">
+                    <button class="control-btn" id="prevBtn" title="Anterior">⏮</button>
+                    <button class="control-btn play-btn" id="playBtn" title="Play/Pause">▶</button>
+                    <button class="control-btn" id="nextBtn" title="Siguiente">⏭</button>
+                    <button class="control-btn" id="stopBtn" title="Detener">⏹</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
                 </div>
             </div>
         </div>
