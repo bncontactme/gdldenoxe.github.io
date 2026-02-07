@@ -129,10 +129,10 @@
 }
 #live-collage-container img {
     transition: none;
-    cursor: default;
+    cursor: pointer;
     border: none;
     box-shadow: none;
-    pointer-events: none;
+    pointer-events: auto;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -148,4 +148,117 @@ body {
     padding: 0;
     background: #fff;
     overflow: hidden;
+}
+
+/* Windows 95 Image Details Styles */
+#win95-details-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.2);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 90000;
+    font-family: "MS Sans Serif", Tahoma, sans-serif;
+}
+
+#win95-details-window {
+    width: 520px;
+    background: #C0C0C0;
+    border: 2px solid #808080;
+    box-shadow: 2px 2px 0 #000000;
+}
+
+#win95-details-titlebar {
+    background: #000080;
+    color: #FFFFFF;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#win95-details-close {
+    width: 18px;
+    height: 18px;
+    background: #C0C0C0;
+    border: 2px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
+    padding: 0;
+    line-height: 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#win95-details-close:active {
+    border-color: #000000 #FFFFFF #FFFFFF #000000;
+}
+
+#win95-details-body {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #C0C0C0;
+}
+
+#win95-details-preview {
+    width: 170px;
+    height: 170px;
+    background: #FFFFFF;
+    border: 2px solid;
+    border-color: #808080 #FFFFFF #FFFFFF #808080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+}
+
+#win95-details-image {
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: auto;
+}
+
+#win95-details-info {
+    flex: 1;
+    background: #C0C0C0;
+    font-size: 12px;
+    color: #000000;
+}
+
+.win95-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.win95-label {
+    font-weight: bold;
+}
+
+#win95-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 12px 12px;
+    background: #C0C0C0;
+}
+
+#win95-details-ok {
+    min-width: 80px;
+    height: 24px;
+    background: #C0C0C0;
+    border: 2px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+#win95-details-ok:active {
+    border-color: #000000 #FFFFFF #FFFFFF #000000;
 }

@@ -29,6 +29,7 @@ function placeImageRandomly(imgSrc) {
   img.style.position = 'absolute';
   img.style.width = size + 'px';
   img.style.height = 'auto';
+  img.dataset.src = imgSrc;
   
   // Handle image load errors gracefully (treat all formats equally)
   img.onerror = function() {
@@ -39,6 +40,10 @@ function placeImageRandomly(imgSrc) {
   };
   
   img.src = imgSrc;
+  img.addEventListener('load', () => {
+    img.dataset.width = img.naturalWidth;
+    img.dataset.height = img.naturalHeight;
+  });
   
   // Find a position that's at least 150px away from the last image
   let top, left;
@@ -77,14 +82,81 @@ function placeImageRandomly(imgSrc) {
   img.style.boxShadow = 'none';
   img.style.border = 'none';
   img.draggable = false;
-  img.style.pointerEvents = 'none';
+  img.style.pointerEvents = 'auto';
   // Always increment z-index so new images appear on top
   currentZIndex++;
   img.style.zIndex = currentZIndex;
+  img.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openImageDetails(img);
+  });
   collageContainer.appendChild(img);
   
   // Update last image position
   lastImagePosition = { top, left, size };
+}
+
+// Windows 95 details frame handlers
+const detailsOverlay = document.getElementById('win95-details-overlay');
+const detailsImage = document.getElementById('win95-details-image');
+const detailsFilename = document.getElementById('win95-details-filename');
+const detailsType = document.getElementById('win95-details-type');
+const detailsDimensions = document.getElementById('win95-details-dimensions');
+const detailsPath = document.getElementById('win95-details-path');
+const detailsClose = document.getElementById('win95-details-close');
+const detailsOk = document.getElementById('win95-details-ok');
+
+function getFileNameFromPath(path) {
+  const parts = path.split('/');
+  return parts[parts.length - 1] || path;
+}
+
+function getFileExtension(fileName) {
+  const segments = fileName.split('.');
+  return segments.length > 1 ? segments.pop().toUpperCase() : 'Archivo';
+}
+
+function openImageDetails(imgElement) {
+  if (!detailsOverlay) {
+    return;
+  }
+
+  const imgSrc = imgElement.dataset.src || imgElement.src;
+  const fileName = getFileNameFromPath(imgSrc);
+  const typeLabel = getFileExtension(fileName);
+  const width = imgElement.dataset.width || imgElement.naturalWidth || '—';
+  const height = imgElement.dataset.height || imgElement.naturalHeight || '—';
+
+  detailsImage.src = imgSrc;
+  detailsFilename.textContent = fileName;
+  detailsType.textContent = typeLabel;
+  detailsDimensions.textContent = `${width} × ${height}`;
+  detailsPath.textContent = imgSrc;
+
+  detailsOverlay.style.display = 'flex';
+  detailsOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeImageDetails() {
+  if (!detailsOverlay) {
+    return;
+  }
+  detailsOverlay.style.display = 'none';
+  detailsOverlay.setAttribute('aria-hidden', 'true');
+}
+
+if (detailsClose) {
+  detailsClose.addEventListener('click', closeImageDetails);
+}
+if (detailsOk) {
+  detailsOk.addEventListener('click', closeImageDetails);
+}
+if (detailsOverlay) {
+  detailsOverlay.addEventListener('click', (event) => {
+    if (event.target === detailsOverlay) {
+      closeImageDetails();
+    }
+  });
 }
 
 // 1. Dynamically discover and show archive images

@@ -29,4 +29,40 @@
 <!-- Live Collage Gallery -->
 <div id="live-collage-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;overflow:hidden;display:none;">
 </div>
+
+<!-- Windows 95 Image Details Frame -->
+<div id="win95-details-overlay" aria-hidden="true">
+  <div id="win95-details-window" role="dialog" aria-modal="true">
+    <div id="win95-details-titlebar">
+      <span id="win95-details-title">Propiedades de imagen</span>
+      <button id="win95-details-close" aria-label="Cerrar">×</button>
+    </div>
+    <div id="win95-details-body">
+      <div id="win95-details-preview">
+        <img id="win95-details-image" alt="Vista previa" />
+      </div>
+      <div id="win95-details-info">
+        <div class="win95-row">
+          <span class="win95-label">Archivo:</span>
+          <span id="win95-details-filename"></span>
+        </div>
+        <div class="win95-row">
+          <span class="win95-label">Tipo:</span>
+          <span id="win95-details-type"></span>
+        </div>
+        <div class="win95-row">
+          <span class="win95-label">Dimensiones:</span>
+          <span id="win95-details-dimensions"></span>
+        </div>
+        <div class="win95-row">
+          <span class="win95-label">Ruta:</span>
+          <span id="win95-details-path"></span>
+        </div>
+      </div>
+    </div>
+    <div id="win95-details-actions">
+      <button id="win95-details-ok">Aceptar</button>
+    </div>
+  </div>
+</div>
 <script src="liveCollage.js"></script>
