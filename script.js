@@ -13,8 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const tiendaIframe = document.getElementById('tienda-iframe');
             if (tiendaIframe && tiendaIframe.contentWindow) {
                 const audio = tiendaIframe.contentWindow.document.getElementById('background-music');
+                const adAudio = tiendaIframe.contentWindow.document.getElementById('ad-audio');
                 if (audio) {
                     audio.pause();
+                }
+                if (adAudio) {
+                    adAudio.pause();
                 }
             }
         } catch (e) {
@@ -406,9 +410,10 @@ de los que viven el rollo loco.`
     });
 
     // Funcionalidad del botón "Leer más"
-    document.querySelectorAll('.read-more-btn').forEach(btn => {
+    document.querySelectorAll('.read-more-btn').forEach((btn, index) => {
         btn.addEventListener('click', () => {
-            alert('Aquí se abrirá el artículo completo');
+            const articleNum = index + 1;
+            window.location.href = `articulosPage/articulo${articleNum}.html`;
         });
     });
 
