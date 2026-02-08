@@ -803,19 +803,64 @@ juntxs y brillando.`
     // Cargar primera canción
     loadTrack(0);
 
-    // Check if radio stream is available before showing player
+    // ===== RADIO: Check Icecast status and auto-show player (1:1 con funcionalidad original) =====
+    const streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';
+    const statusUrl = 'https://radio.guadalajaradenoxe.com/status-json.xsl';
     let radioAvailable = false;
     const radioMenuItem = $('[data-shortcut="radio"]');
+    
+    // Initially hide menu item until we confirm stream is live
     if (radioMenuItem) radioMenuItem.style.display = 'none';
 
-    fetch(playlist[0].url, { method: 'HEAD', mode: 'no-cors' })
-        .then(() => {
-            radioAvailable = true;
-            if (radioMenuItem) radioMenuItem.style.display = '';
-        })
-        .catch(() => {
-            radioAvailable = false;
-        });
+    function checkIcecastStatus() {
+        fetch(statusUrl)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var sources = (data && data.icestats && data.icestats.source) || [];
+                if (!Array.isArray(sources)) sources = [sources];
+                var live = sources.some(function(s) {
+                    return s.listenurl && s.listenurl.indexOf('/stream.mp3') !== -1;
+                });
+                console.log('[Radio] Icecast check:', live ? 'LIVE' : 'OFFLINE');
+                radioAvailable = live;
+                
+                if (live) {
+                    // Show menu item
+                    if (radioMenuItem) radioMenuItem.style.display = '';
+                    // Auto-show player when live (1:1 with old brutalist widget behavior)
+                    if (musicPlayer) {
+                        musicPlayer.classList.remove('hidden');
+                        musicPlayer.style.display = 'block';
+                    }
+                    // Ensure first track is the live stream
+                    if (playlist[0].isLive && audioPlayer.src !== streamUrl) {
+                        loadTrack(0);
+                    }
+                } else {
+                    // Hide menu item and player when offline
+                    if (radioMenuItem) radioMenuItem.style.display = 'none';
+                    if (musicPlayer) {
+                        musicPlayer.classList.add('hidden');
+                    }
+                    // Stop audio if playing
+                    if (isPlaying && playlist[currentTrackIndex].isLive) {
+                        audioPlayer.pause();
+                        isPlaying = false;
+                        if (playBtn) playBtn.textContent = '▶';
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.warn('[Radio] Icecast check failed:', err);
+                radioAvailable = false;
+                if (radioMenuItem) radioMenuItem.style.display = 'none';
+                if (musicPlayer) musicPlayer.classList.add('hidden');
+            });
+    }
+
+    // Initial check + poll every 60s (1:1 con original)
+    checkIcecastStatus();
+    setInterval(checkIcecastStatus, 60000);
 
     // ===== Panel de detalles de imagen (Galería) =====
     const detailsPanel = $('#win95-details-panel');
