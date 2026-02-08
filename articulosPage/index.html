@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#008080">
     <title>Artículos - GDLDENOXE</title>
+    <link rel="preconnect" href="https://win98icons.alexmeub.com" crossorigin>
     <style>
+        :root {
+            --win95-gray: #c0c0c0;
+            --win95-dark-gray: #808080;
+            --win95-light-gray: #dfdfdf;
+            --win95-blue: #000080;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
@@ -39,7 +47,7 @@
         }
 
         .folder-item:active {
-            background: #000080;
+            background: var(--win95-blue);
             color: #fff;
             border: 2px dotted #fff;
         }
@@ -57,10 +65,9 @@
             line-height: 1.3;
         }
 
-        /* Status bar */
         .status-bar {
-            background: #c0c0c0;
-            border-top: 2px solid #dfdfdf;
+            background: var(--win95-gray);
+            border-top: 2px solid var(--win95-light-gray);
             padding: 2px 6px;
             font-size: 11px;
             color: #000;
@@ -71,10 +78,10 @@
         }
 
         .status-bar span {
-            border-top: 1px solid #808080;
-            border-left: 1px solid #808080;
-            border-right: 1px solid #dfdfdf;
-            border-bottom: 1px solid #dfdfdf;
+            border-top: 1px solid var(--win95-dark-gray);
+            border-left: 1px solid var(--win95-dark-gray);
+            border-right: 1px solid var(--win95-light-gray);
+            border-bottom: 1px solid var(--win95-light-gray);
             padding: 1px 8px;
             display: inline-block;
         }
@@ -87,26 +94,25 @@
     </div>
 
     <script>
+        const grid = document.getElementById('folder-grid');
+        const status = document.getElementById('status-text');
+        
         fetch('articulos.json')
             .then(r => r.json())
             .then(articulos => {
-                const grid = document.getElementById('folder-grid');
+                const fragment = document.createDocumentFragment();
                 articulos.forEach(art => {
                     const item = document.createElement('a');
                     item.className = 'folder-item';
                     item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
                     item.target = '_top';
-                    item.innerHTML = `
-                        <img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="">
-                        <span class="folder-item-label">${art.titulo}.txt</span>
-                    `;
-                    grid.appendChild(item);
+                    item.innerHTML = `<img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
+                    fragment.appendChild(item);
                 });
-                document.getElementById('status-text').textContent = articulos.length + ' objeto(s)';
+                grid.appendChild(fragment);
+                status.textContent = articulos.length + ' objeto(s)';
             })
-            .catch(() => {
-                document.getElementById('status-text').textContent = 'Error al cargar';
-            });
+            .catch(() => status.textContent = 'Error al cargar');
     </script>
 </body>
 </html>

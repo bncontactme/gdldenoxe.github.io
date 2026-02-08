@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#008080">
     <title>Artículo - GDLDENOXE</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -24,69 +25,58 @@
     </div>
 
     <script>
-    function goBack() {
+    const goBack = () => {
         if (window.top !== window.self) {
             window.top.location.href = '../indexPage/frame.html?p=articulos';
             return false;
         }
         return true;
-    }
-    function goHome() {
+    };
+    const goHome = () => {
         if (window.top !== window.self) {
             window.top.location.href = '../index.html';
             return false;
         }
         return true;
-    }
-    (function () {
-        const id = new URLSearchParams(window.location.search).get('id');
+    };
+    (() => {
+        const id = new URLSearchParams(location.search).get('id');
         if (!id) return;
+
+        const title = document.getElementById('art-title');
+        const meta = document.getElementById('art-meta');
+        const hero = document.getElementById('art-hero');
+        const body = document.getElementById('art-body');
 
         fetch('articulos.json')
             .then(r => r.json())
             .then(articulos => {
                 const art = articulos.find(a => String(a.id) === id);
                 if (!art) {
-                    document.getElementById('art-title').textContent = 'Artículo no encontrado';
+                    title.textContent = 'Artículo no encontrado';
                     return;
                 }
 
                 document.title = art.titulo + ' - GDLDENOXE';
-                document.getElementById('art-title').textContent = art.titulo;
-                document.getElementById('art-meta').textContent = art.meta;
-
-                const hero = document.getElementById('art-hero');
+                title.textContent = art.titulo;
+                meta.textContent = art.meta;
                 hero.src = '../' + art.imagen;
                 hero.alt = art.titulo;
                 hero.style.display = '';
 
-                const body = document.getElementById('art-body');
+                const fragment = document.createDocumentFragment();
+                const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote' };
+                
                 art.contenido.forEach(block => {
-                    let el;
-                    switch (block.tipo) {
-                        case 'lead':
-                            el = document.createElement('p');
-                            el.className = 'lead';
-                            el.textContent = block.texto;
-                            break;
-                        case 'h2':
-                            el = document.createElement('h2');
-                            el.textContent = block.texto;
-                            break;
-                        case 'quote':
-                            el = document.createElement('blockquote');
-                            el.textContent = '"' + block.texto + '"';
-                            break;
-                        default:
-                            el = document.createElement('p');
-                            el.textContent = block.texto;
-                    }
-                    body.appendChild(el);
+                    const tag = typeMap[block.tipo] || 'p';
+                    const el = document.createElement(tag);
+                    if (block.tipo === 'lead') el.className = 'lead';
+                    el.textContent = block.tipo === 'quote' ? '"' + block.texto + '"' : block.texto;
+                    fragment.appendChild(el);
                 });
+                body.appendChild(fragment);
             })
-            .catch(() => {
-                document.getElementById('art-title').textContent = 'Error al cargar';
-            });
+            .catch(() => title.textContent = 'Error al cargar');
     })();
     </script>
 </body>

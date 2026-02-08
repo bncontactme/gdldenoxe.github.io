@@ -1,3 +1,14 @@
+:root {
+    --color-bg: #f5f5f5;
+    --color-text: #1a1a1a;
+    --color-text-light: #333;
+    --color-text-muted: #666;
+    --color-border: #e0e0e0;
+    --color-accent: #000;
+    --font-serif: 'Georgia', 'Times New Roman', serif;
+    --font-sans: 'Arial', sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,9 +16,9 @@
 }
 
 body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    background: #f5f5f5;
-    color: #1a1a1a;
+    font-family: var(--font-serif);
+    background: var(--color-bg);
+    color: var(--color-text);
     line-height: 1.6;
 }
 
@@ -20,12 +31,12 @@ body {
 
 .article-header {
     padding: 40px 40px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .back-link {
     display: inline-block;
-    color: #666;
+    color: var(--color-text-muted);
     text-decoration: none;
     font-size: 14px;
     margin-bottom: 20px;
@@ -33,7 +44,7 @@ body {
 }
 
 .back-link:hover {
-    color: #000;
+    color: var(--color-accent);
 }
 
 .article-header h1 {
@@ -44,11 +55,11 @@ body {
 }
 
 .article-meta {
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-family: 'Arial', sans-serif;
+    font-family: var(--font-sans);
 }
 
 .article-hero {
@@ -66,7 +77,7 @@ body {
     font-size: 24px;
     line-height: 1.5;
     margin-bottom: 40px;
-    color: #333;
+    color: var(--color-text-light);
     font-weight: 400;
 }
 
@@ -79,21 +90,21 @@ body {
 .article-content p {
     font-size: 18px;
     margin-bottom: 20px;
-    color: #333;
+    color: var(--color-text-light);
 }
 
 .article-content blockquote {
-    border-left: 4px solid #000;
+    border-left: 4px solid var(--color-accent);
     padding-left: 20px;
     margin: 40px 0;
     font-size: 24px;
     font-style: italic;
-    color: #666;
+    color: var(--color-text-muted);
 }
 
 .article-footer {
     padding: 40px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--color-border);
 }
 
 /* Responsive */
