@@ -335,6 +335,33 @@
             </div>
         </div>
 
+        <!-- Ventana de Buscaminas -->
+        <div class="win95-window hidden" data-window-id="minesweeper" style="left: 280px; top: 140px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="https://win98icons.alexmeub.com/icons/png/minesweeper-0.png" alt="" class="titlebar-icon"> Buscaminas</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body ms-body">
+                <div class="ms-status">
+                    <div class="ms-counter" id="msMineCount">010</div>
+                    <button class="ms-face" id="msResetBtn">🙂</button>
+                    <div class="ms-counter" id="msTimer">000</div>
+                </div>
+                <div class="ms-board" id="msBoard"></div>
+                <div class="ms-footer">
+                    <select id="msLevel" class="ms-select">
+                        <option value="beginner" selected>Principiante</option>
+                        <option value="intermediate">Intermedio</option>
+                        <option value="expert">Experto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <!-- Reproductor de música estilo Windows 95 -->
         <div class="music-player" id="musicPlayer">
             <div class="player-title-bar">
@@ -379,6 +406,7 @@
             <div class="menu-item" data-shortcut="galeria"><img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png" alt="" class="menu-icon"> Galería</div>
             <div class="menu-item" data-shortcut="tienda"><img src="https://win98icons.alexmeub.com/icons/png/directory_e-0.png" alt="" class="menu-icon"> Tienda</div>
             <div class="menu-item" data-shortcut="articulos"><img src="https://win98icons.alexmeub.com/icons/png/directory_closed-0.png" alt="" class="menu-icon"> Artículos</div>
+            <div class="menu-item" data-shortcut="minesweeper"><img src="https://win98icons.alexmeub.com/icons/png/minesweeper-0.png" alt="" class="menu-icon"> Buscaminas</div>
             <div class="menu-item" data-shortcut="links"><img src="https://win98icons.alexmeub.com/icons/png/msie1-0.png" alt="" class="menu-icon"> Links</div>
             <div class="menu-separator"></div>
             <div class="menu-item" data-shortcut="radio"><img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="menu-icon"> LaMovida95 Radio</div>

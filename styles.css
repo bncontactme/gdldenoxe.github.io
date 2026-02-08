@@ -575,6 +575,132 @@ body {
     width: 750px;
 }
 
+/* Buscaminas integrado */
+[data-window-id="minesweeper"] {
+    width: auto;
+}
+
+.ms-body {
+    padding: 6px !important;
+    background: #c0c0c0;
+}
+
+.ms-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    margin-bottom: 6px;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    background: #c0c0c0;
+}
+
+.ms-counter {
+    background: #000;
+    color: #ff0000;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 2px 6px;
+    min-width: 52px;
+    text-align: center;
+    border: 2px inset #808080;
+    letter-spacing: 2px;
+}
+
+.ms-face {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+}
+
+.ms-face:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
+
+.ms-board {
+    display: grid;
+    gap: 0;
+    border-top: 3px solid #808080;
+    border-left: 3px solid #808080;
+    border-right: 3px solid #dfdfdf;
+    border-bottom: 3px solid #dfdfdf;
+}
+
+.ms-cell {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    user-select: none;
+    cursor: pointer;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    padding: 0;
+    line-height: 1;
+}
+
+.ms-cell.revealed {
+    background: #c0c0c0;
+    border: 1px solid #808080;
+}
+
+.ms-cell.flagged {
+    color: #ff0000;
+}
+
+.ms-cell.mine-hit {
+    background: #ff0000;
+}
+
+.ms-n1 { color: #0000ff; }
+.ms-n2 { color: #008000; }
+.ms-n3 { color: #ff0000; }
+.ms-n4 { color: #000080; }
+.ms-n5 { color: #800000; }
+.ms-n6 { color: #008080; }
+.ms-n7 { color: #000000; }
+.ms-n8 { color: #808080; }
+
+.ms-footer {
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+}
+
+.ms-select {
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 11px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
 /* Barra de tareas */
 .taskbar {
     position: fixed;

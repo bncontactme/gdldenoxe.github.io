@@ -1,0 +1,116 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #c0c0c0;
+  font-family: "MS Sans Serif", "Microsoft Sans Serif", sans-serif;
+  padding: 6px;
+  overflow: hidden;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  margin-bottom: 6px;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #dfdfdf;
+  border-bottom: 2px solid #dfdfdf;
+  background: #c0c0c0;
+}
+
+.counter {
+  background: #000;
+  color: #ff0000;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 2px 6px;
+  min-width: 52px;
+  text-align: center;
+  border-top: 1px solid #808080;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+}
+
+.face {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  line-height: 28px;
+  text-align: center;
+  background: #c0c0c0;
+  border-top: 2px solid #fff;
+  border-left: 2px solid #fff;
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  cursor: pointer;
+  padding: 0;
+}
+
+.face:active {
+  border-top: 2px solid #000;
+  border-left: 2px solid #000;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+}
+
+.board {
+  display: grid;
+  gap: 0;
+  border-top: 3px solid #808080;
+  border-left: 3px solid #808080;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+}
+
+.cell {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c0c0c0;
+  border-top: 2px solid #fff;
+  border-left: 2px solid #fff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  font-weight: bold;
+  font-size: 11px;
+  user-select: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.cell.revealed {
+  background: #bdbdbd;
+  border: 1px solid #808080;
+}
+
+.cell.flagged::after {
+  content: "\2691";
+  color: #ff0000;
+  font-size: 12px;
+}
+
+.cell.mine.revealed {
+  background: #ff0000;
+}
+
+.cell.mine.revealed::after {
+  content: "\2738";
+  color: #000;
+  font-size: 11px;
+}
+
+.num1 { color: #0000ff; }
+.num2 { color: #008000; }
+.num3 { color: #ff0000; }
+.num4 { color: #000080; }
+.num5 { color: #800000; }
+.num6 { color: #008080; }
+.num7 { color: #000; }
+.num8 { color: #808080; }

@@ -508,6 +508,12 @@ de los que viven el rollo loco.`
                 }
             } else if (shortcut === 'links') {
                 window.location.href = 'https://linktr.ee/guadalajaradenoche';
+            } else if (shortcut === 'minesweeper') {
+                const minesweeperWindow = document.querySelector('[data-window-id="minesweeper"]');
+                if (minesweeperWindow) {
+                    minesweeperWindow.classList.remove('hidden', 'minimized');
+                    bringToFront(minesweeperWindow);
+                }
             } else if (shortcut === 'radio') {
                 musicPlayer.classList.remove('hidden');
                 const radioBtn = document.getElementById('taskbar-radio');
@@ -852,4 +858,190 @@ de los que viven el rollo loco.`
       if (event.data && event.data.type === 'galeria-open-details') {
         openDetailsPanel(event.data.data);
       }
-    });});
+    });
+
+    // ─── Buscaminas (embedded) ───
+    (function() {
+      const msBoard = document.getElementById('msBoard');
+      const msMineCount = document.getElementById('msMineCount');
+      const msTimer = document.getElementById('msTimer');
+      const msResetBtn = document.getElementById('msResetBtn');
+      const msLevelSel = document.getElementById('msLevel');
+
+      if (!msBoard) return;
+
+      const levels = {
+        beginner:     { rows: 9,  cols: 9,  mines: 10 },
+        intermediate: { rows: 16, cols: 16, mines: 40 },
+        expert:       { rows: 16, cols: 30, mines: 99 }
+      };
+
+      let st = null;
+      let timerId = null;
+      let startTime = null;
+
+      function pad(n) { return String(n).padStart(3, '0'); }
+
+      function getLevel() {
+        return levels[msLevelSel ? msLevelSel.value : 'beginner'];
+      }
+
+      function createState(lv) {
+        const { rows, cols, mines } = lv;
+        const cells = Array.from({ length: rows }, () =>
+          Array.from({ length: cols }, () => ({
+            mine: false, revealed: false, flagged: false, count: 0
+          }))
+        );
+        let placed = 0;
+        while (placed < mines) {
+          const r = Math.floor(Math.random() * rows);
+          const c = Math.floor(Math.random() * cols);
+          if (!cells[r][c].mine) { cells[r][c].mine = true; placed++; }
+        }
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (cells[r][c].mine) continue;
+            let cnt = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (!dr && !dc) continue;
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && cells[nr][nc].mine) cnt++;
+              }
+            }
+            cells[r][c].count = cnt;
+          }
+        }
+        return { rows, cols, mines, flagsLeft: mines, revealedCount: 0, over: false, cells };
+      }
+
+      function renderBoard() {
+        msBoard.innerHTML = '';
+        msBoard.style.gridTemplateColumns = `repeat(${st.cols}, 20px)`;
+        for (let r = 0; r < st.rows; r++) {
+          for (let c = 0; c < st.cols; c++) {
+            const el = document.createElement('div');
+            el.className = 'ms-cell';
+            el.dataset.r = r;
+            el.dataset.c = c;
+            el.addEventListener('click', onReveal);
+            el.addEventListener('contextmenu', onFlag);
+            msBoard.appendChild(el);
+          }
+        }
+        updateCounters();
+      }
+
+      function updateCounters() {
+        msMineCount.textContent = pad(Math.max(0, st.flagsLeft));
+        msTimer.textContent = pad(getElapsed());
+      }
+
+      function getElapsed() {
+        if (!startTime) return 0;
+        return Math.min(999, Math.floor((Date.now() - startTime) / 1000));
+      }
+
+      function startTimerMs() {
+        if (timerId) return;
+        startTime = Date.now();
+        timerId = setInterval(() => { msTimer.textContent = pad(getElapsed()); }, 250);
+      }
+
+      function stopTimerMs() {
+        if (timerId) { clearInterval(timerId); timerId = null; }
+      }
+
+      function getCellEl(r, c) {
+        return msBoard.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+      }
+
+      function revealCell(r, c) {
+        const cell = st.cells[r][c];
+        if (cell.revealed || cell.flagged) return;
+        cell.revealed = true;
+        st.revealedCount++;
+        const el = getCellEl(r, c);
+        el.classList.add('revealed');
+        if (cell.mine) {
+          el.textContent = '💣';
+          el.classList.add('mine-hit');
+          endGame(false);
+          return;
+        }
+        if (cell.count > 0) {
+          el.textContent = cell.count;
+          el.classList.add('ms-n' + cell.count);
+        } else {
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (!dr && !dc) continue;
+              const nr = r + dr, nc = c + dc;
+              if (nr >= 0 && nr < st.rows && nc >= 0 && nc < st.cols) revealCell(nr, nc);
+            }
+          }
+        }
+        checkWin();
+      }
+
+      function checkWin() {
+        if (st.revealedCount === st.rows * st.cols - st.mines) endGame(true);
+      }
+
+      function endGame(win) {
+        st.over = true;
+        stopTimerMs();
+        msResetBtn.textContent = win ? '😎' : '☹️';
+        for (let r = 0; r < st.rows; r++) {
+          for (let c = 0; c < st.cols; c++) {
+            const cell = st.cells[r][c];
+            const el = getCellEl(r, c);
+            if (cell.mine && !cell.revealed) {
+              el.classList.add('revealed');
+              el.textContent = '💣';
+            }
+            el.removeEventListener('click', onReveal);
+            el.removeEventListener('contextmenu', onFlag);
+          }
+        }
+      }
+
+      function onReveal(e) {
+        if (st.over) return;
+        const r = Number(e.currentTarget.dataset.r);
+        const c = Number(e.currentTarget.dataset.c);
+        startTimerMs();
+        revealCell(r, c);
+      }
+
+      function onFlag(e) {
+        e.preventDefault();
+        if (st.over) return;
+        const r = Number(e.currentTarget.dataset.r);
+        const c = Number(e.currentTarget.dataset.c);
+        const cell = st.cells[r][c];
+        if (cell.revealed) return;
+        cell.flagged = !cell.flagged;
+        const el = getCellEl(r, c);
+        el.classList.toggle('flagged', cell.flagged);
+        el.textContent = cell.flagged ? '🚩' : '';
+        st.flagsLeft += cell.flagged ? -1 : 1;
+        updateCounters();
+      }
+
+      function resetGame() {
+        stopTimerMs();
+        startTime = null;
+        msResetBtn.textContent = '🙂';
+        st = createState(getLevel());
+        renderBoard();
+      }
+
+      msResetBtn.addEventListener('click', resetGame);
+      if (msLevelSel) msLevelSel.addEventListener('change', resetGame);
+
+      resetGame();
+    })();
+
+});
