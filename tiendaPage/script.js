@@ -60,6 +60,8 @@ if (backgroundMusic) {
 
     let active = backgroundMusic;
     let inactive = backgroundMusicClone;
+    let crossfadeTimer = null;
+    let fadeIntervals = [];
 
     function fade(audio, from, to, duration) {
         const steps = 30;
@@ -75,15 +77,18 @@ if (backgroundMusic) {
             if ((step > 0 && volume >= to) || (step < 0 && volume <= to)) {
                 audio.volume = to;
                 clearInterval(interval);
+                fadeIntervals = fadeIntervals.filter(i => i !== interval);
             }
         }, stepTime);
+        fadeIntervals.push(interval);
     }
 
     function scheduleNextLoop(audio) {
         const loopDelay =
             (audio.duration - END_OFFSET - FADE_DURATION) * 1000;
 
-        setTimeout(crossfade, loopDelay);
+        clearTimeout(crossfadeTimer);
+        crossfadeTimer = setTimeout(crossfade, loopDelay);
     }
 
     function crossfade() {
@@ -98,24 +103,34 @@ if (backgroundMusic) {
         scheduleNextLoop(active);
     }
 
-    backgroundMusic.addEventListener("loadedmetadata", () => {
-        backgroundMusic.currentTime = START_TIME;
+    // Do NOT auto-play on load; parent page controls playback via startMusic()
+    backgroundMusic.volume = 0;
+    backgroundMusicClone.volume = 0;
+
+    // Expose stopMusic / startMusic so the parent page can control playback
+    window.stopMusic = function () {
+        clearTimeout(crossfadeTimer);
+        crossfadeTimer = null;
+        // Clear any ongoing fade intervals
+        fadeIntervals.forEach(i => clearInterval(i));
+        fadeIntervals = [];
+        // Pause BOTH audio elements (active + inactive)
+        backgroundMusic.pause();
         backgroundMusic.volume = 0;
+        backgroundMusicClone.pause();
+        backgroundMusicClone.volume = 0;
+    };
 
-        backgroundMusic.play().then(() => {
-            fade(backgroundMusic, 0, 1, FADE_DURATION);
-            scheduleNextLoop(backgroundMusic);
-
-            if (window.startAds) window.startAds();
+    window.startMusic = function () {
+        // Only start if not already playing
+        if (!active.paused) return;
+        active.currentTime = START_TIME;
+        active.volume = 0;
+        active.play().then(() => {
+            fade(active, 0, 1, FADE_DURATION);
+            scheduleNextLoop(active);
         }).catch(() => {});
-    });
-
-    document.addEventListener("click", () => {
-        if (backgroundMusic.paused) {
-            backgroundMusic.currentTime = START_TIME;
-            backgroundMusic.play();
-        }
-    }, { once: true });
+    };
 }
 
 /*********************
@@ -173,4 +188,16 @@ toggleModeBtn.addEventListener("click", () => {
 
     applyMode(newMode);
     localStorage.setItem("mode", newMode);
+});
+
+/*********************
+* VISIBILITY SAFETY NET *
+* Mute everything when the browser tab is hidden
+*********************/
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        if (window.stopMusic) window.stopMusic();
+        if (window.stopAds) window.stopAds();
+    }
 });

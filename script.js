@@ -12,15 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const tiendaIframe = document.getElementById('tienda-iframe');
             if (tiendaIframe && tiendaIframe.contentWindow) {
-                const audio = tiendaIframe.contentWindow.document.getElementById('background-music');
-                const adAudio = tiendaIframe.contentWindow.document.getElementById('ad-audio');
-                if (audio) {
-                    audio.pause();
+                // Stop music (both original + clone) and crossfade timer
+                if (tiendaIframe.contentWindow.stopMusic) {
+                    tiendaIframe.contentWindow.stopMusic();
                 }
-                if (adAudio) {
-                    adAudio.pause();
-                }
-                // Stop the ad timer so no future ads fire while store is closed/minimized
+                // Stop ads and ad timer
                 if (tiendaIframe.contentWindow.stopAds) {
                     tiendaIframe.contentWindow.stopAds();
                 }
@@ -34,15 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const tiendaIframe = document.getElementById('tienda-iframe');
             if (tiendaIframe && tiendaIframe.contentWindow) {
-                const audio = tiendaIframe.contentWindow.document.getElementById('background-music');
-                if (audio) {
-                    audio.muted = false; // Quitar mute
-                    audio.volume = 0.15; // 15% del volumen
-                    // Iniciar en un punto aleatorio (entre 0 y la duración del audio)
-                    if (audio.duration && !isNaN(audio.duration)) {
-                        audio.currentTime = Math.random() * audio.duration;
-                    }
-                    audio.play();
+                // Start music with crossfade loop
+                if (tiendaIframe.contentWindow.startMusic) {
+                    tiendaIframe.contentWindow.startMusic();
                 }
                 // Restart ad scheduling when store is opened
                 if (tiendaIframe.contentWindow.startAds) {
