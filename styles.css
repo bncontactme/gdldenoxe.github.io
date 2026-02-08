@@ -390,6 +390,140 @@ body {
     width: 550px;
 }
 
+/* Panel de detalles de imagen - ventana independiente estilo Win95 */
+#win95-details-panel {
+    display: none;
+    position: absolute;
+    width: 280px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    z-index: 200;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    flex-direction: column;
+}
+
+#win95-details-panel.open {
+    display: flex;
+}
+
+#win95-details-titlebar {
+    background: linear-gradient(to right, #000080, #1084d0);
+    color: #FFFFFF;
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+    cursor: move;
+    user-select: none;
+}
+
+#win95-details-close {
+    width: 18px;
+    height: 18px;
+    background: #c0c0c0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    padding: 0;
+    line-height: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#win95-details-close:active {
+    border-top: 1px solid #000000;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+#win95-details-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: #c0c0c0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+#win95-details-preview {
+    width: 100%;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+#win95-details-image {
+    max-width: 100%;
+    max-height: 220px;
+    image-rendering: auto;
+}
+
+#win95-details-info {
+    background: #c0c0c0;
+    font-size: 11px;
+    color: #000000;
+}
+
+.win95-detail-row {
+    display: grid;
+    grid-template-columns: 85px 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.win95-detail-label {
+    font-weight: bold;
+}
+
+#win95-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    background: #c0c0c0;
+    flex-shrink: 0;
+}
+
+#win95-details-ok {
+    min-width: 75px;
+    height: 23px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+}
+
+#win95-details-ok:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
+
 [data-window-id="tienda"] {
     width: 750px;
 }

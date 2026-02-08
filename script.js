@@ -361,6 +361,12 @@ de los que viven el rollo loco.`
                 pauseTiendaAudio();
             }
             
+            // Cerrar panel de detalles si se cierra la galería
+            if (window.dataset.windowId === 'galeria') {
+                const dp = document.getElementById('win95-details-panel');
+                if (dp) { dp.classList.remove('open'); dp.setAttribute('aria-hidden', 'true'); }
+            }
+            
             updateTaskbar();
         });
     });
@@ -744,4 +750,106 @@ de los que viven el rollo loco.`
     
     // DEBUG: Dejar siempre visible
     musicPlayer.classList.remove('hidden');
-});
+
+    // ===== Panel de detalles de imagen (Galería) =====
+    // Ventana independiente que aparece a la derecha de la Galería, draggable.
+    const detailsPanel = document.getElementById('win95-details-panel');
+    const detailsImage = document.getElementById('win95-details-image');
+    const detailsFilename = document.getElementById('win95-details-filename');
+    const detailsType = document.getElementById('win95-details-type');
+    const detailsDimensions = document.getElementById('win95-details-dimensions');
+    const detailsPath = document.getElementById('win95-details-path');
+    const detailsClose = document.getElementById('win95-details-close');
+    const detailsOk = document.getElementById('win95-details-ok');
+    const detailsTitlebar = document.getElementById('win95-details-titlebar');
+    let detailsPanelHasBeenPositioned = false; // track if user moved or panel was placed
+
+    function openDetailsPanel(data) {
+      if (!detailsPanel) return;
+      detailsImage.src = data.src;
+      detailsFilename.textContent = data.fileName;
+      detailsType.textContent = data.fileType;
+      detailsDimensions.textContent = data.dimensions;
+      detailsPath.textContent = data.path;
+
+      // Only position the panel if it hasn't been placed yet
+      if (!detailsPanelHasBeenPositioned) {
+        const galeriaWin = document.querySelector('[data-window-id="galeria"]');
+        if (galeriaWin) {
+          const gRect = galeriaWin.getBoundingClientRect();
+          const gap = 8;
+          let panelLeft = gRect.right + gap;
+          let panelTop = gRect.top;
+          const panelHeight = gRect.height;
+
+          if (panelLeft + 280 > window.innerWidth) {
+            panelLeft = gRect.left - 280 - gap;
+          }
+          if (panelTop < 0) panelTop = 0;
+
+          detailsPanel.style.left = panelLeft + 'px';
+          detailsPanel.style.top = panelTop + 'px';
+          detailsPanel.style.height = panelHeight + 'px';
+        }
+        detailsPanelHasBeenPositioned = true;
+      }
+
+      detailsPanel.classList.add('open');
+      detailsPanel.setAttribute('aria-hidden', 'false');
+      // Bring panel to front
+      highestZIndex++;
+      detailsPanel.style.zIndex = highestZIndex;
+    }
+
+    function closeDetailsPanel() {
+      if (!detailsPanel) return;
+      detailsPanel.classList.remove('open');
+      detailsPanel.setAttribute('aria-hidden', 'true');
+      detailsPanelHasBeenPositioned = false; // reset so next open re-positions
+    }
+
+    if (detailsClose) {
+      detailsClose.addEventListener('click', closeDetailsPanel);
+    }
+    if (detailsOk) {
+      detailsOk.addEventListener('click', closeDetailsPanel);
+    }
+
+    // Make the details panel draggable by its titlebar
+    if (detailsTitlebar && detailsPanel) {
+      let isDraggingDetails = false;
+      let detailsOffX = 0;
+      let detailsOffY = 0;
+
+      detailsTitlebar.addEventListener('mousedown', (e) => {
+        if (e.target === detailsClose) return; // don't drag on close button
+        isDraggingDetails = true;
+        detailsOffX = e.clientX - detailsPanel.offsetLeft;
+        detailsOffY = e.clientY - detailsPanel.offsetTop;
+        // Bring to front
+        highestZIndex++;
+        detailsPanel.style.zIndex = highestZIndex;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDraggingDetails) return;
+        const x = e.clientX - detailsOffX;
+        const y = e.clientY - detailsOffY;
+        const maxX = window.innerWidth - detailsPanel.offsetWidth;
+        const maxY = window.innerHeight - detailsPanel.offsetHeight - 40;
+        detailsPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+        detailsPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDraggingDetails = false;
+      });
+    }
+
+    // Listen for messages from the gallery iframe
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'galeria-open-details') {
+        openDetailsPanel(event.data.data);
+      }
+    });});

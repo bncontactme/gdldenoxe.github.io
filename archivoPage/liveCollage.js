@@ -96,16 +96,7 @@ function placeImageRandomly(imgSrc) {
   lastImagePosition = { top, left, size };
 }
 
-// Windows 95 details frame handlers
-const detailsOverlay = document.getElementById('win95-details-overlay');
-const detailsImage = document.getElementById('win95-details-image');
-const detailsFilename = document.getElementById('win95-details-filename');
-const detailsType = document.getElementById('win95-details-type');
-const detailsDimensions = document.getElementById('win95-details-dimensions');
-const detailsPath = document.getElementById('win95-details-path');
-const detailsClose = document.getElementById('win95-details-close');
-const detailsOk = document.getElementById('win95-details-ok');
-
+// Helper functions for image details
 function getFileNameFromPath(path) {
   const parts = path.split('/');
   return parts[parts.length - 1] || path;
@@ -116,48 +107,38 @@ function getFileExtension(fileName) {
   return segments.length > 1 ? segments.pop().toUpperCase() : 'Archivo';
 }
 
+// Send image details to parent window to open the side panel
 function openImageDetails(imgElement) {
-  if (!detailsOverlay) {
-    return;
-  }
-
   const imgSrc = imgElement.dataset.src || imgElement.src;
   const fileName = getFileNameFromPath(imgSrc);
   const typeLabel = getFileExtension(fileName);
   const width = imgElement.dataset.width || imgElement.naturalWidth || '—';
   const height = imgElement.dataset.height || imgElement.naturalHeight || '—';
 
-  detailsImage.src = imgSrc;
-  detailsFilename.textContent = fileName;
-  detailsType.textContent = typeLabel;
-  detailsDimensions.textContent = `${width} × ${height}`;
-  detailsPath.textContent = imgSrc;
+  // Build the full image URL so parent can display it
+  const fullSrc = new URL(imgSrc, window.location.href).href;
 
-  detailsOverlay.style.display = 'flex';
-  detailsOverlay.setAttribute('aria-hidden', 'false');
-}
-
-function closeImageDetails() {
-  if (!detailsOverlay) {
-    return;
+  // Send to parent
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'galeria-open-details',
+      data: {
+        src: fullSrc,
+        fileName: fileName,
+        fileType: typeLabel,
+        dimensions: `${width} × ${height}`,
+        path: imgSrc
+      }
+    }, '*');
   }
-  detailsOverlay.style.display = 'none';
-  detailsOverlay.setAttribute('aria-hidden', 'true');
 }
 
-if (detailsClose) {
-  detailsClose.addEventListener('click', closeImageDetails);
-}
-if (detailsOk) {
-  detailsOk.addEventListener('click', closeImageDetails);
-}
-if (detailsOverlay) {
-  detailsOverlay.addEventListener('click', (event) => {
-    if (event.target === detailsOverlay) {
-      closeImageDetails();
-    }
-  });
-}
+// Listen for close message from parent (optional, for syncing state)
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'galeria-close-details') {
+    // Parent closed the panel, nothing to do in iframe
+  }
+});
 
 // 1. Dynamically discover and show archive images
 function loadArchiveImages() {
