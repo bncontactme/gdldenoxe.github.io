@@ -38,6 +38,28 @@
   <!-- Live Collage Gallery -->
   <div id="live-collage-container" aria-label="Galería de imágenes"></div>
 
+  <!-- Image Details Popup (mobile / standalone) -->
+  <div id="img-details-overlay">
+    <div id="img-details-window">
+      <div id="img-details-titlebar">
+        <span>Detalles</span>
+        <button id="img-details-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="img-details-body">
+        <img id="img-details-preview" src="" alt="Vista previa">
+        <dl id="img-details-info">
+          <dt>Archivo</dt>
+          <dd id="detail-filename">—</dd>
+          <dt>Tipo</dt>
+          <dd id="detail-type">—</dd>
+          <dt>Dimensiones</dt>
+          <dd id="detail-dimensions">—</dd>
+        </dl>
+        <button id="img-details-ok" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script src="liveCollage.js" defer></script>
 </body>
 </html>

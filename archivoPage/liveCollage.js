@@ -93,23 +93,52 @@
     return parts.length > 1 ? parts.pop().toUpperCase() : 'Archivo';
   }
 
-  // Send image details to parent frame
+  // Image details popup elements
+  const detailsOverlay = document.getElementById('img-details-overlay');
+  const detailsPreview = document.getElementById('img-details-preview');
+  const detailsFilename = document.getElementById('detail-filename');
+  const detailsType = document.getElementById('detail-type');
+  const detailsDimensions = document.getElementById('detail-dimensions');
+  const detailsCloseBtn = document.getElementById('img-details-close');
+  const detailsOkBtn = document.getElementById('img-details-ok');
+
+  function closeDetailsPopup() {
+    if (detailsOverlay) detailsOverlay.classList.remove('open');
+  }
+
+  if (detailsCloseBtn) detailsCloseBtn.onclick = closeDetailsPopup;
+  if (detailsOkBtn) detailsOkBtn.onclick = closeDetailsPopup;
+  if (detailsOverlay) detailsOverlay.onclick = function(e) {
+    if (e.target === detailsOverlay) closeDetailsPopup();
+  };
+
+  // Show image details — use parent panel on desktop, built-in popup otherwise
   function openDetails(img) {
     const src = img.dataset.src || img.src;
     const fileName = getFileName(src);
     const fullSrc = new URL(src, location.href).href;
+    const dims = `${img.dataset.width || img.naturalWidth || '—'} × ${img.dataset.height || img.naturalHeight || '—'}`;
+    const fileType = getExtension(fileName);
+    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src };
 
+    // On desktop, the parent index.html has the details panel — send message there
+    // On mobile (frame.html), parent won't have the handler, so show built-in popup
+    let parentHandled = false;
     if (parent !== window) {
-      parent.postMessage({
-        type: 'galeria-open-details',
-        data: {
-          src: fullSrc,
-          fileName: fileName,
-          fileType: getExtension(fileName),
-          dimensions: `${img.dataset.width || img.naturalWidth || '—'} × ${img.dataset.height || img.naturalHeight || '—'}`,
-          path: src
-        }
-      }, '*');
+      try {
+        // Check if parent has the details panel (desktop mode)
+        parentHandled = !!parent.document.getElementById('win95-details-panel');
+      } catch (e) { /* cross-origin */ }
+      parent.postMessage({ type: 'galeria-open-details', data }, '*');
+    }
+
+    // Show built-in popup when standalone or when parent doesn't have the panel
+    if (!parentHandled) {
+      if (detailsPreview) detailsPreview.src = fullSrc;
+      if (detailsFilename) detailsFilename.textContent = fileName;
+      if (detailsType) detailsType.textContent = fileType;
+      if (detailsDimensions) detailsDimensions.textContent = dims;
+      if (detailsOverlay) detailsOverlay.classList.add('open');
     }
   }
 
