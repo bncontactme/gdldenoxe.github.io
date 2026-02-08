@@ -683,9 +683,11 @@ juntxs y brillando.`
     
     // Playlist: Radio en vivo + tracks locales
     const playlist = [
-        { title: "RADIO GDN 🔴 LIVE", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true },
+        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true },
         { title: "GDL Nights Vol.1", url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3", isLive: false }
     ];
+    
+    const liveDot = $('#liveDot');
     
     let currentTrackIndex = 0;
     let isPlaying = false;
@@ -709,7 +711,11 @@ juntxs y brillando.`
         audioPlayer.src = track.url;
         
         if (trackInfo) {
-            trackInfo.textContent = track.isLive ? `🔴 ${track.title}` : `♪ ${track.title}`;
+            const textNode = trackInfo.childNodes[trackInfo.childNodes.length - 1];
+            if (textNode) textNode.textContent = ' ' + track.title;
+        }
+        if (liveDot) {
+            liveDot.classList.toggle('hidden', !track.isLive);
         }
         updateTimeDisplay();
     }
@@ -720,16 +726,12 @@ juntxs y brillando.`
             audioPlayer.pause();
             playBtn.textContent = '▶';
             isPlaying = false;
-            if (playlist[currentTrackIndex].isLive && trackInfo) {
-                trackInfo.textContent = `⏸ ${playlist[currentTrackIndex].title}`;
-            }
+            if (liveDot) liveDot.classList.add('paused');
         } else {
             audioPlayer.play();
             playBtn.textContent = '⏸';
             isPlaying = true;
-            if (playlist[currentTrackIndex].isLive && trackInfo) {
-                trackInfo.textContent = `🔴 ${playlist[currentTrackIndex].title}`;
-            }
+            if (liveDot) liveDot.classList.remove('paused');
         }
     });
     

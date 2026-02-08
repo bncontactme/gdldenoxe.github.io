@@ -39,6 +39,11 @@ body {
     position: relative;
     overflow: hidden;
     color: transparent;
+    /* Logo wallpaper centrado */
+    background-image: url('../articulosPage/articuloImages/articulo1.jpg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 200px auto;
 }
 
 .desktop > * {
@@ -1129,6 +1134,27 @@ body {
 .track-info {
     font-size: 10px;
     margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Red live dot indicator */
+.live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.live-dot.hidden {
+    display: none;
+}
+
+.live-dot.paused {
+    opacity: 0.5;
 }
 
 .time-display {
@@ -1236,6 +1262,7 @@ body {
     .desktop {
         overflow: hidden;
         height: calc(100vh - 44px);
+        background-size: 100px auto;
     }
 
     /* --- Hide all desktop windows --- */
