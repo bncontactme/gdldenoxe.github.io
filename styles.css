@@ -285,6 +285,157 @@ body {
     background: #d0d0d0;
 }
 
+/* Full Article Window (win95 style) */
+.art-full-window {
+    width: 580px !important;
+}
+
+.art-full-body {
+    overflow-y: auto;
+    max-height: 520px;
+    padding: 2px !important;
+    background: #c0c0c0;
+}
+
+.art-full-body::-webkit-scrollbar {
+    width: 16px;
+    background: #c0c0c0;
+}
+
+.art-full-body::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+}
+
+.art-full-body::-webkit-scrollbar-track {
+    background: repeating-conic-gradient(#c0c0c0 0% 25%, #ffffff 0% 50%) 50% / 2px 2px;
+}
+
+.art-full-body::-webkit-scrollbar-button {
+    display: block;
+    height: 16px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+}
+
+.art-full-inner {
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.art-full-hero {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+}
+
+.art-full-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.art-full-meta {
+    background: #000080;
+    color: #ffffff;
+    font-size: 10px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 5px 14px;
+    border-top: 1px solid #0000a0;
+    border-bottom: 1px solid #000060;
+}
+
+.art-full-content {
+    background: #ffffff;
+    padding: 16px 20px 24px;
+}
+
+.art-full-lead {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #000;
+    font-weight: bold;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #c0c0c0;
+}
+
+.art-full-h2 {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 14px;
+    color: #000080;
+    margin: 18px 0 8px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #000080;
+}
+
+.art-full-p {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.art-full-quote {
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    color: #000080;
+    background: #ffffcc;
+    border-left: 3px solid #000080;
+    padding: 10px 14px;
+    margin: 14px 0;
+}
+
+.art-full-footer {
+    background: #c0c0c0;
+    padding: 6px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    border-top: 1px solid #808080;
+}
+
+.art-full-footer button {
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    padding: 4px 20px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 75px;
+}
+
+.art-full-footer button:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
+
+.win95-window.maximized .art-full-body {
+    max-height: calc(100% - 30px);
+    overflow-y: auto;
+}
+
 /* Ventana de imagen random */
 .random-image-container {
     display: flex;

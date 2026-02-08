@@ -163,11 +163,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function buildFullArticleWindow(art) {
+        const screenW = globalThis.innerWidth;
+        const screenH = globalThis.innerHeight;
+        const w = Math.min(620, screenW - 100);
+        const h = Math.min(550, screenH - 80);
+        const x = Math.floor((screenW - w) / 2 + (Math.random() * 60 - 30));
+        const y = Math.floor((screenH - h) / 2 + (Math.random() * 40 - 20));
+
+        const win = document.createElement('div');
+        win.className = 'win95-window hidden art-full-window';
+        win.dataset.windowId = 'artfull-' + art.id;
+        win.style.left = x + 'px';
+        win.style.top = y + 'px';
+        win.style.width = w + 'px';
+
+        let bodyHTML = '';
+        art.contenido.forEach(block => {
+            switch (block.tipo) {
+                case 'lead':
+                    bodyHTML += `<p class="art-full-lead">${block.texto}</p>`;
+                    break;
+                case 'h2':
+                    bodyHTML += `<h2 class="art-full-h2">${block.texto}</h2>`;
+                    break;
+                case 'quote':
+                    bodyHTML += `<div class="art-full-quote">"${block.texto}"</div>`;
+                    break;
+                default:
+                    bodyHTML += `<p class="art-full-p">${block.texto}</p>`;
+            }
+        });
+
+        win.innerHTML = `
+            <div class="title-bar">
+                <div class="title-bar-text">${art.titulo}</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body art-full-body">
+                <div class="art-full-inner">
+                    <div class="art-full-hero">
+                        <img src="${art.imagen}" alt="${art.titulo}">
+                    </div>
+                    <div class="art-full-meta">${art.meta}</div>
+                    <div class="art-full-content">${bodyHTML}</div>
+                </div>
+                <div class="art-full-footer">
+                    <button class="art-full-close-btn">Cerrar</button>
+                </div>
+            </div>`;
+        wireWindowControls(win);
+        win.querySelector('.art-full-close-btn').addEventListener('click', () => {
+            win.classList.add('hidden');
+            updateTaskbar();
+        });
+        return win;
+    }
+
     function buildArticleWindow(art, idx) {
         const screenW = globalThis.innerWidth;
         const screenH = globalThis.innerHeight;
         const x = Math.floor(80 + Math.random() * (screenW - 500));
         const y = Math.floor(40 + Math.random() * (screenH - 500));
+
+        // Build the full article window ahead of time
+        const fullWin = buildFullArticleWindow(art);
+        document.getElementById('articles-container').appendChild(fullWin);
 
         const win = document.createElement('div');
         win.className = 'win95-window' + (idx > 0 ? ' hidden' : '');
@@ -195,7 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         wireWindowControls(win);
         win.querySelector('.read-more-btn').addEventListener('click', () => {
-            window.location.href = `articulosPage/articulo.html?id=${art.id}`;
+            fullWin.classList.remove('hidden', 'minimized');
+            bringToFront(fullWin);
+            updateTaskbar();
         });
         return win;
     }
