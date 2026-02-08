@@ -1364,6 +1364,52 @@ body {
         -webkit-box-orient: vertical;
     }
 
+    /* --- Poema Widget (below articulo widget, half width) --- */
+    .win95-window[data-window-id="poema1"] {
+        display: block !important;
+        position: absolute !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(25% - 12px) !important;
+        max-width: 100px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        min-height: auto;
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 4px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
+    }
+
     /* --- Radio Player (floating frame, like the image widget) --- */
     .music-player {
         position: fixed !important;
@@ -1635,6 +1681,41 @@ body {
 
     .articulo-widget-desc {
         display: none !important;
+    }
+
+    /* Poema widget smaller */
+    .win95-window[data-window-id="poema1"] {
+        width: calc(22% - 8px) !important;
+        max-width: 78px !important;
+        right: 8px !important;
+        left: auto !important;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 3px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
     }
 
     /* Start menu */
