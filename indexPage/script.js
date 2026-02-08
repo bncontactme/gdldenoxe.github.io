@@ -614,7 +614,7 @@ juntxs y brillando.`
             const mobileActions = {
                 links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
                 palestina: () => window.open('https://www.unrwa.org/', '_blank'),
-                radio: () => { musicPlayer.classList.remove('hidden'); musicPlayer.style.display = 'block'; },
+                radio: () => { if (radioAvailable) { musicPlayer.classList.remove('hidden'); musicPlayer.style.display = 'block'; } },
                 minesweeper: () => {
                     const msWin = $('[data-window-id="minesweeper"]');
                     if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
@@ -637,8 +637,10 @@ juntxs y brillando.`
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             radio: () => {
-                musicPlayer?.classList.remove('hidden');
-                $('#taskbar-radio')?.remove();
+                if (radioAvailable) {
+                    musicPlayer?.classList.remove('hidden');
+                    $('#taskbar-radio')?.remove();
+                }
             }
         };
         
@@ -681,7 +683,7 @@ juntxs y brillando.`
     
     // Playlist: Radio en vivo + tracks locales
     const playlist = [
-        { title: "RADIO GDN 🔴 LIVE", url: "https://soil-copy-effort-cio.trycloudflare.com/stream.mp3", isLive: true },
+        { title: "RADIO GDN 🔴 LIVE", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true },
         { title: "GDL Nights Vol.1", url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3", isLive: false }
     ];
     
@@ -800,6 +802,20 @@ juntxs y brillando.`
     
     // Cargar primera canción
     loadTrack(0);
+
+    // Check if radio stream is available before showing player
+    let radioAvailable = false;
+    const radioMenuItem = $('[data-shortcut="radio"]');
+    if (radioMenuItem) radioMenuItem.style.display = 'none';
+
+    fetch(playlist[0].url, { method: 'HEAD', mode: 'no-cors' })
+        .then(() => {
+            radioAvailable = true;
+            if (radioMenuItem) radioMenuItem.style.display = '';
+        })
+        .catch(() => {
+            radioAvailable = false;
+        });
 
     // ===== Panel de detalles de imagen (Galería) =====
     const detailsPanel = $('#win95-details-panel');
