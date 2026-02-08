@@ -1,34 +1,43 @@
-<link rel="stylesheet" href="styles.css">
-<!-- Windows XP Disclaimer Popup -->
-<div id="xp-popup-overlay">
-  <div id="xp-popup-window">
-    <div id="xp-popup-titlebar">
-      <span id="xp-popup-title">Mensaje</span>
-      <button id="xp-popup-close">×</button>
-    </div>
-    <div id="xp-popup-content">
-      <div id="xp-popup-icon">
-        <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14" fill="#316AC5" stroke="#000000" stroke-width="1"/>
-          <text x="16" y="22" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">i</text>
-        </svg>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Archivo virtual - memoria colectiva">
+  <title>Archivo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Windows XP Disclaimer Popup -->
+  <div id="xp-popup-overlay">
+    <div id="xp-popup-window">
+      <div id="xp-popup-titlebar">
+        <span id="xp-popup-title">Mensaje</span>
+        <button id="xp-popup-close" type="button" aria-label="Cerrar">×</button>
       </div>
-      <div style="flex: 1; display: flex; flex-direction: column;">
-        <div id="xp-popup-message">
-          Este es nuestro archivo virtual: imágenes compartidas de trayectos, encuentros y fragmentos nocturnos, como memoria colectiva.<br><br>
-          Gracias por compartir este momento con nosotros.
+      <div id="xp-popup-content">
+        <div id="xp-popup-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="#316AC5" stroke="#000" stroke-width="1"/>
+            <text x="16" y="22" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+          </svg>
         </div>
-        <div id="xp-popup-buttons">
-          <button id="xp-popup-ok">OK</button>
+        <div id="xp-popup-body">
+          <p id="xp-popup-message">
+            Este es nuestro archivo virtual: imágenes compartidas de trayectos, encuentros y fragmentos nocturnos, como memoria colectiva.<br><br>
+            Gracias por compartir este momento con nosotros.
+          </p>
+          <div id="xp-popup-buttons">
+            <button id="xp-popup-ok" type="button">OK</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Live Collage Gallery -->
-<div id="live-collage-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;overflow:hidden;display:none;">
-</div>
+  <!-- Live Collage Gallery -->
+  <div id="live-collage-container" aria-label="Galería de imágenes"></div>
 
-
-<script src="liveCollage.js"></script>
+  <script src="liveCollage.js" defer></script>
+</body>
+</html>
