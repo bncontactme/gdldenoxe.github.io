@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isMobile()) {
             if (link) window.open(link, '_blank');
-            else if (folder) window.location.href = 'frame.html?p=' + folder;
+            else if (folder) window.location.href = 'indexPage/frame.html?p=' + folder;
             return;
         }
 
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const artWidget = $('[data-window-id="articulo-widget"]');
             artWidget?.addEventListener('click', () => {
                 if (isMobile()) {
-                    window.location.href = 'frame.html?p=articulo&id=' + randomArt.id;
+                    window.location.href = 'indexPage/frame.html?p=articulo&id=' + randomArt.id;
                 }
             });
 
@@ -598,7 +598,7 @@ juntxs y brillando.`
             if (mobileActions[shortcut]) {
                 mobileActions[shortcut]();
             } else {
-                window.location.href = 'frame.html?p=' + shortcut;
+                window.location.href = 'indexPage/frame.html?p=' + shortcut;
             }
             return;
         }
