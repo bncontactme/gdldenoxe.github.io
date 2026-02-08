@@ -878,9 +878,6 @@ juntxs y brillando.`
     
     // Cargar primera canción
     loadTrack(0);
-    
-    // DEBUG: Dejar siempre visible
-    musicPlayer.classList.remove('hidden');
 
     // ===== Panel de detalles de imagen (Galería) =====
     // Ventana independiente que aparece a la derecha de la Galería, draggable.

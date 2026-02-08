@@ -16,9 +16,10 @@
         /* Folder items grid */
         .folder-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 5px;
-            padding: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 2px;
+            padding: 10px;
+            padding-bottom: 30px;
         }
 
         .folder-item {
@@ -26,11 +27,15 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 10px 5px;
+            padding: 8px 4px;
             cursor: pointer;
             border: 2px solid transparent;
             text-decoration: none;
             color: #000;
+        }
+
+        .folder-item:hover {
+            background: rgba(0, 0, 128, 0.1);
         }
 
         .folder-item:active {
@@ -42,7 +47,8 @@
         .folder-item img {
             width: 32px;
             height: 32px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            image-rendering: pixelated;
         }
 
         .folder-item-label {
@@ -54,8 +60,8 @@
         /* Status bar */
         .status-bar {
             background: #c0c0c0;
-            border-top: 1px solid #808080;
-            padding: 3px 8px;
+            border-top: 2px solid #dfdfdf;
+            padding: 2px 6px;
             font-size: 11px;
             color: #000;
             position: fixed;
@@ -69,7 +75,8 @@
             border-left: 1px solid #808080;
             border-right: 1px solid #dfdfdf;
             border-bottom: 1px solid #dfdfdf;
-            padding: 1px 6px;
+            padding: 1px 8px;
+            display: inline-block;
         }
     </style>
 </head>
