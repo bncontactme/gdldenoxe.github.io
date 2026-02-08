@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return win;
     }
 
-    function buildArticleWindow(art, idx) {
+    function buildArticleWindow(art, idx, visible) {
         const screenW = globalThis.innerWidth;
         const screenH = globalThis.innerHeight;
         const x = Math.floor(80 + Math.random() * (screenW - 500));
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('articles-container').appendChild(fullWin);
 
         const win = document.createElement('div');
-        win.className = 'win95-window' + (idx > 0 ? ' hidden' : '');
+        win.className = 'win95-window' + (visible ? '' : ' hidden');
         win.dataset.windowId = 'art-' + art.id;
         win.style.left = x + 'px';
         win.style.top = y + 'px';
@@ -290,8 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('articles-container');
             const folderContent = document.getElementById('folder-articulos-content');
 
+            // Pick a random article to show open
+            const visibleIdx = Math.floor(Math.random() * articulos.length);
+
             articulos.forEach((art, idx) => {
-                container.appendChild(buildArticleWindow(art, idx));
+                container.appendChild(buildArticleWindow(art, idx, idx === visibleIdx));
                 folderContent.appendChild(buildFolderItem(art));
             });
 
