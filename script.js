@@ -313,6 +313,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 folderContent.appendChild(buildFolderItem(art));
             });
 
+            // Populate article widget with a random article
+            const randomArt = articulos[Math.floor(Math.random() * articulos.length)];
+            const widgetImg = document.getElementById('articuloWidgetImg');
+            const widgetTitle = document.getElementById('articuloWidgetTitle');
+            const widgetDesc = document.getElementById('articuloWidgetDesc');
+            if (widgetImg && widgetTitle) {
+                widgetImg.src = randomArt.imagen;
+                widgetImg.alt = randomArt.titulo;
+                widgetTitle.textContent = randomArt.titulo;
+                widgetDesc.textContent = randomArt.descripcion;
+            }
+            // Make widget clickable → navigate to article
+            const artWidget = document.querySelector('[data-window-id="articulo-widget"]');
+            if (artWidget) {
+                artWidget.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        window.location.href = 'frame.html?p=articulo&id=' + randomArt.id;
+                    }
+                });
+            }
+
             updateTaskbar();
         })
         .catch(() => {});
@@ -427,6 +448,23 @@ juntxs y brillando.`
             
             e.preventDefault();
         });
+
+        titleBar.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.title-bar-controls')) return;
+            const touch = e.touches[0];
+            
+            // Use getBoundingClientRect for accurate position regardless of transform/!important
+            const rect = windowElement.getBoundingClientRect();
+            windowElement.style.setProperty('--drag-left', rect.left + 'px');
+            windowElement.style.setProperty('--drag-top', rect.top + 'px');
+            windowElement.classList.add('dragging');
+            
+            draggedWindow = windowElement;
+            offsetX = touch.clientX - rect.left;
+            offsetY = touch.clientY - rect.top;
+            
+            bringToFront(windowElement);
+        }, { passive: true });
     }
 
     document.addEventListener('mousemove', (e) => {
@@ -442,7 +480,33 @@ juntxs y brillando.`
         draggedWindow.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
     });
 
+    document.addEventListener('touchmove', (e) => {
+        if (!draggedWindow) return;
+        const touch = e.touches[0];
+        
+        const x = touch.clientX - offsetX;
+        const y = touch.clientY - offsetY;
+        
+        const maxX = window.innerWidth - draggedWindow.offsetWidth;
+        const maxY = window.innerHeight - draggedWindow.offsetHeight - 44;
+        
+        const clampedX = Math.max(0, Math.min(x, maxX));
+        const clampedY = Math.max(0, Math.min(y, maxY));
+        
+        draggedWindow.style.setProperty('--drag-left', clampedX + 'px');
+        draggedWindow.style.setProperty('--drag-top', clampedY + 'px');
+        draggedWindow.style.left = clampedX + 'px';
+        draggedWindow.style.top = clampedY + 'px';
+        
+        e.preventDefault();
+    }, { passive: false });
+
     document.addEventListener('mouseup', () => {
+        draggedWindow = null;
+    });
+
+    document.addEventListener('touchend', () => {
+        // Keep .dragging class so position overrides persist
         draggedWindow = null;
     });
 
@@ -462,6 +526,10 @@ juntxs y brillando.`
         windowElement.addEventListener('mousedown', () => {
             bringToFront(windowElement);
         });
+
+        windowElement.addEventListener('touchstart', () => {
+            bringToFront(windowElement);
+        }, { passive: true });
     });
 
     // Funcionalidad del botón cerrar
@@ -590,6 +658,12 @@ juntxs y brillando.`
                 } else if (shortcut === 'radio') {
                     musicPlayer.classList.remove('hidden');
                     musicPlayer.style.display = 'block';
+                } else if (shortcut === 'minesweeper') {
+                    const msWin = document.querySelector('[data-window-id="minesweeper"]');
+                    if (msWin) {
+                        msWin.classList.remove('hidden', 'minimized');
+                        bringToFront(msWin);
+                    }
                 } else {
                     window.location.href = 'frame.html?p=' + shortcut;
                 }
@@ -839,41 +913,6 @@ juntxs y brillando.`
         // Remover botón de taskbar si existe
         const radioBtn = document.getElementById('taskbar-radio');
         if (radioBtn) radioBtn.remove();
-    });
-    
-    // Hacer el reproductor draggable
-    let isDraggingPlayer = false;
-    let playerOffsetX = 0;
-    let playerOffsetY = 0;
-    
-    const playerTitleBar = musicPlayer.querySelector('.player-title-bar');
-    
-    playerTitleBar.addEventListener('mousedown', (e) => {
-        isDraggingPlayer = true;
-        playerOffsetX = e.clientX - musicPlayer.offsetLeft;
-        playerOffsetY = e.clientY - musicPlayer.offsetTop;
-        musicPlayer.style.cursor = 'grabbing';
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (isDraggingPlayer) {
-            const x = e.clientX - playerOffsetX;
-            const y = e.clientY - playerOffsetY;
-            
-            // Mantener dentro de los límites
-            const maxX = window.innerWidth - musicPlayer.offsetWidth;
-            const maxY = window.innerHeight - musicPlayer.offsetHeight;
-            
-            musicPlayer.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            musicPlayer.style.bottom = 'auto';
-            musicPlayer.style.right = 'auto';
-            musicPlayer.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-        }
-    });
-    
-    document.addEventListener('mouseup', () => {
-        isDraggingPlayer = false;
-        musicPlayer.style.cursor = 'default';
     });
     
     // Cargar primera canción
