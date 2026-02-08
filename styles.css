@@ -1285,10 +1285,10 @@ body {
     .win95-window[data-window-id="articulo-widget"] {
         display: block !important;
         position: absolute !important;
-        /* 12px (random top) + 140px (random img) + 12px gap */
-        top: calc(12px + 140px + 12px) !important;
-        left: 12px !important;
-        right: auto !important;
+        /* 12px (random top) + ~20px (title-bar) + 140px (random img) + 6px (padding) + 20px gap for spacing */
+        top: calc(12px + 20px + 140px + 6px + 20px) !important;
+        right: 12px !important;
+        left: auto !important;
         bottom: auto !important;
         width: calc(50% - 24px) !important;
         max-width: 200px !important;
@@ -1590,9 +1590,10 @@ body {
     .win95-window[data-window-id="articulo-widget"] {
         width: calc(45% - 16px) !important;
         max-width: 155px !important;
-        left: 8px !important;
-        /* 8px (random top) + 100px (random img) + 8px gap */
-        top: calc(8px + 100px + 8px) !important;
+        right: 8px !important;
+        left: auto !important;
+        /* 8px (random top) + ~18px (title-bar) + 100px (random img) + 4px (padding) + 16px gap for spacing */
+        top: calc(8px + 18px + 100px + 4px + 16px) !important;
     }
 
     .articulo-widget-content img {
