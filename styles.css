@@ -361,6 +361,42 @@ body {
 
 .folder-icon {
     font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.folder-item-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.titlebar-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 2px;
+    pointer-events: none;
+}
+
+.menu-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 4px;
+    pointer-events: none;
+}
+
+.taskbar-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 2px;
+    pointer-events: none;
 }
 
 .folder-name {

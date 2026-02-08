@@ -690,7 +690,7 @@ de los que viven el rollo loco.`
             const radioBtn = document.createElement('button');
             radioBtn.id = 'taskbar-radio';
             radioBtn.className = 'taskbar-item';
-            radioBtn.textContent = '🎵 LaMovida95';
+            radioBtn.innerHTML = '<img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
             radioBtn.addEventListener('click', () => {
                 musicPlayer.classList.remove('hidden');
                 radioBtn.remove();
