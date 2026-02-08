@@ -1,136 +1,129 @@
 // Funcionalidad para el dashboard estilo Windows 95
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Cache DOM elements
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    
+    const desktop = $('.desktop');
+    const taskbarItems = $('#taskbar-items');
+    const startButton = $('.start-button');
+    const startMenu = $('#start-menu');
+    const musicPlayer = $('#musicPlayer');
+    const allWindows = $$('.win95-window');
     
     let highestZIndex = 100;
     let draggedWindow = null;
     let offsetX = 0;
     let offsetY = 0;
+    let lastMobileCheck = 0;
+    let cachedIsMobile = null;
 
     // Funciones para controlar audio de tienda
     function pauseTiendaAudio() {
         try {
-            const tiendaIframe = document.getElementById('tienda-iframe');
-            if (tiendaIframe && tiendaIframe.contentWindow) {
-                // Stop music (both original + clone) and crossfade timer
-                if (tiendaIframe.contentWindow.stopMusic) {
-                    tiendaIframe.contentWindow.stopMusic();
-                }
-                // Stop ads and ad timer
-                if (tiendaIframe.contentWindow.stopAds) {
-                    tiendaIframe.contentWindow.stopAds();
-                }
+            const tiendaIframe = $('#tienda-iframe');
+            if (tiendaIframe?.contentWindow) {
+                tiendaIframe.contentWindow.stopMusic?.();
+                tiendaIframe.contentWindow.stopAds?.();
             }
-        } catch (e) {
-            // Ignorar errores de cross-origin
-        }
+        } catch (e) { /* Cross-origin error */ }
     }
 
     function playTiendaAudio() {
         try {
-            const tiendaIframe = document.getElementById('tienda-iframe');
-            if (tiendaIframe && tiendaIframe.contentWindow) {
-                // Start music with crossfade loop
-                if (tiendaIframe.contentWindow.startMusic) {
-                    tiendaIframe.contentWindow.startMusic();
-                }
-                // Restart ad scheduling when store is opened
-                if (tiendaIframe.contentWindow.startAds) {
-                    tiendaIframe.contentWindow.startAds();
-                }
+            const tiendaIframe = $('#tienda-iframe');
+            if (tiendaIframe?.contentWindow) {
+                tiendaIframe.contentWindow.startMusic?.();
+                tiendaIframe.contentWindow.startAds?.();
             }
-        } catch (e) {
-            // Ignorar errores de cross-origin
-        }
+        } catch (e) { /* Cross-origin error */ }
     }
 
     // Pausar audio de tienda al cargar
     setTimeout(() => {
-        const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
-        if (tiendaWindow && tiendaWindow.classList.contains('hidden')) {
-            pauseTiendaAudio();
-        }
+        const tiendaWindow = $('[data-window-id="tienda"]');
+        if (tiendaWindow?.classList.contains('hidden')) pauseTiendaAudio();
     }, 1000);
 
-    // Mobile detection
+    // Mobile detection with caching
     function isMobile() {
-        return window.innerWidth <= 768;
+        const now = Date.now();
+        if (cachedIsMobile !== null && now - lastMobileCheck < 500) return cachedIsMobile;
+        lastMobileCheck = now;
+        cachedIsMobile = window.innerWidth <= 768;
+        return cachedIsMobile;
     }
 
-    // Funcionalidad de iconos del escritorio
-    const desktopIcons = document.querySelectorAll('.desktop-icon');
+    // Funcionalidad de iconos del escritorio usando delegación de eventos
+    const desktopIconsContainer = $('.desktop-icons');
     let selectedIcon = null;
 
-    desktopIcons.forEach(icon => {
-        icon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const link = icon.dataset.link;
-            const folder = icon.dataset.folder;
+    // Helper para abrir ventana
+    function openWindow(windowId, playAudio = false) {
+        const win = $(`[data-window-id="${windowId}"]`);
+        if (!win) return;
+        
+        if (windowId === 'tienda') {
+            positionWindowRandomly(win, 750, 650);
+        }
+        
+        win.classList.remove('hidden', 'minimized');
+        bringToFront(win);
+        updateTaskbar();
+        
+        if (playAudio) setTimeout(playTiendaAudio, 500);
+    }
+    
+    function positionWindowRandomly(win, width, height) {
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        const iconAreaWidth = 150;
+        const taskbarHeight = 40;
+        
+        const x = Math.random() * (screenW - width - iconAreaWidth - 100) + iconAreaWidth + 50;
+        const y = Math.random() * (screenH - height - taskbarHeight - 100) + 30;
+        
+        win.style.left = Math.floor(Math.max(iconAreaWidth + 50, Math.min(x, screenW - width - 20))) + 'px';
+        win.style.top = Math.floor(Math.max(30, Math.min(y, screenH - height - taskbarHeight - 20))) + 'px';
+    }
 
-            if (isMobile()) {
-                if (link) {
-                    window.open(link, '_blank');
-                } else if (folder) {
-                    window.location.href = 'frame.html?p=' + folder;
-                }
-                return;
-            }
+    desktopIconsContainer?.addEventListener('click', (e) => {
+        const icon = e.target.closest('.desktop-icon');
+        if (!icon) return;
+        
+        e.stopPropagation();
+        const link = icon.dataset.link;
+        const folder = icon.dataset.folder;
 
-            desktopIcons.forEach(i => i.classList.remove('selected'));
-            icon.classList.add('selected');
-            selectedIcon = icon;
-        });
+        if (isMobile()) {
+            if (link) window.open(link, '_blank');
+            else if (folder) window.location.href = 'frame.html?p=' + folder;
+            return;
+        }
 
-        icon.addEventListener('dblclick', (e) => {
-            e.stopPropagation();
-            const link = icon.dataset.link;
-            const folder = icon.dataset.folder;
-            
-            if (link) {
-                window.location.href = link;
-            } else if (folder === 'articulos') {
-                // Abrir ventana de carpeta de artículos
-                const folderWindow = document.querySelector('[data-window-id="folder-articulos"]');
-                if (folderWindow) {
-                    folderWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(folderWindow);
-                    updateTaskbar();
-                }
-            } else if (folder === 'galeria') {
-                // Abrir ventana de galería
-                const galeriaWindow = document.querySelector('[data-window-id="galeria"]');
-                if (galeriaWindow) {
-                    galeriaWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(galeriaWindow);
-                    updateTaskbar();
-                }
-            } else if (folder === 'tienda') {
-                // Abrir ventana de tienda
-                const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
-                if (tiendaWindow) {
-                    // Posicionar aleatoriamente antes de mostrar
-                    const screenWidth = globalThis.innerWidth;
-                    const screenHeight = globalThis.innerHeight;
-                    const windowWidth = 750; // Ancho de la tienda
-                    const windowHeight = 650; // Alto de la tienda
-                    const taskbarHeight = 40;
-                    const iconAreaWidth = 150;
-                    
-                    const x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
-                    const y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
-                    
-                    // Asegurar que no toque los bordes ni la taskbar
-                    tiendaWindow.style.left = Math.floor(Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20))) + 'px';
-                    tiendaWindow.style.top = Math.floor(Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20))) + 'px';
-                    
-                    tiendaWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(tiendaWindow);
-                    updateTaskbar();
-                    // Reproducir audio cuando se abre
-                    setTimeout(() => playTiendaAudio(), 500);
-                }
-            }
-        });
+        $$('.desktop-icon').forEach(i => i.classList.remove('selected'));
+        icon.classList.add('selected');
+        selectedIcon = icon;
+    });
+
+    desktopIconsContainer?.addEventListener('dblclick', (e) => {
+        const icon = e.target.closest('.desktop-icon');
+        if (!icon) return;
+        
+        e.stopPropagation();
+        const link = icon.dataset.link;
+        const folder = icon.dataset.folder;
+        
+        if (link) {
+            window.location.href = link;
+        } else if (folder === 'articulos') {
+            openWindow('folder-articulos');
+        } else if (folder === 'galeria') {
+            openWindow('galeria');
+        } else if (folder === 'tienda') {
+            openWindow('tienda', true);
+        }
     });
 
     // =============================================
@@ -142,20 +135,26 @@ document.addEventListener('DOMContentLoaded', () => {
         makeDraggable(win);
         win.addEventListener('mousedown', () => bringToFront(win));
 
-        win.querySelector('.close-btn').addEventListener('click', (e) => {
+        const closeBtn = win.querySelector('.close-btn');
+        const minBtn = win.querySelector('.minimize-btn');
+        const maxBtn = win.querySelector('.maximize-btn');
+        
+        closeBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             win.classList.add('hidden');
             updateTaskbar();
         });
-        win.querySelector('.minimize-btn').addEventListener('click', (e) => {
+        
+        minBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             win.classList.add('minimized');
             updateTaskbar();
         });
-        win.querySelector('.maximize-btn').addEventListener('click', (e) => {
+        
+        maxBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
-            win.classList.toggle('maximized');
-            if (win.classList.contains('maximized')) {
+            const isMax = win.classList.toggle('maximized');
+            if (isMax) {
                 win.dataset.originalLeft = win.style.left;
                 win.dataset.originalTop = win.style.top;
                 win.dataset.originalWidth = win.style.width;
@@ -169,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildFullArticleWindow(art) {
-        const screenW = globalThis.innerWidth;
-        const screenH = globalThis.innerHeight;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
         const w = Math.min(620, screenW - 100);
         const h = Math.min(550, screenH - 80);
         const x = Math.floor((screenW - w) / 2 + (Math.random() * 60 - 30));
@@ -179,26 +178,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const win = document.createElement('div');
         win.className = 'win95-window hidden art-full-window';
         win.dataset.windowId = 'artfull-' + art.id;
-        win.style.left = x + 'px';
-        win.style.top = y + 'px';
-        win.style.width = w + 'px';
+        Object.assign(win.style, { left: x + 'px', top: y + 'px', width: w + 'px' });
 
-        let bodyHTML = '';
-        art.contenido.forEach(block => {
-            switch (block.tipo) {
-                case 'lead':
-                    bodyHTML += `<p class="art-full-lead">${block.texto}</p>`;
-                    break;
-                case 'h2':
-                    bodyHTML += `<h2 class="art-full-h2">${block.texto}</h2>`;
-                    break;
-                case 'quote':
-                    bodyHTML += `<div class="art-full-quote">"${block.texto}"</div>`;
-                    break;
-                default:
-                    bodyHTML += `<p class="art-full-p">${block.texto}</p>`;
-            }
-        });
+        const blockMap = {
+            lead: t => `<p class="art-full-lead">${t}</p>`,
+            h2: t => `<h2 class="art-full-h2">${t}</h2>`,
+            quote: t => `<div class="art-full-quote">"${t}"</div>`
+        };
+        
+        const bodyHTML = art.contenido.map(b => 
+            (blockMap[b.tipo] || (t => `<p class="art-full-p">${t}</p>`))(b.texto)
+        ).join('');
 
         win.innerHTML = `
             <div class="title-bar">
@@ -212,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="window-body art-full-body">
                 <div class="art-full-inner">
                     <div class="art-full-hero">
-                        <img src="${art.imagen}" alt="${art.titulo}">
+                        <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
                     </div>
                     <div class="art-full-meta">${art.meta}</div>
                     <div class="art-full-content">${bodyHTML}</div>
@@ -221,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="art-full-close-btn">Cerrar</button>
                 </div>
             </div>`;
+        
         wireWindowControls(win);
         win.querySelector('.art-full-close-btn').addEventListener('click', () => {
             win.classList.add('hidden');
@@ -230,20 +221,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildArticleWindow(art, idx, visible) {
-        const screenW = globalThis.innerWidth;
-        const screenH = globalThis.innerHeight;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
         const x = Math.floor(80 + Math.random() * (screenW - 500));
         const y = Math.floor(40 + Math.random() * (screenH - 500));
 
-        // Build the full article window ahead of time
         const fullWin = buildFullArticleWindow(art);
-        document.getElementById('articles-container').appendChild(fullWin);
+        $('#articles-container').appendChild(fullWin);
 
         const win = document.createElement('div');
         win.className = 'win95-window' + (visible ? '' : ' hidden');
         win.dataset.windowId = 'art-' + art.id;
-        win.style.left = x + 'px';
-        win.style.top = y + 'px';
+        Object.assign(win.style, { left: x + 'px', top: y + 'px' });
+        
         win.innerHTML = `
             <div class="title-bar">
                 <div class="title-bar-text">Artículo #${art.id}</div>
@@ -255,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="${art.imagen}" alt="${art.titulo}">
+                    <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
                 </div>
                 <div class="article-description">
                     <h3>${art.titulo}</h3>
@@ -263,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="read-more-btn" data-art-id="${art.id}">Leer más</button>
                 </div>
             </div>`;
+        
         wireWindowControls(win);
         win.querySelector('.read-more-btn').addEventListener('click', () => {
             fullWin.classList.remove('hidden', 'minimized');
@@ -282,13 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         item.addEventListener('click', (e) => {
             e.stopPropagation();
-            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
+            $$('.folder-item').forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
             selectedFolderItem = item;
         });
+        
         item.addEventListener('dblclick', (e) => {
             e.stopPropagation();
-            const artWin = document.querySelector(`[data-window-id="${item.dataset.openArticle}"]`);
+            const artWin = $(`[data-window-id="${item.dataset.openArticle}"]`);
             if (artWin) {
                 artWin.classList.remove('hidden', 'minimized');
                 bringToFront(artWin);
@@ -302,53 +294,58 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('articulosPage/articulos.json')
         .then(r => r.json())
         .then(articulos => {
-            const container = document.getElementById('articles-container');
-            const folderContent = document.getElementById('folder-articulos-content');
-
-            // Pick a random article to show open
+            const container = $('#articles-container');
+            const folderContent = $('#folder-articulos-content');
             const visibleIdx = Math.floor(Math.random() * articulos.length);
+            
+            // Use DocumentFragment for batch DOM insertion
+            const containerFrag = document.createDocumentFragment();
+            const folderFrag = document.createDocumentFragment();
 
             articulos.forEach((art, idx) => {
-                container.appendChild(buildArticleWindow(art, idx, idx === visibleIdx));
-                folderContent.appendChild(buildFolderItem(art));
+                containerFrag.appendChild(buildArticleWindow(art, idx, idx === visibleIdx));
+                folderFrag.appendChild(buildFolderItem(art));
             });
+            
+            container.appendChild(containerFrag);
+            folderContent.appendChild(folderFrag);
 
             // Populate article widget with a random article
             const randomArt = articulos[Math.floor(Math.random() * articulos.length)];
-            const widgetImg = document.getElementById('articuloWidgetImg');
-            const widgetTitle = document.getElementById('articuloWidgetTitle');
-            const widgetDesc = document.getElementById('articuloWidgetDesc');
+            const widgetImg = $('#articuloWidgetImg');
+            const widgetTitle = $('#articuloWidgetTitle');
+            const widgetDesc = $('#articuloWidgetDesc');
+            
             if (widgetImg && widgetTitle) {
                 widgetImg.src = randomArt.imagen;
                 widgetImg.alt = randomArt.titulo;
                 widgetTitle.textContent = randomArt.titulo;
                 widgetDesc.textContent = randomArt.descripcion;
             }
+            
             // Make widget clickable → navigate to article
-            const artWidget = document.querySelector('[data-window-id="articulo-widget"]');
-            if (artWidget) {
-                artWidget.addEventListener('click', () => {
-                    if (window.innerWidth <= 768) {
-                        window.location.href = 'frame.html?p=articulo&id=' + randomArt.id;
-                    }
-                });
-            }
+            const artWidget = $('[data-window-id="articulo-widget"]');
+            artWidget?.addEventListener('click', () => {
+                if (isMobile()) {
+                    window.location.href = 'frame.html?p=articulo&id=' + randomArt.id;
+                }
+            });
 
             updateTaskbar();
         })
         .catch(() => {});
 
     // Deseleccionar al hacer click en el escritorio
-    document.querySelector('.desktop').addEventListener('click', () => {
-        desktopIcons.forEach(i => i.classList.remove('selected'));
+    desktop?.addEventListener('click', () => {
+        $$('.desktop-icon').forEach(i => i.classList.remove('selected'));
         selectedIcon = null;
     });
 
     // Deseleccionar items de carpeta al hacer click en window-body
-    document.querySelectorAll('.folder-content').forEach(folder => {
+    $$('.folder-content').forEach(folder => {
         folder.addEventListener('click', (e) => {
             if (e.target === folder) {
-                document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
+                $$('.folder-item').forEach(i => i.classList.remove('selected'));
                 selectedFolderItem = null;
             }
         });
@@ -363,13 +360,10 @@ document.addEventListener('DOMContentLoaded', () => {
         "indexPage/indexImages/7 Intro.JPG"
     ];
 
-    function loadRandomImage() {
-        const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-        document.getElementById('randomWindowImage').src = randomImage;
+    const randomImgEl = $('#randomWindowImage');
+    if (randomImgEl) {
+        randomImgEl.src = imagePaths[Math.floor(Math.random() * imagePaths.length)];
     }
-
-    // Cargar imagen inicial
-    loadRandomImage();
 
     // Sistema de poemas random
     const poemas = [
@@ -385,45 +379,36 @@ juntxs y brillando.`
     ];
 
     // Cargar poemas random en los frames
-    const poemTexts = document.querySelectorAll('.poem-text');
-    poemTexts.forEach(poemElement => {
-        const randomPoem = poemas[Math.floor(Math.random() * poemas.length)];
-        poemElement.textContent = randomPoem;
+    $$('.poem-text').forEach(el => {
+        el.textContent = poemas[Math.floor(Math.random() * poemas.length)];
     });
 
     // Posicionar ventanas aleatoriamente al inicio
     function randomizeWindowPositions() {
-        const windows = document.querySelectorAll('.win95-window:not(.hidden)');
-        const screenWidth = globalThis.innerWidth;
-        const screenHeight = globalThis.innerHeight;
+        const windows = $$('.win95-window:not(.hidden)');
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
         const windowWidth = 420;
         const windowHeight = 500;
-        const iconAreaWidth = 150; // Espacio reservado para iconos a la izquierda
-        const minPadding = 50; // Espacio mínimo entre ventanas
-        const taskbarHeight = 40; // Altura de la barra de tareas
+        const iconAreaWidth = 150;
+        const minPadding = 50;
+        const taskbarHeight = 40;
         const positions = [];
         
         windows.forEach(win => {
-            let x, y, hasOverlap;
-            let attempts = 0;
+            let x, y, hasOverlap, attempts = 0;
             
             do {
-                // Solo posicionar en el lado derecho (después del área de iconos)
                 x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
                 y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
                 
-                // Asegurar que no toque los bordes ni la taskbar
                 x = Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20));
                 y = Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20));
                 
-                // Verificar que no se superponga con ninguna ventana ya colocada
-                hasOverlap = positions.some(pos => {
-                    const dx = Math.abs(pos.x - x);
-                    const dy = Math.abs(pos.y - y);
-                    // Usar distancia para asegurar separación
-                    return dx < (windowWidth + minPadding) && dy < (windowHeight + minPadding);
-                });
-                
+                hasOverlap = positions.some(pos => 
+                    Math.abs(pos.x - x) < (windowWidth + minPadding) && 
+                    Math.abs(pos.y - y) < (windowHeight + minPadding)
+                );
                 attempts++;
             } while (hasOverlap && attempts < 300);
             
@@ -436,303 +421,214 @@ juntxs y brillando.`
     // Hacer las ventanas arrastrables
     function makeDraggable(windowElement) {
         const titleBar = windowElement.querySelector('.title-bar');
+        if (!titleBar) return;
+        
+        const startDrag = (clientX, clientY, isTouch) => {
+            const rect = windowElement.getBoundingClientRect();
+            draggedWindow = windowElement;
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+            
+            if (isTouch) {
+                windowElement.style.setProperty('--drag-left', rect.left + 'px');
+                windowElement.style.setProperty('--drag-top', rect.top + 'px');
+                windowElement.classList.add('dragging');
+            }
+            
+            bringToFront(windowElement);
+        };
         
         titleBar.addEventListener('mousedown', (e) => {
             if (e.target.closest('.title-bar-controls')) return;
-            
-            draggedWindow = windowElement;
-            offsetX = e.clientX - windowElement.offsetLeft;
-            offsetY = e.clientY - windowElement.offsetTop;
-            
-            bringToFront(windowElement);
-            
+            startDrag(e.clientX, e.clientY, false);
             e.preventDefault();
         });
 
         titleBar.addEventListener('touchstart', (e) => {
             if (e.target.closest('.title-bar-controls')) return;
             const touch = e.touches[0];
-            
-            // Use getBoundingClientRect for accurate position regardless of transform/!important
-            const rect = windowElement.getBoundingClientRect();
-            windowElement.style.setProperty('--drag-left', rect.left + 'px');
-            windowElement.style.setProperty('--drag-top', rect.top + 'px');
-            windowElement.classList.add('dragging');
-            
-            draggedWindow = windowElement;
-            offsetX = touch.clientX - rect.left;
-            offsetY = touch.clientY - rect.top;
-            
-            bringToFront(windowElement);
+            startDrag(touch.clientX, touch.clientY, true);
         }, { passive: true });
     }
 
-    document.addEventListener('mousemove', (e) => {
+    const updateDragPosition = (clientX, clientY, isTouch) => {
         if (!draggedWindow) return;
         
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        
+        const x = clientX - offsetX;
+        const y = clientY - offsetY;
         const maxX = window.innerWidth - draggedWindow.offsetWidth;
-        const maxY = window.innerHeight - draggedWindow.offsetHeight - 40;
-        
-        draggedWindow.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-        draggedWindow.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-    });
-
-    document.addEventListener('touchmove', (e) => {
-        if (!draggedWindow) return;
-        const touch = e.touches[0];
-        
-        const x = touch.clientX - offsetX;
-        const y = touch.clientY - offsetY;
-        
-        const maxX = window.innerWidth - draggedWindow.offsetWidth;
-        const maxY = window.innerHeight - draggedWindow.offsetHeight - 44;
+        const maxY = window.innerHeight - draggedWindow.offsetHeight - (isTouch ? 44 : 40);
         
         const clampedX = Math.max(0, Math.min(x, maxX));
         const clampedY = Math.max(0, Math.min(y, maxY));
         
-        draggedWindow.style.setProperty('--drag-left', clampedX + 'px');
-        draggedWindow.style.setProperty('--drag-top', clampedY + 'px');
+        if (isTouch) {
+            draggedWindow.style.setProperty('--drag-left', clampedX + 'px');
+            draggedWindow.style.setProperty('--drag-top', clampedY + 'px');
+        }
+        
         draggedWindow.style.left = clampedX + 'px';
         draggedWindow.style.top = clampedY + 'px';
-        
+    };
+
+    document.addEventListener('mousemove', (e) => updateDragPosition(e.clientX, e.clientY, false));
+
+    document.addEventListener('touchmove', (e) => {
+        if (!draggedWindow) return;
+        updateDragPosition(e.touches[0].clientX, e.touches[0].clientY, true);
         e.preventDefault();
     }, { passive: false });
 
-    document.addEventListener('mouseup', () => {
-        draggedWindow = null;
-    });
-
-    document.addEventListener('touchend', () => {
-        // Keep .dragging class so position overrides persist
-        draggedWindow = null;
-    });
+    document.addEventListener('mouseup', () => { draggedWindow = null; });
+    document.addEventListener('touchend', () => { draggedWindow = null; });
 
     // Traer ventana al frente
     function bringToFront(windowElement) {
-        document.querySelectorAll('.win95-window').forEach(w => w.classList.remove('active'));
+        $$('.win95-window').forEach(w => w.classList.remove('active'));
         windowElement.classList.add('active');
-        highestZIndex++;
-        windowElement.style.zIndex = highestZIndex;
+        windowElement.style.zIndex = ++highestZIndex;
         updateTaskbar();
     }
 
     // Click en ventana para traerla al frente
-    document.querySelectorAll('.win95-window').forEach(windowElement => {
-        makeDraggable(windowElement);
-        
-        windowElement.addEventListener('mousedown', () => {
-            bringToFront(windowElement);
-        });
-
-        windowElement.addEventListener('touchstart', () => {
-            bringToFront(windowElement);
-        }, { passive: true });
+    allWindows.forEach(win => {
+        makeDraggable(win);
+        win.addEventListener('mousedown', () => bringToFront(win));
+        win.addEventListener('touchstart', () => bringToFront(win), { passive: true });
     });
 
-    // Funcionalidad del botón cerrar
-    document.querySelectorAll('.close-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const window = btn.closest('.win95-window');
-            window.classList.add('hidden');
-            
-            // Pausar audio de tienda si se cierra
-            if (window.dataset.windowId === 'tienda') {
-                pauseTiendaAudio();
-            }
-            
-            // Cerrar panel de detalles si se cierra la galería
-            if (window.dataset.windowId === 'galeria') {
-                const dp = document.getElementById('win95-details-panel');
+    // Funcionalidad de botones de ventana usando delegación
+    desktop?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.close-btn, .minimize-btn, .maximize-btn');
+        if (!btn) return;
+        
+        e.stopPropagation();
+        const win = btn.closest('.win95-window');
+        if (!win) return;
+        
+        if (btn.classList.contains('close-btn')) {
+            win.classList.add('hidden');
+            if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
+            if (win.dataset.windowId === 'galeria') {
+                const dp = $('#win95-details-panel');
                 if (dp) { dp.classList.remove('open'); dp.setAttribute('aria-hidden', 'true'); }
             }
-            
-            updateTaskbar();
-        });
-    });
-
-    // Funcionalidad del botón minimizar
-    document.querySelectorAll('.minimize-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const window = btn.closest('.win95-window');
-            window.classList.add('minimized');
-            
-            // Pausar audio de tienda si se minimiza
-            if (window.dataset.windowId === 'tienda') {
-                pauseTiendaAudio();
-            }
-            
-            updateTaskbar();
-        });
-    });
-
-    // Funcionalidad del botón maximizar
-    document.querySelectorAll('.maximize-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const window = btn.closest('.win95-window');
-            window.classList.toggle('maximized');
-            
-            if (window.classList.contains('maximized')) {
-                // Guardar posición y tamaño original
-                window.dataset.originalLeft = window.style.left;
-                window.dataset.originalTop = window.style.top;
-                window.dataset.originalWidth = window.style.width || '';
-                
-                // Maximizar
-                window.style.left = '0';
-                window.style.top = '0';
-                window.style.width = '100%';
-                window.style.height = 'calc(100vh - 40px)';
+        } else if (btn.classList.contains('minimize-btn')) {
+            win.classList.add('minimized');
+            if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
+        } else if (btn.classList.contains('maximize-btn')) {
+            const isMax = win.classList.toggle('maximized');
+            if (isMax) {
+                win.dataset.originalLeft = win.style.left;
+                win.dataset.originalTop = win.style.top;
+                win.dataset.originalWidth = win.style.width || '';
+                Object.assign(win.style, { left: '0', top: '0', width: '100%', height: 'calc(100vh - 40px)' });
             } else {
-                // Restaurar posición y tamaño original
-                window.style.left = window.dataset.originalLeft;
-                window.style.top = window.dataset.originalTop;
-                window.style.width = window.dataset.originalWidth;
-                window.style.height = '';
+                win.style.left = win.dataset.originalLeft;
+                win.style.top = win.dataset.originalTop;
+                win.style.width = win.dataset.originalWidth;
+                win.style.height = '';
             }
-        });
+        }
+        updateTaskbar();
     });
 
     // Barra de tareas
     function updateTaskbar() {
-        const taskbarItems = document.getElementById('taskbar-items');
+        if (!taskbarItems) return;
         taskbarItems.innerHTML = '';
         
-        document.querySelectorAll('.win95-window:not(.hidden)').forEach(window => {
-            const windowId = window.dataset.windowId;
-            const title = window.querySelector('.title-bar-text').textContent;
-            const isActive = window.classList.contains('active');
+        const frag = document.createDocumentFragment();
+        $$('.win95-window:not(.hidden)').forEach(win => {
+            const title = win.querySelector('.title-bar-text')?.textContent || '';
+            const isActive = win.classList.contains('active');
             
             const item = document.createElement('button');
             item.className = 'taskbar-item' + (isActive ? ' active' : '');
             item.textContent = title;
             item.addEventListener('click', () => {
-                if (window.classList.contains('minimized')) {
-                    window.classList.remove('minimized');
-                    // Reproducir audio si es tienda
-                    if (window.dataset.windowId === 'tienda') {
-                        setTimeout(() => playTiendaAudio(), 500);
-                    }
+                if (win.classList.contains('minimized')) {
+                    win.classList.remove('minimized');
+                    if (win.dataset.windowId === 'tienda') setTimeout(playTiendaAudio, 500);
                 }
-                bringToFront(window);
+                bringToFront(win);
             });
-            
-            taskbarItems.appendChild(item);
+            frag.appendChild(item);
         });
+        taskbarItems.appendChild(frag);
     }
 
     // Menú de inicio
-    const startButton = document.querySelector('.start-button');
-    const startMenu = document.getElementById('start-menu');
-
-    startButton.addEventListener('click', (e) => {
+    startButton?.addEventListener('click', (e) => {
         e.stopPropagation();
-        startMenu.classList.toggle('active');
+        startMenu?.classList.toggle('active');
         startButton.classList.toggle('active');
     });
 
     document.addEventListener('click', (e) => {
-        if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
-            startMenu.classList.remove('active');
-            startButton.classList.remove('active');
+        if (!startMenu?.contains(e.target) && !startButton?.contains(e.target)) {
+            startMenu?.classList.remove('active');
+            startButton?.classList.remove('active');
         }
     });
 
-    // Elementos del menú
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const shortcut = item.dataset.shortcut;
-
-            if (isMobile()) {
-                startMenu.classList.remove('active');
-                startButton.classList.remove('active');
-                if (shortcut === 'links') {
-                    window.location.href = 'https://linktr.ee/guadalajaradenoche';
-                } else if (shortcut === 'palestina') {
-                    window.open('https://www.unrwa.org/', '_blank');
-                } else if (shortcut === 'radio') {
-                    musicPlayer.classList.remove('hidden');
-                    musicPlayer.style.display = 'block';
-                } else if (shortcut === 'minesweeper') {
-                    const msWin = document.querySelector('[data-window-id="minesweeper"]');
-                    if (msWin) {
-                        msWin.classList.remove('hidden', 'minimized');
-                        bringToFront(msWin);
-                    }
-                } else {
-                    window.location.href = 'frame.html?p=' + shortcut;
-                }
-                return;
-            }
-            
-            if (shortcut === 'galeria') {
-                const galeriaWindow = document.querySelector('[data-window-id="galeria"]');
-                if (galeriaWindow) {
-                    galeriaWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(galeriaWindow);
-                }
-            } else if (shortcut === 'tienda') {
-                const tiendaWindow = document.querySelector('[data-window-id="tienda"]');
-                if (tiendaWindow) {
-                    // Posicionar aleatoriamente
-                    const screenWidth = globalThis.innerWidth;
-                    const screenHeight = globalThis.innerHeight;
-                    const windowWidth = 750;
-                    const windowHeight = 650;
-                    const taskbarHeight = 40;
-                    const iconAreaWidth = 150;
-                    
-                    const x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
-                    const y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
-                    
-                    tiendaWindow.style.left = Math.floor(Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20))) + 'px';
-                    tiendaWindow.style.top = Math.floor(Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20))) + 'px';
-                    
-                    tiendaWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(tiendaWindow);
-                    setTimeout(() => playTiendaAudio(), 500);
-                }
-            } else if (shortcut === 'articulos') {
-                const folderWindow = document.querySelector('[data-window-id="folder-articulos"]');
-                if (folderWindow) {
-                    folderWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(folderWindow);
-                }
-            } else if (shortcut === 'links') {
-                window.location.href = 'https://linktr.ee/guadalajaradenoche';
-            } else if (shortcut === 'minesweeper') {
-                const minesweeperWindow = document.querySelector('[data-window-id="minesweeper"]');
-                if (minesweeperWindow) {
-                    minesweeperWindow.classList.remove('hidden', 'minimized');
-                    bringToFront(minesweeperWindow);
-                }
-            } else if (shortcut === 'radio') {
-                musicPlayer.classList.remove('hidden');
-                const radioBtn = document.getElementById('taskbar-radio');
-                if (radioBtn) radioBtn.remove();
-            } else if (shortcut === 'palestina') {
-                window.open('https://www.unrwa.org/', '_blank');
-            }
-            
+    // Elementos del menú usando delegación
+    startMenu?.addEventListener('click', (e) => {
+        const item = e.target.closest('.menu-item');
+        if (!item) return;
+        
+        const shortcut = item.dataset.shortcut;
+        const closeMenu = () => {
             startMenu.classList.remove('active');
             startButton.classList.remove('active');
-            updateTaskbar();
-        });
+        };
+
+        if (isMobile()) {
+            closeMenu();
+            const mobileActions = {
+                links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
+                palestina: () => window.open('https://www.unrwa.org/', '_blank'),
+                radio: () => { musicPlayer.classList.remove('hidden'); musicPlayer.style.display = 'block'; },
+                minesweeper: () => {
+                    const msWin = $('[data-window-id="minesweeper"]');
+                    if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
+                }
+            };
+            
+            if (mobileActions[shortcut]) {
+                mobileActions[shortcut]();
+            } else {
+                window.location.href = 'frame.html?p=' + shortcut;
+            }
+            return;
+        }
+        
+        const desktopActions = {
+            galeria: () => openWindow('galeria'),
+            tienda: () => openWindow('tienda', true),
+            articulos: () => openWindow('folder-articulos'),
+            minesweeper: () => openWindow('minesweeper'),
+            links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
+            palestina: () => window.open('https://www.unrwa.org/', '_blank'),
+            radio: () => {
+                musicPlayer?.classList.remove('hidden');
+                $('#taskbar-radio')?.remove();
+            }
+        };
+        
+        desktopActions[shortcut]?.();
+        closeMenu();
+        updateTaskbar();
     });
 
     // Reloj
+    const clockEl = $('#clock');
     function updateClock() {
-        const clock = document.getElementById('clock');
+        if (!clockEl) return;
         const now = new Date();
-        const hours = now.getHours() % 12 || 12;
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-        clock.textContent = `${hours}:${minutes} ${ampm}`;
+        const h = now.getHours() % 12 || 12;
+        const m = now.getMinutes().toString().padStart(2, '0');
+        clockEl.textContent = `${h}:${m} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
     }
 
     updateClock();
@@ -746,317 +642,255 @@ juntxs y brillando.`
 
     // ==================== REPRODUCTOR DE MÚSICA ====================
     
-    const musicPlayer = document.getElementById('musicPlayer');
-    const playBtn = document.getElementById('playBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const progressFill = document.getElementById('progressFill');
-    const trackInfo = document.getElementById('trackInfo');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const playerMinimizeBtn = musicPlayer.querySelector('.player-minimize-btn');
-    const playerCloseBtn = musicPlayer.querySelector('.player-close-btn');
+    const playBtn = $('#playBtn');
+    const prevBtn = $('#prevBtn');
+    const nextBtn = $('#nextBtn');
+    const stopBtn = $('#stopBtn');
+    const progressFill = $('#progressFill');
+    const trackInfo = $('#trackInfo');
+    const timeDisplay = $('#timeDisplay');
+    const playerMinimizeBtn = musicPlayer?.querySelector('.player-minimize-btn');
+    const playerCloseBtn = musicPlayer?.querySelector('.player-close-btn');
+    const progressBar = $('.progress-bar');
     
     // Playlist: Radio en vivo + tracks locales
     const playlist = [
-        {
-            title: "RADIO GDN 🔴 LIVE",
-            url: "https://soil-copy-effort-cio.trycloudflare.com/stream.mp3",
-            isLive: true
-        },
-        {
-            title: "GDL Nights Vol.1",
-            url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3",
-            isLive: false
-        }
+        { title: "RADIO GDN 🔴 LIVE", url: "https://soil-copy-effort-cio.trycloudflare.com/stream.mp3", isLive: true },
+        { title: "GDL Nights Vol.1", url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3", isLive: false }
     ];
     
     let currentTrackIndex = 0;
     let isPlaying = false;
-    let audioPlayer = new Audio();
+    const audioPlayer = new Audio();
     audioPlayer.volume = 0.5;
     
-    // Cargar track
+    const formatTime = (s) => isNaN(s) ? '00:00' : 
+        `${Math.floor(s / 60).toString().padStart(2, '0')}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+    
+    function updateTimeDisplay() {
+        if (!timeDisplay) return;
+        const track = playlist[currentTrackIndex];
+        timeDisplay.textContent = track.isLive ? 'STREAMING...' : 
+            `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
+    }
+    
     function loadTrack(index) {
-        if (index >= 0 && index < playlist.length) {
-            currentTrackIndex = index;
-            const track = playlist[currentTrackIndex];
-            audioPlayer.src = track.url;
-            
-            if (track.isLive) {
-                trackInfo.textContent = `🔴 ${track.title}`;
-                timeDisplay.textContent = 'STREAMING...';
-            } else {
-                trackInfo.textContent = `♪ ${track.title}`;
-                updateTimeDisplay();
-            }
+        if (index < 0 || index >= playlist.length) return;
+        currentTrackIndex = index;
+        const track = playlist[currentTrackIndex];
+        audioPlayer.src = track.url;
+        
+        if (trackInfo) {
+            trackInfo.textContent = track.isLive ? `🔴 ${track.title}` : `♪ ${track.title}`;
         }
+        updateTimeDisplay();
     }
     
     // Play/Pause
-    playBtn.addEventListener('click', () => {
+    playBtn?.addEventListener('click', () => {
         if (isPlaying) {
             audioPlayer.pause();
             playBtn.textContent = '▶';
             isPlaying = false;
-            if (playlist[currentTrackIndex].isLive) {
+            if (playlist[currentTrackIndex].isLive && trackInfo) {
                 trackInfo.textContent = `⏸ ${playlist[currentTrackIndex].title}`;
             }
         } else {
             audioPlayer.play();
             playBtn.textContent = '⏸';
             isPlaying = true;
-            if (playlist[currentTrackIndex].isLive) {
+            if (playlist[currentTrackIndex].isLive && trackInfo) {
                 trackInfo.textContent = `🔴 ${playlist[currentTrackIndex].title}`;
             }
         }
     });
     
     // Stop
-    stopBtn.addEventListener('click', () => {
+    stopBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        playBtn.textContent = '▶';
+        if (playBtn) playBtn.textContent = '▶';
         isPlaying = false;
-        progressFill.style.width = '0%';
+        if (progressFill) progressFill.style.width = '0%';
         updateTimeDisplay();
     });
     
-    // Anterior
-    prevBtn.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+    // Anterior/Siguiente
+    const changeTrack = (delta) => {
+        currentTrackIndex = (currentTrackIndex + delta + playlist.length) % playlist.length;
         const wasPlaying = isPlaying;
         loadTrack(currentTrackIndex);
-        if (wasPlaying) {
-            audioPlayer.play();
-        }
-    });
+        if (wasPlaying) audioPlayer.play();
+    };
     
-    // Siguiente
-    nextBtn.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-        const wasPlaying = isPlaying;
-        loadTrack(currentTrackIndex);
-        if (wasPlaying) {
-            audioPlayer.play();
-        }
-    });
+    prevBtn?.addEventListener('click', () => changeTrack(-1));
+    nextBtn?.addEventListener('click', () => changeTrack(1));
     
     // Actualizar barra de progreso (solo para tracks no-live)
     audioPlayer.addEventListener('timeupdate', () => {
         if (!playlist[currentTrackIndex].isLive && audioPlayer.duration) {
-            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-            progressFill.style.width = progress + '%';
+            if (progressFill) progressFill.style.width = (audioPlayer.currentTime / audioPlayer.duration * 100) + '%';
             updateTimeDisplay();
         }
     });
     
     // Click en barra de progreso para saltar (solo tracks no-live)
-    const progressBar = document.querySelector('.progress-bar');
-    progressBar.addEventListener('click', (e) => {
+    progressBar?.addEventListener('click', (e) => {
         if (!playlist[currentTrackIndex].isLive && audioPlayer.duration) {
             const rect = progressBar.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            audioPlayer.currentTime = percent * audioPlayer.duration;
+            audioPlayer.currentTime = ((e.clientX - rect.left) / rect.width) * audioPlayer.duration;
         }
     });
     
     // Cuando termina una canción no-live, pasar a la siguiente
     audioPlayer.addEventListener('ended', () => {
-        if (!playlist[currentTrackIndex].isLive) {
-            nextBtn.click();
-        }
+        if (!playlist[currentTrackIndex].isLive) changeTrack(1);
     });
     
-    // Formatear tiempo
-    function formatTime(seconds) {
-        if (isNaN(seconds)) return '00:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    function updateTimeDisplay() {
-        if (!playlist[currentTrackIndex].isLive) {
-            const current = formatTime(audioPlayer.currentTime);
-            const total = formatTime(audioPlayer.duration);
-            timeDisplay.textContent = `${current} / ${total}`;
-        } else {
-            timeDisplay.textContent = 'STREAMING...';
-        }
-    }
-    
     // Minimizar reproductor
-    playerMinimizeBtn.addEventListener('click', () => {
-        musicPlayer.classList.add('hidden');
-        // Agregar botón a taskbar
-        const taskbarItems = document.getElementById('taskbar-items');
-        if (!document.getElementById('taskbar-radio')) {
+    playerMinimizeBtn?.addEventListener('click', () => {
+        musicPlayer?.classList.add('hidden');
+        if (!$('#taskbar-radio')) {
             const radioBtn = document.createElement('button');
             radioBtn.id = 'taskbar-radio';
             radioBtn.className = 'taskbar-item';
             radioBtn.innerHTML = '<img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
             radioBtn.addEventListener('click', () => {
-                musicPlayer.classList.remove('hidden');
+                musicPlayer?.classList.remove('hidden');
                 radioBtn.remove();
             });
-            taskbarItems.appendChild(radioBtn);
+            taskbarItems?.appendChild(radioBtn);
         }
     });
     
     // Cerrar reproductor (pausa audio también)
-    playerCloseBtn.addEventListener('click', () => {
+    playerCloseBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         isPlaying = false;
-        playBtn.textContent = '▶';
-        musicPlayer.classList.add('hidden');
-        // Remover botón de taskbar si existe
-        const radioBtn = document.getElementById('taskbar-radio');
-        if (radioBtn) radioBtn.remove();
+        if (playBtn) playBtn.textContent = '▶';
+        musicPlayer?.classList.add('hidden');
+        $('#taskbar-radio')?.remove();
     });
     
     // Cargar primera canción
     loadTrack(0);
 
     // ===== Panel de detalles de imagen (Galería) =====
-    // Ventana independiente que aparece a la derecha de la Galería, draggable.
-    const detailsPanel = document.getElementById('win95-details-panel');
-    const detailsImage = document.getElementById('win95-details-image');
-    const detailsFilename = document.getElementById('win95-details-filename');
-    const detailsType = document.getElementById('win95-details-type');
-    const detailsDimensions = document.getElementById('win95-details-dimensions');
-    const detailsPath = document.getElementById('win95-details-path');
-    const detailsClose = document.getElementById('win95-details-close');
-    const detailsOk = document.getElementById('win95-details-ok');
-    const detailsTitlebar = document.getElementById('win95-details-titlebar');
-    let detailsPanelHasBeenPositioned = false; // track if user moved or panel was placed
+    const detailsPanel = $('#win95-details-panel');
+    const detailsImage = $('#win95-details-image');
+    const detailsFilename = $('#win95-details-filename');
+    const detailsType = $('#win95-details-type');
+    const detailsDimensions = $('#win95-details-dimensions');
+    const detailsPath = $('#win95-details-path');
+    const detailsClose = $('#win95-details-close');
+    const detailsOk = $('#win95-details-ok');
+    const detailsTitlebar = $('#win95-details-titlebar');
+    let detailsPanelHasBeenPositioned = false;
 
     function openDetailsPanel(data) {
-      if (!detailsPanel) return;
-      detailsImage.src = data.src;
-      detailsFilename.textContent = data.fileName;
-      detailsType.textContent = data.fileType;
-      detailsDimensions.textContent = data.dimensions;
-      detailsPath.textContent = data.path;
+        if (!detailsPanel) return;
+        if (detailsImage) detailsImage.src = data.src;
+        if (detailsFilename) detailsFilename.textContent = data.fileName;
+        if (detailsType) detailsType.textContent = data.fileType;
+        if (detailsDimensions) detailsDimensions.textContent = data.dimensions;
+        if (detailsPath) detailsPath.textContent = data.path;
 
-      // Only position the panel if it hasn't been placed yet
-      if (!detailsPanelHasBeenPositioned) {
-        const galeriaWin = document.querySelector('[data-window-id="galeria"]');
-        if (galeriaWin) {
-          const gRect = galeriaWin.getBoundingClientRect();
-          const gap = 8;
-          let panelLeft = gRect.right + gap;
-          let panelTop = gRect.top;
-          const panelHeight = gRect.height;
-
-          if (panelLeft + 280 > window.innerWidth) {
-            panelLeft = gRect.left - 280 - gap;
-          }
-          if (panelTop < 0) panelTop = 0;
-
-          detailsPanel.style.left = panelLeft + 'px';
-          detailsPanel.style.top = panelTop + 'px';
-          detailsPanel.style.height = panelHeight + 'px';
+        if (!detailsPanelHasBeenPositioned) {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            if (galeriaWin) {
+                const gRect = galeriaWin.getBoundingClientRect();
+                let panelLeft = gRect.right + 8;
+                let panelTop = Math.max(0, gRect.top);
+                
+                if (panelLeft + 280 > window.innerWidth) panelLeft = gRect.left - 288;
+                
+                Object.assign(detailsPanel.style, {
+                    left: panelLeft + 'px',
+                    top: panelTop + 'px',
+                    height: gRect.height + 'px'
+                });
+            }
+            detailsPanelHasBeenPositioned = true;
         }
-        detailsPanelHasBeenPositioned = true;
-      }
 
-      detailsPanel.classList.add('open');
-      detailsPanel.setAttribute('aria-hidden', 'false');
-      // Bring panel to front
-      highestZIndex++;
-      detailsPanel.style.zIndex = highestZIndex;
+        detailsPanel.classList.add('open');
+        detailsPanel.setAttribute('aria-hidden', 'false');
+        detailsPanel.style.zIndex = ++highestZIndex;
     }
 
     function closeDetailsPanel() {
-      if (!detailsPanel) return;
-      detailsPanel.classList.remove('open');
-      detailsPanel.setAttribute('aria-hidden', 'true');
-      detailsPanelHasBeenPositioned = false; // reset so next open re-positions
+        if (!detailsPanel) return;
+        detailsPanel.classList.remove('open');
+        detailsPanel.setAttribute('aria-hidden', 'true');
+        detailsPanelHasBeenPositioned = false;
     }
 
-    if (detailsClose) {
-      detailsClose.addEventListener('click', closeDetailsPanel);
-    }
-    if (detailsOk) {
-      detailsOk.addEventListener('click', closeDetailsPanel);
-    }
+    detailsClose?.addEventListener('click', closeDetailsPanel);
+    detailsOk?.addEventListener('click', closeDetailsPanel);
 
     // Make the details panel draggable by its titlebar
     if (detailsTitlebar && detailsPanel) {
-      let isDraggingDetails = false;
-      let detailsOffX = 0;
-      let detailsOffY = 0;
+        let isDraggingDetails = false;
+        let detailsOffX = 0;
+        let detailsOffY = 0;
 
-      detailsTitlebar.addEventListener('mousedown', (e) => {
-        if (e.target === detailsClose) return; // don't drag on close button
-        isDraggingDetails = true;
-        detailsOffX = e.clientX - detailsPanel.offsetLeft;
-        detailsOffY = e.clientY - detailsPanel.offsetTop;
-        // Bring to front
-        highestZIndex++;
-        detailsPanel.style.zIndex = highestZIndex;
-        e.preventDefault();
-      });
+        detailsTitlebar.addEventListener('mousedown', (e) => {
+            if (e.target === detailsClose) return;
+            isDraggingDetails = true;
+            detailsOffX = e.clientX - detailsPanel.offsetLeft;
+            detailsOffY = e.clientY - detailsPanel.offsetTop;
+            detailsPanel.style.zIndex = ++highestZIndex;
+            e.preventDefault();
+        });
 
-      document.addEventListener('mousemove', (e) => {
-        if (!isDraggingDetails) return;
-        const x = e.clientX - detailsOffX;
-        const y = e.clientY - detailsOffY;
-        const maxX = window.innerWidth - detailsPanel.offsetWidth;
-        const maxY = window.innerHeight - detailsPanel.offsetHeight - 40;
-        detailsPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-        detailsPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-      });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingDetails) return;
+            const x = e.clientX - detailsOffX;
+            const y = e.clientY - detailsOffY;
+            const maxX = window.innerWidth - detailsPanel.offsetWidth;
+            const maxY = window.innerHeight - detailsPanel.offsetHeight - 40;
+            detailsPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            detailsPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        });
 
-      document.addEventListener('mouseup', () => {
-        isDraggingDetails = false;
-      });
+        document.addEventListener('mouseup', () => { isDraggingDetails = false; });
     }
 
     // Listen for messages from the gallery iframe
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'galeria-open-details') {
-        openDetailsPanel(event.data.data);
-      }
+    window.addEventListener('message', (e) => {
+        if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
     });
 
     // ─── Buscaminas (embedded) ───
     (function() {
-      const msBoard = document.getElementById('msBoard');
-      const msMineCount = document.getElementById('msMineCount');
-      const msTimer = document.getElementById('msTimer');
-      const msResetBtn = document.getElementById('msResetBtn');
-      const msLevelSel = document.getElementById('msLevel');
+        const msBoard = $('#msBoard');
+        const msMineCount = $('#msMineCount');
+        const msTimer = $('#msTimer');
+        const msResetBtn = $('#msResetBtn');
+        const msLevelSel = $('#msLevel');
 
-      if (!msBoard) return;
+        if (!msBoard) return;
 
-      // Win95 Minesweeper pixel-art sprites as inline SVGs
-      const SPRITES = {
-        faceSmile: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":)">`,
-        faceCool: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='4' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Crect x='11' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="B)">`,
-        faceDead: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Cline x1='5' y1='5' x2='9' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='9' y1='5' x2='5' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='11' y1='5' x2='15' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='15' y1='5' x2='11' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='14' rx='3' ry='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="X(">`,
-        faceOh: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Ccircle cx='10' cy='14' r='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":O">`,
-        mine: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Crect x='5' y='4' width='2' height='2' fill='%23fff'/%3E%3C/svg%3E" alt="*">`,
-        flag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpolygon points='4,2 4,8 10,5' fill='%23FF0000'/%3E%3Cline x1='4' y1='2' x2='4' y2='11' stroke='%23000' stroke-width='1.3'/%3E%3Crect x='2' y='11' width='5' height='1.5' fill='%23000'/%3E%3Crect x='1' y='12' width='7' height='1.5' fill='%23000'/%3E%3C/svg%3E" alt="F">`,
-        wrongFlag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='2' y1='2' x2='12' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3Cline x1='12' y1='2' x2='2' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3C/svg%3E" alt="X">`
-      };
+        // Win95 Minesweeper sprites as inline SVGs
+        const SPRITES = {
+            faceSmile: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":)">`,
+            faceCool: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='4' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Crect x='11' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="B)">`,
+            faceDead: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Cline x1='5' y1='5' x2='9' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='9' y1='5' x2='5' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='11' y1='5' x2='15' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='15' y1='5' x2='11' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='14' rx='3' ry='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="X(">`,
+            faceOh: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Ccircle cx='10' cy='14' r='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":O">`,
+            mine: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Crect x='5' y='4' width='2' height='2' fill='%23fff'/%3E%3C/svg%3E" alt="*">`,
+            flag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpolygon points='4,2 4,8 10,5' fill='%23FF0000'/%3E%3Cline x1='4' y1='2' x2='4' y2='11' stroke='%23000' stroke-width='1.3'/%3E%3Crect x='2' y='11' width='5' height='1.5' fill='%23000'/%3E%3Crect x='1' y='12' width='7' height='1.5' fill='%23000'/%3E%3C/svg%3E" alt="F">`,
+            wrongFlag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='2' y1='2' x2='12' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3Cline x1='12' y1='2' x2='2' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3C/svg%3E" alt="X">`
+        };
 
-      const levels = {
-        beginner:     { rows: 9,  cols: 9,  mines: 10 },
-        intermediate: { rows: 16, cols: 16, mines: 40 },
-        expert:       { rows: 16, cols: 30, mines: 99 }
-      };
+        const levels = {
+            beginner: { rows: 9, cols: 9, mines: 10 },
+            intermediate: { rows: 16, cols: 16, mines: 40 },
+            expert: { rows: 16, cols: 30, mines: 99 }
+        };
 
-      let st = null;
-      let timerId = null;
-      let startTime = null;
-
-      function pad(n) { return String(n).padStart(3, '0'); }
-
-      function getLevel() {
-        return levels[msLevelSel ? msLevelSel.value : 'beginner'];
-      }
+        let st = null, timerId = null, startTime = null;
+        const pad = n => String(n).padStart(3, '0');
+        const getLevel = () => levels[msLevelSel?.value || 'beginner'];
 
       function createState(lv) {
         const { rows, cols, mines } = lv;
