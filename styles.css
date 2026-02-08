@@ -55,9 +55,20 @@ body {
 }
 
 .icon-image {
-    font-size: 48px;
+    width: 48px;
+    height: 48px;
     margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+.icon-image img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+    pointer-events: none;
 }
 
 .icon-label {
