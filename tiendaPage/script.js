@@ -12,8 +12,10 @@ if (adAudio) {
     adAudio.volume = 0;
 
     function playRandomAd() {
+        // Don't play if the page is hidden (store closed/minimized)
+        if (document.hidden) return;
         const backgroundMusic = document.getElementById("background-music");
-        if (backgroundMusic) {
+        if (backgroundMusic && !backgroundMusic.paused) {
             adAudio.volume = backgroundMusic.volume * AD_VOLUME_RATIO;
             adAudio.currentTime = 0;
             adAudio.play().catch(() => {});
@@ -29,7 +31,15 @@ if (adAudio) {
         }, randomDelay);
     }
 
+    window.stopAds = function () {
+        clearTimeout(adTimer);
+        adTimer = null;
+        adAudio.pause();
+        adAudio.currentTime = 0;
+    };
+
     window.startAds = function () {
+        clearTimeout(adTimer);
         setTimeout(scheduleNextAd, 30000);
     };
 }

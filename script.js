@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (adAudio) {
                     adAudio.pause();
                 }
+                // Stop the ad timer so no future ads fire while store is closed/minimized
+                if (tiendaIframe.contentWindow.stopAds) {
+                    tiendaIframe.contentWindow.stopAds();
+                }
             }
         } catch (e) {
             // Ignorar errores de cross-origin
@@ -39,6 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         audio.currentTime = Math.random() * audio.duration;
                     }
                     audio.play();
+                }
+                // Restart ad scheduling when store is opened
+                if (tiendaIframe.contentWindow.startAds) {
+                    tiendaIframe.contentWindow.startAds();
                 }
             }
         } catch (e) {
