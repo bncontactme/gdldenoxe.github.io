@@ -610,6 +610,8 @@ juntxs y brillando.`
                 musicPlayer.classList.remove('hidden');
                 const radioBtn = document.getElementById('taskbar-radio');
                 if (radioBtn) radioBtn.remove();
+            } else if (shortcut === 'palestina') {
+                window.open('https://www.unrwa.org/', '_blank');
             }
             
             startMenu.classList.remove('active');
