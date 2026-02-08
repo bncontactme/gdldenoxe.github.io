@@ -128,30 +128,119 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Funcionalidad de carpeta de artículos
-    const folderItems = document.querySelectorAll('.folder-item');
+    // =============================================
+    // SISTEMA DE ARTÍCULOS DINÁMICO (desde JSON)
+    // =============================================
     let selectedFolderItem = null;
 
-    folderItems.forEach(item => {
+    function wireWindowControls(win) {
+        makeDraggable(win);
+        win.addEventListener('mousedown', () => bringToFront(win));
+
+        win.querySelector('.close-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            win.classList.add('hidden');
+            updateTaskbar();
+        });
+        win.querySelector('.minimize-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            win.classList.add('minimized');
+            updateTaskbar();
+        });
+        win.querySelector('.maximize-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            win.classList.toggle('maximized');
+            if (win.classList.contains('maximized')) {
+                win.dataset.originalLeft = win.style.left;
+                win.dataset.originalTop = win.style.top;
+                win.dataset.originalWidth = win.style.width;
+            } else {
+                win.style.left = win.dataset.originalLeft;
+                win.style.top = win.dataset.originalTop;
+                win.style.width = win.dataset.originalWidth;
+                win.style.height = '';
+            }
+        });
+    }
+
+    function buildArticleWindow(art, idx) {
+        const screenW = globalThis.innerWidth;
+        const screenH = globalThis.innerHeight;
+        const x = Math.floor(80 + Math.random() * (screenW - 500));
+        const y = Math.floor(40 + Math.random() * (screenH - 500));
+
+        const win = document.createElement('div');
+        win.className = 'win95-window' + (idx > 0 ? ' hidden' : '');
+        win.dataset.windowId = 'art-' + art.id;
+        win.style.left = x + 'px';
+        win.style.top = y + 'px';
+        win.innerHTML = `
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo #${art.id}</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="article-image">
+                    <img src="${art.imagen}" alt="${art.titulo}">
+                </div>
+                <div class="article-description">
+                    <h3>${art.titulo}</h3>
+                    <p>${art.descripcion}</p>
+                    <button class="read-more-btn" data-art-id="${art.id}">Leer más</button>
+                </div>
+            </div>`;
+        wireWindowControls(win);
+        win.querySelector('.read-more-btn').addEventListener('click', () => {
+            window.location.href = `articulosPage/articulo.html?id=${art.id}`;
+        });
+        return win;
+    }
+
+    function buildFolderItem(art) {
+        const item = document.createElement('div');
+        item.className = 'folder-item';
+        item.dataset.openArticle = 'art-' + art.id;
+        item.innerHTML = `
+            <span class="folder-icon"><img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" class="folder-item-icon"></span>
+            <span class="folder-name">${art.titulo}.txt</span>`;
+
         item.addEventListener('click', (e) => {
             e.stopPropagation();
-            folderItems.forEach(i => i.classList.remove('selected'));
+            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
             selectedFolderItem = item;
         });
-
         item.addEventListener('dblclick', (e) => {
             e.stopPropagation();
-            const articleId = item.dataset.openArticle;
-            const articleWindow = document.querySelector(`[data-window-id="${articleId}"]`);
-            
-            if (articleWindow) {
-                articleWindow.classList.remove('hidden', 'minimized');
-                bringToFront(articleWindow);
+            const artWin = document.querySelector(`[data-window-id="${item.dataset.openArticle}"]`);
+            if (artWin) {
+                artWin.classList.remove('hidden', 'minimized');
+                bringToFront(artWin);
                 updateTaskbar();
             }
         });
-    });
+        return item;
+    }
+
+    // Fetch y render
+    fetch('articulosPage/articulos.json')
+        .then(r => r.json())
+        .then(articulos => {
+            const container = document.getElementById('articles-container');
+            const folderContent = document.getElementById('folder-articulos-content');
+
+            articulos.forEach((art, idx) => {
+                container.appendChild(buildArticleWindow(art, idx));
+                folderContent.appendChild(buildFolderItem(art));
+            });
+
+            updateTaskbar();
+        })
+        .catch(() => {});
 
     // Deseleccionar al hacer click en el escritorio
     document.querySelector('.desktop').addEventListener('click', () => {
@@ -163,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.folder-content').forEach(folder => {
         folder.addEventListener('click', (e) => {
             if (e.target === folder) {
-                folderItems.forEach(i => i.classList.remove('selected'));
+                document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
                 selectedFolderItem = null;
             }
         });
@@ -186,74 +275,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar imagen inicial
     loadRandomImage();
 
-    // Cargar imágenes random para artículos
-    const articleImages = document.querySelectorAll('.article-random-img');
-    articleImages.forEach(img => {
-        const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-        img.src = randomImage;
-    });
-
     // Sistema de poemas random
     const poemas = [
-        `En la noche tapatía,
-donde el mezcal fluye libre,
-las calles cobran vida
-y el alma se vuelve fibre.
+        `Cuando el sol se mete
+dentro de esa agua,
+yo me medio embriago
+y tú ahí sofocado,
 
-Entre luces y neones,
-historias se van tejiendo,
-la ciudad que no duerme
-sigue su ritmo creciendo.`,
-
-        `Después de las doce,
-cuando la luna se asoma,
-Guadalajara despierta
-con su propio idioma.
-
-De Chapultepec al centro,
-la movida está encendida,
-cada rincón un encuentro,
-cada encuentro una vida.`,
-
-        `Tacos al pastor a las tres,
-amistades que nacen al azar,
-la noche tapatía es
-un eterno despertar.
-
-No hay reloj que nos detenga,
-ni mañana que nos asuste,
-somos dueños del momento
-antes de que el día nos ajuste.`,
-
-        `En cada bar una historia,
-en cada copa un sueño,
-GDL de noche es gloria,
-puro pinche diseño.
-
-Underground o mainstream,
-todos somos iguales,
-cuando cae la noche, wey,
-no existen los niveles.`,
-
-        `La ciudad respira trap,
-respira corridos, respira amor,
-desde San Juan hasta Tlaquepaque
-todo es puro sabor.
-
-Aquí no hay pretensiones,
-solo ganas de vivir,
-Guadalajara de noche
-es imposible de describir.`,
-
-        `Cuando el sol se despide
-y las estrellas aparecen,
-los que saben, saben
-dónde las cosas suceden.
-
-No está en el mapa,
-no está en Google tampoco,
-está en el corazón
-de los que viven el rollo loco.`
+bailas y algo hago
+con mi abaniquito
+y mis pies mojados,
+juntxs y brillando.`
     ];
 
     // Cargar poemas random en los frames
@@ -420,14 +452,6 @@ de los que viven el rollo loco.`
                 window.style.width = window.dataset.originalWidth;
                 window.style.height = '';
             }
-        });
-    });
-
-    // Funcionalidad del botón "Leer más"
-    document.querySelectorAll('.read-more-btn').forEach((btn, index) => {
-        btn.addEventListener('click', () => {
-            const articleNum = index + 1;
-            window.location.href = `articulosPage/articulo${articleNum}.html`;
         });
     });
 

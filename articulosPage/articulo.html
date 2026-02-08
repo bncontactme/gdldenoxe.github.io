@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artículo - GDLDENOXE</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="article-container" id="article-container">
+        <header class="article-header">
+            <a href="../index.html" class="back-link">← Regresar</a>
+            <h1 id="art-title">Cargando...</h1>
+            <p class="article-meta" id="art-meta"></p>
+        </header>
+        
+        <img id="art-hero" src="" alt="" class="article-hero" style="display:none;">
+        
+        <article class="article-content" id="art-body"></article>
+        
+        <footer class="article-footer">
+            <a href="../index.html" class="back-link">← Regresar al inicio</a>
+        </footer>
+    </div>
+
+    <script>
+    (function () {
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) return;
+
+        fetch('articulos.json')
+            .then(r => r.json())
+            .then(articulos => {
+                const art = articulos.find(a => String(a.id) === id);
+                if (!art) {
+                    document.getElementById('art-title').textContent = 'Artículo no encontrado';
+                    return;
+                }
+
+                document.title = art.titulo + ' - GDLDENOXE';
+                document.getElementById('art-title').textContent = art.titulo;
+                document.getElementById('art-meta').textContent = art.meta;
+
+                const hero = document.getElementById('art-hero');
+                hero.src = '../' + art.imagen;
+                hero.alt = art.titulo;
+                hero.style.display = '';
+
+                const body = document.getElementById('art-body');
+                art.contenido.forEach(block => {
+                    let el;
+                    switch (block.tipo) {
+                        case 'lead':
+                            el = document.createElement('p');
+                            el.className = 'lead';
+                            el.textContent = block.texto;
+                            break;
+                        case 'h2':
+                            el = document.createElement('h2');
+                            el.textContent = block.texto;
+                            break;
+                        case 'quote':
+                            el = document.createElement('blockquote');
+                            el.textContent = '"' + block.texto + '"';
+                            break;
+                        default:
+                            el = document.createElement('p');
+                            el.textContent = block.texto;
+                    }
+                    body.appendChild(el);
+                });
+            })
+            .catch(() => {
+                document.getElementById('art-title').textContent = 'Error al cargar';
+            });
+    })();
+    </script>
+</body>
+</html>

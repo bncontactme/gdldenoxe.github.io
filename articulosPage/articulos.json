@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "titulo": "La Noche es Joven",
+    "meta": "GDL DE NOXE • Cultura Nocturna",
+    "descripcion": "Cuando el sol se oculta, Guadalajara despierta. Aquí te contamos las movidas que definen la escena nocturna tapatía, donde cada esquina tiene su historia y cada bar su leyenda.",
+    "imagen": "articulosPage/articuloImages/articulo1.jpg",
+    "contenido": [
+      {
+        "tipo": "lead",
+        "texto": "Cuando el sol se oculta, Guadalajara despierta. Aquí te contamos las movidas que definen la escena nocturna tapatía, donde cada esquina tiene su historia y cada bar su leyenda."
+      },
+      {
+        "tipo": "h2",
+        "texto": "El Despertar de la Ciudad"
+      },
+      {
+        "tipo": "p",
+        "texto": "A las 10 de la noche, cuando la mayoría de las ciudades comienzan a dormitar, Guadalajara apenas empieza a quitarse el sueño. Las luces de neón se encienden una por una, las bocinas empiezan a vibrar y la ciudad se transforma en algo completamente diferente."
+      },
+      {
+        "tipo": "p",
+        "texto": "No se trata solo de antros y bares—aunque de esos hay de sobra—se trata de toda una cultura que cobra vida cuando cae la noche. Desde los tacos al pastor de la madrugada hasta los after hours que no terminan hasta ver el amanecer, GDL tiene una identidad nocturna única."
+      },
+      {
+        "tipo": "h2",
+        "texto": "Los Spots Que No Puedes Perderte"
+      },
+      {
+        "tipo": "p",
+        "texto": "Si hay algo que define a la escena nocturna tapatía es su diversidad. En una misma noche puedes empezar en un bar tranquilo de Chapultepec, seguir en un antro de Providencia y terminar en un after en algún warehouse del centro. Cada zona tiene su onda, su público, su vibra."
+      },
+      {
+        "tipo": "p",
+        "texto": "La magia está en saber moverse. Los que conocen la ciudad saben que las mejores noches no se planean—surgen. Un mensaje en el grupo, una llamada de último minuto, y de repente estás en el lugar correcto en el momento perfecto."
+      },
+      {
+        "tipo": "h2",
+        "texto": "La Gente Que Hace La Noche"
+      },
+      {
+        "tipo": "p",
+        "texto": "Pero más allá de los lugares, lo que realmente define a GDL de noche es su gente. Los DJs que están cambiando el juego, los bartenders que ya te conocen por tu nombre, la crew con la que siempre te topas, los nuevos rostros que conoces cada fin de semana."
+      },
+      {
+        "tipo": "p",
+        "texto": "Esta ciudad tiene algo especial—una energía que no se explica, solo se vive. Y cuando la vives, cuando realmente te sumerges en la movida nocturna de Guadalajara, entiendes por qué tantos no queremos que amanezca nunca."
+      },
+      {
+        "tipo": "quote",
+        "texto": "La noche tapatía no es solo un horario, es una filosofía de vida."
+      },
+      {
+        "tipo": "p",
+        "texto": "Así que si estás leyendo esto y aún no has explorado lo que GDL tiene para ofrecer después del atardecer, ya sabes—la noche es joven, y siempre hay algo perro esperando a la vuelta de la esquina."
+      }
+    ]
+  }
+]
