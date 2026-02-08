@@ -164,7 +164,11 @@ function endGame(win) {
       const cell = state.cells[r][c];
       const el = getCellEl(r, c);
       if (cell.mine) {
-        el.classList.add('revealed', 'mine');
+        // Show flag on all mines (where they should have been flagged)
+        el.classList.add('revealed', 'flagged');
+      } else if (cell.flagged) {
+        // Wrong flag - show X on incorrectly flagged cells
+        el.classList.add('revealed', 'wrong-flag');
       }
     }
   }

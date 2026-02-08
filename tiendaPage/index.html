@@ -1,35 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="theme-color" content="#008080">
     <title>GDLDENOXE - Tienda</title>
 
     <!-- ORIGINAL CSS/JS (commented out while tienda is deactivated)
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="./script.js" defer></script>
+    <script src="script.js" defer></script>
     -->
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-color: rgb(245, 245, 245);
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             width: 100%;
             height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: rgb(245, 245, 245);
+            background-color: var(--bg-color);
             overflow: hidden;
         }
-
         .logo-container {
             display: flex;
             justify-content: center;
@@ -38,7 +34,6 @@
             height: 100%;
             padding: 2rem;
         }
-
         .logo-container img {
             max-width: 80%;
             max-height: 60%;
@@ -49,7 +44,7 @@
 
 <body>
     <div class="logo-container">
-        <img src="./assets/images/screenshots/GuadalajarDeNoche_Logotipo1.png" alt="Guadalajara de Noche">
+        <img src="assets/images/screenshots/GuadalajarDeNoche_Logotipo1.png" alt="Guadalajara de Noche" loading="lazy">
     </div>
 
     <!-- ====== TIENDA ORIGINAL CODE (commented out, uncomment to reactivate) ======
