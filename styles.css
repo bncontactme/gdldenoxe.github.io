@@ -614,15 +614,19 @@ body {
 .ms-face {
     width: 28px;
     height: 28px;
-    font-size: 18px;
-    line-height: 1;
-    padding: 0;
+    font-size: 0;
+    line-height: 0;
+    padding: 2px;
     cursor: pointer;
     background: #c0c0c0;
     border-top: 2px solid #ffffff;
     border-left: 2px solid #ffffff;
     border-right: 2px solid #000000;
     border-bottom: 2px solid #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .ms-face:active {
@@ -630,6 +634,14 @@ body {
     border-left: 2px solid #000000;
     border-right: 2px solid #ffffff;
     border-bottom: 2px solid #ffffff;
+}
+
+.ms-face-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
 }
 
 .ms-board {
@@ -672,6 +684,19 @@ body {
 
 .ms-cell.mine-hit {
     background: #ff0000;
+}
+
+.ms-cell.wrong-flag {
+    background: #c0c0c0;
+}
+
+.ms-sprite {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+    display: block;
 }
 
 .ms-n1 { color: #0000ff; }

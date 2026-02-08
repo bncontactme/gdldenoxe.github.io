@@ -870,6 +870,17 @@ de los que viven el rollo loco.`
 
       if (!msBoard) return;
 
+      // Win95 Minesweeper pixel-art sprites as inline SVGs
+      const SPRITES = {
+        faceSmile: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":)">`,
+        faceCool: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='4' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Crect x='11' y='7' width='5' height='2' rx='1' fill='%23000'/%3E%3Cpath d='M6 12 Q10 16 14 12' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="B)">`,
+        faceDead: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Cline x1='5' y1='5' x2='9' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='9' y1='5' x2='5' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='11' y1='5' x2='15' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Cline x1='15' y1='5' x2='11' y2='9' stroke='%23000' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='14' rx='3' ry='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt="X(">`,
+        faceOh: `<img class="ms-face-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23FFFF00'/%3E%3Ccircle cx='10' cy='10' r='9' fill='%23FFFF00' stroke='%23000' stroke-width='1'/%3E%3Crect x='6' y='6' width='2' height='3' fill='%23000'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23000'/%3E%3Ccircle cx='10' cy='14' r='2' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E" alt=":O">`,
+        mine: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Crect x='5' y='4' width='2' height='2' fill='%23fff'/%3E%3C/svg%3E" alt="*">`,
+        flag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpolygon points='4,2 4,8 10,5' fill='%23FF0000'/%3E%3Cline x1='4' y1='2' x2='4' y2='11' stroke='%23000' stroke-width='1.3'/%3E%3Crect x='2' y='11' width='5' height='1.5' fill='%23000'/%3E%3Crect x='1' y='12' width='7' height='1.5' fill='%23000'/%3E%3C/svg%3E" alt="F">`,
+        wrongFlag: `<img class="ms-sprite" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23000'/%3E%3Cline x1='7' y1='1' x2='7' y2='13' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='1' y1='7' x2='13' y2='7' stroke='%23000' stroke-width='1.2'/%3E%3Cline x1='3' y1='3' x2='11' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='11' y1='3' x2='3' y2='11' stroke='%23000' stroke-width='1'/%3E%3Cline x1='2' y1='2' x2='12' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3Cline x1='12' y1='2' x2='2' y2='12' stroke='%23FF0000' stroke-width='1.8'/%3E%3C/svg%3E" alt="X">`
+      };
+
       const levels = {
         beginner:     { rows: 9,  cols: 9,  mines: 10 },
         intermediate: { rows: 16, cols: 16, mines: 40 },
@@ -965,7 +976,7 @@ de los que viven el rollo loco.`
         const el = getCellEl(r, c);
         el.classList.add('revealed');
         if (cell.mine) {
-          el.textContent = '💣';
+          el.innerHTML = SPRITES.mine;
           el.classList.add('mine-hit');
           endGame(false);
           return;
@@ -992,14 +1003,18 @@ de los que viven el rollo loco.`
       function endGame(win) {
         st.over = true;
         stopTimerMs();
-        msResetBtn.textContent = win ? '😎' : '☹️';
+        msResetBtn.innerHTML = win ? SPRITES.faceCool : SPRITES.faceDead;
         for (let r = 0; r < st.rows; r++) {
           for (let c = 0; c < st.cols; c++) {
             const cell = st.cells[r][c];
             const el = getCellEl(r, c);
             if (cell.mine && !cell.revealed) {
               el.classList.add('revealed');
-              el.textContent = '💣';
+              el.innerHTML = SPRITES.mine;
+            }
+            if (!win && cell.flagged && !cell.mine) {
+              el.classList.add('revealed', 'wrong-flag');
+              el.innerHTML = SPRITES.wrongFlag;
             }
             el.removeEventListener('click', onReveal);
             el.removeEventListener('contextmenu', onFlag);
@@ -1025,7 +1040,7 @@ de los que viven el rollo loco.`
         cell.flagged = !cell.flagged;
         const el = getCellEl(r, c);
         el.classList.toggle('flagged', cell.flagged);
-        el.textContent = cell.flagged ? '🚩' : '';
+        el.innerHTML = cell.flagged ? SPRITES.flag : '';
         st.flagsLeft += cell.flagged ? -1 : 1;
         updateCounters();
       }
@@ -1033,13 +1048,24 @@ de los que viven el rollo loco.`
       function resetGame() {
         stopTimerMs();
         startTime = null;
-        msResetBtn.textContent = '🙂';
+        msResetBtn.innerHTML = SPRITES.faceSmile;
         st = createState(getLevel());
         renderBoard();
       }
 
       msResetBtn.addEventListener('click', resetGame);
       if (msLevelSel) msLevelSel.addEventListener('change', resetGame);
+
+      // Classic Win95: show 'oh' face while mouse is down on the board
+      msBoard.addEventListener('mousedown', () => {
+        if (!st.over) msResetBtn.innerHTML = SPRITES.faceOh;
+      });
+      msBoard.addEventListener('mouseup', () => {
+        if (!st.over) msResetBtn.innerHTML = SPRITES.faceSmile;
+      });
+      msBoard.addEventListener('mouseleave', () => {
+        if (!st.over) msResetBtn.innerHTML = SPRITES.faceSmile;
+      });
 
       resetGame();
     })();
