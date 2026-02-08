@@ -189,7 +189,7 @@
                 <span id="frame-title">Cargando...</span>
             </div>
             <div class="title-bar-controls">
-                <button onclick="window.location.href='index.html'">✕</button>
+                <button onclick="window.location.href='../index.html'">✕</button>
             </div>
         </div>
         <div class="frame-content">
@@ -206,27 +206,27 @@
             'galeria': {
                 title: 'Galería',
                 icon: 'https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png',
-                src: 'archivoPage/archivoPage.html'
+                src: '../archivoPage/archivoPage.html'
             },
             'tienda': {
                 title: 'Tienda',
                 icon: 'https://win98icons.alexmeub.com/icons/png/directory_e-0.png',
-                src: 'tiendaPage/index.html'
+                src: '../tiendaPage/index.html'
             },
             'articulos': {
                 title: 'Artículos',
                 icon: 'https://win98icons.alexmeub.com/icons/png/directory_closed-0.png',
-                src: 'articulosPage/index.html'
+                src: '../articulosPage/index.html'
             },
             'articulo': {
                 title: 'Artículo',
                 icon: 'https://win98icons.alexmeub.com/icons/png/notepad_file-0.png',
-                src: 'articulosPage/articulo.html?id=' + (artId || '1')
+                src: '../articulosPage/articulo.html?id=' + (artId || '1')
             },
             'minesweeper': {
                 title: 'Buscaminas',
                 icon: 'https://win98icons.alexmeub.com/icons/png/minesweeper-0.png',
-                src: 'buscaminasPage/index.html'
+                src: '../buscaminasPage/index.html'
             }
         };
 
@@ -237,7 +237,7 @@
             document.getElementById('frame-icon').src = config.icon;
             document.getElementById('frame-iframe').src = config.src;
         } else {
-            window.location.href = 'index.html';
+            window.location.href = '../index.html';
         }
     </script>
 </body>

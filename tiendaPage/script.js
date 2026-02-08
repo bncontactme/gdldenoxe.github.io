@@ -2,17 +2,17 @@
  * ADVERTISEMENT SYSTEM *
  ***********************/
 
-const adAudio = document.getElementById('ad-audio');
-const AD_VOLUME_RATIO = 0.35;
-let adTimer = null;
+(() => {
+    const adAudio = document.getElementById('ad-audio');
+    if (!adAudio) return;
 
-if (adAudio) {
-    adAudio.volume = 0;
+    const AD_VOLUME_RATIO = 0.35;
+    let adTimer = null;
 
     const playRandomAd = () => {
         if (document.hidden) return;
         const bgMusic = document.getElementById('background-music');
-        if (bgMusic && !bgMusic.paused) {
+        if (bgMusic?.paused === false) {
             adAudio.volume = bgMusic.volume * AD_VOLUME_RATIO;
             adAudio.currentTime = 0;
             adAudio.play().catch(() => {});
@@ -20,8 +20,7 @@ if (adAudio) {
     };
 
     const scheduleNextAd = () => {
-        const delay = (1.5 + Math.random()) * 60 * 1000;
-        clearTimeout(adTimer);
+        const delay = (90 + Math.random() * 60) * 1000;
         adTimer = setTimeout(() => {
             playRandomAd();
             scheduleNextAd();
@@ -37,32 +36,34 @@ if (adAudio) {
 
     window.startAds = () => {
         clearTimeout(adTimer);
-        setTimeout(scheduleNextAd, 30000);
+        adTimer = setTimeout(scheduleNextAd, 30000);
     };
-}
+})();
 
 /*****************************
  * BACKGROUND MUSIC (CROSSFADE)
  *****************************/
 
-const backgroundMusic = document.getElementById('background-music');
-const START_TIME = 5;
-const END_OFFSET = 5;
-const FADE_DURATION = 7;
+(() => {
+    const backgroundMusic = document.getElementById('background-music');
+    if (!backgroundMusic) return;
 
-if (backgroundMusic) {
+    const START_TIME = 5;
+    const END_OFFSET = 5;
+    const FADE_DURATION = 7;
+    const FADE_STEPS = 30;
+
     const bgClone = backgroundMusic.cloneNode(true);
     backgroundMusic.parentNode.appendChild(bgClone);
 
     let active = backgroundMusic;
     let inactive = bgClone;
     let crossfadeTimer = null;
-    let fadeIntervals = [];
+    const fadeIntervals = new Set();
 
     const fade = (audio, from, to, duration) => {
-        const steps = 30;
-        const stepTime = (duration * 1000) / steps;
-        const step = (to - from) / steps;
+        const stepTime = (duration * 1000) / FADE_STEPS;
+        const step = (to - from) / FADE_STEPS;
         let volume = from;
         audio.volume = from;
 
@@ -72,15 +73,14 @@ if (backgroundMusic) {
             if ((step > 0 && volume >= to) || (step < 0 && volume <= to)) {
                 audio.volume = to;
                 clearInterval(interval);
-                fadeIntervals = fadeIntervals.filter(i => i !== interval);
+                fadeIntervals.delete(interval);
             }
         }, stepTime);
-        fadeIntervals.push(interval);
+        fadeIntervals.add(interval);
     };
 
     const scheduleNextLoop = (audio) => {
-        const delay = (audio.duration - END_OFFSET - FADE_DURATION) * 1000;
-        clearTimeout(crossfadeTimer);
+        const delay = Math.max(0, (audio.duration - END_OFFSET - FADE_DURATION) * 1000);
         crossfadeTimer = setTimeout(crossfade, delay);
     };
 
@@ -99,8 +99,8 @@ if (backgroundMusic) {
     window.stopMusic = () => {
         clearTimeout(crossfadeTimer);
         crossfadeTimer = null;
-        fadeIntervals.forEach(i => clearInterval(i));
-        fadeIntervals = [];
+        fadeIntervals.forEach(clearInterval);
+        fadeIntervals.clear();
         backgroundMusic.pause();
         backgroundMusic.volume = 0;
         bgClone.pause();
@@ -116,57 +116,58 @@ if (backgroundMusic) {
             scheduleNextLoop(active);
         }).catch(() => {});
     };
-}
+})();
 
 /******************
  * MARQUEE BAR SETUP
  ******************/
 
-const marqueeContent = document.querySelector('.marquee-content');
-const marqueeText = document.querySelector('.marquee-text');
-
-if (marqueeContent && marqueeText) {
-    marqueeContent.appendChild(marqueeText.cloneNode(true));
-}
-
-/********************
- * RESPONSIVE WARNING
- ********************/
-
-const responsiveWarning = document.getElementById('responsive-warning');
-
-if (responsiveWarning && window.innerWidth <= 768) {
-    responsiveWarning.classList.add('show');
-}
+(() => {
+    const marqueeContent = document.querySelector('.marquee-content');
+    const marqueeText = document.querySelector('.marquee-text');
+    if (marqueeContent && marqueeText) {
+        marqueeContent.appendChild(marqueeText.cloneNode(true));
+    }
+})();
 
 /**********************
  * MODE TOGGLE BEHAVIOR
  **********************/
 
-const toggleModeBtn = document.getElementById('toggle-mode-btn');
-const body = document.body;
+(() => {
+    const toggleModeBtn = document.getElementById('toggle-mode-btn');
+    const responsiveWarning = document.getElementById('responsive-warning');
+    if (!toggleModeBtn) return;
 
-const applyMode = (mode) => {
-    body.classList.remove('light-mode', 'dark-mode');
-    body.classList.add(mode);
+    const { body } = document;
+    const LIGHT = 'light-mode';
+    const DARK = 'dark-mode';
 
-    const isDark = mode === 'dark-mode';
-    toggleModeBtn.style.color = isDark ? 'rgb(245, 245, 245)' : 'rgb(2, 4, 8)';
-    toggleModeBtn.innerHTML = isDark ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
-    if (responsiveWarning) {
-        responsiveWarning.style.backgroundColor = isDark ? 'rgb(2, 4, 8)' : 'rgb(245, 245, 245)';
-    }
-};
+    const applyMode = (mode) => {
+        body.classList.remove(LIGHT, DARK);
+        body.classList.add(mode);
 
-if (toggleModeBtn) {
-    applyMode(localStorage.getItem('mode') || 'light-mode');
+        const isDark = mode === DARK;
+        toggleModeBtn.style.color = isDark ? '#f5f5f5' : '#020408';
+        toggleModeBtn.innerHTML = `<i class="bi bi-${isDark ? 'sun-fill' : 'moon-stars-fill'}"></i>`;
+        if (responsiveWarning) {
+            responsiveWarning.style.backgroundColor = isDark ? '#020408' : '#f5f5f5';
+        }
+    };
+
+    applyMode(localStorage.getItem('mode') || LIGHT);
 
     toggleModeBtn.addEventListener('click', () => {
-        const newMode = body.classList.contains('light-mode') ? 'dark-mode' : 'light-mode';
+        const newMode = body.classList.contains(LIGHT) ? DARK : LIGHT;
         applyMode(newMode);
         localStorage.setItem('mode', newMode);
     });
-}
+
+    // Show responsive warning on mobile
+    if (responsiveWarning && window.innerWidth <= 768) {
+        responsiveWarning.classList.add('show');
+    }
+})();
 
 /************************
  * VISIBILITY SAFETY NET
@@ -177,4 +178,4 @@ document.addEventListener('visibilitychange', () => {
         window.stopMusic?.();
         window.stopAds?.();
     }
-});
+}, { passive: true });
