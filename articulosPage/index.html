@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artículos - GDLDENOXE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            background: #fff;
+            color: #000;
+            height: 100%;
+        }
+
+        /* Folder items grid */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 5px;
+            padding: 15px;
+        }
+
+        .folder-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .folder-item:active {
+            background: #000080;
+            color: #fff;
+            border: 2px dotted #fff;
+        }
+
+        .folder-item img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 5px;
+        }
+
+        .folder-item-label {
+            font-size: 11px;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        /* Status bar */
+        .status-bar {
+            background: #c0c0c0;
+            border-top: 1px solid #808080;
+            padding: 3px 8px;
+            font-size: 11px;
+            color: #000;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .status-bar span {
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #dfdfdf;
+            border-bottom: 1px solid #dfdfdf;
+            padding: 1px 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="folder-grid" id="folder-grid"></div>
+    <div class="status-bar">
+        <span id="status-text">Cargando...</span>
+    </div>
+
+    <script>
+        fetch('articulos.json')
+            .then(r => r.json())
+            .then(articulos => {
+                const grid = document.getElementById('folder-grid');
+                articulos.forEach(art => {
+                    const item = document.createElement('a');
+                    item.className = 'folder-item';
+                    item.href = '../frame.html?p=articulo&id=' + art.id;
+                    item.target = '_top';
+                    item.innerHTML = `
+                        <img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="">
+                        <span class="folder-item-label">${art.titulo}.txt</span>
+                    `;
+                    grid.appendChild(item);
+                });
+                document.getElementById('status-text').textContent = articulos.length + ' objeto(s)';
+            })
+            .catch(() => {
+                document.getElementById('status-text').textContent = 'Error al cargar';
+            });
+    </script>
+</body>
+</html>

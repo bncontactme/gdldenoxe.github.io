@@ -9,7 +9,7 @@
 <body>
     <div class="article-container" id="article-container">
         <header class="article-header">
-            <a href="../index.html" class="back-link">← Regresar</a>
+            <a href="../index.html" class="back-link" onclick="return goBack()">← Regresar</a>
             <h1 id="art-title">Cargando...</h1>
             <p class="article-meta" id="art-meta"></p>
         </header>
@@ -19,11 +19,25 @@
         <article class="article-content" id="art-body"></article>
         
         <footer class="article-footer">
-            <a href="../index.html" class="back-link">← Regresar al inicio</a>
+            <a href="../index.html" class="back-link" onclick="return goHome()">← Regresar al inicio</a>
         </footer>
     </div>
 
     <script>
+    function goBack() {
+        if (window.top !== window.self) {
+            window.top.location.href = '../frame.html?p=articulos';
+            return false;
+        }
+        return true;
+    }
+    function goHome() {
+        if (window.top !== window.self) {
+            window.top.location.href = '../index.html';
+            return false;
+        }
+        return true;
+    }
     (function () {
         const id = new URLSearchParams(window.location.search).get('id');
         if (!id) return;

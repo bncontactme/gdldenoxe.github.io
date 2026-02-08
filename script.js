@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1000);
 
+    // Mobile detection
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
     // Funcionalidad de iconos del escritorio
     const desktopIcons = document.querySelectorAll('.desktop-icon');
     let selectedIcon = null;
@@ -59,9 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
     desktopIcons.forEach(icon => {
         icon.addEventListener('click', (e) => {
             e.stopPropagation();
-            // Deseleccionar todos
+            const link = icon.dataset.link;
+            const folder = icon.dataset.folder;
+
+            if (isMobile()) {
+                if (link) {
+                    window.open(link, '_blank');
+                } else if (folder) {
+                    window.location.href = 'frame.html?p=' + folder;
+                }
+                return;
+            }
+
             desktopIcons.forEach(i => i.classList.remove('selected'));
-            // Seleccionar este
             icon.classList.add('selected');
             selectedIcon = icon;
         });
@@ -564,6 +579,22 @@ juntxs y brillando.`
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', () => {
             const shortcut = item.dataset.shortcut;
+
+            if (isMobile()) {
+                startMenu.classList.remove('active');
+                startButton.classList.remove('active');
+                if (shortcut === 'links') {
+                    window.location.href = 'https://linktr.ee/guadalajaradenoche';
+                } else if (shortcut === 'palestina') {
+                    window.open('https://www.unrwa.org/', '_blank');
+                } else if (shortcut === 'radio') {
+                    musicPlayer.classList.remove('hidden');
+                    musicPlayer.style.display = 'block';
+                } else {
+                    window.location.href = 'frame.html?p=' + shortcut;
+                }
+                return;
+            }
             
             if (shortcut === 'galeria') {
                 const galeriaWindow = document.querySelector('[data-window-id="galeria"]');

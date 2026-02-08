@@ -1169,12 +1169,173 @@ body {
 
 /* Responsivo */
 @media (max-width: 768px) {
-    .win95-window {
-        width: 90%;
-        max-width: 400px;
+    /* General */
+    body {
+        overflow: hidden;
     }
-    
+
     .desktop {
-        overflow: auto;
+        overflow: hidden;
+        height: calc(100vh - 44px);
+    }
+
+    /* ===== HIDE ALL WINDOWS ON MOBILE ===== */
+    .win95-window,
+    .music-player,
+    #win95-details-panel,
+    #articles-container {
+        display: none !important;
+    }
+
+    /* ===== DESKTOP ICONS - column like desktop ===== */
+    .desktop-icons {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        z-index: 1;
+    }
+
+    .desktop-icon {
+        width: 75px;
+        padding: 8px;
+        border: 2px solid transparent;
+    }
+
+    .desktop-icon.selected {
+        background: rgba(0, 0, 128, 0.3);
+        border: 2px dotted #fff;
+    }
+
+    .icon-image {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 5px;
+    }
+
+    .icon-image img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .icon-label {
+        font-size: 11px;
+    }
+
+    /* ===== TASKBAR ===== */
+    .taskbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 44px;
+        z-index: 10000;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .start-button {
+        padding: 6px 14px;
+        font-size: 12px;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .start-button img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .taskbar-items {
+        display: none;
+    }
+
+    .system-tray {
+        margin-left: auto;
+    }
+
+    .clock {
+        font-size: 12px;
+        padding: 0 10px;
+    }
+
+    /* ===== START MENU - compact ===== */
+    .start-menu {
+        width: 220px;
+        left: 2px !important;
+        bottom: 44px;
+    }
+
+    .start-menu-header {
+        font-size: 20px;
+        padding: 20px 8px;
+        letter-spacing: 1px;
+    }
+
+    .start-menu-items {
+        padding: 8px 0;
+    }
+
+    .menu-item {
+        padding: 14px 20px;
+        font-size: 14px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .menu-separator {
+        margin: 6px 15px;
+        height: 2px;
+        background: linear-gradient(to right, #808080, #dfdfdf);
+    }
+
+    /* ===== TOUCH IMPROVEMENTS ===== */
+    button, .folder-item, .desktop-icon, .menu-item, .taskbar-item {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        touch-action: manipulation;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+    .desktop-icons {
+        gap: 10px;
+        padding: 20px 15px;
+    }
+
+    .desktop-icon {
+        padding: 15px 8px;
+    }
+
+    .icon-image img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .icon-label {
+        font-size: 12px;
+    }
+
+    .menu-item {
+        padding: 12px 18px;
+        font-size: 13px;
+    }
+
+    .start-menu-header {
+        font-size: 18px;
     }
 }
