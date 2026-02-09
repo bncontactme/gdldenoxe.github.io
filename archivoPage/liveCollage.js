@@ -145,53 +145,44 @@
     }
   }
 
-  // Check if image exists
-  function checkImage(path) {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = path;
-    });
-  }
+  // GitHub API: list archiveImages folder contents (single request, zero 404s)
+  const GITHUB_API = 'https://api.github.com/repos/gdldenoxe/gdldenoxe.github.io/contents/archivoPage/archiveImages';
+  const CACHE_KEY = 'archiveImageList';
+  const CACHE_TTL = 600000; // 10 min cache
+  const IMAGE_EXTS = /\.(jpe?g|png|gif|webp|avif|svg)$/i;
 
-  // Check a single image number against all extensions in parallel
-  function checkNum(num) {
-    const extensions = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
-    const paths = extensions.map(ext => `archiveImages/archiveImage${num}.${ext}`);
-    return Promise.all(paths.map(p => checkImage(p).then(ok => ok ? p : null)))
-      .then(results => results.find(p => p !== null) || null);
-  }
-
-  // Discover available images — probe in parallel batches, then shuffle
   async function discoverImages() {
-    const BATCH = 10;
-    let start = 1;
-    let consecutiveMisses = 0;
+    let files = null;
 
-    while (consecutiveMisses < 10) {
-      const nums = Array.from({ length: BATCH }, (_, i) => start + i);
-      const hits = await Promise.all(nums.map(n => checkNum(n)));
+    // Try sessionStorage cache first
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { ts, data } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) files = data;
+      }
+    } catch (e) { /* ignore */ }
 
-      let batchHadHit = false;
-      for (const hit of hits) {
-        if (hit) {
-          if (hit.endsWith('.gif')) {
-            if (Math.random() < 0.65) archiveImages.push(hit);
-          } else {
-            archiveImages.push(hit);
-          }
-          batchHadHit = true;
+    // Fetch from GitHub API if no cache
+    if (!files) {
+      try {
+        const res = await fetch(GITHUB_API);
+        if (res.ok) {
+          const json = await res.json();
+          files = json
+            .filter(f => f.type === 'file' && IMAGE_EXTS.test(f.name))
+            .map(f => 'archiveImages/' + f.name);
+          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: files })); } catch (e) {}
         }
-      }
+      } catch (e) { /* network error */ }
+    }
 
-      // Count consecutive misses from the end of current range
-      if (batchHadHit) {
-        consecutiveMisses = 0;
-      } else {
-        consecutiveMisses += BATCH;
-      }
-      start += BATCH;
+    if (!files || !files.length) return;
+
+    // Add images, randomly thin out GIFs
+    for (const path of files) {
+      if (path.endsWith('.gif') && Math.random() < 0.35) continue;
+      archiveImages.push(path);
     }
 
     // Shuffle so display order is random
