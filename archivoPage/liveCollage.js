@@ -145,37 +145,20 @@
     }
   }
 
-  // GitHub API: list archiveImages folder contents (single request, zero 404s)
-  const GITHUB_API = 'https://api.github.com/repos/gdldenoxe/gdldenoxe.github.io/contents/archivoPage/archiveImages';
-  const CACHE_KEY = 'archiveImageList';
-  const CACHE_TTL = 600000; // 10 min cache
-  const IMAGE_EXTS = /\.(jpe?g|png|gif|webp|avif|svg)$/i;
+  // Local manifest listing all images (no API rate limits)
+  // To update after adding images:  cd archivoPage && bash generate-manifest.sh
+  const MANIFEST_URL = 'images.json';
 
   async function discoverImages() {
     let files = null;
 
-    // Try sessionStorage cache first
     try {
-      const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { ts, data } = JSON.parse(cached);
-        if (Date.now() - ts < CACHE_TTL) files = data;
+      const res = await fetch(MANIFEST_URL);
+      if (res.ok) {
+        const names = await res.json();
+        files = names.map(name => 'archiveImages/' + name);
       }
-    } catch (e) { /* ignore */ }
-
-    // Fetch from GitHub API if no cache
-    if (!files) {
-      try {
-        const res = await fetch(GITHUB_API);
-        if (res.ok) {
-          const json = await res.json();
-          files = json
-            .filter(f => f.type === 'file' && IMAGE_EXTS.test(f.name))
-            .map(f => 'archiveImages/' + f.name);
-          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: files })); } catch (e) {}
-        }
-      } catch (e) { /* network error */ }
-    }
+    } catch (e) { /* network error */ }
 
     if (!files || !files.length) return;
 
