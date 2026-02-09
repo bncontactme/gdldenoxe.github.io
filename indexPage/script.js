@@ -411,10 +411,9 @@ juntxs y brillando.`
     function randomizeWindowPositions() {
         if (isMobile()) return;
         const windows = Array.from($$('.win95-window:not(.hidden)'));
-        if (!windows.length) return;
-        
         const screenW = window.innerWidth;
         const gap = 12;
+        const iconAreaW = 110;
         
         // Separate windows by type
         let imgWin = null, artWin = null;
@@ -427,7 +426,6 @@ juntxs y brillando.`
         });
         
         // Position articulo at top-right
-        let rightColX = screenW - gap;
         let topY = gap;
         
         if (artWin) {
@@ -441,8 +439,18 @@ juntxs y brillando.`
             if (imgWin) {
                 const imgRect = imgWin.getBoundingClientRect();
                 const imgW = imgRect.width || 280;
+                const imgH = imgRect.height || 200;
                 imgWin.style.left = (screenW - artW - gap - imgW - gap) + 'px';
                 imgWin.style.top = topY + 'px';
+                
+                // Position music player BELOW the image
+                if (musicPlayer && !musicPlayer.classList.contains('hidden')) {
+                    const playerRect = musicPlayer.getBoundingClientRect();
+                    const playerW = playerRect.width || 280;
+                    musicPlayer.style.left = (screenW - artW - gap - imgW - gap) + 'px';
+                    musicPlayer.style.top = (topY + imgH + gap) + 'px';
+                    musicPlayer.style.transform = 'none';
+                }
             }
             
             // Others (poem etc) below articulo
@@ -660,10 +668,13 @@ juntxs y brillando.`
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             radio: () => {
-                if (radioAvailable) {
-                    musicPlayer?.classList.remove('hidden');
-                    $('#taskbar-radio')?.remove();
+                if (musicPlayer) {
+                    musicPlayer.classList.remove('hidden');
+                    musicPlayer.style.display = 'block';
+                    bringToFront(musicPlayer);
                 }
+                $('#taskbar-radio')?.remove();
+                setTimeout(randomizeWindowPositions, 50);
             }
         };
         
@@ -806,7 +817,10 @@ juntxs y brillando.`
             radioBtn.className = 'taskbar-item';
             radioBtn.innerHTML = '<img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
             radioBtn.addEventListener('click', () => {
-                musicPlayer?.classList.remove('hidden');
+                if (musicPlayer) {
+                    musicPlayer.classList.remove('hidden');
+                    bringToFront(musicPlayer);
+                }
                 radioBtn.remove();
             });
             taskbarItems?.appendChild(radioBtn);
@@ -824,6 +838,11 @@ juntxs y brillando.`
     
     // Cargar primera canción
     loadTrack(0);
+    
+    // Make music player draggable
+    if (musicPlayer) {
+        makeDraggable(musicPlayer);
+    }
 
     // ===== RADIO: Check Icecast status and auto-show player (1:1 con funcionalidad original) =====
     const streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';

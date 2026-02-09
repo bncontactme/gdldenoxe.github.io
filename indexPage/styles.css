@@ -1048,10 +1048,8 @@ body {
 
 /* Reproductor de música estilo Windows 95 */
 .music-player {
-    position: fixed;
-    bottom: 50px;
-    right: 20px;
-    width: 300px;
+    position: absolute;
+    width: 280px;
     background: var(--win95-gray);
     border-top: var(--border-raised);
     border-left: var(--border-raised);
@@ -1059,7 +1057,7 @@ body {
     border-bottom: var(--border-sunken);
     box-shadow: inset 1px 1px 0 var(--win95-light-gray), inset -1px -1px 0 var(--win95-dark-gray),
                 2px 2px 0 rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    z-index: 100;
     font-size: 11px;
 }
 
