@@ -220,6 +220,7 @@
       if (path) placeImage(path);
       imageTimeout = setTimeout(addNext, IMAGE_INTERVAL);
     }
+
     addNext();
   }
 
