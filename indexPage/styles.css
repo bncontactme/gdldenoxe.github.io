@@ -1310,6 +1310,8 @@ body {
         padding: 2px 4px;
         font-size: 11px;
         cursor: default;
+        touch-action: auto;
+        -webkit-user-drag: none;
     }
 
     .win95-window[data-window-id="random"] .title-bar-controls {
@@ -1344,6 +1346,8 @@ body {
         padding: 2px 4px;
         font-size: 11px;
         cursor: pointer;
+        touch-action: auto;
+        -webkit-user-drag: none;
     }
 
     .win95-window[data-window-id="articulo-widget"] .title-bar-controls {
@@ -1404,6 +1408,8 @@ body {
         padding: 2px 4px;
         font-size: 11px;
         cursor: default;
+        touch-action: auto;
+        -webkit-user-drag: none;
     }
 
     .win95-window[data-window-id="poema1"] .title-bar-controls {

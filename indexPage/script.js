@@ -508,9 +508,14 @@ juntxs y brillando.`
 
         titleBar.addEventListener('touchstart', (e) => {
             if (e.target.closest('.title-bar-controls')) return;
+            // On mobile, fully block drag for fixed widget windows
+            if (isMobile() && mobileFixedWidgets.includes(windowElement.dataset?.windowId)) {
+                e.preventDefault();
+                return;
+            }
             const touch = e.touches[0];
             startDrag(touch.clientX, touch.clientY, true);
-        }, { passive: true });
+        }, { passive: false });
     }
 
     const updateDragPosition = (clientX, clientY, isTouch) => {
