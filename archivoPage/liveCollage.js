@@ -26,8 +26,11 @@
 
   // Get random position avoiding last placement
   function getRandomPosition(size) {
-    const maxTop = collageContainer.offsetHeight - size;
-    const maxLeft = collageContainer.offsetWidth - size;
+    // Use viewport size as fallback since container is position:fixed inset:0
+    const containerH = collageContainer.offsetHeight || window.innerHeight;
+    const containerW = collageContainer.offsetWidth || window.innerWidth;
+    const maxTop = Math.max(0, containerH - size);
+    const maxLeft = Math.max(0, containerW - size);
     let top, left, attempts = 0;
 
     do {
@@ -35,7 +38,7 @@
       left = Math.random() * maxLeft;
       attempts++;
 
-      if (!lastPos.top || attempts >= 50) break;
+      if (lastPos.top === null || attempts >= 50) break;
 
       const dist = distance(
         left + size / 2, top + size / 2,
@@ -232,6 +235,13 @@
   // Display images periodically
   function startDisplaying() {
     function addNext() {
+      // Wait for container to have layout dimensions before placing
+      const w = collageContainer.offsetWidth || window.innerWidth;
+      const h = collageContainer.offsetHeight || window.innerHeight;
+      if (w < 10 || h < 10) {
+        requestAnimationFrame(addNext);
+        return;
+      }
       const path = selectImage();
       if (path) placeImage(path);
       imageTimeout = setTimeout(addNext, IMAGE_INTERVAL);
@@ -260,11 +270,10 @@
     resetTimeout = setTimeout(reset, RESET_INTERVAL);
   }
 
-  // Initialize gallery
+  // Initialize gallery — start discovery + display immediately
   function init() {
     collageContainer.style.display = 'block';
     discoverImages();
-    resetTimeout = setTimeout(reset, RESET_INTERVAL);
   }
 
   // Setup popup handlers
@@ -273,9 +282,12 @@
     const okBtn = document.getElementById('xp-popup-ok');
     const closeBtn = document.getElementById('xp-popup-close');
 
+    // Start images loading behind the popup right away
+    init();
+
     function dismiss() {
       overlay.style.display = 'none';
-      init();
+      resetTimeout = setTimeout(reset, RESET_INTERVAL);
     }
 
     okBtn.onclick = dismiss;
