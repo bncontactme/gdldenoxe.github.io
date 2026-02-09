@@ -475,12 +475,17 @@ juntxs y brillando.`
         }
     }
 
+    // Mobile widget IDs that should not be draggable
+    const mobileFixedWidgets = ['random', 'articulo-widget', 'poema1'];
+
     // Hacer las ventanas arrastrables
     function makeDraggable(windowElement) {
         const titleBar = windowElement.querySelector('.title-bar');
         if (!titleBar) return;
         
         const startDrag = (clientX, clientY, isTouch) => {
+            // On mobile, prevent dragging the fixed widget windows
+            if (isMobile() && mobileFixedWidgets.includes(windowElement.dataset?.windowId)) return;
             const rect = windowElement.getBoundingClientRect();
             draggedWindow = windowElement;
             offsetX = clientX - rect.left;
