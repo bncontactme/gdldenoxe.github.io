@@ -221,18 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildArticleWindow(art, idx, visible) {
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-        const x = Math.floor(80 + Math.random() * (screenW - 500));
-        const y = Math.floor(40 + Math.random() * (screenH - 500));
-
         const fullWin = buildFullArticleWindow(art);
         $('#articles-container').appendChild(fullWin);
 
         const win = document.createElement('div');
         win.className = 'win95-window' + (visible ? '' : ' hidden');
         win.dataset.windowId = 'art-' + art.id;
-        Object.assign(win.style, { left: x + 'px', top: y + 'px' });
         
         win.innerHTML = `
             <div class="title-bar">
@@ -352,8 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             updateTaskbar();
+            // Posicionar TODAS las ventanas en cascada después de cargar artículos
+            randomizeWindowPositions();
         })
-        .catch(() => {});
+        .catch(() => {
+            randomizeWindowPositions();
+        });
 
     // Deseleccionar al hacer click en el escritorio
     desktop?.addEventListener('click', () => {
@@ -409,39 +407,64 @@ juntxs y brillando.`
         if (poema1El) poema1El.textContent = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
     }
 
-    // Posicionar ventanas aleatoriamente al inicio
+    // Posicionar ventanas sin overlap, imagen a la izquierda del artículo
     function randomizeWindowPositions() {
-        const windows = $$('.win95-window:not(.hidden)');
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        const windowWidth = 420;
-        const windowHeight = 500;
-        const iconAreaWidth = 150;
-        const minPadding = 50;
-        const taskbarHeight = 40;
-        const positions = [];
+        if (isMobile()) return;
+        const windows = Array.from($$('.win95-window:not(.hidden)'));
+        if (!windows.length) return;
         
+        const screenW = window.innerWidth;
+        const gap = 12;
+        
+        // Separate windows by type
+        let imgWin = null, artWin = null;
+        const others = [];
         windows.forEach(win => {
-            let x, y, hasOverlap, attempts = 0;
-            
-            do {
-                x = Math.random() * (screenWidth - windowWidth - iconAreaWidth - 100) + iconAreaWidth + 50;
-                y = Math.random() * (screenHeight - windowHeight - taskbarHeight - 100) + 30;
-                
-                x = Math.max(iconAreaWidth + 50, Math.min(x, screenWidth - windowWidth - 20));
-                y = Math.max(30, Math.min(y, screenHeight - windowHeight - taskbarHeight - 20));
-                
-                hasOverlap = positions.some(pos => 
-                    Math.abs(pos.x - x) < (windowWidth + minPadding) && 
-                    Math.abs(pos.y - y) < (windowHeight + minPadding)
-                );
-                attempts++;
-            } while (hasOverlap && attempts < 300);
-            
-            positions.push({ x, y });
-            win.style.left = Math.floor(x) + 'px';
-            win.style.top = Math.floor(y) + 'px';
+            const id = win.dataset.windowId || '';
+            if (id === 'random') imgWin = win;
+            else if (id.startsWith('art-')) artWin = win;
+            else others.push(win);
         });
+        
+        // Position articulo at top-right
+        let rightColX = screenW - gap;
+        let topY = gap;
+        
+        if (artWin) {
+            const artRect = artWin.getBoundingClientRect();
+            const artW = artRect.width || 280;
+            const artH = artRect.height || 300;
+            artWin.style.left = (screenW - artW - gap) + 'px';
+            artWin.style.top = topY + 'px';
+            
+            // Position image to the LEFT of articulo
+            if (imgWin) {
+                const imgRect = imgWin.getBoundingClientRect();
+                const imgW = imgRect.width || 280;
+                imgWin.style.left = (screenW - artW - gap - imgW - gap) + 'px';
+                imgWin.style.top = topY + 'px';
+            }
+            
+            // Others (poem etc) below articulo
+            let belowY = topY + artH + gap;
+            others.forEach(win => {
+                const rect = win.getBoundingClientRect();
+                const w = rect.width || 280;
+                win.style.left = (screenW - w - gap) + 'px';
+                win.style.top = belowY + 'px';
+                belowY += (rect.height || 200) + gap;
+            });
+        } else {
+            // Fallback: stack all on right
+            let ry = gap;
+            windows.forEach(win => {
+                const rect = win.getBoundingClientRect();
+                const w = rect.width || 280;
+                win.style.left = (screenW - w - gap) + 'px';
+                win.style.top = ry + 'px';
+                ry += (rect.height || 200) + gap;
+            });
+        }
     }
 
     // Hacer las ventanas arrastrables
@@ -664,9 +687,6 @@ juntxs y brillando.`
 
     // Inicializar taskbar
     updateTaskbar();
-    
-    // Posicionar ventanas aleatoriamente
-    randomizeWindowPositions();
 
     // ==================== REPRODUCTOR DE MÚSICA ====================
     

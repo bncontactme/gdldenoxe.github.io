@@ -117,7 +117,7 @@ body {
     box-shadow: inset 1px 1px 0 var(--win95-light-gray), inset -1px -1px 0 var(--win95-dark-gray),
                 2px 2px 0 rgba(0, 0, 0, 0.2);
     position: absolute;
-    width: 420px;
+    width: 280px;
     z-index: 1;
 }
 
@@ -242,13 +242,13 @@ body {
 
 /* Cuerpo de la ventana */
 .window-body {
-    padding: 10px;
+    padding: 6px;
     background: var(--win95-gray);
 }
 
 .article-image {
     width: 100%;
-    height: 250px;
+    height: 150px;
     background: var(--win95-white);
     border-top: var(--inset-light);
     border-left: var(--inset-light);
@@ -270,19 +270,19 @@ body {
     border-left: var(--inset-light);
     border-right: var(--inset-dark);
     border-bottom: var(--inset-dark);
-    padding: 10px;
+    padding: 6px;
 }
 
 .article-description h3 {
-    font-size: 16px;
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 4px;
     color: var(--win95-blue);
 }
 
 .article-description p {
-    font-size: 12px;
-    line-height: 1.5;
-    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 1.3;
+    margin-bottom: 6px;
     color: var(--win95-black);
 }
 
@@ -473,7 +473,7 @@ body {
 
 .random-image-container img {
     width: 100%;
-    height: 300px;
+    height: 180px;
     object-fit: cover;
     border-top: var(--inset-light);
     border-left: var(--inset-light);
@@ -488,16 +488,14 @@ body {
     border-left: var(--inset-light);
     border-right: var(--inset-dark);
     border-bottom: var(--inset-dark);
-    padding: 15px;
-    min-height: 200px;
-    max-height: 300px;
-    overflow-y: auto;
+    padding: 10px;
+    overflow: hidden;
 }
 
 .poem-text {
     font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.4;
     color: var(--win95-black);
     white-space: pre-wrap;
     margin: 0;
