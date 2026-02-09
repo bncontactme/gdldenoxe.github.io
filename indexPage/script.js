@@ -831,8 +831,8 @@ juntxs y brillando.`
     let radioAvailable = false;
     const radioMenuItem = $('[data-shortcut="radio"]');
     
-    // Initially hide menu item until we confirm stream is live
-    if (radioMenuItem) radioMenuItem.style.display = 'none';
+    // Radio menu item ALWAYS visible in start menu
+    if (radioMenuItem) radioMenuItem.style.display = '';
 
     function checkIcecastStatus() {
         fetch(statusUrl)
@@ -847,8 +847,6 @@ juntxs y brillando.`
                 radioAvailable = live;
                 
                 if (live) {
-                    // Show menu item
-                    if (radioMenuItem) radioMenuItem.style.display = '';
                     // Auto-show player when live (1:1 with old brutalist widget behavior)
                     if (musicPlayer) {
                         musicPlayer.classList.remove('hidden');
@@ -859,8 +857,7 @@ juntxs y brillando.`
                         loadTrack(0);
                     }
                 } else {
-                    // Hide menu item and player when offline
-                    if (radioMenuItem) radioMenuItem.style.display = 'none';
+                    // When offline, hide player but keep menu item visible
                     if (musicPlayer) {
                         musicPlayer.classList.add('hidden');
                     }
@@ -875,7 +872,7 @@ juntxs y brillando.`
             .catch(function(err) {
                 console.warn('[Radio] Icecast check failed:', err);
                 radioAvailable = false;
-                if (radioMenuItem) radioMenuItem.style.display = 'none';
+                // Keep menu item visible even on error
                 if (musicPlayer) musicPlayer.classList.add('hidden');
             });
     }
