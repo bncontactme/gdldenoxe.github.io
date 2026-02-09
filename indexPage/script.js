@@ -645,7 +645,14 @@ juntxs y brillando.`
             const mobileActions = {
                 links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
                 palestina: () => window.open('https://www.unrwa.org/', '_blank'),
-                radio: () => { if (radioAvailable) { musicPlayer.classList.remove('hidden'); musicPlayer.style.display = 'block'; } },
+                radio: () => {
+                    if (musicPlayer) {
+                        musicPlayer.classList.remove('hidden');
+                        musicPlayer.style.display = 'block';
+                        musicPlayer.style.visibility = 'visible';
+                        bringToFront(musicPlayer);
+                    }
+                },
                 minesweeper: () => {
                     const msWin = $('[data-window-id="minesweeper"]');
                     if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
@@ -668,13 +675,17 @@ juntxs y brillando.`
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             radio: () => {
-                if (musicPlayer) {
-                    musicPlayer.classList.remove('hidden');
-                    musicPlayer.style.display = 'block';
-                    bringToFront(musicPlayer);
+                const player = $('#musicPlayer');
+                if (player) {
+                    player.classList.remove('hidden');
+                    player.style.display = 'block';
+                    player.style.visibility = 'visible';
+                    bringToFront(player);
+                    $('#taskbar-radio')?.remove();
+                    setTimeout(() => randomizeWindowPositions(), 50);
+                } else {
+                    console.error('[Radio] Music player element not found');
                 }
-                $('#taskbar-radio')?.remove();
-                setTimeout(randomizeWindowPositions, 50);
             }
         };
         
@@ -820,6 +831,7 @@ juntxs y brillando.`
                 if (musicPlayer) {
                     musicPlayer.classList.remove('hidden');
                     bringToFront(musicPlayer);
+                    setTimeout(randomizeWindowPositions, 50);
                 }
                 radioBtn.remove();
             });

@@ -1450,6 +1450,7 @@ body {
         border-bottom: 2px solid #000;
         box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
                     2px 2px 0 rgba(0,0,0,0.25);
+        display: block;
     }
 
     .music-player.hidden {
