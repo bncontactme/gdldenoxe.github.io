@@ -152,31 +152,49 @@
     });
   }
 
-  // Discover available images
-  async function discoverImages() {
+  // Check a single image number against all extensions in parallel
+  function checkNum(num) {
     const extensions = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
-    let num = 1;
-    let failures = 0;
+    const paths = extensions.map(ext => `archiveImages/archiveImage${num}.${ext}`);
+    return Promise.all(paths.map(p => checkImage(p).then(ok => ok ? p : null)))
+      .then(results => results.find(p => p !== null) || null);
+  }
 
-    while (failures < 10) {
-      let found = false;
+  // Discover available images — probe in parallel batches, then shuffle
+  async function discoverImages() {
+    const BATCH = 10;
+    let start = 1;
+    let consecutiveMisses = 0;
 
-      for (const ext of extensions) {
-        const path = `archiveImages/archiveImage${num}.${ext}`;
-        if (await checkImage(path)) {
-          // Add GIFs with 65% probability
-          if (ext === 'gif') {
-            if (Math.random() < 0.65) archiveImages.push(path);
+    while (consecutiveMisses < 10) {
+      const nums = Array.from({ length: BATCH }, (_, i) => start + i);
+      const hits = await Promise.all(nums.map(n => checkNum(n)));
+
+      let batchHadHit = false;
+      for (const hit of hits) {
+        if (hit) {
+          if (hit.endsWith('.gif')) {
+            if (Math.random() < 0.65) archiveImages.push(hit);
           } else {
-            archiveImages.push(path);
+            archiveImages.push(hit);
           }
-          found = true;
-          break;
+          batchHadHit = true;
         }
       }
 
-      failures = found ? 0 : failures + 1;
-      num++;
+      // Count consecutive misses from the end of current range
+      if (batchHadHit) {
+        consecutiveMisses = 0;
+      } else {
+        consecutiveMisses += BATCH;
+      }
+      start += BATCH;
+    }
+
+    // Shuffle so display order is random
+    for (let i = archiveImages.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [archiveImages[i], archiveImages[j]] = [archiveImages[j], archiveImages[i]];
     }
 
     if (archiveImages.length) startDisplaying();
