@@ -1,150 +1,181 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const imageContainer = document.getElementById("image-container");
+/***********************
+ * ADVERTISEMENT SYSTEM *
+ ***********************/
 
-  const getProductData = () => {
-    const products = [];
-    const productElements = document.querySelectorAll('.product');
-    
-    productElements.forEach(productElement => {
-      const title = productElement.getAttribute('data-title');
-      const main = productElement.getAttribute('data-main');
-      const sub = JSON.parse(productElement.getAttribute('data-sub'));
-      const description = productElement.getAttribute('data-description');
-      const price = productElement.getAttribute('data-price');
-      const buyUrl = productElement.getAttribute('data-buy-url');
-      const stock = productElement.getAttribute('data-stock') || "in"; // Default to "in" if not specified
-  
-      products.push({ title, main, sub, description, price, buyUrl, stock });
-    });
-  
-    return products;
-  };
+(() => {
+    const adAudio = document.getElementById('ad-audio');
+    if (!adAudio) return;
 
-  const desktopImageSize = { width: 180, height: 180 };
-  const mobileImageSize = { width: 70, height: 70 };
+    const AD_VOLUME_RATIO = 0.35;
+    let adTimer = null;
 
-  const getRandomPosition = () => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const x = Math.random() * screenWidth;
-    const y = Math.random() * screenHeight;
-    return { x, y };
-  };
+    const playRandomAd = () => {
+        if (document.hidden) return;
+        const bgMusic = document.getElementById('background-music');
+        if (bgMusic?.paused === false) {
+            adAudio.volume = bgMusic.volume * AD_VOLUME_RATIO;
+            adAudio.currentTime = 0;
+            adAudio.play().catch(() => {});
+        }
+    };
 
-  const createImageElement = (product, isMobile) => {
-    const img = document.createElement("img");
-    img.src = product.main;
-    img.classList.add("image");
+    const scheduleNextAd = () => {
+        const delay = (90 + Math.random() * 60) * 1000;
+        adTimer = setTimeout(() => {
+            playRandomAd();
+            scheduleNextAd();
+        }, delay);
+    };
 
-    const { width, height } = isMobile ? mobileImageSize : desktopImageSize;
-    img.style.width = `${width}px`;
-    img.style.height = `${height}px`;
-    
-    const { x, y } = getRandomPosition();
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
+    window.stopAds = () => {
+        clearTimeout(adTimer);
+        adTimer = null;
+        adAudio.pause();
+        adAudio.currentTime = 0;
+    };
 
-    const randomZIndex = Math.floor(Math.random() * 1000);
-    img.style.zIndex = randomZIndex;
+    window.startAds = () => {
+        clearTimeout(adTimer);
+        adTimer = setTimeout(scheduleNextAd, 30000);
+    };
+})();
 
-    if (product.stock === "out") {
-      img.style.opacity = "1";
-      img.style.cursor = "allowed";
+/*****************************
+ * BACKGROUND MUSIC (CROSSFADE)
+ *****************************/
+
+(() => {
+    const backgroundMusic = document.getElementById('background-music');
+    if (!backgroundMusic) return;
+
+    const START_TIME = 5;
+    const END_OFFSET = 5;
+    const FADE_DURATION = 7;
+    const FADE_STEPS = 30;
+
+    const bgClone = backgroundMusic.cloneNode(true);
+    backgroundMusic.parentNode.appendChild(bgClone);
+
+    let active = backgroundMusic;
+    let inactive = bgClone;
+    let crossfadeTimer = null;
+    const fadeIntervals = new Set();
+
+    const fade = (audio, from, to, duration) => {
+        const stepTime = (duration * 1000) / FADE_STEPS;
+        const step = (to - from) / FADE_STEPS;
+        let volume = from;
+        audio.volume = from;
+
+        const interval = setInterval(() => {
+            volume += step;
+            audio.volume = Math.max(0, Math.min(1, volume));
+            if ((step > 0 && volume >= to) || (step < 0 && volume <= to)) {
+                audio.volume = to;
+                clearInterval(interval);
+                fadeIntervals.delete(interval);
+            }
+        }, stepTime);
+        fadeIntervals.add(interval);
+    };
+
+    const scheduleNextLoop = (audio) => {
+        const delay = Math.max(0, (audio.duration - END_OFFSET - FADE_DURATION) * 1000);
+        crossfadeTimer = setTimeout(crossfade, delay);
+    };
+
+    const crossfade = () => {
+        inactive.currentTime = START_TIME;
+        inactive.play();
+        fade(inactive, 0, 1, FADE_DURATION);
+        fade(active, 1, 0, FADE_DURATION);
+        [active, inactive] = [inactive, active];
+        scheduleNextLoop(active);
+    };
+
+    backgroundMusic.volume = 0;
+    bgClone.volume = 0;
+
+    window.stopMusic = () => {
+        clearTimeout(crossfadeTimer);
+        crossfadeTimer = null;
+        fadeIntervals.forEach(clearInterval);
+        fadeIntervals.clear();
+        backgroundMusic.pause();
+        backgroundMusic.volume = 0;
+        bgClone.pause();
+        bgClone.volume = 0;
+    };
+
+    window.startMusic = () => {
+        if (!active.paused) return;
+        active.currentTime = START_TIME;
+        active.volume = 0;
+        active.play().then(() => {
+            fade(active, 0, 1, FADE_DURATION);
+            scheduleNextLoop(active);
+        }).catch(() => {});
+    };
+})();
+
+/******************
+ * MARQUEE BAR SETUP
+ ******************/
+
+(() => {
+    const marqueeContent = document.querySelector('.marquee-content');
+    const marqueeText = document.querySelector('.marquee-text');
+    if (marqueeContent && marqueeText) {
+        marqueeContent.appendChild(marqueeText.cloneNode(true));
     }
+})();
 
-    img.addEventListener("click", () => {
-      showPreview(product);
+/**********************
+ * MODE TOGGLE BEHAVIOR
+ **********************/
+
+(() => {
+    const toggleModeBtn = document.getElementById('toggle-mode-btn');
+    const responsiveWarning = document.getElementById('responsive-warning');
+    if (!toggleModeBtn) return;
+
+    const { body } = document;
+    const LIGHT = 'light-mode';
+    const DARK = 'dark-mode';
+
+    const applyMode = (mode) => {
+        body.classList.remove(LIGHT, DARK);
+        body.classList.add(mode);
+
+        const isDark = mode === DARK;
+        toggleModeBtn.style.color = isDark ? '#f5f5f5' : '#020408';
+        toggleModeBtn.innerHTML = `<i class="bi bi-${isDark ? 'sun-fill' : 'moon-stars-fill'}"></i>`;
+        if (responsiveWarning) {
+            responsiveWarning.style.backgroundColor = isDark ? '#020408' : '#f5f5f5';
+        }
+    };
+
+    applyMode(localStorage.getItem('mode') || LIGHT);
+
+    toggleModeBtn.addEventListener('click', () => {
+        const newMode = body.classList.contains(LIGHT) ? DARK : LIGHT;
+        applyMode(newMode);
+        localStorage.setItem('mode', newMode);
     });
 
-    return img;
-  };
-
-  const showPreview = (product) => {
-    const previewModal = document.createElement("div");
-    previewModal.classList.add("preview-modal");
-
-    const modalContent = document.createElement("div");
-    modalContent.classList.add("modal-content");
-
-    const previewImage = document.createElement("img");
-    previewImage.src = product.main;
-    previewImage.classList.add("preview-image");
-
-    const carouselContainer = document.createElement("div");
-    carouselContainer.classList.add("carousel-container");
-
-    product.sub.forEach(subImage => {
-      const carouselImage = document.createElement("img");
-      carouselImage.src = subImage;
-      carouselImage.classList.add("carousel-image");
-      carouselImage.addEventListener("click", () => {
-        previewImage.src = subImage;
-      });
-      carouselContainer.appendChild(carouselImage);
-    });
-
-    const titleText = document.createElement("p");
-    titleText.classList.add("product-title");
-    titleText.textContent = product.title;
-
-    const descriptionText = document.createElement("p");
-    descriptionText.classList.add("description-text");
-    descriptionText.textContent = product.description;
-
-    const priceText = document.createElement("p");
-    priceText.classList.add("price-text");
-    if (product.stock === "out") {
-      priceText.textContent = `${product.price}`;
-      priceText.style.color = "red";
-    } else {
-      priceText.textContent = `${product.price}`;
+    // Show responsive warning on mobile
+    if (responsiveWarning && window.innerWidth <= 768) {
+        responsiveWarning.classList.add('show');
     }
+})();
 
-    const payButton = document.createElement("button");
-    payButton.classList.add("pay-button");
-    payButton.textContent = "Buy Now";
-    if (product.stock === "out") {
-      payButton.style.backgroundColor = "red";
-      payButton.textContent = "Out Of Stock";
-      payButton.disabled = true;
-      payButton.style.cursor = "not-allowed";
-    } else {
-      payButton.addEventListener("click", () => {
-        window.location.href = product.buyUrl;
-      });
+/************************
+ * VISIBILITY SAFETY NET
+ ************************/
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        window.stopMusic?.();
+        window.stopAds?.();
     }
-
-    const closeButton = document.createElement("button");
-    closeButton.textContent = "X";
-    closeButton.classList.add("close-preview");
-    closeButton.addEventListener("click", () => {
-      previewModal.remove();
-    });
-
-    modalContent.appendChild(closeButton);
-    modalContent.appendChild(previewImage);
-    modalContent.appendChild(carouselContainer);
-    modalContent.appendChild(titleText);
-    modalContent.appendChild(descriptionText);
-    modalContent.appendChild(priceText);
-    modalContent.appendChild(payButton);
-    previewModal.appendChild(modalContent);
-    document.body.appendChild(previewModal);
-  };
-
-  const loadRandomImages = () => {
-    const isMobile = window.innerWidth <= 768;
-    const imageCount = 45;
-
-    const products = getProductData();
-
-    products.forEach(product => {
-      for (let i = 0; i < imageCount; i++) {
-        const img = createImageElement(product, isMobile);
-        imageContainer.appendChild(img);
-      }
-    });
-  };
-
-  loadRandomImages();
-});
+}, { passive: true });

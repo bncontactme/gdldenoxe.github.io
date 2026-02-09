@@ -1,38 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARCHIVO X GDN</title>
-  <link rel="icon" href="/indexPage/indexImages/cursor_gdn.png" type="image/x-icon">
+  <meta name="description" content="Archivo virtual - memoria colectiva">
+  <title>Archivo</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="jquery.min.js"></script>
-  <script src="isotope.pkgd.js"></script>
-  <script src="imagesloaded.pkgd.js"></script>
-  <script src="packery-mode.pkgd.js"></script>
 </head>
-
 <body>
-    
-  <div id="loading-screen">
-    <h1>LA MOVIDA TAPATÍA</h1>
-    <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
+  <!-- Windows XP Disclaimer Popup -->
+  <div id="xp-popup-overlay">
+    <div id="xp-popup-window">
+      <div id="xp-popup-titlebar">
+        <span id="xp-popup-title">Mensaje</span>
+        <button id="xp-popup-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="xp-popup-content">
+        <div id="xp-popup-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="#316AC5" stroke="#000" stroke-width="1"/>
+            <text x="16" y="22" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+          </svg>
+        </div>
+        <div id="xp-popup-body">
+          <p id="xp-popup-message">
+            Este es nuestro archivo virtual: imágenes compartidas de trayectos, encuentros y fragmentos nocturnos, como memoria colectiva.<br><br>
+            Gracias por compartir este momento con nosotros.
+          </p>
+          <div id="xp-popup-buttons">
+            <button id="xp-popup-ok" type="button">OK</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="sort-options">
-    <img src="dice.png" alt="Dice Icon" id="dice-icon" class="rizz-button" />
+  <!-- Live Collage Gallery -->
+  <div id="live-collage-container" aria-label="Galería de imágenes"></div>
+
+  <!-- Image Details Popup (mobile / standalone) -->
+  <div id="img-details-overlay">
+    <div id="img-details-window">
+      <div id="img-details-titlebar">
+        <span>Detalles</span>
+        <button id="img-details-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="img-details-body">
+        <img id="img-details-preview" src="" alt="Vista previa">
+        <dl id="img-details-info">
+          <dt>Archivo</dt>
+          <dd id="detail-filename">—</dd>
+          <dt>Tipo</dt>
+          <dd id="detail-type">—</dd>
+          <dt>Dimensiones</dt>
+          <dd id="detail-dimensions">—</dd>
+        </dl>
+        <button id="img-details-ok" type="button">OK</button>
+      </div>
+    </div>
   </div>
 
-  <div class="grid" id="image-gallery">
-      <!-- Images will be dynamically inserted here -->
-  </div>
-      
+  <script src="liveCollage.js" defer></script>
 </body>
-
-<script src="script.js"></script>
-
 </html>

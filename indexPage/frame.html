@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#008080">
+    <title>GDLDENOXE</title>
+    <link rel="preconnect" href="https://win98icons.alexmeub.com" crossorigin>
+    <style>
+        :root {
+            --win95-gray: #c0c0c0;
+            --win95-dark-gray: #808080;
+            --win95-light-gray: #dfdfdf;
+            --win95-blue: #000080;
+            --win95-blue-light: #1084d0;
+            --win95-teal: #008080;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            background: var(--win95-teal);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .win95-frame {
+            background: var(--win95-gray);
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #000;
+            border-bottom: 2px solid #000;
+            box-shadow: inset 1px 1px 0 var(--win95-light-gray), inset -1px -1px 0 var(--win95-dark-gray);
+            margin: 6px;
+            height: calc(100vh - 12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-bar {
+            background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+            color: #fff;
+            padding: 3px 4px 3px 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+            min-height: 22px;
+        }
+
+        .title-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .title-bar-left img {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .title-bar-left span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .title-bar-controls {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+            margin-left: 4px;
+        }
+
+        .title-bar-controls button {
+            background: var(--win95-gray);
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .title-bar-controls button:active {
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+        }
+
+        .title-bar-controls button:hover {
+            background: #d0d0d0;
+        }
+
+        .frame-content {
+            flex: 1;
+            border-top: 2px solid var(--win95-dark-gray);
+            border-left: 2px solid var(--win95-dark-gray);
+            border-right: 2px solid var(--win95-light-gray);
+            border-bottom: 2px solid var(--win95-light-gray);
+            margin: 2px 3px 3px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .frame-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+            .win95-frame {
+                margin: 4px;
+                height: calc(100vh - 8px);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .win95-frame {
+                margin: 4px;
+                height: calc(100vh - 8px);
+                box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                            2px 2px 0 rgba(0,0,0,0.15);
+            }
+
+            .title-bar {
+                padding: 4px 6px;
+                font-size: 12px;
+                min-height: 26px;
+            }
+
+            .title-bar-left img {
+                width: 16px;
+                height: 16px;
+            }
+
+            .title-bar-controls button {
+                width: 20px;
+                height: 18px;
+                font-size: 12px;
+            }
+
+            .frame-content {
+                margin: 2px;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 400px) {
+            .win95-frame {
+                margin: 3px;
+                height: calc(100vh - 6px);
+            }
+
+            .title-bar {
+                padding: 3px 5px;
+                font-size: 11px;
+                min-height: 24px;
+            }
+
+            .frame-content {
+                margin: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="win95-frame">
+        <div class="title-bar">
+            <div class="title-bar-left">
+                <img id="frame-icon" src="" alt="">
+                <span id="frame-title">Cargando...</span>
+            </div>
+            <div class="title-bar-controls">
+                <button onclick="window.location.href='../index.html'">✕</button>
+            </div>
+        </div>
+        <div class="frame-content">
+            <iframe id="frame-iframe" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get('p');
+        const artId = params.get('id');
+
+        const pages = {
+            'galeria': {
+                title: 'Galería',
+                icon: 'https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png',
+                src: '../archivoPage/archivoPage.html'
+            },
+            'tienda': {
+                title: 'Tienda',
+                icon: 'https://win98icons.alexmeub.com/icons/png/directory_e-0.png',
+                src: '../tiendaPage/index.html'
+            },
+            'articulos': {
+                title: 'Artículos',
+                icon: 'https://win98icons.alexmeub.com/icons/png/directory_closed-0.png',
+                src: '../articulosPage/index.html'
+            },
+            'articulo': {
+                title: 'Artículo',
+                icon: 'https://win98icons.alexmeub.com/icons/png/notepad_file-0.png',
+                src: '../articulosPage/articulo.html?id=' + (artId || '1')
+            },
+            'minesweeper': {
+                title: 'Buscaminas',
+                icon: 'https://win98icons.alexmeub.com/icons/png/minesweeper-0.png',
+                src: '../buscaminasPage/index.html'
+            }
+        };
+
+        const config = pages[page];
+        if (config) {
+            document.title = config.title + ' - GDLDENOXE';
+            document.getElementById('frame-title').textContent = config.title;
+            document.getElementById('frame-icon').src = config.icon;
+            document.getElementById('frame-iframe').src = config.src;
+        } else {
+            window.location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>

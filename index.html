@@ -1,193 +1,293 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDLDENOXE</title>
-    <link rel="icon" href="indexPage\indexImages\cursorgdnv2.png" type="image/x-icon">
-    <meta name="description" content="La verdadera movida tapatia, Top restaurantes Guadalajara, Top 10 movidas tapatias,
-     Mejores antros de Guadalajara, Junior H, TE QUIERO MUCHO, Top mejores momentos Guadalajara, Duende caminando en San Juan De Dios (Real)">
+    <title>GDLDENOXE - LaMovida95</title>
+    <meta name="description" content="La verdadera movida tapatia, Top restaurantes Guadalajara, Top 10 movidas tapatias, Mejores antros de Guadalajara, Junior H, TE QUIERO MUCHO, Top mejores momentos Guadalajara, Duende caminando en San Juan De Dios (Real)">
+    <meta name="theme-color" content="#008080">
+    <link rel="icon" href="indexPage/indexImages/cursorgdnv2.png" type="image/x-icon">
+    <link rel="preconnect" href="https://win98icons.alexmeub.com" crossorigin>
+    <link rel="dns-prefetch" href="https://win98icons.alexmeub.com">
     <link rel="stylesheet" href="indexPage/styles.css">
 </head>
-
 <body>
-    <!-- Screen Resolution Wrapper -->
-    <div class="screen-resolution">
-        <!-- Image (Rectangle) -->
-        <img id="randomImage" class="positioned-crowdImage" />
-        <script>
-            // Array of image paths
-            const imagePaths = [
-                "indexPage/indexImages/2 Intro.jpeg",
-                "indexPage/indexImages/3 Intro.jpeg",
-                "indexPage/indexImages/4 Intro.jpeg",
-                "indexPage/indexImages/6 Intro.jpeg",
-                "indexPage/indexImages/7 Intro.JPG"
-            ];
-            // Select a random image
-            const randomImage = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-            // Set the random image as the src
-            document.getElementById('randomImage').src = randomImage;
-        </script>
-
-        <!-- Positioned Links -->
-        <a href="tiendaPage/tiendaPage.html" class="positioned-link tienda">TIENDA</a>
-        <a href="archivoPage/archivoPage.html" class="positioned-link archivo">ARCHIVO</a>
-        <a href="https://linktr.ee/guadalajaradenoche" class="positioned-link soundcloud">LINKS</a>
-        <a href="mailto:gdldenoxe@gmail.com" class="positioned-link email">GDLDENOXE@GMAIL.COM</a>
-        <!-- Fixed Palestine Flag in top right corner (no shadow, no border radius) -->
-        <a href="https://www.unrwa.org/" target="_blank" style="position:fixed;top:12px;right:12px;z-index:1000;">
-          <img src="indexPage/indexImages/Animated-Flag-Palestine.gif" alt="Palestine Flag" style="width:90px;height:auto;">
-        </a>
-
-        <!-- Brutalist Radio UI -->
-        <div id="radio-widget" class="radio-widget" style="position:fixed;left:10px;top:10px;z-index:1000;display:none;flex-direction:column;align-items:flex-start;font-family:Roboto,system-ui,Arial,sans-serif;">
-            <div style="display:flex;align-items:center;gap:5px;">
-                <span id="radio-label" style="font-size:10.2px;font-weight:700;letter-spacing:0.425px;background:#e53935;color:#fff;padding:0.85px 4.25px;border:1.275px solid #000;">RADIO GDN</span>
-                <button id="radio-play" aria-label="Play" title="Play" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">►</button>
-                <button id="radio-mute" aria-label="Mute" title="Mute" style="background:#fff;border:1.275px solid #000;color:#000;padding:1.7px 5.1px;cursor:pointer;font-size:11.05px;font-weight:700;">🔊</button>
+    <div class="desktop">
+        
+        <!-- Iconos del escritorio -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" data-folder="galeria">
+                <div class="icon-image"><img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png" alt="Galería"></div>
+                <div class="icon-label">Galería</div>
             </div>
-            <audio id="site-radio" preload="none" style="display:none;">
-                <!-- radio source intentionally left empty to disable/hide the radio widget -->
-                <source id="radio-src" src="https://radio.guadalajaradenoxe.com/stream.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
+            
+            <div class="desktop-icon" data-folder="tienda">
+                <div class="icon-image"><img src="https://win98icons.alexmeub.com/icons/png/directory_e-0.png" alt="Tienda"></div>
+                <div class="icon-label">Tienda</div>
+            </div>
+            
+            <div class="desktop-icon" data-folder="articulos">
+                <div class="icon-image"><img src="https://win98icons.alexmeub.com/icons/png/directory_closed-0.png" alt="Artículos"></div>
+                <div class="icon-label">Artículos</div>
+            </div>
+            
+            <div class="desktop-icon" data-link="https://linktr.ee/guadalajaradenoche">
+                <div class="icon-image"><img src="https://win98icons.alexmeub.com/icons/png/msie1-0.png" alt="Links"></div>
+                <div class="icon-label">Links</div>
+            </div>
         </div>
-        <script>
-        (function(){
-            // Elements
-            var srcEl = document.getElementById('radio-src');
-            var widget = document.getElementById('radio-widget');
-            var label = document.getElementById('radio-label');
-            var audio = document.getElementById('site-radio');
-            var playBtn = document.getElementById('radio-play');
-            var muteBtn = document.getElementById('radio-mute');
-            var streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';
-            var statusUrl = 'https://radio.guadalajaradenoxe.com/status-json.xsl';
+        
+        <!-- Artículos (generados dinámicamente desde articulos.json) -->
+        <div id="articles-container"></div>
 
-            function getUrl(){
-                if(!srcEl) return '';
-                return (srcEl.getAttribute('src') || '').trim();
-            }
+        <!-- Ventana de imagen random -->
+        <div class="win95-window" data-window-id="random" style="left: 200px; top: 150px;">
+            <div class="title-bar">
+                <div class="title-bar-text">GDL DE NOCHE</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="random-image-container">
+                    <img id="randomWindowImage" src="indexPage/indexImages/2 Intro.jpeg" alt="Imagen aleatoria" loading="lazy">
+                </div>
+            </div>
+        </div>
 
-            function hideWidget(){
-                if(widget) widget.style.display = 'none';
-                if(srcEl) srcEl.removeAttribute('src');
-                if(audio){ try{ audio.pause && audio.pause(); }catch(e){} audio.removeAttribute && audio.removeAttribute('src'); }
-            }
+        <!-- Widget de artículo random (mobile) -->
+        <div class="win95-window hidden" data-window-id="articulo-widget" style="left: 200px; top: 350px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="articulo-widget-content">
+                    <img id="articuloWidgetImg" src="" alt="">
+                    <div class="articulo-widget-text">
+                        <div class="articulo-widget-title" id="articuloWidgetTitle"></div>
+                        <div class="articulo-widget-desc" id="articuloWidgetDesc"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            function showWidget(url){
-                if(widget) widget.style.display = 'flex';
-                if(label){ label.style.background = '#e53935'; label.style.color = '#fff'; }
-                if(audio && url){
-                    try{
-                        if((audio.currentSrc || '').trim() === '' ){
-                            audio.src = url;
-                        }
-                    }catch(e){}
-                }
-            }
+        <!-- Poemas -->
+        <div class="win95-window" data-window-id="poema1" style="left: 250px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Poema.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
 
-            function updateVisibility(){
-                var url = getUrl();
-                if(!url){
-                    hideWidget();
-                    return false;
-                }
-                showWidget(url);
-                return true;
-            }
+        <div class="win95-window hidden" data-window-id="poema2" style="left: 400px; top: 200px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Versos.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
 
-            // Check Icecast status and update widget
-            function checkIcecastStatus(){
-                fetch(statusUrl)
-                    .then(function(response){ return response.json(); })
-                    .then(function(data){
-                        var sources = (data && data.icestats && data.icestats.source) || [];
-                        if(!Array.isArray(sources)) sources = [sources];
-                        var live = sources.some(function(src){
-                            return src.listenurl && src.listenurl.endsWith('/stream.mp3'); // ignore listeners count
-                        });
-                        if(live){
-                            if(srcEl) srcEl.setAttribute('src', streamUrl);
-                        }else{
-                            if(srcEl) srcEl.setAttribute('src', '');
-                        }
-                        updateVisibility();
-                    })
-                    .catch(function(){
-                        // On error, hide widget
-                        if(srcEl) srcEl.setAttribute('src', '');
-                        updateVisibility();
-                    });
-            }
+        <div class="win95-window hidden" data-window-id="poema3" style="left: 300px; top: 300px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Rimas.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
 
-            // Initial check
-            checkIcecastStatus();
-            // Optionally, poll every minute
-            setInterval(checkIcecastStatus, 60000);
+        <!-- Ventana de carpeta Artículos -->
+        <div class="win95-window hidden" data-window-id="folder-articulos" style="left: 150px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="https://win98icons.alexmeub.com/icons/png/directory_closed-0.png" alt="" class="titlebar-icon"> Artículos</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="folder-content" id="folder-articulos-content">
+                    <!-- Populated dynamically from articulos.json -->
+                </div>
+            </div>
+        </div>
 
-            // Initial visibility check
-            var visible = updateVisibility();
+        <!-- Ventana de Galería -->
+        <div class="win95-window hidden" data-window-id="galeria" style="left: 200px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png" alt="" class="titlebar-icon"> Galería</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe src="archivoPage/archivoPage.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
 
-            // Observe future changes to the src attribute so UI updates if src is added/removed dynamically
-            if(srcEl && window.MutationObserver){
-                var mo = new MutationObserver(function(mutations){
-                    mutations.forEach(function(m){
-                        if(m.type === 'attributes' && m.attributeName === 'src'){
-                            visible = updateVisibility();
-                        }
-                    });
-                });
-                mo.observe(srcEl, { attributes: true });
-            }
+        <!-- Ventana independiente: Propiedades de imagen -->
+        <div id="win95-details-panel" aria-hidden="true">
+            <div id="win95-details-titlebar">
+                <span id="win95-details-title">Propiedades de imagen</span>
+                <button id="win95-details-close" aria-label="Cerrar">×</button>
+            </div>
+            <div id="win95-details-body">
+                <div id="win95-details-preview">
+                    <img id="win95-details-image" alt="Vista previa" />
+                </div>
+                <div id="win95-details-info">
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Archivo:</span>
+                        <span id="win95-details-filename"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Tipo:</span>
+                        <span id="win95-details-type"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Dimensiones:</span>
+                        <span id="win95-details-dimensions"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Ruta:</span>
+                        <span id="win95-details-path"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="win95-details-actions">
+                <button id="win95-details-ok">Aceptar</button>
+            </div>
+        </div>
 
-            // Wire up controls regardless; they will only be usable when widget is shown
-            function updatePlayState(){
-                if(!audio) return;
-                if(audio.paused){
-                    playBtn.textContent = '►';
-                    playBtn.title = 'Play';
-                    if(label) label.textContent = 'RADIO GDN';
-                } else {
-                    playBtn.textContent = '❚❚';
-                    playBtn.title = 'Pause';
-                    if(label) label.textContent = 'LIVE';
-                }
-            }
+        <!-- Ventana de Tienda -->
+        <div class="win95-window hidden" data-window-id="tienda" style="left: 250px; top: 120px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="https://win98icons.alexmeub.com/icons/png/directory_e-0.png" alt="" class="titlebar-icon"> Tienda</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe id="tienda-iframe" src="tiendaPage/index.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
 
-            if(playBtn){
-                playBtn.addEventListener('click', function(){
-                    if(!audio) return;
-                    if(audio.paused){
-                        audio.play().catch(function(){});
-                    } else {
-                        audio.pause();
-                    }
-                    updatePlayState();
-                });
-            }
+        <!-- Ventana de Buscaminas -->
+        <div class="win95-window hidden" data-window-id="minesweeper" style="left: 280px; top: 140px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="https://win98icons.alexmeub.com/icons/png/minesweeper-0.png" alt="" class="titlebar-icon"> Buscaminas</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body ms-body">
+                <div class="ms-status">
+                    <div class="ms-counter" id="msMineCount">010</div>
+                    <button class="ms-face" id="msResetBtn"></button>
+                    <div class="ms-counter" id="msTimer">000</div>
+                </div>
+                <div class="ms-board" id="msBoard"></div>
+                <div class="ms-footer">
+                    <select id="msLevel" class="ms-select">
+                        <option value="beginner" selected>Principiante</option>
+                        <option value="intermediate">Intermedio</option>
+                        <option value="expert">Experto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-            if(muteBtn){
-                muteBtn.addEventListener('click', function(){
-                    if(!audio) return;
-                    audio.muted = !audio.muted;
-                    muteBtn.textContent = audio.muted ? '🔇' : '🔊';
-                });
-            }
+        <!-- Reproductor de música estilo Windows 95 -->
+        <div class="music-player hidden" id="musicPlayer">
+            <div class="player-title-bar title-bar">
+                <div class="player-title-text"><img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="titlebar-icon"> Media Player</div>
+                <div class="player-controls-top title-bar-controls">
+                    <button class="player-minimize-btn" id="playerMinimizeBtn">_</button>
+                    <button class="player-close-btn" id="playerCloseBtn">✕</button>
+                </div>
+            </div>
+            <div class="player-body">
+                <div class="player-display">
+                    <div class="track-info" id="trackInfo"><span class="live-dot hidden" id="liveDot"></span> No Track Loaded</div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                </div>
+                <div class="player-controls">
+                    <button class="control-btn" id="prevBtn" title="Anterior">⏮</button>
+                    <button class="control-btn play-btn" id="playBtn" title="Play/Pause">▶</button>
+                    <button class="control-btn" id="nextBtn" title="Siguiente">⏭</button>
+                    <button class="control-btn" id="stopBtn" title="Detener">⏹</button>
+                </div>
+            </div>
+        </div>
 
-            if(audio){
-                audio.addEventListener('play', updatePlayState);
-                audio.addEventListener('pause', updatePlayState);
-            }
-
-            // Ensure UI state reflects actual audio state at load
-            updatePlayState();
-
-        })();
-        </script>
     </div>
-</body>
 
+    <!-- Barra de tareas estilo Windows 95 -->
+    <div class="taskbar">
+        <button class="start-button"><img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png" alt="" style="width: 16px; height: 16px;">Inicio</button>
+        <div class="taskbar-items" id="taskbar-items"></div>
+        <div class="system-tray">
+            <span class="clock" id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- Menú de inicio -->
+    <div class="start-menu" id="start-menu">
+        <div class="start-menu-header">LaMovida95</div>
+        <div class="start-menu-items">
+            <div class="menu-item" data-shortcut="galeria"><img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png" alt="" class="menu-icon"> Galería</div>
+            <div class="menu-item" data-shortcut="tienda"><img src="https://win98icons.alexmeub.com/icons/png/directory_e-0.png" alt="" class="menu-icon"> Tienda</div>
+            <div class="menu-item" data-shortcut="articulos"><img src="https://win98icons.alexmeub.com/icons/png/directory_closed-0.png" alt="" class="menu-icon"> Artículos</div>
+            <div class="menu-item" data-shortcut="minesweeper"><img src="https://win98icons.alexmeub.com/icons/png/minesweeper-0.png" alt="" class="menu-icon"> Buscaminas</div>
+            <div class="menu-item" data-shortcut="links"><img src="https://win98icons.alexmeub.com/icons/png/msie1-0.png" alt="" class="menu-icon"> Links</div>
+            <div class="menu-item" data-shortcut="palestina"><img src="https://win98icons.alexmeub.com/icons/png/world-0.png" alt="" class="menu-icon"> Palestina Libre</div>
+            <div class="menu-separator"></div>
+            <div class="menu-item" data-shortcut="radio"><img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="menu-icon"> LaMovida95 Radio</div>
+        </div>
+    </div>
+
+    <script src="indexPage/script.js" defer></script>
+</body>
 </html>

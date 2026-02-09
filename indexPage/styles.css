@@ -1,133 +1,1785 @@
-/* Universal Reset */
+:root {
+    /* Windows 95 Color Palette */
+    --win95-gray: #c0c0c0;
+    --win95-dark-gray: #808080;
+    --win95-light-gray: #dfdfdf;
+    --win95-white: #fff;
+    --win95-black: #000;
+    --win95-blue: #000080;
+    --win95-blue-light: #1084d0;
+    --win95-teal: #008080;
+    
+    /* Common borders */
+    --border-raised: 2px solid var(--win95-white);
+    --border-sunken: 2px solid var(--win95-black);
+    --inset-light: 2px solid var(--win95-dark-gray);
+    --inset-dark: 2px solid var(--win95-light-gray);
+    
+    /* Fonts */
+    --font-system: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    --font-mono: 'Courier New', monospace;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Disable scrolling and ensure full viewport usage */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
+body {
+    font-family: var(--font-system);
+    background: var(--win95-teal);
+    overflow: hidden;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0;
-    overflow: hidden; /* Prevent scrolling */
-    cursor: url('indexImages/cursorgdnv2.png') 16 16, auto;
 }
 
-/* Screen Resolution Container */
-.screen-resolution {
+.desktop {
+    width: 100%;
+    height: calc(100vh - 40px);
     position: relative;
-    width: 100%; /* Make the rectangle slightly smaller */
-    max-width: 700px; /* Cap the size on large screens (was 900px) */
-    aspect-ratio: 901 / 492; /* Maintain aspect ratio */
-    transform-origin: center center; /* Scaling starts from the center */
+    overflow: hidden;
+    color: transparent;
+    /* Logo wallpaper centrado */
+    background-image: url('../articulosPage/articuloImages/articulo1.jpg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 200px auto;
 }
 
-/* Rectangle (Image) */
-.positioned-crowdImage {
+.desktop > * {
+    color: initial;
+}
+
+/* Iconos del escritorio */
+.desktop-icons {
     position: absolute;
-    width: 100%; /* Fill the container */
-    height: 100%; /* Fill the container */
-    object-fit: cover; /* Ensure the image scales without distortion */
-    z-index: 1; /* Keep image behind the links */
-}
-
-/* General Link Styling */
-.positioned-link {
-    position: absolute;
-    font-family: 'Inter', sans-serif;
-    font-style: normal;
-    font-weight: 400;
-    font-size: calc(1.5vw + 10px); /* Responsive font size */
-    color: #000000;
-    text-decoration: none;
-    z-index: 10; /* Ensure links are above the image */
-    text-align: center;
-}
-
-/* ARCHIVO Link */
-.archivo {
-    top: -10%; /* 10% from the top of the container */
-    left: 0%; /* 10% from the left of the container */
-}
-
-/* TIENDA Link */
-.tienda {
-    top: -10%; /* 10% from the top of the container */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%);
-}
-
-/* LINKS Link */
-.soundcloud {
-    top: -10%; /* 10% from the top of the container */
-    right: 0%; /* 10% from the right of the container */
-}
-
-/* EMAIL Link */
-.email {
-    bottom: -14%; /* 10% from the bottom of the container */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%);
-    font-size: calc(1.2vw + 8px); /* Slightly smaller font size for the email */
-}
-
-/* Hover effect for links */
-.positioned-link:hover {
-    color: #007BFF;
-    text-decoration: underline;
-}
-
-/* Responsive Scaling */
-@media (max-width: 901px) {
-    .screen-resolution {
-        width: 90vw; /* Scale to 90% of viewport width */
-        height: calc(90vw * (492 / 901)); /* Maintain aspect ratio */
-    }
-}
-
-@media (max-height: 492px) {
-    .screen-resolution {
-        height: 90vh; /* Scale to 90% of viewport height */
-        width: calc(90vh * (901 / 492)); /* Maintain aspect ratio */
-    }
-}
-
-/* Responsive video wrapper for aspect ratio */
-.video-wrapper {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    top: 20px;
+    left: 20px;
     display: flex;
-    align-items: stretch;
-    justify-content: stretch;
+    flex-direction: column;
+    gap: 30px;
+    z-index: 1;
 }
 
-.video-wrapper iframe {
+.desktop-icon {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    border: 2px solid transparent;
+    user-select: none;
+}
+
+.desktop-icon:hover {
+    background: rgba(0, 0, 128, 0.2);
+}
+
+.desktop-icon.selected {
+    background: rgba(0, 0, 128, 0.3);
+    border: 2px dotted #ffffff;
+}
+
+.icon-image {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+.icon-image img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.icon-label {
+    color: #ffffff;
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    word-wrap: break-word;
+    width: 100%;
+}
+
+/* Ventana estilo Windows 95 */
+.win95-window {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: inset 1px 1px 0 var(--win95-light-gray), inset -1px -1px 0 var(--win95-dark-gray),
+                2px 2px 0 rgba(0, 0, 0, 0.2);
+    position: absolute;
+    width: 280px;
+    z-index: 1;
+}
+
+.win95-window.hidden {
+    display: none;
+}
+
+.win95-window.minimized {
+    display: none;
+}
+
+.win95-window.maximized {
+    width: 100% !important;
+    height: calc(100vh - 40px) !important;
+    left: 0 !important;
+    top: 0 !important;
+}
+
+.win95-window.maximized .window-body {
+    height: calc(100% - 30px);
+    overflow: hidden;
+}
+
+/* Ajustar contenido cuando está maximizado */
+.win95-window.maximized .article-image {
+    height: 50%;
+    max-height: 50%;
+}
+
+.win95-window.maximized .article-description {
+    height: calc(50% - 30px);
+    overflow: hidden;
+}
+
+.win95-window.maximized .poem-content {
+    max-height: calc(100% - 20px);
+    height: calc(100% - 20px);
+    overflow: hidden;
+}
+
+.win95-window.maximized .folder-content {
+    max-height: calc(100% - 20px);
+    height: calc(100% - 20px);
+    overflow: hidden;
+}
+
+.win95-window.maximized .random-image-container img {
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.win95-window.maximized .iframe-container {
+    height: calc(100% - 20px);
+    overflow: hidden;
+}
+
+.win95-window.active {
+    z-index: 100;
+}
+
+/* Barra de título */
+.title-bar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: move;
+    user-select: none;
+}
+
+.win95-window:not(.active) .title-bar {
+    background: linear-gradient(to right, var(--win95-dark-gray), #a0a0a0);
+}
+
+.title-bar-text {
+    flex-grow: 1;
+    padding-left: 3px;
+}
+
+.title-bar-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.title-bar-controls button {
+    width: 18px;
+    height: 18px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+}
+
+.title-bar-controls button:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+    padding-top: 1px;
+}
+
+.title-bar-controls button:hover {
+    background: #d0d0d0;
+}
+
+.close-btn {
+    color: #000;
+}
+
+/* Cuerpo de la ventana */
+.window-body {
+    padding: 6px;
+    background: var(--win95-gray);
+}
+
+.article-image {
+    width: 100%;
+    height: 150px;
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.article-image img {
     width: 100%;
     height: 100%;
-    border: 0;
+    object-fit: cover;
+}
+
+.article-description {
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    padding: 6px;
+}
+
+.article-description h3 {
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--win95-blue);
+}
+
+.article-description p {
+    font-size: 11px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: var(--win95-black);
+}
+
+/* Botón estilo Windows 95 */
+.read-more-btn {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 5px 15px;
+    font-family: var(--font-system);
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 80px;
+}
+
+.read-more-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+    padding-top: 7px;
+    padding-left: 17px;
+}
+
+.read-more-btn:hover {
+    background: #d0d0d0;
+}
+
+/* Full Article Window (win95 style) */
+.art-full-window {
+    width: 580px !important;
+}
+
+.art-full-body {
+    overflow-y: auto;
+    max-height: 520px;
+    padding: 2px !important;
+    background: var(--win95-gray);
+}
+
+.art-full-body::-webkit-scrollbar {
+    width: 16px;
+    background: var(--win95-gray);
+}
+
+.art-full-body::-webkit-scrollbar-thumb {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+}
+
+.art-full-body::-webkit-scrollbar-track {
+    background: repeating-conic-gradient(var(--win95-gray) 0% 25%, var(--win95-white) 0% 50%) 50% / 2px 2px;
+}
+
+.art-full-body::-webkit-scrollbar-button {
+    display: block;
+    height: 16px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+}
+
+.art-full-inner {
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    background: var(--win95-white);
+    overflow: hidden;
+}
+
+.art-full-hero {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+}
+
+.art-full-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
 }
 
-/* Ensure links remain proportional when zooming out */
-html, body {
-    transform-origin: center center;
-    transform: scale(1); /* Prevent zoom affecting proportions */
+.art-full-meta {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+    font-size: 10px;
+    font-family: var(--font-system);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 5px 14px;
+    border-top: 1px solid #0000a0;
+    border-bottom: 1px solid #000060;
 }
 
-/* Brutalist Radio Widget Aspect Ratio */
-.radio-widget {
-    aspect-ratio: 4 / 1; /* Mantiene proporción horizontal brutalista */
-    min-width: 320px;
-    max-width: 480px;
+.art-full-content {
+    background: var(--win95-white);
+    padding: 16px 20px 24px;
+}
+
+.art-full-lead {
+    font-family: var(--font-system);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--win95-black);
+    font-weight: bold;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--win95-gray);
+}
+
+.art-full-h2 {
+    font-family: var(--font-system);
+    font-size: 14px;
+    color: var(--win95-blue);
+    margin: 18px 0 8px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--win95-blue);
+}
+
+.art-full-p {
+    font-family: var(--font-system);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--win95-black);
+    margin-bottom: 10px;
+}
+
+.art-full-quote {
+    font-family: var(--font-system);
+    font-size: 12px;
+    font-style: italic;
+    color: var(--win95-blue);
+    background: #ffffcc;
+    border-left: 3px solid var(--win95-blue);
+    padding: 10px 14px;
+    margin: 14px 0;
+}
+
+.art-full-footer {
+    background: var(--win95-gray);
+    padding: 6px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    border-top: 1px solid var(--win95-dark-gray);
+}
+
+.art-full-footer button {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 4px 20px;
+    font-family: var(--font-system);
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 75px;
+}
+
+.art-full-footer button:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.win95-window.maximized .art-full-body {
+    max-height: calc(100% - 30px);
+    overflow-y: auto;
+}
+
+/* Ventana de imagen random */
+.random-image-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.random-image-container img {
     width: 100%;
-    height: auto;
+    height: 180px;
+    object-fit: cover;
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+}
+
+/* Poemas estilo notepad */
+.poem-content {
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    padding: 10px;
+    overflow: hidden;
+}
+
+.poem-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--win95-black);
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+/* Carpeta de archivos */
+.folder-content {
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    padding: 10px;
+    min-height: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.folder-item:hover {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+}
+
+.folder-item.selected {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+    border: 1px dotted var(--win95-white);
+}
+
+.folder-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.folder-item-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.titlebar-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 2px;
+    pointer-events: none;
+}
+
+.menu-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 4px;
+    pointer-events: none;
+}
+
+.taskbar-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    margin-right: 2px;
+    pointer-events: none;
+}
+
+.folder-name {
+    font-family: var(--font-system);
+}
+
+/* Iframe para Galería y Tienda */
+.iframe-container {
+    width: 100%;
+    height: 500px;
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    overflow: hidden;
+}
+
+/* Tienda más alta */
+[data-window-id="tienda"] .iframe-container {
+    height: 650px;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Cuando la ventana está maximizada, el iframe ocupa todo el espacio */
+.win95-window.maximized .iframe-container {
+    height: calc(100% - 20px);
+    overflow: hidden;
+}
+
+/* Ventanas de Galería y Tienda más grandes */
+[data-window-id="galeria"] {
+    width: 550px;
+}
+
+/* Panel de detalles de imagen - ventana independiente estilo Win95 */
+#win95-details-panel {
+    display: none;
+    position: absolute;
+    width: 280px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    z-index: 200;
+    font-family: var(--font-system);
+    flex-direction: column;
+}
+
+#win95-details-panel.open {
+    display: flex;
+}
+
+#win95-details-titlebar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+    cursor: move;
+    user-select: none;
+}
+
+#win95-details-close {
+    width: 18px;
+    height: 18px;
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    padding: 0;
+    line-height: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#win95-details-close:active {
+    border-top: 1px solid var(--win95-black);
+    border-left: 1px solid var(--win95-black);
+    border-right: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+#win95-details-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: var(--win95-gray);
+    flex: 1;
+    overflow-y: auto;
+}
+
+#win95-details-preview {
+    width: 100%;
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+#win95-details-image {
+    max-width: 100%;
+    max-height: 220px;
+    image-rendering: auto;
+}
+
+#win95-details-info {
+    background: var(--win95-gray);
+    font-size: 11px;
+    color: var(--win95-black);
+}
+
+.win95-detail-row {
+    display: grid;
+    grid-template-columns: 85px 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.win95-detail-label {
+    font-weight: bold;
+}
+
+#win95-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    background: #c0c0c0;
+    flex-shrink: 0;
+}
+
+#win95-details-ok {
+    min-width: 75px;
+    height: 23px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-system);
+}
+
+#win95-details-ok:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+[data-window-id="tienda"] {
+    width: 750px;
+}
+
+/* Buscaminas integrado */
+[data-window-id="minesweeper"] {
+    width: auto;
+}
+
+.ms-body {
+    padding: 6px !important;
+    background: var(--win95-gray);
+}
+
+.ms-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    margin-bottom: 6px;
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    background: var(--win95-gray);
+}
+
+.ms-counter {
+    background: var(--win95-black);
+    color: #ff0000;
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 20px;
+    padding: 2px 6px;
+    min-width: 52px;
+    text-align: center;
+    border: 2px inset var(--win95-dark-gray);
+    letter-spacing: 2px;
+}
+
+.ms-face {
+    width: 28px;
+    height: 28px;
+    font-size: 0;
+    line-height: 0;
+    padding: 2px;
+    cursor: pointer;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.ms-face:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.ms-face-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+}
+
+.ms-board {
+    display: grid;
+    gap: 0;
+    border-top: 3px solid var(--win95-dark-gray);
+    border-left: 3px solid var(--win95-dark-gray);
+    border-right: 3px solid var(--win95-light-gray);
+    border-bottom: 3px solid var(--win95-light-gray);
+}
+
+.ms-cell {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: var(--font-system);
+    user-select: none;
+    cursor: pointer;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: 2px solid var(--win95-dark-gray);
+    border-bottom: 2px solid var(--win95-dark-gray);
+    padding: 0;
+    line-height: 1;
+}
+
+.ms-cell.revealed {
+    background: var(--win95-gray);
+    border: 1px solid var(--win95-dark-gray);
+}
+
+.ms-cell.flagged {
+    color: #ff0000;
+}
+
+.ms-cell.mine-hit {
+    background: #ff0000;
+}
+
+.ms-cell.wrong-flag {
+    background: #c0c0c0;
+}
+
+.ms-sprite {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+    display: block;
+}
+
+.ms-n1 { color: #0000ff; }
+.ms-n2 { color: #008000; }
+.ms-n3 { color: #ff0000; }
+.ms-n4 { color: #000080; }
+.ms-n5 { color: #800000; }
+.ms-n6 { color: #008080; }
+.ms-n7 { color: #000000; }
+.ms-n8 { color: #808080; }
+
+.ms-footer {
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+}
+
+.ms-select {
+    background: var(--win95-white);
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    font-family: var(--font-system);
+    font-size: 11px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
+/* Barra de tareas */
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    z-index: 1000;
+}
+
+.start-button {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 4px 15px;
+    font-family: var(--font-system);
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.start-button:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+    padding-top: 6px;
+    padding-left: 17px;
+}
+
+.start-button.active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.taskbar-items {
+    flex: 1;
+    display: flex;
+    gap: 2px;
+    padding: 0 5px;
+    overflow-x: auto;
+}
+
+.taskbar-item {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.taskbar-item:hover {
+    background: #d0d0d0;
+}
+
+.taskbar-item.active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.system-tray {
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-dark-gray);
+    border-left: 1px solid var(--win95-dark-gray);
+    padding: 4px 10px;
+    font-size: 11px;
+}
+
+/* Menú de inicio */
+.start-menu {
+    position: fixed;
+    bottom: 40px;
+    left: 2px;
+    width: 200px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    display: none;
+    z-index: 99999;
+    overflow: hidden;
+}
+
+.start-menu.active {
+    display: flex;
+}
+
+.start-menu-header {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 8px 4px;
+    font-weight: bold;
+    font-size: 18px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    flex-shrink: 0;
+    width: 30px;
+}
+
+.start-menu-items {
+    padding: 5px 0;
+    flex: 1;
+}
+
+.menu-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.menu-item:hover {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+}
+
+.menu-separator {
+    height: 1px;
+    background: var(--win95-dark-gray);
+    margin: 3px 5px;
+}
+
+/* Reproductor de música estilo Windows 95 */
+.music-player {
+    position: absolute;
+    width: 280px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: inset 1px 1px 0 var(--win95-light-gray), inset -1px -1px 0 var(--win95-dark-gray),
+                2px 2px 0 rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    font-size: 11px;
+}
+
+.music-player.hidden {
+    display: none;
+}
+
+.player-title-bar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+}
+
+.player-title-text {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.player-controls-top {
+    display: flex;
+    gap: 2px;
+}
+
+.player-minimize-btn,
+.player-close-btn {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.player-minimize-btn:active,
+.player-close-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.player-body {
+    padding: 10px;
+    background: var(--win95-gray);
+}
+
+.player-display {
+    background: var(--win95-black);
+    color: #00ff00;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 2px inset var(--win95-dark-gray);
+    font-family: var(--font-mono);
+    min-height: 50px;
+}
+
+.track-info {
+    font-size: 10px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Red live dot indicator */
+.live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.live-dot.hidden {
+    display: none;
+}
+
+.live-dot.paused {
+    opacity: 0.5;
+}
+
+.time-display {
+    font-size: 9px;
+    opacity: 0.8;
+}
+
+.player-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.control-btn {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    width: 40px;
+    height: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.control-btn:hover {
+    background: #d0d0d0;
+}
+
+.control-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.play-btn {
+    width: 50px;
+    font-size: 16px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--win95-dark-gray);
+    border: 2px inset var(--win95-dark-gray);
+    position: relative;
+    cursor: pointer;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--win95-blue);
+    width: 0%;
+}
+
+/* ====================================================
+   RESPONSIVE DESIGN
+   Desktop: > 1024px (default styles above)
+   Tablet:  769px - 1024px
+   Mobile:  <= 768px
+   Small:   <= 400px
+   ==================================================== */
+
+/* ===== TABLET (769px - 1024px) ===== */
+@media (max-width: 1024px) {
+    .win95-window {
+        width: 380px;
+    }
+
+    [data-window-id="galeria"] {
+        width: 480px;
+    }
+
+    [data-window-id="tienda"] {
+        width: 600px;
+    }
+
+    .art-full-window {
+        width: 500px !important;
+    }
+
+    .desktop-icons {
+        gap: 20px;
+    }
+
+    .music-player {
+        width: 260px;
+    }
+}
+
+/* ===== MOBILE (<= 768px) ===== */
+@media (max-width: 768px) {
+
+    /* --- Reset / General --- */
+    body {
+        overflow: hidden;
+    }
+
+    .desktop {
+        overflow: hidden;
+        height: calc(100vh - 44px);
+        background-size: 100px auto;
+    }
+
+    /* --- Hide all desktop windows --- */
+    .win95-window,
+    #win95-details-panel,
+    #articles-container {
+        display: none !important;
+    }
+
+    /* --- Minesweeper Window (mobile) --- */
+    .win95-window[data-window-id="minesweeper"] {
+        display: none;
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%);
+        width: auto !important;
+        z-index: 15000;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                    3px 3px 0 rgba(0,0,0,0.3);
+    }
+
+    .win95-window[data-window-id="minesweeper"]:not(.hidden) {
+        display: block !important;
+    }
+
+    .win95-window[data-window-id="minesweeper"] .minimize-btn,
+    .win95-window[data-window-id="minesweeper"] .maximize-btn {
+        display: none;
+    }
+
+    /* --- Random Image Widget --- */
+    .win95-window[data-window-id="random"] {
+        display: block !important;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(50% - 24px) !important;
+        max-width: 200px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="random"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+    }
+
+    .win95-window[data-window-id="random"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="random"] .window-body {
+        padding: 3px;
+    }
+
+    .win95-window[data-window-id="random"] .random-image-container img {
+        height: 140px;
+    }
+
+    /* --- Articulo Widget (below random image widget) --- */
+    .win95-window[data-window-id="articulo-widget"] {
+        display: block !important;
+        position: absolute !important;
+        /* 12px (random top) + ~20px (title-bar) + 140px (random img) + 6px (padding) + 20px gap for spacing */
+        top: calc(12px + 20px + 140px + 6px + 20px) !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(50% - 24px) !important;
+        max-width: 200px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+        cursor: pointer;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .window-body {
+        padding: 3px;
+    }
+
+    .articulo-widget-content img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        display: block;
+        image-rendering: auto;
+    }
+
+    .articulo-widget-text {
+        padding: 4px 3px 2px;
+    }
+
+    .articulo-widget-title {
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1.2;
+        margin-bottom: 2px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .articulo-widget-desc {
+        font-size: 9px;
+        color: #444;
+        line-height: 1.2;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* --- Poema Widget (below articulo widget, half width) --- */
+    .win95-window[data-window-id="poema1"] {
+        display: block !important;
+        position: absolute !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(25% - 12px) !important;
+        max-width: 100px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        min-height: auto;
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 4px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    /* --- Radio Player (floating frame, like the image widget) --- */
+    .music-player {
+        position: fixed !important;
+        bottom: 52px !important;
+        left: 50% !important;
+        right: auto !important;
+        top: auto !important;
+        transform: translateX(-50%);
+        width: calc(100% - 24px) !important;
+        max-width: 360px !important;
+        z-index: 20000;
+        border-top: 2px solid #fff;
+        border-left: 2px solid #fff;
+        border-right: 2px solid #000;
+        border-bottom: 2px solid #000;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                    2px 2px 0 rgba(0,0,0,0.25);
+        display: block;
+    }
+
+    .music-player.hidden {
+        display: none !important;
+    }
+
+    .music-player .player-title-bar {
+        padding: 2px 5px;
+    }
+
+    .music-player .player-body {
+        padding: 4px 8px 6px;
+    }
+
+    .music-player .player-display {
+        min-height: 32px;
+        padding: 4px 8px;
+        margin-bottom: 5px;
+    }
+
+    .music-player .player-controls {
+        gap: 3px;
+        margin-bottom: 0;
+    }
+
+    .music-player .control-btn {
+        width: 34px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .music-player .play-btn {
+        width: 42px;
+        font-size: 14px;
+    }
+
+    .music-player .progress-bar {
+        display: none;
+    }
+
+    /* --- Desktop Icons --- */
+    .desktop-icons {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 1;
+    }
+
+    .desktop-icon {
+        width: 75px;
+        padding: 8px;
+        border: 2px solid transparent;
+    }
+
+    .desktop-icon:hover {
+        background: transparent;
+    }
+
+    .desktop-icon.selected {
+        background: rgba(0, 0, 128, 0.3);
+        border: 2px dotted #fff;
+    }
+
+    .icon-image,
+    .icon-image img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .icon-image {
+        margin: 0 auto 5px;
+    }
+
+    .icon-label {
+        font-size: 11px;
+    }
+
+    /* --- Taskbar --- */
+    .taskbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 44px;
+        z-index: 10000;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .start-button {
+        padding: 6px 14px;
+        font-size: 12px;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .start-button img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .taskbar-items {
+        display: none;
+    }
+
+    .system-tray {
+        margin-left: auto;
+    }
+
+    .clock {
+        font-size: 12px;
+        padding: 0 10px;
+    }
+
+    /* --- Start Menu --- */
+    .start-menu {
+        width: 220px;
+        left: 2px !important;
+        bottom: 44px;
+    }
+
+    .start-menu-header {
+        font-size: 20px;
+        padding: 20px 8px;
+        letter-spacing: 1px;
+    }
+
+    .start-menu-items {
+        padding: 8px 0;
+    }
+
+    .menu-item {
+        padding: 14px 20px;
+        font-size: 14px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .menu-separator {
+        margin: 6px 15px;
+        height: 2px;
+        background: linear-gradient(to right, #808080, #dfdfdf);
+    }
+
+    /* --- Touch improvements --- */
+    button, .folder-item, .desktop-icon, .menu-item, .taskbar-item {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        touch-action: manipulation;
+    }
+
+    .title-bar {
+        touch-action: none;
+    }
+
+    /* When dragging, override all !important positions */
+    .win95-window.dragging {
+        top: var(--drag-top) !important;
+        left: var(--drag-left) !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+    }
+
+
+}
+
+/* ===== SMALL PHONES (<= 400px) ===== */
+@media (max-width: 400px) {
+    .desktop-icons {
+        gap: 14px;
+        top: 10px;
+        left: 10px;
+    }
+
+    .desktop-icon {
+        width: 65px;
+        padding: 6px;
+    }
+
+    .icon-image,
+    .icon-image img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .icon-label {
+        font-size: 10px;
+    }
+
+    /* Random image widget smaller */
+    .win95-window[data-window-id="random"] {
+        width: calc(45% - 16px) !important;
+        max-width: 155px !important;
+        right: 8px !important;
+        top: 8px !important;
+    }
+
+    .win95-window[data-window-id="random"] .random-image-container img {
+        height: 100px;
+    }
+
+    .win95-window[data-window-id="random"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="random"] .window-body {
+        padding: 2px;
+    }
+
+    /* Articulo widget smaller */
+    .win95-window[data-window-id="articulo-widget"] {
+        width: calc(45% - 16px) !important;
+        max-width: 155px !important;
+        right: 8px !important;
+        left: auto !important;
+        /* 8px (random top) + ~18px (title-bar) + 100px (random img) + 4px (padding) + 16px gap for spacing */
+        top: calc(8px + 18px + 100px + 4px + 16px) !important;
+    }
+
+    .articulo-widget-content img {
+        height: 70px;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .window-body {
+        padding: 2px;
+    }
+
+    .articulo-widget-title {
+        font-size: 9px !important;
+    }
+
+    .articulo-widget-desc {
+        display: none !important;
+    }
+
+    /* Poema widget smaller */
+    .win95-window[data-window-id="poema1"] {
+        width: calc(22% - 8px) !important;
+        max-width: 78px !important;
+        right: 8px !important;
+        left: auto !important;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 3px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    /* Start menu */
+    .start-menu {
+        width: 200px;
+    }
+
+    .menu-item {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-height: 42px;
+    }
+
+    .start-menu-header {
+        font-size: 18px;
+        padding: 16px 6px;
+    }
+
+    /* Radio player compact */
+    .music-player .control-btn {
+        width: 32px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .music-player .play-btn {
+        width: 40px;
+        font-size: 14px;
+    }
+
+    .music-player .player-display {
+        min-height: 32px;
+        padding: 4px 6px;
+    }
+
+    .music-player .track-info {
+        font-size: 9px;
+    }
+
+    .music-player .time-display {
+        font-size: 8px;
+    }
 }

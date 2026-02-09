@@ -1,0 +1,124 @@
+[
+  {
+    "id": 1,
+    "titulo": "La Noche es Joven",
+    "meta": "GDL DE NOXE • Cultura Nocturna",
+    "descripcion": "Cuando el sol se oculta, Guadalajara despierta. Aquí te contamos las movidas que definen la escena nocturna tapatía, donde cada esquina tiene su historia y cada bar su leyenda.",
+    "imagen": "articulosPage/articuloImages/articulo1.jpg",
+    "contenido": [
+      {
+        "tipo": "lead",
+        "texto": "Cuando el sol se oculta, Guadalajara despierta. Aquí te contamos las movidas que definen la escena nocturna tapatía, donde cada esquina tiene su historia y cada bar su leyenda."
+      },
+      {
+        "tipo": "h2",
+        "texto": "El Despertar de la Ciudad"
+      },
+      {
+        "tipo": "p",
+        "texto": "A las 10 de la noche, cuando la mayoría de las ciudades comienzan a dormitar, Guadalajara apenas empieza a quitarse el sueño. Las luces de neón se encienden una por una, las bocinas empiezan a vibrar y la ciudad se transforma en algo completamente diferente."
+      },
+      {
+        "tipo": "p",
+        "texto": "No se trata solo de antros y bares—aunque de esos hay de sobra—se trata de toda una cultura que cobra vida cuando cae la noche. Desde los tacos al pastor de la madrugada hasta los after hours que no terminan hasta ver el amanecer, GDL tiene una identidad nocturna única."
+      },
+      {
+        "tipo": "h2",
+        "texto": "Los Spots Que No Puedes Perderte"
+      },
+      {
+        "tipo": "p",
+        "texto": "Si hay algo que define a la escena nocturna tapatía es su diversidad. En una misma noche puedes empezar en un bar tranquilo de Chapultepec, seguir en un antro de Providencia y terminar en un after en algún warehouse del centro. Cada zona tiene su onda, su público, su vibra."
+      },
+      {
+        "tipo": "p",
+        "texto": "La magia está en saber moverse. Los que conocen la ciudad saben que las mejores noches no se planean—surgen. Un mensaje en el grupo, una llamada de último minuto, y de repente estás en el lugar correcto en el momento perfecto."
+      },
+      {
+        "tipo": "h2",
+        "texto": "La Gente Que Hace La Noche"
+      },
+      {
+        "tipo": "p",
+        "texto": "Pero más allá de los lugares, lo que realmente define a GDL de noche es su gente. Los DJs que están cambiando el juego, los bartenders que ya te conocen por tu nombre, la crew con la que siempre te topas, los nuevos rostros que conoces cada fin de semana."
+      },
+      {
+        "tipo": "p",
+        "texto": "Esta ciudad tiene algo especial—una energía que no se explica, solo se vive. Y cuando la vives, cuando realmente te sumerges en la movida nocturna de Guadalajara, entiendes por qué tantos no queremos que amanezca nunca."
+      },
+      {
+        "tipo": "quote",
+        "texto": "La noche tapatía no es solo un horario, es una filosofía de vida."
+      },
+      {
+        "tipo": "p",
+        "texto": "Así que si estás leyendo esto y aún no has explorado lo que GDL tiene para ofrecer después del atardecer, ya sabes—la noche es joven, y siempre hay algo perro esperando a la vuelta de la esquina."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "titulo": "Hombre Afirma Haber Inventado el Agua de Horchata",
+    "meta": "GDL DE NOXE • Noticias Insólitas",
+    "descripcion": "Don Ramiro, un señor de 63 años originario de la colonia Oblatos, asegura con total convicción que él fue quien inventó el agua de horchata una noche de 1987.",
+    "imagen": "articulosPage/articuloImages/articulo2.jpg",
+    "contenido": [
+      {
+        "tipo": "lead",
+        "texto": "Don Ramiro, un señor de 63 años originario de la colonia Oblatos, asegura con total convicción que él fue quien inventó el agua de horchata una noche de 1987 \"por pura casualidad y con ayuda de Dios\"."
+      },
+      {
+        "tipo": "h2",
+        "texto": "El Momento Eureka"
+      },
+      {
+        "tipo": "p",
+        "texto": "Según relata Don Ramiro—quien pidió ser identificado únicamente por su primer nombre y su apodo \"El Horchata Man\"—todo ocurrió un martes por la noche mientras intentaba preparar un atole de arroz para su señora madre."
+      },
+      {
+        "tipo": "p",
+        "texto": "\"Se me olvidó prenderle la lumbre a la estufa y le eché canela de más. Cuando me di cuenta, ya estaba fría y sabía bien chingón. Ahí fue donde nació la horchata, compadre\", declaró en entrevista exclusiva afuera de una tiendita en la calle Gigantes."
+      },
+      {
+        "tipo": "h2",
+        "texto": "La Comunidad Científica No Opina"
+      },
+      {
+        "tipo": "p",
+        "texto": "Intentamos contactar a historiadores gastronómicos y expertos en bebidas tradicionales mexicanas para verificar las afirmaciones de Don Ramiro. Ninguno respondió a nuestras llamadas, lo cual, según Don Ramiro, \"es porque les da coraje que un hombre del pueblo les haya ganado\"."
+      },
+      {
+        "tipo": "p",
+        "texto": "Cabe mencionar que existen registros del agua de horchata que datan de la época colonial y con raíces en la bebida valenciana \"horchata de chufa\", pero Don Ramiro descarta esos datos como \"puras mentiras del gobierno para quitarle el crédito a uno\"."
+      },
+      {
+        "tipo": "h2",
+        "texto": "Un Legado Sin Reconocimiento"
+      },
+      {
+        "tipo": "p",
+        "texto": "Don Ramiro lamenta que, a pesar de su supuesta contribución a la gastronomía mundial, nunca ha recibido regalías. \"Cada vez que veo un vaso de horchata en un puesto de tacos, en una taquiza, en una fiesta, sé que esa es mi creación. Y nadie me ha dado ni un cinco\", comentó visiblemente emocionado."
+      },
+      {
+        "tipo": "p",
+        "texto": "El hombre asegura haber contactado a varias empresas de bebidas para reclamar derechos de autor sobre la receta, pero todas le han colgado el teléfono. \"La última señorita me dijo que dejara de llamar o iba a llamar a la policía. ¿Así tratan a los inventores en este país?\""
+      },
+      {
+        "tipo": "h2",
+        "texto": "Apoyo Incondicional de su Familia"
+      },
+      {
+        "tipo": "p",
+        "texto": "Su esposa, Doña Lupe, quien prefirió no dar declaraciones extensas, simplemente dijo: \"Ya déjenlo, es lo único que lo hace feliz. Lleva 39 años con lo mismo\". Su hijo mayor agregó entre risas: \"Mi jefe también dice que inventó el michelado, pero de eso no habla tanto\"."
+      },
+      {
+        "tipo": "quote",
+        "texto": "La horchata es mía, y algún día el mundo lo va a reconocer. Mientras tanto, me sigo tomando mi vasote de a litro todos los días, porque el inventor tiene derecho."
+      },
+      {
+        "tipo": "p",
+        "texto": "Al cierre de esta edición, Don Ramiro se encontraba afuera de la Catedral de Guadalajara repartiendo volantes escritos a mano donde detalla su versión de los hechos y solicita firmas para una petición dirigida al presidente. Hasta el momento lleva 4 firmas, tres de las cuales son de sus propios nietos."
+      }
+    ]
+  }
+]
