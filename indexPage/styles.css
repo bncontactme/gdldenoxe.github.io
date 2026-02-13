@@ -1186,6 +1186,12 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+.control-btn svg {
+    fill: #000;
+    color: #000;
+    pointer-events: none;
+}
+
 .control-btn:hover {
     background: #d0d0d0;
 }

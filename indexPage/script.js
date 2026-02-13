@@ -779,12 +779,12 @@ juntxs y brillando.`
     playBtn?.addEventListener('click', () => {
         if (isPlaying) {
             audioPlayer.pause();
-            playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="4,2 22,12 4,22"/></svg>';
+            playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
             isPlaying = false;
             if (liveDot) liveDot.classList.add('paused');
         } else {
             audioPlayer.play();
-            playBtn.innerHTML = '<svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="4" y="2" width="6" height="20"/><rect x="14" y="2" width="6" height="20"/></svg>';
+            playBtn.innerHTML = '<svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="#000"><rect x="4" y="2" width="6" height="20"/><rect x="14" y="2" width="6" height="20"/></svg>';
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
         }
@@ -794,7 +794,7 @@ juntxs y brillando.`
     stopBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="4,2 22,12 4,22"/></svg>';
+        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
         isPlaying = false;
         if (progressFill) progressFill.style.width = '0%';
         updateTimeDisplay();
@@ -856,7 +856,7 @@ juntxs y brillando.`
     playerCloseBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         isPlaying = false;
-        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="4,2 22,12 4,22"/></svg>';
+        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
         musicPlayer?.classList.add('hidden');
         $('#taskbar-radio')?.remove();
     });
@@ -910,7 +910,7 @@ juntxs y brillando.`
                     if (isPlaying && playlist[currentTrackIndex].isLive) {
                         audioPlayer.pause();
                         isPlaying = false;
-                        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="4,2 22,12 4,22"/></svg>';
+                        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
                     }
                 }
             })
