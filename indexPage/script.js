@@ -63,15 +63,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function openWindow(windowId, playAudio = false) {
         const win = $(`[data-window-id="${windowId}"]`);
         if (!win) return;
-        
+
         if (windowId === 'tienda') {
             positionWindowRandomly(win, 750, 650);
+        } else if (windowId === 'minesweeper') {
+            // Center the minesweeper window
+            const width = win.offsetWidth || 340;
+            const height = win.offsetHeight || 400;
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            win.style.left = Math.max(0, Math.floor((screenW - width) / 2)) + 'px';
+            win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
         }
-        
+
         win.classList.remove('hidden', 'minimized');
         bringToFront(win);
         updateTaskbar();
-        
+
         if (playAudio) setTimeout(playTiendaAudio, 500);
     }
     
@@ -423,7 +431,17 @@ juntxs y brillando.`
             const id = win.dataset.windowId || '';
             if (id === 'random') imgWin = win;
             else if (id.startsWith('art-')) artWin = win;
-            else others.push(win);
+            else if (id === 'minesweeper') {
+                // Always keep minesweeper centered, do not move
+                const width = win.offsetWidth || 340;
+                const height = win.offsetHeight || 400;
+                const screenW = window.innerWidth;
+                const screenH = window.innerHeight;
+                win.style.left = Math.max(0, Math.floor((screenW - width) / 2)) + 'px';
+                win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
+            } else {
+                others.push(win);
+            }
         });
         
         // Position articulo at top-right
