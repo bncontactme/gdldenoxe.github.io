@@ -1629,29 +1629,53 @@ body {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     }
 
-    /* Music player buttons: keep Win95 look on mobile */
+    /* Music player buttons: keep Win95 look on mobile (fixes Xiaomi/Android Chrome orange accent) */
     .music-player .control-btn,
     .music-player .play-btn,
     .player-minimize-btn,
     .player-close-btn {
-        -webkit-tap-highlight-color: transparent;
-        -webkit-appearance: none;
-        appearance: none;
-        outline: none;
-        background: var(--win95-gray);
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        outline: none !important;
+        outline-color: transparent !important;
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
         border-top: var(--border-raised);
         border-left: var(--border-raised);
         border-right: var(--border-sunken);
         border-bottom: var(--border-sunken);
-        color: var(--win95-black);
+        color: var(--win95-black) !important;
+        box-shadow: none;
+        border-radius: 0 !important;
+        /* Kill any Android accent overlay */
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
+    .music-player .control-btn:hover,
+    .music-player .play-btn:hover,
+    .player-minimize-btn:hover,
+    .player-close-btn:hover {
+        background-color: #d0d0d0 !important;
+        background-image: none !important;
+        outline: none !important;
     }
 
     .music-player .control-btn:focus,
     .music-player .play-btn:focus,
     .player-minimize-btn:focus,
-    .player-close-btn:focus {
-        outline: none;
-        background: var(--win95-gray);
+    .player-close-btn:focus,
+    .music-player .control-btn:focus-visible,
+    .music-player .play-btn:focus-visible,
+    .player-minimize-btn:focus-visible,
+    .player-close-btn:focus-visible {
+        outline: none !important;
+        outline-color: transparent !important;
+        box-shadow: none !important;
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
         border-top: var(--border-raised);
         border-left: var(--border-raised);
         border-right: var(--border-sunken);
@@ -1662,10 +1686,19 @@ body {
     .music-player .play-btn:active,
     .player-minimize-btn:active,
     .player-close-btn:active {
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
         border-top: var(--border-sunken);
         border-left: var(--border-sunken);
         border-right: var(--border-raised);
         border-bottom: var(--border-raised);
+        outline: none !important;
+    }
+
+    .music-player .control-btn svg,
+    .music-player .play-btn svg {
+        fill: #000 !important;
+        color: #000 !important;
     }
 
     * {
