@@ -1618,6 +1618,45 @@ body {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     }
 
+    /* Music player buttons: keep Win95 look on mobile */
+    .music-player .control-btn,
+    .music-player .play-btn,
+    .player-minimize-btn,
+    .player-close-btn {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+        background: var(--win95-gray);
+        border-top: var(--border-raised);
+        border-left: var(--border-raised);
+        border-right: var(--border-sunken);
+        border-bottom: var(--border-sunken);
+        color: var(--win95-black);
+    }
+
+    .music-player .control-btn:focus,
+    .music-player .play-btn:focus,
+    .player-minimize-btn:focus,
+    .player-close-btn:focus {
+        outline: none;
+        background: var(--win95-gray);
+        border-top: var(--border-raised);
+        border-left: var(--border-raised);
+        border-right: var(--border-sunken);
+        border-bottom: var(--border-sunken);
+    }
+
+    .music-player .control-btn:active,
+    .music-player .play-btn:active,
+    .player-minimize-btn:active,
+    .player-close-btn:active {
+        border-top: var(--border-sunken);
+        border-left: var(--border-sunken);
+        border-right: var(--border-raised);
+        border-bottom: var(--border-raised);
+    }
+
     * {
         touch-action: manipulation;
     }
