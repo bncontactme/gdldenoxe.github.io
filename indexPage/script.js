@@ -442,15 +442,6 @@ juntxs y brillando.`
                 const imgH = imgRect.height || 200;
                 imgWin.style.left = (screenW - artW - gap - imgW - gap) + 'px';
                 imgWin.style.top = topY + 'px';
-                
-                // Position music player BELOW the image
-                if (musicPlayer && !musicPlayer.classList.contains('hidden')) {
-                    const playerRect = musicPlayer.getBoundingClientRect();
-                    const playerW = playerRect.width || 280;
-                    musicPlayer.style.left = (screenW - artW - gap - imgW - gap) + 'px';
-                    musicPlayer.style.top = (topY + imgH + gap) + 'px';
-                    musicPlayer.style.transform = 'none';
-                }
             }
             
             // Others (poem etc) below articulo
@@ -472,6 +463,17 @@ juntxs y brillando.`
                 win.style.top = ry + 'px';
                 ry += (rect.height || 200) + gap;
             });
+        }
+
+        // Always position music player below the image window if visible
+        if (musicPlayer && !musicPlayer.classList.contains('hidden') && imgWin) {
+            const imgRect = imgWin.getBoundingClientRect();
+            const imgLeft = parseInt(imgWin.style.left) || imgRect.left;
+            const imgTop = parseInt(imgWin.style.top) || imgRect.top;
+            const imgH = imgRect.height || 200;
+            musicPlayer.style.left = imgLeft + 'px';
+            musicPlayer.style.top = (imgTop + imgH + gap) + 'px';
+            musicPlayer.style.transform = 'none';
         }
     }
 
@@ -892,6 +894,7 @@ juntxs y brillando.`
                     if (musicPlayer) {
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
+                        if (!isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
                     }
                     // Ensure first track is the live stream
                     if (playlist[0].isLive && audioPlayer.src !== streamUrl) {
