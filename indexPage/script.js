@@ -778,12 +778,12 @@ juntxs y brillando.`
     playBtn?.addEventListener('click', () => {
         if (isPlaying) {
             audioPlayer.pause();
-            playBtn.textContent = '▶';
+            playBtn.textContent = '▶︎';
             isPlaying = false;
             if (liveDot) liveDot.classList.add('paused');
         } else {
             audioPlayer.play();
-            playBtn.textContent = '⏸';
+            playBtn.textContent = '⏸︎';
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
         }
@@ -793,7 +793,7 @@ juntxs y brillando.`
     stopBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        if (playBtn) playBtn.textContent = '▶';
+        if (playBtn) playBtn.textContent = '▶︎';
         isPlaying = false;
         if (progressFill) progressFill.style.width = '0%';
         updateTimeDisplay();
@@ -855,7 +855,7 @@ juntxs y brillando.`
     playerCloseBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         isPlaying = false;
-        if (playBtn) playBtn.textContent = '▶';
+        if (playBtn) playBtn.textContent = '▶︎';
         musicPlayer?.classList.add('hidden');
         $('#taskbar-radio')?.remove();
     });

@@ -1181,6 +1181,11 @@ body {
     padding: 0;
 }
 
+.control-btn {
+    font-family: 'Segoe UI Symbol', 'Noto Sans Symbols', 'Noto Sans Symbols2', sans-serif;
+    text-rendering: optimizeLegibility;
+}
+
 .control-btn:hover {
     background: #d0d0d0;
 }
