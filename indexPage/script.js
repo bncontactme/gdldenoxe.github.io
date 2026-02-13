@@ -274,10 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         item.addEventListener('dblclick', (e) => {
             e.stopPropagation();
-            const artWin = $(`[data-window-id="${item.dataset.openArticle}"]`);
-            if (artWin) {
-                artWin.classList.remove('hidden', 'minimized');
-                bringToFront(artWin);
+            const artId = item.dataset.openArticle.replace('art-', '');
+            const fullWin = $(`[data-window-id="artfull-${artId}"]`);
+            if (fullWin) {
+                fullWin.classList.remove('hidden', 'minimized');
+                bringToFront(fullWin);
                 updateTaskbar();
             }
         });
