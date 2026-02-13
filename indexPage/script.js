@@ -736,10 +736,9 @@ juntxs y brillando.`
     const playerCloseBtn = musicPlayer?.querySelector('.player-close-btn');
     const progressBar = $('.progress-bar');
     
-    // Playlist: Radio en vivo + tracks locales
+    // Playlist: Radio en vivo
     const playlist = [
-        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true },
-        { title: "GDL Nights Vol.1", url: "tiendaPage/assets/images/BACKGROUND WEB TIENDA MUSIC.mp3", isLive: false }
+        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true }
     ];
     
     const liveDot = $('#liveDot');
