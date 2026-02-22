@@ -54,8 +54,39 @@
           <dd id="detail-type">—</dd>
           <dt>Dimensiones</dt>
           <dd id="detail-dimensions">—</dd>
+          <div id="detail-artista-row">
+            <dt>Artista</dt>
+            <dd id="detail-artista"></dd>
+          </div>
+          <div id="detail-descripcion-row">
+            <dt>Descripción</dt>
+            <dd id="detail-descripcion"></dd>
+          </div>
         </dl>
-        <button id="img-details-ok" type="button">OK</button>
+        <div id="img-details-buttons">
+          <button id="img-details-explore" type="button">📂 Explorar</button>
+          <button id="img-details-ok" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Explorer Overlay -->
+  <div id="file-explorer-overlay">
+    <div id="file-explorer-window">
+      <div id="file-explorer-titlebar">
+        <span id="file-explorer-title">Archivo GDN</span>
+        <button id="file-explorer-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="file-explorer-toolbar">
+        <button id="file-explorer-back" type="button" disabled>← Atrás</button>
+        <span id="file-explorer-path">Archivo GDN</span>
+      </div>
+      <div id="file-explorer-body">
+        <!-- Folders and images rendered by JS -->
+      </div>
+      <div id="file-explorer-statusbar">
+        <span id="file-explorer-status"></span>
       </div>
     </div>
   </div>

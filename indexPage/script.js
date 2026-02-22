@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
             win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
         }
 
+        // Lazy-load iframes on first open (prevents invisible resource waste)
+        const iframe = win.querySelector('iframe[data-src]:not([src])');
+        if (iframe) iframe.src = iframe.dataset.src;
+
         win.classList.remove('hidden', 'minimized');
         bringToFront(win);
         updateTaskbar();
@@ -421,8 +425,10 @@ juntxs y brillando.`
         if (isMobile()) return;
         const windows = Array.from($$('.win95-window:not(.hidden)'));
         const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
-        const iconAreaW = 110;
+        const iconAreaW = 120; // leave room for desktop icons
+        const availW = screenW - iconAreaW; // usable width
         
         // Separate windows by type
         let imgWin = null, artWin = null;
@@ -435,8 +441,6 @@ juntxs y brillando.`
                 // Always keep minesweeper centered, do not move
                 const width = win.offsetWidth || 340;
                 const height = win.offsetHeight || 400;
-                const screenW = window.innerWidth;
-                const screenH = window.innerHeight;
                 win.style.left = Math.max(0, Math.floor((screenW - width) / 2)) + 'px';
                 win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
             } else {
@@ -444,43 +448,52 @@ juntxs y brillando.`
             }
         });
         
-        // Position articulo at top-right
         let topY = gap;
         
         if (artWin) {
-            const artRect = artWin.getBoundingClientRect();
-            const artW = artRect.width || 280;
-            const artH = artRect.height || 300;
-            artWin.style.left = (screenW - artW - gap) + 'px';
+            const artW = Math.min(artWin.offsetWidth || 280, availW - gap * 2);
+            const artH = artWin.offsetHeight || 300;
+            const artLeft = screenW - artW - gap;
+            artWin.style.left = artLeft + 'px';
             artWin.style.top = topY + 'px';
             
-            // Position image to the LEFT of articulo
             if (imgWin) {
-                const imgRect = imgWin.getBoundingClientRect();
-                const imgW = imgRect.width || 280;
-                const imgH = imgRect.height || 200;
-                imgWin.style.left = (screenW - artW - gap - imgW - gap) + 'px';
-                imgWin.style.top = topY + 'px';
+                const imgW = imgWin.offsetWidth || 280;
+                const idealLeft = artLeft - imgW - gap;
+
+                if (idealLeft >= iconAreaW) {
+                    // Fits side-by-side
+                    imgWin.style.left = idealLeft + 'px';
+                    imgWin.style.top = topY + 'px';
+                } else {
+                    // Not enough room — stack image above article
+                    const imgH = imgWin.offsetHeight || 200;
+                    const clampedW = Math.min(imgW, availW - gap * 2);
+                    imgWin.style.left = (screenW - clampedW - gap) + 'px';
+                    imgWin.style.top = topY + 'px';
+                    // Push article below image
+                    topY += imgH + gap;
+                    artWin.style.top = topY + 'px';
+                }
             }
             
-            // Others (poem etc) below articulo
-            let belowY = topY + artH + gap;
+            // Others (poem etc) below articulo, clamped to screen
+            let belowY = (parseInt(artWin.style.top) || topY) + artH + gap;
             others.forEach(win => {
-                const rect = win.getBoundingClientRect();
-                const w = rect.width || 280;
-                win.style.left = (screenW - w - gap) + 'px';
+                const w = win.offsetWidth || 280;
+                if (belowY + 50 > screenH) return; // skip if off-screen
+                win.style.left = (screenW - Math.min(w, availW - gap * 2) - gap) + 'px';
                 win.style.top = belowY + 'px';
-                belowY += (rect.height || 200) + gap;
+                belowY += (win.offsetHeight || 200) + gap;
             });
         } else {
             // Fallback: stack all on right
             let ry = gap;
             windows.forEach(win => {
-                const rect = win.getBoundingClientRect();
-                const w = rect.width || 280;
-                win.style.left = (screenW - w - gap) + 'px';
+                const w = win.offsetWidth || 280;
+                win.style.left = (screenW - Math.min(w, availW - gap * 2) - gap) + 'px';
                 win.style.top = ry + 'px';
-                ry += (rect.height || 200) + gap;
+                ry += (win.offsetHeight || 200) + gap;
             });
         }
 
@@ -559,16 +572,33 @@ juntxs y brillando.`
         draggedWindow.style.top = clampedY + 'px';
     };
 
-    document.addEventListener('mousemove', (e) => updateDragPosition(e.clientX, e.clientY, false));
+    // rAF-throttled drag — one layout calc per frame instead of per mousemove event
+    let dragRAF = null;
+    document.addEventListener('mousemove', (e) => {
+        if (!draggedWindow) return;
+        if (dragRAF) return;
+        dragRAF = requestAnimationFrame(() => {
+            updateDragPosition(e.clientX, e.clientY, false);
+            dragRAF = null;
+        });
+    });
 
     document.addEventListener('touchmove', (e) => {
         if (!draggedWindow) return;
-        updateDragPosition(e.touches[0].clientX, e.touches[0].clientY, true);
+        if (!dragRAF) {
+            dragRAF = requestAnimationFrame(() => {
+                updateDragPosition(e.touches[0].clientX, e.touches[0].clientY, true);
+                dragRAF = null;
+            });
+        }
         e.preventDefault();
     }, { passive: false });
 
     document.addEventListener('mouseup', () => { draggedWindow = null; });
-    document.addEventListener('touchend', () => { draggedWindow = null; });
+    document.addEventListener('touchend', () => {
+        if (draggedWindow) draggedWindow.classList.remove('dragging');
+        draggedWindow = null;
+    });
 
     // Traer ventana al frente
     function bringToFront(windowElement) {
@@ -600,6 +630,8 @@ juntxs y brillando.`
             if (win.dataset.windowId === 'galeria') {
                 const dp = $('#win95-details-panel');
                 if (dp) { dp.classList.remove('open'); dp.setAttribute('aria-hidden', 'true'); }
+                const pp = $('#win95-player-panel');
+                if (pp) { pp.classList.remove('open'); pp.setAttribute('aria-hidden', 'true'); }
             }
         } else if (btn.classList.contains('minimize-btn')) {
             win.classList.add('minimized');
@@ -736,7 +768,7 @@ juntxs y brillando.`
     }
 
     updateClock();
-    setInterval(updateClock, 1000);
+    setInterval(updateClock, 60000); // No seconds displayed — 60× fewer callbacks
 
     // Inicializar taskbar
     updateTaskbar();
@@ -896,7 +928,7 @@ juntxs y brillando.`
     if (radioMenuItem) radioMenuItem.style.display = '';
 
     function checkIcecastStatus() {
-        fetch(statusUrl)
+        return fetch(statusUrl)
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 var sources = (data && data.icestats && data.icestats.source) || [];
@@ -939,9 +971,18 @@ juntxs y brillando.`
             });
     }
 
-    // Initial check + poll every 60s (1:1 con original)
+    // Initial check + adaptive polling (60s live, 5min offline — saves fetch cycles)
+    let icecastInterval = 60000;
+    function scheduleIcecastCheck() {
+        setTimeout(() => {
+            checkIcecastStatus().finally(() => {
+                icecastInterval = radioAvailable ? 60000 : 300000;
+                scheduleIcecastCheck();
+            });
+        }, icecastInterval);
+    }
     checkIcecastStatus();
-    setInterval(checkIcecastStatus, 60000);
+    scheduleIcecastCheck();
 
     // ===== Panel de detalles de imagen (Galería) =====
     const detailsPanel = $('#win95-details-panel');
@@ -950,6 +991,10 @@ juntxs y brillando.`
     const detailsType = $('#win95-details-type');
     const detailsDimensions = $('#win95-details-dimensions');
     const detailsPath = $('#win95-details-path');
+    const detailsArtista = $('#win95-details-artista');
+    const detailsArtistaRow = $('#win95-details-artista-row');
+    const detailsDescripcion = $('#win95-details-descripcion');
+    const detailsDescripcionRow = $('#win95-details-descripcion-row');
     const detailsClose = $('#win95-details-close');
     const detailsOk = $('#win95-details-ok');
     const detailsTitlebar = $('#win95-details-titlebar');
@@ -963,22 +1008,24 @@ juntxs y brillando.`
         if (detailsDimensions) detailsDimensions.textContent = data.dimensions;
         if (detailsPath) detailsPath.textContent = data.path;
 
-        if (!detailsPanelHasBeenPositioned) {
-            const galeriaWin = $('[data-window-id="galeria"]');
-            if (galeriaWin) {
-                const gRect = galeriaWin.getBoundingClientRect();
+        // Show artista & descripcion only when non-empty
+        if (detailsArtistaRow) detailsArtistaRow.style.display = data.artista ? '' : 'none';
+        if (detailsArtista) detailsArtista.textContent = data.artista || '';
+        if (detailsDescripcionRow) detailsDescripcionRow.style.display = data.descripcion ? '' : 'none';
+        if (detailsDescripcion) detailsDescripcion.textContent = data.descripcion || '';
+
+        const galeriaWinD = $('[data-window-id="galeria"]');
+        if (galeriaWinD) {
+            const gRect = galeriaWinD.getBoundingClientRect();
+            detailsPanel.style.height = gRect.height + 'px';
+            if (!detailsPanelHasBeenPositioned) {
                 let panelLeft = gRect.right + 8;
                 let panelTop = Math.max(0, gRect.top);
-                
                 if (panelLeft + 280 > window.innerWidth) panelLeft = gRect.left - 288;
-                
-                Object.assign(detailsPanel.style, {
-                    left: panelLeft + 'px',
-                    top: panelTop + 'px',
-                    height: gRect.height + 'px'
-                });
+                detailsPanel.style.left = panelLeft + 'px';
+                detailsPanel.style.top = panelTop + 'px';
+                detailsPanelHasBeenPositioned = true;
             }
-            detailsPanelHasBeenPositioned = true;
         }
 
         detailsPanel.classList.add('open');
@@ -1024,10 +1071,132 @@ juntxs y brillando.`
         document.addEventListener('mouseup', () => { isDraggingDetails = false; });
     }
 
-    // Listen for messages from the gallery iframe
+    // Listen for messages from the gallery iframe (origin-validated)
     window.addEventListener('message', (e) => {
+        if (e.origin !== location.origin) return;
         if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
+        if (e.data?.type === 'galeria-open-player') openPlayerPanel(e.data.list, e.data.index);
     });
+
+    // "Explorar" button — tell iframe to open file explorer
+    const detailsExploreBtn = $('#win95-details-explore');
+    if (detailsExploreBtn) {
+        detailsExploreBtn.addEventListener('click', () => {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            if (galeriaWin) {
+                const iframe = galeriaWin.querySelector('iframe');
+                if (iframe?.contentWindow) {
+                    iframe.contentWindow.postMessage({ type: 'open-file-explorer' }, '*');
+                }
+            }
+            closeDetailsPanel();
+        });
+    }
+
+    // ===== Visor de imágenes (Image Player) =====
+    const playerPanel = $('#win95-player-panel');
+    const playerImage = $('#win95-player-image');
+    const playerFilename = $('#win95-player-filename');
+    const playerType = $('#win95-player-type');
+    const playerDims = $('#win95-player-dimensions');
+    const playerArtista = $('#win95-player-artista');
+    const playerArtistaRow = $('#win95-player-artista-row');
+    const playerDescripcion = $('#win95-player-descripcion');
+    const playerDescripcionRow = $('#win95-player-descripcion-row');
+    const playerClose = $('#win95-player-close');
+    const playerPrev = $('#win95-player-prev');
+    const playerNext = $('#win95-player-next');
+    const playerTitlebar = $('#win95-player-titlebar');
+    const playerTitle = $('#win95-player-title');
+    let playerList = [];
+    let playerIndex = 0;
+    let playerHasBeenPositioned = false;
+
+    function showPlayerItem(idx) {
+        if (idx < 0 || idx >= playerList.length) return;
+        playerIndex = idx;
+        const item = playerList[idx];
+        if (playerImage) {
+            playerImage.src = item.src;
+            playerImage.onload = function() {
+                if (playerDims) playerDims.textContent = this.naturalWidth + ' × ' + this.naturalHeight;
+            };
+        }
+        if (playerTitle) playerTitle.textContent = item.fileName;
+        if (playerFilename) playerFilename.textContent = item.fileName;
+        if (playerType) playerType.textContent = item.fileType;
+        if (playerDims) playerDims.textContent = '—';
+        if (playerArtistaRow) playerArtistaRow.style.display = item.artista ? '' : 'none';
+        if (playerArtista) playerArtista.textContent = item.artista || '';
+        if (playerDescripcionRow) playerDescripcionRow.style.display = item.descripcion ? '' : 'none';
+        if (playerDescripcion) playerDescripcion.textContent = item.descripcion || '';
+        if (playerPrev) playerPrev.disabled = idx <= 0;
+        if (playerNext) playerNext.disabled = idx >= playerList.length - 1;
+    }
+
+    function openPlayerPanel(list, index) {
+        if (!playerPanel) return;
+        playerList = list || [];
+        playerIndex = (typeof index === 'number' && index >= 0) ? index : 0;
+        showPlayerItem(playerIndex);
+
+        const galeriaWinP = $('[data-window-id="galeria"]');
+        if (galeriaWinP) {
+            const gRect = galeriaWinP.getBoundingClientRect();
+            playerPanel.style.height = gRect.height + 'px';
+            if (!playerHasBeenPositioned) {
+                let panelLeft = gRect.right + 8;
+                let panelTop = Math.max(0, gRect.top);
+                if (panelLeft + 420 > window.innerWidth) panelLeft = Math.max(0, gRect.left - 428);
+                playerPanel.style.left = panelLeft + 'px';
+                playerPanel.style.top = panelTop + 'px';
+                playerHasBeenPositioned = true;
+            }
+        }
+
+        playerPanel.classList.add('open');
+        playerPanel.setAttribute('aria-hidden', 'false');
+        playerPanel.style.zIndex = ++highestZIndex;
+    }
+
+    function closePlayerPanel() {
+        if (!playerPanel) return;
+        playerPanel.classList.remove('open');
+        playerPanel.setAttribute('aria-hidden', 'true');
+        playerHasBeenPositioned = false;
+    }
+
+    playerClose?.addEventListener('click', closePlayerPanel);
+    playerPrev?.addEventListener('click', () => { if (playerIndex > 0) showPlayerItem(playerIndex - 1); });
+    playerNext?.addEventListener('click', () => { if (playerIndex < playerList.length - 1) showPlayerItem(playerIndex + 1); });
+
+    // Make the player panel draggable by its titlebar
+    if (playerTitlebar && playerPanel) {
+        let isDraggingPlayer = false;
+        let playerOffX = 0;
+        let playerOffY = 0;
+
+        playerTitlebar.addEventListener('mousedown', (e) => {
+            if (e.target === playerClose) return;
+            isDraggingPlayer = true;
+            playerOffX = e.clientX - playerPanel.offsetLeft;
+            playerOffY = e.clientY - playerPanel.offsetTop;
+            playerPanel.style.zIndex = ++highestZIndex;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingPlayer) return;
+            const x = e.clientX - playerOffX;
+            const y = e.clientY - playerOffY;
+            const maxX = window.innerWidth - playerPanel.offsetWidth;
+            const maxY = window.innerHeight - playerPanel.offsetHeight - 40;
+            playerPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            playerPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isDraggingPlayer = false; });
+    }
 
     // ─── Buscaminas (embedded) ───
     (function() {
@@ -1090,9 +1259,13 @@ juntxs y brillando.`
         return { rows, cols, mines, flagsLeft: mines, revealedCount: 0, over: false, cells };
       }
 
+      let cellGrid = []; // cached cell DOM refs — O(1) lookup vs O(n) querySelector
+
       function renderBoard() {
         msBoard.innerHTML = '';
         msBoard.style.gridTemplateColumns = `repeat(${st.cols}, 20px)`;
+        cellGrid = Array.from({ length: st.rows }, () => new Array(st.cols));
+        const frag = document.createDocumentFragment();
         for (let r = 0; r < st.rows; r++) {
           for (let c = 0; c < st.cols; c++) {
             const el = document.createElement('div');
@@ -1101,9 +1274,11 @@ juntxs y brillando.`
             el.dataset.c = c;
             el.addEventListener('click', onReveal);
             el.addEventListener('contextmenu', onFlag);
-            msBoard.appendChild(el);
+            frag.appendChild(el);
+            cellGrid[r][c] = el;
           }
         }
+        msBoard.appendChild(frag);
         updateCounters();
       }
 
@@ -1128,31 +1303,36 @@ juntxs y brillando.`
       }
 
       function getCellEl(r, c) {
-        return msBoard.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+        return cellGrid[r][c];
       }
 
+      // Iterative flood-fill — no stack overflow on Expert (16×30 = 480 cells)
       function revealCell(r, c) {
-        const cell = st.cells[r][c];
-        if (cell.revealed || cell.flagged) return;
-        cell.revealed = true;
-        st.revealedCount++;
-        const el = getCellEl(r, c);
-        el.classList.add('revealed');
-        if (cell.mine) {
-          el.innerHTML = SPRITES.mine;
-          el.classList.add('mine-hit');
-          endGame(false);
-          return;
-        }
-        if (cell.count > 0) {
-          el.textContent = cell.count;
-          el.classList.add('ms-n' + cell.count);
-        } else {
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              if (!dr && !dc) continue;
-              const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < st.rows && nc >= 0 && nc < st.cols) revealCell(nr, nc);
+        const stack = [[r, c]];
+        while (stack.length) {
+          const [cr, cc] = stack.pop();
+          const cell = st.cells[cr][cc];
+          if (cell.revealed || cell.flagged) continue;
+          cell.revealed = true;
+          st.revealedCount++;
+          const el = getCellEl(cr, cc);
+          el.classList.add('revealed');
+          if (cell.mine) {
+            el.innerHTML = SPRITES.mine;
+            el.classList.add('mine-hit');
+            endGame(false);
+            return;
+          }
+          if (cell.count > 0) {
+            el.textContent = cell.count;
+            el.classList.add('ms-n' + cell.count);
+          } else {
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (!dr && !dc) continue;
+                const nr = cr + dr, nc = cc + dc;
+                if (nr >= 0 && nr < st.rows && nc >= 0 && nc < st.cols) stack.push([nr, nc]);
+              }
             }
           }
         }

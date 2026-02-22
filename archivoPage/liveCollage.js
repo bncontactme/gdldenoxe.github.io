@@ -13,7 +13,9 @@
   let zIndex = 1;
   let recentNonGifs = [];
   let recentGifs = [];
-  let archiveImages = [];
+  let archiveImages = []; // Ordered list of image paths (ALL images, including GIFs)
+  let displayImages = []; // Shuffled subset for collage display (GIFs thinned)
+  let imageMetadata = {}; // path -> { artista, descripcion }
   let imageTimeout = null;
   let resetTimeout = null;
 
@@ -61,6 +63,13 @@
     img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${++zIndex}`;
     img.draggable = false;
 
+    // Attach metadata from JSON (sourced from EXIF at build time)
+    const meta = imageMetadata[src];
+    if (meta) {
+      if (meta.artista) img.dataset.artista = meta.artista;
+      if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+    }
+
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
       this.dataset.height = this.naturalHeight;
@@ -102,6 +111,10 @@
   const detailsFilename = document.getElementById('detail-filename');
   const detailsType = document.getElementById('detail-type');
   const detailsDimensions = document.getElementById('detail-dimensions');
+  const detailsArtista = document.getElementById('detail-artista');
+  const detailsArtistaRow = document.getElementById('detail-artista-row');
+  const detailsDescripcion = document.getElementById('detail-descripcion');
+  const detailsDescripcionRow = document.getElementById('detail-descripcion-row');
   const detailsCloseBtn = document.getElementById('img-details-close');
   const detailsOkBtn = document.getElementById('img-details-ok');
 
@@ -115,6 +128,195 @@
     if (e.target === detailsOverlay) closeDetailsPopup();
   };
 
+  // ===== File Explorer =====
+  const explorerOverlay = document.getElementById('file-explorer-overlay');
+  const explorerBody = document.getElementById('file-explorer-body');
+  const explorerBack = document.getElementById('file-explorer-back');
+  const explorerPath = document.getElementById('file-explorer-path');
+  const explorerStatus = document.getElementById('file-explorer-status');
+  const explorerClose = document.getElementById('file-explorer-close');
+  const explorerTitle = document.getElementById('file-explorer-title');
+  const exploreBtn = document.getElementById('img-details-explore');
+
+  let explorerCurrentFolder = null; // null = root (folder list)
+
+  // SVG folder icon (XP-style yellow folder)
+  const FOLDER_SVG = '<svg class="fe-folder-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M2 6 L2 26 L30 26 L30 10 L14 10 L12 6 Z" fill="#F5D73A" stroke="#C4A82A" stroke-width="1"/>'
+    + '<path d="M2 10 L30 10 L30 26 L2 26 Z" fill="#FFEC80" stroke="#C4A82A" stroke-width="0.5"/>'
+    + '</svg>';
+
+  function buildFolderMap() {
+    // Group images by artist — use @handle for folder label
+    const folders = {};
+    for (const path of archiveImages) {
+      const meta = imageMetadata[path];
+      const fullArtist = (meta && meta.artista) ? meta.artista : '';
+      let folderName;
+      if (fullArtist) {
+        const handleMatch = fullArtist.match(/@\w+/);
+        folderName = handleMatch ? handleMatch[0] : fullArtist;
+      } else {
+        folderName = 'Archivo GDN';
+      }
+      if (!folders[folderName]) folders[folderName] = [];
+      folders[folderName].push(path);
+    }
+    return folders;
+  }
+
+  function renderFolderList() {
+    explorerCurrentFolder = null;
+    explorerBody.innerHTML = '';
+    if (explorerBack) explorerBack.disabled = true;
+    if (explorerPath) explorerPath.textContent = 'Archivo GDN';
+    if (explorerTitle) explorerTitle.textContent = 'Archivo GDN';
+
+    const folders = buildFolderMap();
+    const sortedNames = Object.keys(folders).sort((a, b) => {
+      // "Archivo GDN" always first
+      if (a === 'Archivo GDN') return -1;
+      if (b === 'Archivo GDN') return 1;
+      return a.localeCompare(b);
+    });
+
+    const frag = document.createDocumentFragment();
+    for (const name of sortedNames) {
+      const count = folders[name].length;
+      const item = document.createElement('div');
+      item.className = 'fe-folder';
+      item.innerHTML = FOLDER_SVG + '<span class="fe-label">' + escapeHtml(name) + '</span>';
+      item.title = name + ' (' + count + ' imágenes)';
+      item.onclick = function() { renderFolder(name, folders[name]); };
+      frag.appendChild(item);
+    }
+    explorerBody.appendChild(frag);
+
+    if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
+  }
+
+  function renderFolder(name, images) {
+    explorerCurrentFolder = name;
+    explorerBody.innerHTML = '';
+    if (explorerBack) explorerBack.disabled = false;
+    if (explorerPath) explorerPath.textContent = 'Archivo GDN \\ ' + name;
+    if (explorerTitle) explorerTitle.textContent = name;
+
+    // Pre-compute listData once per folder (lazy, cached for all clicks)
+    let cachedListData = null;
+    function getListData() {
+      if (!cachedListData) {
+        cachedListData = images.map(function(p) {
+          const m = imageMetadata[p];
+          return {
+            src: new URL(p, location.href).href,
+            fileName: getFileName(p),
+            fileType: getExtension(getFileName(p)),
+            artista: (m && m.artista) || '',
+            descripcion: (m && m.descripcion) || ''
+          };
+        });
+      }
+      return cachedListData;
+    }
+
+    // Detect desktop mode once, not per click
+    let parentHandled = false;
+    if (parent !== window) {
+      try {
+        parentHandled = !!parent.document.getElementById('win95-player-panel');
+      } catch (e) { /* cross-origin */ }
+    }
+
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < images.length; i++) {
+      const path = images[i];
+      const idx = i;
+      const item = document.createElement('div');
+      item.className = 'fe-image';
+      const fileName = getFileName(path);
+
+      // Use pre-generated 96px thumbnail (all stored as .jpg in thumbs/)
+      const baseName = fileName.replace(/\.[^.]+$/, '');
+      const thumbPath = 'archiveImages/thumbs/' + baseName + '.jpg';
+
+      const img = document.createElement('img');
+      img.className = 'fe-image-thumb';
+      img.src = thumbPath;
+      img.alt = fileName;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.width = 48;
+      img.height = 48;
+
+      const label = document.createElement('span');
+      label.className = 'fe-label';
+      label.textContent = fileName;
+
+      item.appendChild(img);
+      item.appendChild(label);
+      item.title = fileName;
+
+      item.onclick = function() {
+        if (parentHandled) {
+          parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, '*');
+        } else {
+          // Mobile / standalone — open built-in details popup
+          const fakeImg = document.createElement('img');
+          fakeImg.src = path;
+          fakeImg.dataset.src = path;
+          fakeImg.dataset.width = '';
+          fakeImg.dataset.height = '';
+          const meta = imageMetadata[path];
+          if (meta) {
+            if (meta.artista) fakeImg.dataset.artista = meta.artista;
+            if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
+          }
+          closeExplorer();
+          openDetails(fakeImg);
+        }
+      };
+
+      frag.appendChild(item);
+    }
+
+    explorerBody.appendChild(frag);
+    if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function openExplorer() {
+    if (!explorerOverlay) return;
+    renderFolderList();
+    explorerOverlay.classList.add('open');
+  }
+
+  function closeExplorer() {
+    if (explorerOverlay) explorerOverlay.classList.remove('open');
+  }
+
+  if (explorerClose) explorerClose.onclick = closeExplorer;
+  if (explorerBack) explorerBack.onclick = function() {
+    if (explorerCurrentFolder !== null) renderFolderList();
+  };
+  if (explorerOverlay) explorerOverlay.onclick = function(e) {
+    if (e.target === explorerOverlay) closeExplorer();
+  };
+  if (exploreBtn) exploreBtn.onclick = function() {
+    closeDetailsPopup();
+    openExplorer();
+  };
+
+  // Listen for parent requesting explorer open (desktop mode, origin-validated)
+  window.addEventListener('message', function(e) {
+    if (e.origin !== location.origin) return;
+    if (e.data?.type === 'open-file-explorer') openExplorer();
+  });
+
   // Show image details — use parent panel on desktop, built-in popup otherwise
   function openDetails(img) {
     const src = img.dataset.src || img.src;
@@ -122,17 +324,20 @@
     const fullSrc = new URL(src, location.href).href;
     const dims = `${img.dataset.width || img.naturalWidth || '—'} × ${img.dataset.height || img.naturalHeight || '—'}`;
     const fileType = getExtension(fileName);
-    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src };
+    const artista = img.dataset.artista || '';
+    const descripcion = img.dataset.descripcion || '';
+    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src, artista, descripcion };
 
     // On desktop, the parent index.html has the details panel — send message there
     // On mobile (frame.html), parent won't have the handler, so show built-in popup
     let parentHandled = false;
     if (parent !== window) {
       try {
-        // Check if parent has the details panel (desktop mode)
         parentHandled = !!parent.document.getElementById('win95-details-panel');
       } catch (e) { /* cross-origin */ }
-      parent.postMessage({ type: 'galeria-open-details', data }, '*');
+      if (parentHandled) {
+        parent.postMessage({ type: 'galeria-open-details', data }, '*');
+      }
     }
 
     // Show built-in popup when standalone or when parent doesn't have the panel
@@ -141,6 +346,13 @@
       if (detailsFilename) detailsFilename.textContent = fileName;
       if (detailsType) detailsType.textContent = fileType;
       if (detailsDimensions) detailsDimensions.textContent = dims;
+
+      // Show artista & descripcion only when non-empty
+      if (detailsArtistaRow) detailsArtistaRow.style.display = artista ? '' : 'none';
+      if (detailsArtista) detailsArtista.textContent = artista;
+      if (detailsDescripcionRow) detailsDescripcionRow.style.display = descripcion ? '' : 'none';
+      if (detailsDescripcion) detailsDescripcion.textContent = descripcion;
+
       if (detailsOverlay) detailsOverlay.classList.add('open');
     }
   }
@@ -155,36 +367,52 @@
     try {
       const res = await fetch(MANIFEST_URL);
       if (res.ok) {
-        const names = await res.json();
-        files = names.map(name => 'archiveImages/' + name);
+        const entries = await res.json();
+        files = [];
+        for (const entry of entries) {
+          if (typeof entry === 'string') {
+            files.push('archiveImages/' + entry);
+          } else if (entry && entry.filename) {
+            const path = 'archiveImages/' + entry.filename;
+            files.push(path);
+            if (entry.artista || entry.descripcion) {
+              imageMetadata[path] = {
+                artista: entry.artista || '',
+                descripcion: entry.descripcion || ''
+              };
+            }
+          }
+        }
       }
     } catch (e) { /* network error */ }
 
     if (!files || !files.length) return;
 
-    // Add images, randomly thin out GIFs
+    // archiveImages = complete list (explorer uses this)
+    archiveImages = files;
+
+    // displayImages = thinned-out copy for collage (GIFs reduced, shuffled)
     for (const path of files) {
       if (path.endsWith('.gif') && Math.random() < 0.35) continue;
-      archiveImages.push(path);
+      displayImages.push(path);
     }
-
-    // Shuffle so display order is random
-    for (let i = archiveImages.length - 1; i > 0; i--) {
+    // Fisher-Yates shuffle
+    for (let i = displayImages.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [archiveImages[i], archiveImages[j]] = [archiveImages[j], archiveImages[i]];
+      [displayImages[i], displayImages[j]] = [displayImages[j], displayImages[i]];
     }
 
-    if (archiveImages.length) startDisplaying();
+    if (displayImages.length) startDisplaying();
   }
 
   // Select next image avoiding recent ones
   function selectImage() {
-    if (!archiveImages.length) return null;
+    if (!displayImages.length) return null;
 
     let idx, attempts = 0;
     do {
-      idx = Math.floor(Math.random() * archiveImages.length);
-      const path = archiveImages[idx];
+      idx = Math.floor(Math.random() * displayImages.length);
+      const path = displayImages[idx];
       const isGif = path.endsWith('.gif');
       const recent = isGif ? recentGifs : recentNonGifs;
 
@@ -192,7 +420,7 @@
       attempts++;
     } while (true);
 
-    const path = archiveImages[idx];
+    const path = displayImages[idx];
     const isGif = path.endsWith('.gif');
 
     if (isGif) {
@@ -206,9 +434,24 @@
     return path;
   }
 
+  // Pause collage when page is not visible (saves CPU + network in background tabs/hidden iframes)
+  let collagePaused = false;
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      collagePaused = true;
+      clearTimeout(imageTimeout);
+      imageTimeout = null;
+    } else if (collagePaused) {
+      collagePaused = false;
+      if (displayImages.length) startDisplaying();
+    }
+  });
+
   // Display images periodically
   function startDisplaying() {
+    if (imageTimeout) return; // don't double-start
     function addNext() {
+      if (collagePaused) return;
       // Wait for container to have layout dimensions before placing
       const w = collageContainer.offsetWidth || window.innerWidth;
       const h = collageContainer.offsetHeight || window.innerHeight;

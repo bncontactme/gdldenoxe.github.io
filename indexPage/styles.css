@@ -119,6 +119,11 @@ body {
     position: absolute;
     width: 280px;
     z-index: 1;
+    will-change: auto;
+}
+
+.win95-window.dragging {
+    will-change: transform, left, top;
 }
 
 .win95-window.hidden {
@@ -680,11 +685,12 @@ body {
     padding: 10px;
     background: var(--win95-gray);
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 #win95-details-preview {
     width: 100%;
+    height: 180px;
     background: var(--win95-white);
     border-top: var(--inset-light);
     border-left: var(--inset-light);
@@ -695,11 +701,12 @@ body {
     justify-content: center;
     padding: 6px;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 #win95-details-image {
     max-width: 100%;
-    max-height: 220px;
+    max-height: 168px;
     image-rendering: auto;
 }
 
@@ -707,6 +714,25 @@ body {
     background: var(--win95-gray);
     font-size: 11px;
     color: var(--win95-black);
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#win95-details-descripcion-row {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#win95-details-descripcion {
+    overflow-y: auto;
+    max-height: 100px;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .win95-detail-row {
@@ -723,11 +749,13 @@ body {
 #win95-details-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 6px;
     padding: 6px 10px;
     background: #c0c0c0;
     flex-shrink: 0;
 }
 
+#win95-details-explore,
 #win95-details-ok {
     min-width: 75px;
     height: 23px;
@@ -741,11 +769,156 @@ body {
     font-family: var(--font-system);
 }
 
+#win95-details-explore:active,
 #win95-details-ok:active {
     border-top: var(--border-sunken);
     border-left: var(--border-sunken);
     border-right: var(--border-raised);
     border-bottom: var(--border-raised);
+}
+
+/* ===== Visor de imágenes (Image Player) ===== */
+#win95-player-panel {
+    display: none;
+    position: absolute;
+    width: 420px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    z-index: 200;
+    font-family: var(--font-system);
+    flex-direction: column;
+}
+
+#win95-player-panel.open {
+    display: flex;
+}
+
+#win95-player-titlebar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+    cursor: move;
+    user-select: none;
+}
+
+#win95-player-close {
+    width: 18px;
+    height: 18px;
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    padding: 0;
+    line-height: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#win95-player-close:active {
+    border-top: 1px solid var(--win95-black);
+    border-left: 1px solid var(--win95-black);
+    border-right: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+#win95-player-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    background: var(--win95-gray);
+    flex: 1;
+    overflow: hidden;
+}
+
+#win95-player-canvas {
+    width: 100%;
+    height: 280px;
+    background: #000;
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+#win95-player-image {
+    max-width: 100%;
+    max-height: 272px;
+    image-rendering: auto;
+}
+
+#win95-player-info {
+    background: var(--win95-gray);
+    font-size: 11px;
+    color: var(--win95-black);
+}
+
+#win95-player-descripcion-row {
+    min-height: 0;
+}
+
+#win95-player-descripcion {
+    overflow-y: auto;
+    max-height: 80px;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+#win95-player-controls {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--win95-gray);
+    flex-shrink: 0;
+}
+
+#win95-player-prev,
+#win95-player-next {
+    min-width: 100px;
+    height: 23px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-system);
+}
+
+#win95-player-prev:active,
+#win95-player-next:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+#win95-player-prev:disabled,
+#win95-player-next:disabled {
+    color: #808080;
+    cursor: default;
 }
 
 [data-window-id="tienda"] {
@@ -870,8 +1043,8 @@ body {
 .ms-sprite {
     width: 14px;
     height: 14px;
-    image-rendering: pixelated;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
     pointer-events: none;
     display: block;
 }
@@ -1275,6 +1448,7 @@ body {
     /* --- Hide all desktop windows --- */
     .win95-window,
     #win95-details-panel,
+    #win95-player-panel,
     #articles-container {
         display: none !important;
     }
@@ -1442,12 +1616,15 @@ body {
 
     .win95-window[data-window-id="poema1"] .poem-text {
         font-family: monospace;
-        font-size: 4px;
+        font-size: 10px;
         line-height: 1;
         letter-spacing: -0.3px;
         white-space: pre;
         overflow: hidden;
         text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.4;
     }
 
     /* --- Radio Player (floating frame, like the image widget) --- */
@@ -1823,12 +2000,15 @@ body {
 
     .win95-window[data-window-id="poema1"] .poem-text {
         font-family: monospace;
-        font-size: 3px;
+        font-size: 10px;
         line-height: 1;
         letter-spacing: -0.3px;
         white-space: pre;
         overflow: hidden;
         text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.3;
     }
 
     /* Start menu */
