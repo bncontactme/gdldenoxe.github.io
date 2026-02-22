@@ -7,13 +7,17 @@
   const RESET_INTERVAL = 300000; // 5 min — only reset to reclaim memory
   const MIN_DISTANCE = _mobile ? 100 : 150;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
-  const MAX_IMAGES = _mobile ? 15 : 40; // DOM ceiling before baking to canvas
+  const MAX_IMAGES = _mobile ? 20 : 52; // DOM ceiling before baking to canvas
   const MAX_Z = 500;
 
   // Background canvas — old images get painted here so they never disappear
   const bgCanvas = document.createElement('canvas');
-  bgCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
+  bgCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;cursor:pointer;';
   let bgCtx = null; // lazily initialized after container has dimensions
+
+  // Hitmap — lightweight array of baked image rects + metadata for click detection
+  // Each entry: { left, top, w, h, src, artista, descripcion, naturalW, naturalH }
+  let bakedHits = [];
 
   function ensureCanvas() {
     if (bgCtx) return;
@@ -31,17 +35,60 @@
   // Bake a DOM image onto the canvas, then remove it from DOM
   function bakeImage(el) {
     ensureCanvas();
-    try {
-      const top = parseFloat(el.style.top) || 0;
-      const left = parseFloat(el.style.left) || 0;
-      const width = el.offsetWidth || parseFloat(el.style.width) || 100;
-      const height = el.offsetHeight || el.naturalHeight * (width / (el.naturalWidth || 1)) || 100;
-      bgCtx.drawImage(el, left, top, width, height);
-    } catch (e) { /* CORS / broken image — just remove silently */ }
+    // Only draw if the image actually loaded (complete & has real dimensions)
+    if (el.complete && el.naturalWidth > 0) {
+      try {
+        const top = parseFloat(el.style.top) || 0;
+        const left = parseFloat(el.style.left) || 0;
+        const cssW = parseFloat(el.style.width) || el.offsetWidth || 100;
+        const aspect = el.naturalHeight / el.naturalWidth;
+        const cssH = el.offsetHeight || Math.round(cssW * aspect) || 100;
+        bgCtx.drawImage(el, left, top, cssW, cssH);
+        // Store hit region for click detection on canvas
+        bakedHits.push({
+          left: left, top: top, w: cssW, h: cssH,
+          src: el.dataset.src || el.src,
+          artista: el.dataset.artista || '',
+          descripcion: el.dataset.descripcion || '',
+          naturalW: el.naturalWidth,
+          naturalH: el.naturalHeight
+        });
+      } catch (e) { /* tainted canvas / broken — skip silently */ }
+    }
     el.onload = el.onerror = el.onclick = null;
     el.removeAttribute('src');
     el.remove();
   }
+
+  // Canvas click handler — find topmost baked image under the tap
+  bgCanvas.addEventListener('click', function(e) {
+    const rect = bgCanvas.getBoundingClientRect();
+    const scaleX = bgCanvas.width / rect.width;
+    const scaleY = bgCanvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    // Iterate in reverse — last baked = visually on top
+    for (let i = bakedHits.length - 1; i >= 0; i--) {
+      const h = bakedHits[i];
+      if (x >= h.left && x <= h.left + h.w && y >= h.top && y <= h.top + h.h) {
+        // Build a fake img-like object with the data openDetails expects
+        const fakeImg = {
+          dataset: {
+            src: h.src,
+            artista: h.artista,
+            descripcion: h.descripcion,
+            width: h.naturalW,
+            height: h.naturalH
+          },
+          src: h.src,
+          naturalWidth: h.naturalW,
+          naturalHeight: h.naturalH
+        };
+        openDetails(fakeImg);
+        return;
+      }
+    }
+  });
 
   // State
   let lastPos = { top: null, left: null, size: null };
@@ -540,22 +587,16 @@
     addNext();
   }
 
-  // Reset gallery — wipe canvas + DOM to reclaim memory (every 5 min)
+  // Reset gallery — bake remaining DOM images to canvas, reclaim DOM memory (every 5 min)
   function reset() {
     clearTimeout(imageTimeout);
     clearTimeout(resetTimeout);
     imageTimeout = null;
     resetTimeout = null;
 
-    // Clean up all live DOM images
+    // Bake all live DOM images onto canvas so nothing disappears visually
     const imgs = collageContainer.getElementsByTagName('img');
-    while (imgs.length) cleanupImg(imgs[0]);
-
-    // Clear canvas
-    if (bgCtx) {
-      bgCtx.fillStyle = '#ffffff';
-      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-    }
+    while (imgs.length) bakeImage(imgs[0]);
 
     // Reset state
     lastPos = { top: null, left: null, size: null };
