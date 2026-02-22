@@ -1616,12 +1616,15 @@ body {
 
     .win95-window[data-window-id="poema1"] .poem-text {
         font-family: monospace;
-        font-size: 4px;
+        font-size: 10px;
         line-height: 1;
         letter-spacing: -0.3px;
         white-space: pre;
         overflow: hidden;
         text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.4;
     }
 
     /* --- Radio Player (floating frame, like the image widget) --- */
@@ -1997,12 +2000,15 @@ body {
 
     .win95-window[data-window-id="poema1"] .poem-text {
         font-family: monospace;
-        font-size: 3px;
+        font-size: 10px;
         line-height: 1;
         letter-spacing: -0.3px;
         white-space: pre;
         overflow: hidden;
         text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.3;
     }
 
     /* Start menu */

@@ -425,8 +425,10 @@ juntxs y brillando.`
         if (isMobile()) return;
         const windows = Array.from($$('.win95-window:not(.hidden)'));
         const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
-        const iconAreaW = 110;
+        const iconAreaW = 120; // leave room for desktop icons
+        const availW = screenW - iconAreaW; // usable width
         
         // Separate windows by type
         let imgWin = null, artWin = null;
@@ -439,8 +441,6 @@ juntxs y brillando.`
                 // Always keep minesweeper centered, do not move
                 const width = win.offsetWidth || 340;
                 const height = win.offsetHeight || 400;
-                const screenW = window.innerWidth;
-                const screenH = window.innerHeight;
                 win.style.left = Math.max(0, Math.floor((screenW - width) / 2)) + 'px';
                 win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
             } else {
@@ -448,43 +448,52 @@ juntxs y brillando.`
             }
         });
         
-        // Position articulo at top-right
         let topY = gap;
         
         if (artWin) {
-            const artRect = artWin.getBoundingClientRect();
-            const artW = artRect.width || 280;
-            const artH = artRect.height || 300;
-            artWin.style.left = (screenW - artW - gap) + 'px';
+            const artW = Math.min(artWin.offsetWidth || 280, availW - gap * 2);
+            const artH = artWin.offsetHeight || 300;
+            const artLeft = screenW - artW - gap;
+            artWin.style.left = artLeft + 'px';
             artWin.style.top = topY + 'px';
             
-            // Position image to the LEFT of articulo
             if (imgWin) {
-                const imgRect = imgWin.getBoundingClientRect();
-                const imgW = imgRect.width || 280;
-                const imgH = imgRect.height || 200;
-                imgWin.style.left = (screenW - artW - gap - imgW - gap) + 'px';
-                imgWin.style.top = topY + 'px';
+                const imgW = imgWin.offsetWidth || 280;
+                const idealLeft = artLeft - imgW - gap;
+
+                if (idealLeft >= iconAreaW) {
+                    // Fits side-by-side
+                    imgWin.style.left = idealLeft + 'px';
+                    imgWin.style.top = topY + 'px';
+                } else {
+                    // Not enough room — stack image above article
+                    const imgH = imgWin.offsetHeight || 200;
+                    const clampedW = Math.min(imgW, availW - gap * 2);
+                    imgWin.style.left = (screenW - clampedW - gap) + 'px';
+                    imgWin.style.top = topY + 'px';
+                    // Push article below image
+                    topY += imgH + gap;
+                    artWin.style.top = topY + 'px';
+                }
             }
             
-            // Others (poem etc) below articulo
-            let belowY = topY + artH + gap;
+            // Others (poem etc) below articulo, clamped to screen
+            let belowY = (parseInt(artWin.style.top) || topY) + artH + gap;
             others.forEach(win => {
-                const rect = win.getBoundingClientRect();
-                const w = rect.width || 280;
-                win.style.left = (screenW - w - gap) + 'px';
+                const w = win.offsetWidth || 280;
+                if (belowY + 50 > screenH) return; // skip if off-screen
+                win.style.left = (screenW - Math.min(w, availW - gap * 2) - gap) + 'px';
                 win.style.top = belowY + 'px';
-                belowY += (rect.height || 200) + gap;
+                belowY += (win.offsetHeight || 200) + gap;
             });
         } else {
             // Fallback: stack all on right
             let ry = gap;
             windows.forEach(win => {
-                const rect = win.getBoundingClientRect();
-                const w = rect.width || 280;
-                win.style.left = (screenW - w - gap) + 'px';
+                const w = win.offsetWidth || 280;
+                win.style.left = (screenW - Math.min(w, availW - gap * 2) - gap) + 'px';
                 win.style.top = ry + 'px';
-                ry += (rect.height || 200) + gap;
+                ry += (win.offsetHeight || 200) + gap;
             });
         }
 
