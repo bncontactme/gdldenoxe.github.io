@@ -1448,7 +1448,9 @@ body {
     /* --- Hide all desktop windows --- */
     .win95-window,
     #win95-details-panel,
+    #win95-details-panel.open,
     #win95-player-panel,
+    #win95-player-panel.open,
     #articles-container {
         display: none !important;
     }

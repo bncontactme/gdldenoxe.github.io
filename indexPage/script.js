@@ -1001,7 +1001,7 @@ juntxs y brillando.`
     let detailsPanelHasBeenPositioned = false;
 
     function openDetailsPanel(data) {
-        if (!detailsPanel) return;
+        if (!detailsPanel || isMobile()) return;
         if (detailsImage) detailsImage.src = data.src;
         if (detailsFilename) detailsFilename.textContent = data.fileName;
         if (detailsType) detailsType.textContent = data.fileType;
@@ -1141,7 +1141,7 @@ juntxs y brillando.`
     }
 
     function openPlayerPanel(list, index) {
-        if (!playerPanel) return;
+        if (!playerPanel || isMobile()) return;
         playerList = list || [];
         playerIndex = (typeof index === 'number' && index >= 0) ? index : 0;
         showPlayerItem(playerIndex);
