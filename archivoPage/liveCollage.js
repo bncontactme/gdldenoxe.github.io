@@ -19,6 +19,17 @@
 
   // Lightweight position tracking (avoids getBoundingClientRect / layout thrashing)
   var placedPositions = [];
+  // Track in-flight preloads so we can cancel them on pause/reset
+  var pendingPreloads = [];
+
+  function evictOldest() {
+    var imgs = collageContainer.querySelectorAll('img');
+    while (imgs.length >= MAX_IMAGES) {
+      imgs[0].remove();
+      placedPositions.shift();
+      imgs = collageContainer.querySelectorAll('img');
+    }
+  }
 
   function placeImage(src) {
     const cH = collageContainer.offsetHeight || window.innerHeight;
@@ -48,25 +59,23 @@
     lastLeft = bestLeft;
     placedPositions.push({ t: bestTop, l: bestLeft, s: size });
 
-    // Cap DOM images — fade out oldest before removing
-    var imgs = collageContainer.querySelectorAll('img');
-    while (imgs.length >= MAX_IMAGES) {
-      var oldest = imgs[0];
-      oldest.classList.remove('collage-visible');
-      oldest.remove();
-      placedPositions.shift();
-      imgs = collageContainer.querySelectorAll('img');
-    }
+    // Cap DOM images — smooth fade out oldest
+    evictOldest();
 
     // Preload image off-DOM so it appears fully loaded (no progressive/choppy render)
     const preload = new Image();
     preload.src = src;
+    pendingPreloads.push(preload);
 
     function insert() {
+      // Remove from pending list
+      var idx = pendingPreloads.indexOf(preload);
+      if (idx !== -1) pendingPreloads.splice(idx, 1);
       if (paused) return; // Don't insert if gallery was closed/paused while loading
       const img = document.createElement('img');
       img.dataset.src = src;
-      img.style.cssText = 'top:' + bestTop + 'px;left:' + bestLeft + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
+      // Use transform for GPU-compositor positioning (no layout recalc)
+      img.style.cssText = 'transform:translate3d(' + bestLeft + 'px,' + bestTop + 'px,0);width:' + size + 'px;height:auto;z-index:' + (++zIndex);
       img.draggable = false;
       img.decoding = 'async';
 
@@ -82,8 +91,6 @@
 
       img.src = src;
       collageContainer.appendChild(img);
-      // Trigger fade-in on next frame
-      requestAnimationFrame(function() { img.classList.add('collage-visible'); });
     }
 
     // Use decode() for jank-free insertion when available, fallback to onload
@@ -406,6 +413,9 @@
       paused = true;
       clearTimeout(imageTimeout);
       imageTimeout = null;
+      // Cancel in-flight preloads
+      pendingPreloads.forEach(function(p) { p.src = ''; });
+      pendingPreloads = [];
     } else if (paused) {
       paused = false;
       if (displayImages.length) startDisplaying();
@@ -420,6 +430,9 @@
       paused = true;
       clearTimeout(imageTimeout);
       imageTimeout = null;
+      // Cancel in-flight preloads
+      pendingPreloads.forEach(function(p) { p.src = ''; });
+      pendingPreloads = [];
     } else if (e.data.type === 'galeria-resume') {
       if (paused) {
         paused = false;
@@ -467,6 +480,9 @@
     lastLeft = -1;
     recent = [];
     placedPositions = [];
+    // Cancel any pending preloads
+    pendingPreloads.forEach(function(p) { p.src = ''; });
+    pendingPreloads = [];
     // Reshuffle
     for (var i = displayImages.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));

@@ -135,24 +135,19 @@ body {
   background: #fff;
   overflow: hidden;
   display: none;
-  contain: layout style paint;
+  contain: strict;
 }
 
 #live-collage-container img {
   position: absolute;
+  top: 0;
+  left: 0;
   cursor: pointer;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: auto;
   touch-action: manipulation;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  will-change: opacity;
   contain: layout style paint;
-}
-
-#live-collage-container img.collage-visible {
-  opacity: 1;
 }
 
 /* Image Details Popup (mobile / standalone) */
