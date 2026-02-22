@@ -135,6 +135,9 @@ body {
   background: #fff;
   overflow: hidden;
   display: none;
+  /* Performance: isolate compositing & skip layout recalc for children */
+  contain: layout style paint;
+  will-change: contents;
 }
 
 #live-collage-container img {
@@ -143,6 +146,11 @@ body {
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: auto;
+  /* GPU-promote each image to its own layer — avoids full repaint on add/remove */
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Image Details Popup (mobile / standalone) */

@@ -3,10 +3,12 @@
   'use strict';
 
   const collageContainer = document.getElementById('live-collage-container');
-  const RESET_INTERVAL = 300000; // 5 minutes
-  const MIN_DISTANCE = 150;
-  const IMAGE_INTERVAL = 2000;
-  const MAX_IMAGES = 50; // Limit DOM nodes for performance
+  const _mobile = window.innerWidth <= 768;
+  const RESET_INTERVAL = _mobile ? 120000 : 300000; // 2 min mobile, 5 min desktop
+  const MIN_DISTANCE = _mobile ? 100 : 150;
+  const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
+  const MAX_IMAGES = _mobile ? 18 : 50; // Tight DOM ceiling on mobile
+  const MAX_Z = 500; // Cap z-index to avoid compositor bloat
 
   // State
   let lastPos = { top: null, left: null, size: null };
@@ -52,16 +54,27 @@
     return { top, left };
   }
 
+  // Clean up an image element to prevent leaks
+  function cleanupImg(el) {
+    el.onload = el.onerror = el.onclick = null;
+    el.removeAttribute('src');
+    el.remove();
+  }
+
   // Place image in collage
   function placeImage(src) {
-    const size = Math.random() * 180 + 120;
+    const size = _mobile ? Math.random() * 130 + 90 : Math.random() * 180 + 120;
     const pos = getRandomPosition(size);
 
+    // Wrap z-index to avoid unbounded growth
+    if (++zIndex > MAX_Z) zIndex = 1;
+
     const img = document.createElement('img');
-    img.src = src;
-    img.dataset.src = src;
-    img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${++zIndex}`;
+    img.dataset.src = src; // always store original full-res path for details
+    img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${zIndex}`;
     img.draggable = false;
+    img.decoding = 'async';
+    if (_mobile) img.loading = 'lazy';
 
     // Attach metadata from JSON (sourced from EXIF at build time)
     const meta = imageMetadata[src];
@@ -73,10 +86,11 @@
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
       this.dataset.height = this.naturalHeight;
+      this.onload = null; // free handler after use
     };
 
     img.onerror = function() {
-      this.remove();
+      cleanupImg(this);
     };
 
     img.onclick = function(e) {
@@ -84,13 +98,16 @@
       openDetails(this);
     };
 
+    // Set src last so handlers are attached before load fires
+    img.src = src;
+
     collageContainer.appendChild(img);
     lastPos = { top: pos.top, left: pos.left, size };
 
     // Remove oldest images if too many on screen
     const images = collageContainer.getElementsByTagName('img');
-    if (images.length > MAX_IMAGES) {
-      images[0].remove();
+    while (images.length > MAX_IMAGES) {
+      cleanupImg(images[0]);
     }
   }
 
@@ -497,8 +514,9 @@
     imageTimeout = null;
     resetTimeout = null;
 
-    // Clear all images efficiently
-    collageContainer.textContent = '';
+    // Properly clean up every image (null handlers, revoke src)
+    const imgs = collageContainer.getElementsByTagName('img');
+    while (imgs.length) cleanupImg(imgs[0]);
 
     // Reset state
     lastPos = { top: null, left: null, size: null };
