@@ -1030,13 +1030,12 @@ juntxs y brillando.`
 
         detailsPanel.classList.add('open');
         detailsPanel.setAttribute('aria-hidden', 'false');
-        detailsPanel.style.zIndex = ++highestZIndex;
-    }
-
-    function closeDetailsPanel() {
+        detailsPanel.style.display = '';
+        detailsPanel.style.zIndex = ++highestZIndex; {
         if (!detailsPanel) return;
         detailsPanel.classList.remove('open');
         detailsPanel.setAttribute('aria-hidden', 'true');
+        detailsPanel.style.display = 'none';
         detailsPanelHasBeenPositioned = false;
     }
 
@@ -1162,6 +1161,7 @@ juntxs y brillando.`
 
         playerPanel.classList.add('open');
         playerPanel.setAttribute('aria-hidden', 'false');
+        playerPanel.style.display = '';
         playerPanel.style.zIndex = ++highestZIndex;
     }
 
@@ -1169,6 +1169,7 @@ juntxs y brillando.`
         if (!playerPanel) return;
         playerPanel.classList.remove('open');
         playerPanel.setAttribute('aria-hidden', 'true');
+        playerPanel.style.display = 'none';
         playerHasBeenPositioned = false;
     }
 
