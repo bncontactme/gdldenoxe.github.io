@@ -144,6 +144,7 @@ body {
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: auto;
+  touch-action: manipulation;
 }
 
 /* Image Details Popup (mobile / standalone) */
@@ -215,6 +216,7 @@ body {
   background: #fff;
   padding: 12px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -391,6 +393,7 @@ body {
   background: #fff;
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 8px;
   display: flex;
   flex-wrap: wrap;
@@ -410,6 +413,7 @@ body {
   border: 1px solid transparent;
   border-radius: 2px;
   text-align: center;
+  touch-action: manipulation;
 }
 
 .fe-folder:hover,

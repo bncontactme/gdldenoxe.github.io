@@ -25,6 +25,7 @@
     img.style.cssText = 'top:' + top + 'px;left:' + left + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
     img.draggable = false;
     img.decoding = 'async';
+    img.fetchPriority = 'low';
 
     const meta = imageMetadata[src];
     if (meta) {
