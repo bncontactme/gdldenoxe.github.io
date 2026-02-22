@@ -180,6 +180,7 @@
       return a.localeCompare(b);
     });
 
+    const frag = document.createDocumentFragment();
     for (const name of sortedNames) {
       const count = folders[name].length;
       const item = document.createElement('div');
@@ -187,8 +188,9 @@
       item.innerHTML = FOLDER_SVG + '<span class="fe-label">' + escapeHtml(name) + '</span>';
       item.title = name + ' (' + count + ' imágenes)';
       item.onclick = function() { renderFolder(name, folders[name]); };
-      explorerBody.appendChild(item);
+      frag.appendChild(item);
     }
+    explorerBody.appendChild(frag);
 
     if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
   }
@@ -200,44 +202,72 @@
     if (explorerPath) explorerPath.textContent = 'Archivo GDN \\ ' + name;
     if (explorerTitle) explorerTitle.textContent = name;
 
-    for (const path of images) {
+    // Pre-compute listData once per folder (lazy, cached for all clicks)
+    let cachedListData = null;
+    function getListData() {
+      if (!cachedListData) {
+        cachedListData = images.map(function(p) {
+          const m = imageMetadata[p];
+          return {
+            src: new URL(p, location.href).href,
+            fileName: getFileName(p),
+            fileType: getExtension(getFileName(p)),
+            artista: (m && m.artista) || '',
+            descripcion: (m && m.descripcion) || ''
+          };
+        });
+      }
+      return cachedListData;
+    }
+
+    // Detect desktop mode once, not per click
+    let parentHandled = false;
+    if (parent !== window) {
+      try {
+        parentHandled = !!parent.document.getElementById('win95-player-panel');
+      } catch (e) { /* cross-origin */ }
+    }
+
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < images.length; i++) {
+      const path = images[i];
+      const idx = i;
       const item = document.createElement('div');
       item.className = 'fe-image';
       const fileName = getFileName(path);
-      item.innerHTML = '<img class="fe-image-thumb" src="' + path + '" alt="' + escapeHtml(fileName) + '" loading="lazy">'
-        + '<span class="fe-label">' + escapeHtml(fileName) + '</span>';
-      item.title = fileName;
-      item.onclick = function() {
-        // On desktop (inside iframe), send to parent for the desktop player
-        // On mobile/standalone, open the built-in details popup
-        let parentHandled = false;
-        if (parent !== window) {
-          try {
-            parentHandled = !!parent.document.getElementById('win95-player-panel');
-          } catch (e) { /* cross-origin */ }
-        }
 
+      // Use pre-generated 96px thumbnail (all stored as .jpg in thumbs/)
+      const baseName = fileName.replace(/\.[^.]+$/, '');
+      const thumbPath = 'archiveImages/thumbs/' + baseName + '.jpg';
+
+      const img = document.createElement('img');
+      img.className = 'fe-image-thumb';
+      img.src = thumbPath;
+      img.alt = fileName;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.width = 48;
+      img.height = 48;
+
+      const label = document.createElement('span');
+      label.className = 'fe-label';
+      label.textContent = fileName;
+
+      item.appendChild(img);
+      item.appendChild(label);
+      item.title = fileName;
+
+      item.onclick = function() {
         if (parentHandled) {
-          const listData = images.map(function(p) {
-            const m = imageMetadata[p];
-            return {
-              src: new URL(p, location.href).href,
-              fileName: getFileName(p),
-              fileType: getExtension(getFileName(p)),
-              artista: (m && m.artista) || '',
-              descripcion: (m && m.descripcion) || ''
-            };
-          });
-          const idx = images.indexOf(path);
-          parent.postMessage({ type: 'galeria-open-player', list: listData, index: idx }, '*');
+          parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, '*');
         } else {
           // Mobile / standalone — open built-in details popup
           const fakeImg = document.createElement('img');
           fakeImg.src = path;
           fakeImg.dataset.src = path;
-          const thumb = item.querySelector('img');
-          fakeImg.dataset.width = thumb ? (thumb.naturalWidth || '') : '';
-          fakeImg.dataset.height = thumb ? (thumb.naturalHeight || '') : '';
+          fakeImg.dataset.width = '';
+          fakeImg.dataset.height = '';
           const meta = imageMetadata[path];
           if (meta) {
             if (meta.artista) fakeImg.dataset.artista = meta.artista;
@@ -247,9 +277,11 @@
           openDetails(fakeImg);
         }
       };
-      explorerBody.appendChild(item);
+
+      frag.appendChild(item);
     }
 
+    explorerBody.appendChild(frag);
     if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
   }
 
