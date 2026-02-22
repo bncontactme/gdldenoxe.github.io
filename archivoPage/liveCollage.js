@@ -80,7 +80,7 @@
 
     img.onclick = function(e) {
       e.stopPropagation();
-      openDetailsAsync(this);
+      openDetails(this);
     };
 
     collageContainer.appendChild(img);
@@ -126,28 +126,6 @@
   if (detailsOverlay) detailsOverlay.onclick = function(e) {
     if (e.target === detailsOverlay) closeDetailsPopup();
   };
-
-  // Read EXIF metadata from image on demand (cached in dataset after first read)
-  async function fetchExifIfNeeded(img) {
-    // Already have metadata from JSON or previous EXIF read → skip
-    if (img.dataset.artista || img.dataset.descripcion) return;
-    if (img.dataset.exifRead) return; // already attempted
-    img.dataset.exifRead = '1';
-
-    if (typeof readExifMeta !== 'function') return;
-    const src = img.dataset.src || img.src;
-    const meta = await readExifMeta(new URL(src, location.href).href);
-    if (meta) {
-      if (meta.artist)      img.dataset.artista = meta.artist;
-      if (meta.description) img.dataset.descripcion = meta.description;
-    }
-  }
-
-  // Async wrapper: read EXIF then open details
-  async function openDetailsAsync(img) {
-    await fetchExifIfNeeded(img);
-    openDetails(img);
-  }
 
   // Show image details — use parent panel on desktop, built-in popup otherwise
   function openDetails(img) {
