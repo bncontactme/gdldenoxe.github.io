@@ -381,7 +381,7 @@
     if (displayImages.length) startDisplaying();
   }
 
-  // Pause when tab hidden
+  // Pause when tab hidden or parent hides the gallery window
   let paused = false;
   let started = false;
   document.addEventListener('visibilitychange', function() {
@@ -393,6 +393,22 @@
     } else if (paused) {
       paused = false;
       if (displayImages.length) startDisplaying();
+    }
+  });
+
+  // Listen for pause/resume messages from parent (close/minimize gallery window)
+  window.addEventListener('message', function(e) {
+    if (!e.data || typeof e.data.type !== 'string') return;
+    if (e.data.type === 'galeria-pause') {
+      if (!started) return;
+      paused = true;
+      clearTimeout(imageTimeout);
+      imageTimeout = null;
+    } else if (e.data.type === 'galeria-resume') {
+      if (paused) {
+        paused = false;
+        if (displayImages.length) startDisplaying();
+      }
     }
   });
 

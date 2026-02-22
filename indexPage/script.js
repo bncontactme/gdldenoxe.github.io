@@ -20,6 +20,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let cachedIsMobile = null;
 
     // Funciones para controlar audio de tienda
+    function pauseGaleriaCollage() {
+        try {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            const galeriaIframe = galeriaWin?.querySelector('iframe');
+            if (galeriaIframe?.contentWindow) {
+                galeriaIframe.contentWindow.postMessage({ type: 'galeria-pause' }, '*');
+            }
+        } catch (e) { /* Cross-origin error */ }
+    }
+
+    function resumeGaleriaCollage() {
+        try {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            const galeriaIframe = galeriaWin?.querySelector('iframe');
+            if (galeriaIframe?.contentWindow) {
+                galeriaIframe.contentWindow.postMessage({ type: 'galeria-resume' }, '*');
+            }
+        } catch (e) { /* Cross-origin error */ }
+    }
+
     function pauseTiendaAudio() {
         try {
             const tiendaIframe = $('#tienda-iframe');
@@ -85,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTaskbar();
 
         if (playAudio) setTimeout(playTiendaAudio, 500);
+        if (win.dataset.windowId === 'galeria') resumeGaleriaCollage();
     }
     
     function positionWindowRandomly(win, width, height) {
@@ -628,6 +649,7 @@ juntxs y brillando.`
             win.classList.add('hidden');
             if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
             if (win.dataset.windowId === 'galeria') {
+                pauseGaleriaCollage();
                 const dp = $('#win95-details-panel');
                 if (dp) { dp.classList.remove('open'); dp.setAttribute('aria-hidden', 'true'); }
                 const pp = $('#win95-player-panel');
@@ -636,6 +658,7 @@ juntxs y brillando.`
         } else if (btn.classList.contains('minimize-btn')) {
             win.classList.add('minimized');
             if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
+            if (win.dataset.windowId === 'galeria') pauseGaleriaCollage();
         } else if (btn.classList.contains('maximize-btn')) {
             const isMax = win.classList.toggle('maximized');
             if (isMax) {
