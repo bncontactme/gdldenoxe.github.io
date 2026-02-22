@@ -263,18 +263,26 @@
           parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, '*');
         } else {
           // Mobile / standalone — open built-in details popup
-          const fakeImg = document.createElement('img');
-          fakeImg.src = path;
+          // Load full image to get real dimensions before opening details
+          const fakeImg = new Image();
           fakeImg.dataset.src = path;
-          fakeImg.dataset.width = '';
-          fakeImg.dataset.height = '';
           const meta = imageMetadata[path];
           if (meta) {
             if (meta.artista) fakeImg.dataset.artista = meta.artista;
             if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
           }
           closeExplorer();
-          openDetails(fakeImg);
+          fakeImg.onload = function() {
+            fakeImg.dataset.width = fakeImg.naturalWidth;
+            fakeImg.dataset.height = fakeImg.naturalHeight;
+            openDetails(fakeImg);
+          };
+          fakeImg.onerror = function() {
+            fakeImg.dataset.width = '';
+            fakeImg.dataset.height = '';
+            openDetails(fakeImg);
+          };
+          fakeImg.src = path;
         }
       };
 
