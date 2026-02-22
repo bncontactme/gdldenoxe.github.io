@@ -146,7 +146,9 @@ body {
   pointer-events: auto;
   touch-action: manipulation;
   opacity: 0;
-  transition: opacity 0.4s ease-in;
+  transition: opacity 0.4s ease;
+  will-change: opacity;
+  contain: layout style paint;
 }
 
 #live-collage-container img.collage-visible {

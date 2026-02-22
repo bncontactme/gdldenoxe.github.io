@@ -5,6 +5,7 @@
   const collageContainer = document.getElementById('live-collage-container');
   const _mobile = window.innerWidth <= 768;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
+  const MAX_IMAGES = _mobile ? 30 : 50;
 
   let zIndex = 1;
   let archiveImages = [];
@@ -16,24 +17,24 @@
   let lastLeft = -1;
   let recent = [];
 
+  // Lightweight position tracking (avoids getBoundingClientRect / layout thrashing)
+  var placedPositions = [];
+
   function placeImage(src) {
     const cH = collageContainer.offsetHeight || window.innerHeight;
     const cW = collageContainer.offsetWidth || window.innerWidth;
     const size = _mobile ? Math.random() * 130 + 90 : Math.random() * 180 + 120;
 
-    // Find best spot with least overlap
-    var imgs = collageContainer.querySelectorAll('img');
+    // Find best spot with least overlap using stored positions (no layout queries)
     var bestTop = 0, bestLeft = 0, minOverlap = 1e9;
-    for (var tries = 0; tries < 8; tries++) {
+    for (var tries = 0; tries < 6; tries++) {
       var top = Math.random() * Math.max(0, cH - size);
       var left = Math.random() * Math.max(0, cW - size);
       var overlap = 0;
-      for (var i = 0; i < imgs.length; i++) {
-        var r = imgs[i].getBoundingClientRect();
-        var x1 = left, y1 = top, x2 = left + size, y2 = top + size;
-        var rx1 = r.left, ry1 = r.top, rx2 = r.left + r.width, ry2 = r.top + r.height;
-        var ox = Math.max(0, Math.min(x2, rx2) - Math.max(x1, rx1));
-        var oy = Math.max(0, Math.min(y2, ry2) - Math.max(y1, ry1));
+      for (var i = 0; i < placedPositions.length; i++) {
+        var p = placedPositions[i];
+        var ox = Math.max(0, Math.min(left + size, p.l + p.s) - Math.max(left, p.l));
+        var oy = Math.max(0, Math.min(top + size, p.t + p.s) - Math.max(top, p.t));
         overlap += ox * oy;
       }
       if (overlap < minOverlap) {
@@ -41,17 +42,20 @@
         bestTop = top;
         bestLeft = left;
       }
-      if (overlap < 10) break; // Found a nearly blank spot
+      if (overlap < 10) break;
     }
     lastTop = bestTop;
     lastLeft = bestLeft;
+    placedPositions.push({ t: bestTop, l: bestLeft, s: size });
 
-    // PERFORMANCE: On mobile, limit DOM images to 60
-    if (_mobile) {
-      var imgs = collageContainer.querySelectorAll('img');
-      if (imgs.length > 60) {
-        collageContainer.removeChild(imgs[0]);
-      }
+    // Cap DOM images — fade out oldest before removing
+    var imgs = collageContainer.querySelectorAll('img');
+    while (imgs.length >= MAX_IMAGES) {
+      var oldest = imgs[0];
+      oldest.classList.remove('collage-visible');
+      oldest.remove();
+      placedPositions.shift();
+      imgs = collageContainer.querySelectorAll('img');
     }
 
     // Preload image off-DOM so it appears fully loaded (no progressive/choppy render)
@@ -462,6 +466,7 @@
     lastTop = -1;
     lastLeft = -1;
     recent = [];
+    placedPositions = [];
     // Reshuffle
     for (var i = displayImages.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
