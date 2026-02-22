@@ -950,6 +950,10 @@ juntxs y brillando.`
     const detailsType = $('#win95-details-type');
     const detailsDimensions = $('#win95-details-dimensions');
     const detailsPath = $('#win95-details-path');
+    const detailsArtista = $('#win95-details-artista');
+    const detailsArtistaRow = $('#win95-details-artista-row');
+    const detailsDescripcion = $('#win95-details-descripcion');
+    const detailsDescripcionRow = $('#win95-details-descripcion-row');
     const detailsClose = $('#win95-details-close');
     const detailsOk = $('#win95-details-ok');
     const detailsTitlebar = $('#win95-details-titlebar');
@@ -962,6 +966,10 @@ juntxs y brillando.`
         if (detailsType) detailsType.textContent = data.fileType;
         if (detailsDimensions) detailsDimensions.textContent = data.dimensions;
         if (detailsPath) detailsPath.textContent = data.path;
+
+        // Show artista & descripcion (debug: always visible)
+        if (detailsArtista) detailsArtista.textContent = data.artista || '—';
+        if (detailsDescripcion) detailsDescripcion.textContent = data.descripcion || '—';
 
         if (!detailsPanelHasBeenPositioned) {
             const galeriaWin = $('[data-window-id="galeria"]');

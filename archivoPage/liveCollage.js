@@ -13,7 +13,8 @@
   let zIndex = 1;
   let recentNonGifs = [];
   let recentGifs = [];
-  let archiveImages = [];
+  let archiveImages = []; // Each entry: { path, artista?, descripcion? }
+  let imageMetadata = {}; // path -> { artista?, descripcion? }
   let imageTimeout = null;
   let resetTimeout = null;
 
@@ -61,6 +62,13 @@
     img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${++zIndex}`;
     img.draggable = false;
 
+    // Attach metadata if available
+    const meta = imageMetadata[src];
+    if (meta) {
+      if (meta.artista) img.dataset.artista = meta.artista;
+      if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+    }
+
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
       this.dataset.height = this.naturalHeight;
@@ -102,6 +110,10 @@
   const detailsFilename = document.getElementById('detail-filename');
   const detailsType = document.getElementById('detail-type');
   const detailsDimensions = document.getElementById('detail-dimensions');
+  const detailsArtista = document.getElementById('detail-artista');
+  const detailsArtistaRow = document.getElementById('detail-artista-row');
+  const detailsDescripcion = document.getElementById('detail-descripcion');
+  const detailsDescripcionRow = document.getElementById('detail-descripcion-row');
   const detailsCloseBtn = document.getElementById('img-details-close');
   const detailsOkBtn = document.getElementById('img-details-ok');
 
@@ -122,7 +134,9 @@
     const fullSrc = new URL(src, location.href).href;
     const dims = `${img.dataset.width || img.naturalWidth || '—'} × ${img.dataset.height || img.naturalHeight || '—'}`;
     const fileType = getExtension(fileName);
-    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src };
+    const artista = img.dataset.artista || '';
+    const descripcion = img.dataset.descripcion || '';
+    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src, artista, descripcion };
 
     // On desktop, the parent index.html has the details panel — send message there
     // On mobile (frame.html), parent won't have the handler, so show built-in popup
@@ -141,6 +155,11 @@
       if (detailsFilename) detailsFilename.textContent = fileName;
       if (detailsType) detailsType.textContent = fileType;
       if (detailsDimensions) detailsDimensions.textContent = dims;
+
+      // Show artista & descripcion (debug: always visible)
+      if (detailsArtista) detailsArtista.textContent = artista || '—';
+      if (detailsDescripcion) detailsDescripcion.textContent = descripcion || '—';
+
       if (detailsOverlay) detailsOverlay.classList.add('open');
     }
   }
@@ -155,8 +174,21 @@
     try {
       const res = await fetch(MANIFEST_URL);
       if (res.ok) {
-        const names = await res.json();
-        files = names.map(name => 'archiveImages/' + name);
+        const entries = await res.json();
+        files = [];
+        for (const entry of entries) {
+          if (typeof entry === 'string') {
+            files.push('archiveImages/' + entry);
+          } else if (entry && entry.filename) {
+            const path = 'archiveImages/' + entry.filename;
+            files.push(path);
+            // Store metadata keyed by path
+            const meta = {};
+            if (entry.artista) meta.artista = entry.artista;
+            if (entry.descripcion) meta.descripcion = entry.descripcion;
+            if (Object.keys(meta).length) imageMetadata[path] = meta;
+          }
+        }
       }
     } catch (e) { /* network error */ }
 
