@@ -1,6 +1,6 @@
 #!/bin/bash
-# Generates images.json from the archiveImages/ directory.
-# Preserves existing artista / descripcion metadata for known files.
+# Generates images.json + thumbnails from the archiveImages/ directory.
+# Always writes from scratch. Metadata is read fresh from EXIF on each run.
 # Run this script every time you add or remove images:
 #   cd archivoPage && bash generate-manifest.sh
 
@@ -64,36 +64,27 @@ print(f"   {meta_count} images have embedded metadata")
 import shutil
 from pathlib import Path
 
+# Wipe old thumbnails and regenerate from scratch
 thumb_dir = os.path.join(img_dir, "thumbs")
-os.makedirs(thumb_dir, exist_ok=True)
+if os.path.isdir(thumb_dir):
+    shutil.rmtree(thumb_dir)
+os.makedirs(thumb_dir)
 
 # Determine which tool to use for resizing
 sips = shutil.which("sips")          # macOS built-in
 magick = shutil.which("magick") or shutil.which("convert")  # ImageMagick
 ffmpeg_bin = shutil.which("ffmpeg")
 
-existing_thumbs = set(os.listdir(thumb_dir))
 generated = 0
-skipped = 0
+failed = 0
 
 for name in sorted_files:
     src = os.path.join(img_dir, name)
     base = Path(name).stem          # archiveImage12
     dest = os.path.join(thumb_dir, base + ".jpg")
-    dest_name = base + ".jpg"
-
-    # Skip if thumbnail already exists and is newer than source
-    if dest_name in existing_thumbs:
-        try:
-            if os.path.getmtime(dest) >= os.path.getmtime(src):
-                skipped += 1
-                continue
-        except OSError:
-            pass
 
     try:
         if sips:
-            # macOS sips: resize longest edge to 96px, output as JPEG
             subprocess.run(
                 ["sips", "-Z", "96", "-s", "format", "jpeg", src, "--out", dest],
                 capture_output=True, timeout=15
@@ -111,24 +102,13 @@ for name in sorted_files:
                 capture_output=True, timeout=15
             )
         else:
-            if generated == 0:
-                print("⚠️  No image tool found (sips/magick/ffmpeg). Skipping thumbnails.")
+            print("⚠️  No image tool found (sips/magick/ffmpeg). Skipping thumbnails.")
             break
         generated += 1
     except Exception as e:
         print(f"   ⚠️  Thumb failed for {name}: {e}")
+        failed += 1
 
-# Remove orphan thumbnails whose source image no longer exists
-valid_bases = {Path(n).stem for n in sorted_files}
-removed = 0
-for tn in list(existing_thumbs):
-    if Path(tn).stem not in valid_bases:
-        try:
-            os.remove(os.path.join(thumb_dir, tn))
-            removed += 1
-        except OSError:
-            pass
-
-print(f"🖼️  Thumbnails: {generated} generated, {skipped} up-to-date" +
-      (f", {removed} orphans removed" if removed else ""))
+print(f"🖼️  Thumbnails: {generated} generated" +
+      (f", {failed} failed" if failed else ""))
 PYEOF
