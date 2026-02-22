@@ -156,9 +156,11 @@
       if (detailsType) detailsType.textContent = fileType;
       if (detailsDimensions) detailsDimensions.textContent = dims;
 
-      // Show artista & descripcion (debug: always visible)
-      if (detailsArtista) detailsArtista.textContent = artista || '—';
-      if (detailsDescripcion) detailsDescripcion.textContent = descripcion || '—';
+      // Show artista & descripcion only when non-empty
+      if (detailsArtistaRow) detailsArtistaRow.style.display = artista ? '' : 'none';
+      if (detailsArtista) detailsArtista.textContent = artista;
+      if (detailsDescripcionRow) detailsDescripcionRow.style.display = descripcion ? '' : 'none';
+      if (detailsDescripcion) detailsDescripcion.textContent = descripcion;
 
       if (detailsOverlay) detailsOverlay.classList.add('open');
     }

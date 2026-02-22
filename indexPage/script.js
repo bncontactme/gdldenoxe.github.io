@@ -967,9 +967,11 @@ juntxs y brillando.`
         if (detailsDimensions) detailsDimensions.textContent = data.dimensions;
         if (detailsPath) detailsPath.textContent = data.path;
 
-        // Show artista & descripcion (debug: always visible)
-        if (detailsArtista) detailsArtista.textContent = data.artista || '—';
-        if (detailsDescripcion) detailsDescripcion.textContent = data.descripcion || '—';
+        // Show artista & descripcion only when non-empty
+        if (detailsArtistaRow) detailsArtistaRow.style.display = data.artista ? '' : 'none';
+        if (detailsArtista) detailsArtista.textContent = data.artista || '';
+        if (detailsDescripcionRow) detailsDescripcionRow.style.display = data.descripcion ? '' : 'none';
+        if (detailsDescripcion) detailsDescripcion.textContent = data.descripcion || '';
 
         if (!detailsPanelHasBeenPositioned) {
             const galeriaWin = $('[data-window-id="galeria"]');

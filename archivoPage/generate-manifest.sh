@@ -34,18 +34,24 @@ for ext in extensions:
     for path in glob.glob(os.path.join(img_dir, ext)):
         files.add(os.path.basename(path))
 
-# Sort for deterministic output
-sorted_files = sorted(files)
+# Sort numerically by the number in the filename
+import re
+def sort_key(name):
+    m = re.search(r'(\d+)', name)
+    return int(m.group(1)) if m else 0
+sorted_files = sorted(files, key=sort_key)
 
-# Build output: preserve metadata for known files, plain strings for the rest
+# Build output: always use object format with artista/descripcion fields
 output = []
 for name in sorted_files:
+    entry = {"filename": name}
     if name in existing_meta:
-        entry = {"filename": name}
-        entry.update(existing_meta[name])
-        output.append(entry)
+        entry["artista"] = existing_meta[name].get("artista", "")
+        entry["descripcion"] = existing_meta[name].get("descripcion", "")
     else:
-        output.append(name)
+        entry["artista"] = ""
+        entry["descripcion"] = ""
+    output.append(entry)
 
 with open(out_file, "w", encoding="utf-8") as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
