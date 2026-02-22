@@ -11,13 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startMenu = $('#start-menu');
     const musicPlayer = $('#musicPlayer');
     const allWindows = $$('.win95-window');
-
-    // Nuclear fix: Instagram in-app browser ignora display:none en estos paneles.
-    // Si es móvil, los borramos del DOM. No pueden mostrar lo que no existe.
-    if (window.innerWidth <= 768) {
-        document.getElementById('win95-player-panel')?.remove();
-        document.getElementById('win95-details-panel')?.remove();
-    }
     
     let highestZIndex = 100;
     let draggedWindow = null;

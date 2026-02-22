@@ -162,7 +162,7 @@
         </div>
 
         <!-- Ventana independiente: Propiedades de imagen -->
-        <div id="win95-details-panel" aria-hidden="true">
+        <div id="win95-details-panel" aria-hidden="true" style="display:none">
             <div id="win95-details-titlebar">
                 <span id="win95-details-title">Propiedades de imagen</span>
                 <button id="win95-details-close" aria-label="Cerrar">×</button>
@@ -205,7 +205,7 @@
         </div>
 
         <!-- Ventana independiente: Visor de imágenes -->
-        <div id="win95-player-panel" aria-hidden="true">
+        <div id="win95-player-panel" aria-hidden="true" style="display:none">
             <div id="win95-player-titlebar">
                 <span id="win95-player-title">Visor de imágenes</span>
                 <button id="win95-player-close" aria-label="Cerrar">×</button>
@@ -336,6 +336,10 @@
         </div>
     </div>
 
+    <!-- Matar paneles en móvil antes de que cualquier CSS/JS los toque -->
+    <script>
+    if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
+    </script>
     <script src="indexPage/script.js" defer></script>
 </body>
 </html>
