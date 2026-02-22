@@ -1043,6 +1043,12 @@ juntxs y brillando.`
     detailsClose?.addEventListener('click', closeDetailsPanel);
     detailsOk?.addEventListener('click', closeDetailsPanel);
 
+    // Click anywhere on details panel → bring to front
+    if (detailsPanel) {
+        detailsPanel.addEventListener('mousedown', () => { detailsPanel.style.zIndex = ++highestZIndex; });
+        detailsPanel.addEventListener('touchstart', () => { detailsPanel.style.zIndex = ++highestZIndex; }, { passive: true });
+    }
+
     // Make the details panel draggable by its titlebar
     if (detailsTitlebar && detailsPanel) {
         let isDraggingDetails = false;
@@ -1169,6 +1175,12 @@ juntxs y brillando.`
     playerClose?.addEventListener('click', closePlayerPanel);
     playerPrev?.addEventListener('click', () => { if (playerIndex > 0) showPlayerItem(playerIndex - 1); });
     playerNext?.addEventListener('click', () => { if (playerIndex < playerList.length - 1) showPlayerItem(playerIndex + 1); });
+
+    // Click anywhere on player panel → bring to front
+    if (playerPanel) {
+        playerPanel.addEventListener('mousedown', () => { playerPanel.style.zIndex = ++highestZIndex; });
+        playerPanel.addEventListener('touchstart', () => { playerPanel.style.zIndex = ++highestZIndex; }, { passive: true });
+    }
 
     // Make the player panel draggable by its titlebar
     if (playerTitlebar && playerPanel) {
