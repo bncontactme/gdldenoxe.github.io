@@ -723,11 +723,13 @@ body {
 #win95-details-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 6px;
     padding: 6px 10px;
     background: #c0c0c0;
     flex-shrink: 0;
 }
 
+#win95-details-explore,
 #win95-details-ok {
     min-width: 75px;
     height: 23px;
@@ -741,6 +743,7 @@ body {
     font-family: var(--font-system);
 }
 
+#win95-details-explore:active,
 #win95-details-ok:active {
     border-top: var(--border-sunken);
     border-left: var(--border-sunken);

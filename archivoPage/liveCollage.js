@@ -127,6 +127,135 @@
     if (e.target === detailsOverlay) closeDetailsPopup();
   };
 
+  // ===== File Explorer =====
+  const explorerOverlay = document.getElementById('file-explorer-overlay');
+  const explorerBody = document.getElementById('file-explorer-body');
+  const explorerBack = document.getElementById('file-explorer-back');
+  const explorerPath = document.getElementById('file-explorer-path');
+  const explorerStatus = document.getElementById('file-explorer-status');
+  const explorerClose = document.getElementById('file-explorer-close');
+  const explorerTitle = document.getElementById('file-explorer-title');
+  const exploreBtn = document.getElementById('img-details-explore');
+
+  let explorerCurrentFolder = null; // null = root (folder list)
+
+  // SVG folder icon (XP-style yellow folder)
+  const FOLDER_SVG = '<svg class="fe-folder-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M2 6 L2 26 L30 26 L30 10 L14 10 L12 6 Z" fill="#F5D73A" stroke="#C4A82A" stroke-width="1"/>'
+    + '<path d="M2 10 L30 10 L30 26 L2 26 Z" fill="#FFEC80" stroke="#C4A82A" stroke-width="0.5"/>'
+    + '</svg>';
+
+  function buildFolderMap() {
+    // Group images by artist
+    const folders = {};
+    for (const path of archiveImages) {
+      const meta = imageMetadata[path];
+      const artist = (meta && meta.artista) ? meta.artista : 'Archivo GDN';
+      if (!folders[artist]) folders[artist] = [];
+      folders[artist].push(path);
+    }
+    // Also include images not in archiveImages but in imageMetadata (shouldn't happen, but safe)
+    return folders;
+  }
+
+  function renderFolderList() {
+    explorerCurrentFolder = null;
+    explorerBody.innerHTML = '';
+    if (explorerBack) explorerBack.disabled = true;
+    if (explorerPath) explorerPath.textContent = 'Archivo GDN';
+    if (explorerTitle) explorerTitle.textContent = 'Archivo GDN';
+
+    const folders = buildFolderMap();
+    const sortedNames = Object.keys(folders).sort((a, b) => {
+      // "Archivo GDN" always first
+      if (a === 'Archivo GDN') return -1;
+      if (b === 'Archivo GDN') return 1;
+      return a.localeCompare(b);
+    });
+
+    for (const name of sortedNames) {
+      const count = folders[name].length;
+      const item = document.createElement('div');
+      item.className = 'fe-folder';
+      item.innerHTML = FOLDER_SVG + '<span class="fe-label">' + escapeHtml(name) + '</span>';
+      item.title = name + ' (' + count + ' imágenes)';
+      item.onclick = function() { renderFolder(name, folders[name]); };
+      explorerBody.appendChild(item);
+    }
+
+    if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
+  }
+
+  function renderFolder(name, images) {
+    explorerCurrentFolder = name;
+    explorerBody.innerHTML = '';
+    if (explorerBack) explorerBack.disabled = false;
+    if (explorerPath) explorerPath.textContent = 'Archivo GDN \\ ' + name;
+    if (explorerTitle) explorerTitle.textContent = name;
+
+    for (const path of images) {
+      const item = document.createElement('div');
+      item.className = 'fe-image';
+      const fileName = getFileName(path);
+      item.innerHTML = '<img class="fe-image-thumb" src="' + path + '" alt="' + escapeHtml(fileName) + '" loading="lazy">'
+        + '<span class="fe-label">' + escapeHtml(fileName) + '</span>';
+      item.title = fileName;
+      item.onclick = function() {
+        // Open this image in the details popup
+        const thumb = item.querySelector('img');
+        if (thumb) {
+          closeExplorer();
+          // Create a temporary img-like object for openDetails
+          const fakeImg = document.createElement('img');
+          fakeImg.src = path;
+          fakeImg.dataset.src = path;
+          fakeImg.dataset.width = thumb.naturalWidth || '';
+          fakeImg.dataset.height = thumb.naturalHeight || '';
+          const meta = imageMetadata[path];
+          if (meta) {
+            if (meta.artista) fakeImg.dataset.artista = meta.artista;
+            if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
+          }
+          openDetails(fakeImg);
+        }
+      };
+      explorerBody.appendChild(item);
+    }
+
+    if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function openExplorer() {
+    if (!explorerOverlay) return;
+    renderFolderList();
+    explorerOverlay.classList.add('open');
+  }
+
+  function closeExplorer() {
+    if (explorerOverlay) explorerOverlay.classList.remove('open');
+  }
+
+  if (explorerClose) explorerClose.onclick = closeExplorer;
+  if (explorerBack) explorerBack.onclick = function() {
+    if (explorerCurrentFolder !== null) renderFolderList();
+  };
+  if (explorerOverlay) explorerOverlay.onclick = function(e) {
+    if (e.target === explorerOverlay) closeExplorer();
+  };
+  if (exploreBtn) exploreBtn.onclick = function() {
+    closeDetailsPopup();
+    openExplorer();
+  };
+
+  // Listen for parent requesting explorer open (desktop mode)
+  window.addEventListener('message', function(e) {
+    if (e.data?.type === 'open-file-explorer') openExplorer();
+  });
+
   // Show image details — use parent panel on desktop, built-in popup otherwise
   function openDetails(img) {
     const src = img.dataset.src || img.src;

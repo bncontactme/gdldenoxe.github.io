@@ -1039,6 +1039,21 @@ juntxs y brillando.`
         if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
     });
 
+    // "Explorar" button — tell iframe to open file explorer
+    const detailsExploreBtn = $('#win95-details-explore');
+    if (detailsExploreBtn) {
+        detailsExploreBtn.addEventListener('click', () => {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            if (galeriaWin) {
+                const iframe = galeriaWin.querySelector('iframe');
+                if (iframe?.contentWindow) {
+                    iframe.contentWindow.postMessage({ type: 'open-file-explorer' }, '*');
+                }
+            }
+            closeDetailsPanel();
+        });
+    }
+
     // ─── Buscaminas (embedded) ───
     (function() {
         const msBoard = $('#msBoard');
