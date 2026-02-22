@@ -1031,7 +1031,10 @@ juntxs y brillando.`
         detailsPanel.classList.add('open');
         detailsPanel.setAttribute('aria-hidden', 'false');
         detailsPanel.style.display = '';
-        detailsPanel.style.zIndex = ++highestZIndex; {
+        detailsPanel.style.zIndex = ++highestZIndex;
+    }
+
+    function closeDetailsPanel() {
         if (!detailsPanel) return;
         detailsPanel.classList.remove('open');
         detailsPanel.setAttribute('aria-hidden', 'true');
