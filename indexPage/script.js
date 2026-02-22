@@ -975,21 +975,18 @@ juntxs y brillando.`
         if (detailsDescripcionRow) detailsDescripcionRow.style.display = data.descripcion ? '' : 'none';
         if (detailsDescripcion) detailsDescripcion.textContent = data.descripcion || '';
 
-        if (!detailsPanelHasBeenPositioned) {
-            const galeriaWin = $('[data-window-id="galeria"]');
-            if (galeriaWin) {
-                const gRect = galeriaWin.getBoundingClientRect();
+        const galeriaWinD = $('[data-window-id="galeria"]');
+        if (galeriaWinD) {
+            const gRect = galeriaWinD.getBoundingClientRect();
+            detailsPanel.style.height = gRect.height + 'px';
+            if (!detailsPanelHasBeenPositioned) {
                 let panelLeft = gRect.right + 8;
                 let panelTop = Math.max(0, gRect.top);
-                
                 if (panelLeft + 280 > window.innerWidth) panelLeft = gRect.left - 288;
-                
-                Object.assign(detailsPanel.style, {
-                    left: panelLeft + 'px',
-                    top: panelTop + 'px'
-                });
+                detailsPanel.style.left = panelLeft + 'px';
+                detailsPanel.style.top = panelTop + 'px';
+                detailsPanelHasBeenPositioned = true;
             }
-            detailsPanelHasBeenPositioned = true;
         }
 
         detailsPanel.classList.add('open');
@@ -1103,19 +1100,18 @@ juntxs y brillando.`
         playerIndex = (typeof index === 'number' && index >= 0) ? index : 0;
         showPlayerItem(playerIndex);
 
-        if (!playerHasBeenPositioned) {
-            const galeriaWin = $('[data-window-id="galeria"]');
-            if (galeriaWin) {
-                const gRect = galeriaWin.getBoundingClientRect();
+        const galeriaWinP = $('[data-window-id="galeria"]');
+        if (galeriaWinP) {
+            const gRect = galeriaWinP.getBoundingClientRect();
+            playerPanel.style.height = gRect.height + 'px';
+            if (!playerHasBeenPositioned) {
                 let panelLeft = gRect.right + 8;
                 let panelTop = Math.max(0, gRect.top);
                 if (panelLeft + 420 > window.innerWidth) panelLeft = Math.max(0, gRect.left - 428);
-                Object.assign(playerPanel.style, {
-                    left: panelLeft + 'px',
-                    top: panelTop + 'px'
-                });
+                playerPanel.style.left = panelLeft + 'px';
+                playerPanel.style.top = panelTop + 'px';
+                playerHasBeenPositioned = true;
             }
-            playerHasBeenPositioned = true;
         }
 
         playerPanel.classList.add('open');

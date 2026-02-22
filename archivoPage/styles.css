@@ -226,6 +226,13 @@ body {
   word-break: break-all;
 }
 
+#detail-descripcion {
+  max-height: 100px;
+  overflow-y: auto;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
 /* Details buttons row */
 #img-details-buttons {
   display: flex;
@@ -430,4 +437,50 @@ body {
   font-size: 10px;
   color: #333;
   flex-shrink: 0;
+}
+
+/* ===== Mobile adjustments ===== */
+@media (max-width: 600px) {
+  #xp-popup-window {
+    width: 95vw;
+  }
+
+  #img-details-window {
+    width: 95vw;
+    max-height: 85vh;
+  }
+
+  #img-details-preview {
+    max-height: 30vh;
+  }
+
+  #file-explorer-window {
+    width: 95vw;
+    max-height: 80vh;
+  }
+
+  #file-explorer-body {
+    min-height: 150px;
+  }
+
+  .fe-folder,
+  .fe-image {
+    width: 72px;
+  }
+
+  .fe-image-thumb {
+    width: 44px;
+    height: 44px;
+  }
+
+  .fe-label {
+    font-size: 9px;
+    max-width: 72px;
+  }
+
+  #detail-descripcion {
+    max-height: 80px;
+    overflow-y: auto;
+    word-break: break-word;
+  }
 }

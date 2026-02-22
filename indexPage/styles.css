@@ -619,7 +619,6 @@ body {
     display: none;
     position: absolute;
     width: 280px;
-    height: 560px;
     background: var(--win95-gray);
     border-top: var(--border-raised);
     border-left: var(--border-raised);
@@ -778,7 +777,6 @@ body {
     display: none;
     position: absolute;
     width: 420px;
-    height: 560px;
     background: var(--win95-gray);
     border-top: var(--border-raised);
     border-left: var(--border-raised);
@@ -1445,6 +1443,7 @@ body {
     /* --- Hide all desktop windows --- */
     .win95-window,
     #win95-details-panel,
+    #win95-player-panel,
     #articles-container {
         display: none !important;
     }

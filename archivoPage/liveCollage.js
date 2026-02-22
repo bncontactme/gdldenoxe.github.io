@@ -146,15 +146,21 @@
     + '</svg>';
 
   function buildFolderMap() {
-    // Group images by artist
+    // Group images by artist — use @handle for folder label
     const folders = {};
     for (const path of archiveImages) {
       const meta = imageMetadata[path];
-      const artist = (meta && meta.artista) ? meta.artista : 'Archivo GDN';
-      if (!folders[artist]) folders[artist] = [];
-      folders[artist].push(path);
+      const fullArtist = (meta && meta.artista) ? meta.artista : '';
+      let folderName;
+      if (fullArtist) {
+        const handleMatch = fullArtist.match(/@\w+/);
+        folderName = handleMatch ? handleMatch[0] : fullArtist;
+      } else {
+        folderName = 'Archivo GDN';
+      }
+      if (!folders[folderName]) folders[folderName] = [];
+      folders[folderName].push(path);
     }
-    // Also include images not in archiveImages but in imageMetadata (shouldn't happen, but safe)
     return folders;
   }
 
@@ -201,25 +207,43 @@
         + '<span class="fe-label">' + escapeHtml(fileName) + '</span>';
       item.title = fileName;
       item.onclick = function() {
-        // On desktop, send to parent; standalone: use built-in player
-        const meta = imageMetadata[path];
-        const fileName = getFileName(path);
-        const fullSrc = new URL(path, location.href).href;
-        const fileType = getExtension(fileName);
-        // Build list with full URLs and metadata for parent
-        const listData = images.map(function(p) {
-          const m = imageMetadata[p];
-          return {
-            src: new URL(p, location.href).href,
-            fileName: getFileName(p),
-            fileType: getExtension(getFileName(p)),
-            artista: (m && m.artista) || '',
-            descripcion: (m && m.descripcion) || ''
-          };
-        });
-        const idx = images.indexOf(path);
+        // On desktop (inside iframe), send to parent for the desktop player
+        // On mobile/standalone, open the built-in details popup
+        let parentHandled = false;
         if (parent !== window) {
+          try {
+            parentHandled = !!parent.document.getElementById('win95-player-panel');
+          } catch (e) { /* cross-origin */ }
+        }
+
+        if (parentHandled) {
+          const listData = images.map(function(p) {
+            const m = imageMetadata[p];
+            return {
+              src: new URL(p, location.href).href,
+              fileName: getFileName(p),
+              fileType: getExtension(getFileName(p)),
+              artista: (m && m.artista) || '',
+              descripcion: (m && m.descripcion) || ''
+            };
+          });
+          const idx = images.indexOf(path);
           parent.postMessage({ type: 'galeria-open-player', list: listData, index: idx }, '*');
+        } else {
+          // Mobile / standalone — open built-in details popup
+          const fakeImg = document.createElement('img');
+          fakeImg.src = path;
+          fakeImg.dataset.src = path;
+          const thumb = item.querySelector('img');
+          fakeImg.dataset.width = thumb ? (thumb.naturalWidth || '') : '';
+          fakeImg.dataset.height = thumb ? (thumb.naturalHeight || '') : '';
+          const meta = imageMetadata[path];
+          if (meta) {
+            if (meta.artista) fakeImg.dataset.artista = meta.artista;
+            if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
+          }
+          closeExplorer();
+          openDetails(fakeImg);
         }
       };
       explorerBody.appendChild(item);
