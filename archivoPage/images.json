@@ -1,1047 +1,629 @@
 [
   {
-    "filename": "archiveImage1.jpg",
-    "artista": "Artista Ejemplo",
-    "descripcion": "Descripción de ejemplo para esta imagen"
+    "filename": "archiveImage1.jpg"
   },
   {
-    "filename": "archiveImage2.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage2.jpg"
   },
   {
-    "filename": "archiveImage3.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage3.jpg"
   },
   {
-    "filename": "archiveImage4.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage4.jpg"
   },
   {
-    "filename": "archiveImage5.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage5.jpg"
   },
   {
-    "filename": "archiveImage6.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage6.jpg"
   },
   {
-    "filename": "archiveImage7.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage7.jpg"
   },
   {
-    "filename": "archiveImage8.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage8.jpg"
   },
   {
-    "filename": "archiveImage9.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage9.jpg"
   },
   {
-    "filename": "archiveImage10.jpg",
-    "artista": "Otro Artista",
-    "descripcion": ""
+    "filename": "archiveImage10.jpg"
   },
   {
-    "filename": "archiveImage11.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage11.jpg"
   },
   {
-    "filename": "archiveImage12.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage12.gif"
   },
   {
-    "filename": "archiveImage13.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage13.jpg"
   },
   {
-    "filename": "archiveImage14.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage14.jpg"
   },
   {
-    "filename": "archiveImage15.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage15.jpg"
   },
   {
-    "filename": "archiveImage16.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage16.jpg"
   },
   {
-    "filename": "archiveImage17.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage17.jpg"
   },
   {
-    "filename": "archiveImage18.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage18.jpg"
   },
   {
-    "filename": "archiveImage19.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage19.jpg"
   },
   {
-    "filename": "archiveImage20.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage20.jpg"
   },
   {
-    "filename": "archiveImage21.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage21.jpg"
   },
   {
-    "filename": "archiveImage22.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage22.jpg"
   },
   {
-    "filename": "archiveImage23.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage23.gif"
   },
   {
-    "filename": "archiveImage24.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage24.jpg"
   },
   {
-    "filename": "archiveImage25.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage25.jpg"
   },
   {
-    "filename": "archiveImage26.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage26.jpg"
   },
   {
-    "filename": "archiveImage27.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage27.jpg"
   },
   {
-    "filename": "archiveImage28.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage28.jpg"
   },
   {
-    "filename": "archiveImage29.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage29.jpg"
   },
   {
-    "filename": "archiveImage30.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage30.jpg"
   },
   {
-    "filename": "archiveImage31.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage31.jpg"
   },
   {
-    "filename": "archiveImage32.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage32.jpg"
   },
   {
-    "filename": "archiveImage33.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage33.gif"
   },
   {
-    "filename": "archiveImage34.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage34.jpg"
   },
   {
-    "filename": "archiveImage35.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage35.jpg"
   },
   {
-    "filename": "archiveImage36.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage36.jpg"
   },
   {
-    "filename": "archiveImage37.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage37.jpg"
   },
   {
-    "filename": "archiveImage38.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage38.jpg"
   },
   {
-    "filename": "archiveImage39.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage39.jpg"
   },
   {
-    "filename": "archiveImage40.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage40.jpg"
   },
   {
-    "filename": "archiveImage41.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage41.jpg"
   },
   {
-    "filename": "archiveImage42.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage42.jpg"
   },
   {
-    "filename": "archiveImage43.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage43.jpg"
   },
   {
-    "filename": "archiveImage44.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage44.jpg"
   },
   {
-    "filename": "archiveImage45.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage45.jpg"
   },
   {
-    "filename": "archiveImage46.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage46.jpg"
   },
   {
-    "filename": "archiveImage47.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage47.jpg"
   },
   {
-    "filename": "archiveImage48.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage48.jpg"
   },
   {
-    "filename": "archiveImage49.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage49.jpg"
   },
   {
-    "filename": "archiveImage50.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage50.jpg"
   },
   {
-    "filename": "archiveImage51.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage51.jpg"
   },
   {
-    "filename": "archiveImage52.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage52.jpg"
   },
   {
-    "filename": "archiveImage53.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage53.jpg"
   },
   {
-    "filename": "archiveImage54.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage54.jpg"
   },
   {
-    "filename": "archiveImage55.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage55.jpg"
   },
   {
-    "filename": "archiveImage56.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage56.jpg"
   },
   {
-    "filename": "archiveImage57.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage57.jpg"
   },
   {
-    "filename": "archiveImage58.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage58.jpg"
   },
   {
-    "filename": "archiveImage59.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage59.jpg"
   },
   {
-    "filename": "archiveImage60.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage60.jpg"
   },
   {
-    "filename": "archiveImage61.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage61.jpg"
   },
   {
-    "filename": "archiveImage62.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage62.jpg"
   },
   {
-    "filename": "archiveImage63.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage63.jpg"
   },
   {
-    "filename": "archiveImage64.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage64.jpg"
   },
   {
-    "filename": "archiveImage65.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage65.jpg"
   },
   {
-    "filename": "archiveImage66.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage66.jpg"
   },
   {
-    "filename": "archiveImage67.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage67.jpg"
   },
   {
-    "filename": "archiveImage68.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage68.jpg"
   },
   {
-    "filename": "archiveImage69.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage69.jpg"
   },
   {
-    "filename": "archiveImage70.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage70.jpg"
   },
   {
-    "filename": "archiveImage71.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage71.jpg"
   },
   {
-    "filename": "archiveImage72.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage72.jpg"
   },
   {
-    "filename": "archiveImage73.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage73.jpg"
   },
   {
-    "filename": "archiveImage74.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage74.jpg"
   },
   {
-    "filename": "archiveImage75.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage75.jpg"
   },
   {
-    "filename": "archiveImage76.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage76.jpg"
   },
   {
-    "filename": "archiveImage77.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage77.jpg"
   },
   {
-    "filename": "archiveImage78.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage78.jpg"
   },
   {
-    "filename": "archiveImage79.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage79.jpg"
   },
   {
-    "filename": "archiveImage80.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage80.jpg"
   },
   {
-    "filename": "archiveImage81.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage81.jpg"
   },
   {
-    "filename": "archiveImage82.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage82.jpg"
   },
   {
-    "filename": "archiveImage83.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage83.jpg"
   },
   {
-    "filename": "archiveImage84.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage84.jpg"
   },
   {
-    "filename": "archiveImage85.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage85.jpg"
   },
   {
-    "filename": "archiveImage86.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage86.jpg"
   },
   {
-    "filename": "archiveImage87.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage87.jpg"
   },
   {
-    "filename": "archiveImage88.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage88.jpg"
   },
   {
-    "filename": "archiveImage89.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage89.jpg"
   },
   {
-    "filename": "archiveImage90.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage90.jpg"
   },
   {
-    "filename": "archiveImage91.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage91.jpg"
   },
   {
-    "filename": "archiveImage92.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage92.jpg"
   },
   {
-    "filename": "archiveImage93.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage93.jpg"
   },
   {
-    "filename": "archiveImage94.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage94.jpg"
   },
   {
-    "filename": "archiveImage95.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage95.jpg"
   },
   {
-    "filename": "archiveImage96.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage96.jpg"
   },
   {
-    "filename": "archiveImage97.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage97.jpg"
   },
   {
-    "filename": "archiveImage98.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage98.jpg"
   },
   {
-    "filename": "archiveImage99.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage99.jpg"
   },
   {
-    "filename": "archiveImage100.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage100.jpg"
   },
   {
-    "filename": "archiveImage101.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage101.jpg"
   },
   {
-    "filename": "archiveImage102.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage102.jpg"
   },
   {
-    "filename": "archiveImage103.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage103.jpg"
   },
   {
-    "filename": "archiveImage104.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage104.jpg"
   },
   {
-    "filename": "archiveImage105.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage105.jpg"
   },
   {
-    "filename": "archiveImage106.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage106.jpg"
   },
   {
-    "filename": "archiveImage107.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage107.jpg"
   },
   {
-    "filename": "archiveImage108.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage108.jpg"
   },
   {
-    "filename": "archiveImage109.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage109.jpg"
   },
   {
-    "filename": "archiveImage110.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage110.jpg"
   },
   {
-    "filename": "archiveImage111.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage111.jpg"
   },
   {
-    "filename": "archiveImage112.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage112.jpg"
   },
   {
-    "filename": "archiveImage113.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage113.jpg"
   },
   {
-    "filename": "archiveImage114.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage114.jpg"
   },
   {
-    "filename": "archiveImage115.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage115.jpg"
   },
   {
-    "filename": "archiveImage116.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage116.jpg"
   },
   {
-    "filename": "archiveImage117.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage117.jpg"
   },
   {
-    "filename": "archiveImage118.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage118.jpg"
   },
   {
-    "filename": "archiveImage119.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage119.jpg"
   },
   {
-    "filename": "archiveImage120.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage120.jpg"
   },
   {
-    "filename": "archiveImage121.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage121.jpg"
   },
   {
-    "filename": "archiveImage122.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage122.jpg"
   },
   {
-    "filename": "archiveImage123.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage123.jpg"
   },
   {
-    "filename": "archiveImage124.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage124.jpg"
   },
   {
-    "filename": "archiveImage125.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage125.jpg"
   },
   {
-    "filename": "archiveImage126.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage126.jpg"
   },
   {
-    "filename": "archiveImage127.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage127.jpg"
   },
   {
-    "filename": "archiveImage128.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage128.jpg"
   },
   {
-    "filename": "archiveImage129.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage129.jpg"
   },
   {
-    "filename": "archiveImage130.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage130.jpg"
   },
   {
-    "filename": "archiveImage131.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage131.jpg"
   },
   {
-    "filename": "archiveImage132.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage132.jpg"
   },
   {
-    "filename": "archiveImage133.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage133.jpg"
   },
   {
-    "filename": "archiveImage134.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage134.jpg"
   },
   {
-    "filename": "archiveImage135.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage135.jpg"
   },
   {
-    "filename": "archiveImage136.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage136.jpg"
   },
   {
-    "filename": "archiveImage137.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage137.jpg"
   },
   {
-    "filename": "archiveImage138.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage138.jpg"
   },
   {
-    "filename": "archiveImage139.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage139.jpg"
   },
   {
-    "filename": "archiveImage140.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage140.jpg"
   },
   {
-    "filename": "archiveImage141.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage141.jpg"
   },
   {
-    "filename": "archiveImage142.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage142.jpg"
   },
   {
-    "filename": "archiveImage143.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage143.jpg"
   },
   {
-    "filename": "archiveImage144.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage144.jpg"
   },
   {
-    "filename": "archiveImage145.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage145.jpg"
   },
   {
-    "filename": "archiveImage146.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage146.jpg"
   },
   {
-    "filename": "archiveImage147.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage147.jpg"
   },
   {
-    "filename": "archiveImage148.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage148.gif"
   },
   {
-    "filename": "archiveImage149.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage149.jpg"
   },
   {
-    "filename": "archiveImage150.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage150.jpg"
   },
   {
-    "filename": "archiveImage151.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage151.jpg"
   },
   {
-    "filename": "archiveImage152.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage152.jpg"
   },
   {
-    "filename": "archiveImage153.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage153.jpg"
   },
   {
-    "filename": "archiveImage154.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage154.jpg"
   },
   {
-    "filename": "archiveImage155.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage155.jpg"
   },
   {
-    "filename": "archiveImage156.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage156.jpg"
   },
   {
-    "filename": "archiveImage157.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage157.jpg"
   },
   {
-    "filename": "archiveImage158.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage158.jpg"
   },
   {
-    "filename": "archiveImage159.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage159.jpg"
   },
   {
-    "filename": "archiveImage160.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage160.jpg"
   },
   {
-    "filename": "archiveImage161.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage161.jpg"
   },
   {
-    "filename": "archiveImage162.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage162.jpg"
   },
   {
-    "filename": "archiveImage163.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage163.gif"
   },
   {
-    "filename": "archiveImage164.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage164.gif"
   },
   {
-    "filename": "archiveImage165.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage165.gif"
   },
   {
-    "filename": "archiveImage166.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage166.gif"
   },
   {
-    "filename": "archiveImage167.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage167.gif"
   },
   {
-    "filename": "archiveImage168.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage168.gif"
   },
   {
-    "filename": "archiveImage169.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage169.gif"
   },
   {
-    "filename": "archiveImage170.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage170.gif"
   },
   {
-    "filename": "archiveImage171.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage171.gif"
   },
   {
-    "filename": "archiveImage172.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage172.gif"
   },
   {
-    "filename": "archiveImage173.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage173.gif"
   },
   {
-    "filename": "archiveImage174.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage174.gif"
   },
   {
-    "filename": "archiveImage175.gif",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage175.gif"
   },
   {
-    "filename": "archiveImage176.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage176.jpg"
   },
   {
-    "filename": "archiveImage177.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage177.jpg"
   },
   {
-    "filename": "archiveImage178.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage178.jpg"
   },
   {
-    "filename": "archiveImage179.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage179.jpg"
   },
   {
-    "filename": "archiveImage180.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage180.jpg"
   },
   {
-    "filename": "archiveImage181.jpg",
-    "artista": "Ana Regin (@rotten_dreamer)",
-    "descripcion": ""
+    "filename": "archiveImage181.jpg"
   },
   {
-    "filename": "archiveImage182.jpg",
-    "artista": "Bruno Chavarin (@bruce_chz)",
-    "descripcion": "Abril y Daniel en la 'Vampoonight' 1/11/2025"
+    "filename": "archiveImage182.jpg"
   },
   {
-    "filename": "archiveImage183.jpg",
-    "artista": "Bruno Chavarin (@bruce_chz)",
-    "descripcion": "Ocram y Akalai en salón liminal 12/12/2025"
+    "filename": "archiveImage183.jpg"
   },
   {
-    "filename": "archiveImage184.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage184.jpg"
   },
   {
-    "filename": "archiveImage185.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage185.jpg"
   },
   {
-    "filename": "archiveImage186.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage186.jpg"
   },
   {
-    "filename": "archiveImage187.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage187.jpg"
   },
   {
-    "filename": "archiveImage188.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage188.jpg"
   },
   {
-    "filename": "archiveImage189.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage189.jpg"
   },
   {
-    "filename": "archiveImage190.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage190.jpg"
   },
   {
-    "filename": "archiveImage191.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage191.jpg"
   },
   {
-    "filename": "archiveImage192.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage192.jpg"
   },
   {
-    "filename": "archiveImage193.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage193.jpg"
   },
   {
-    "filename": "archiveImage194.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage194.jpg"
   },
   {
-    "filename": "archiveImage195.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage195.jpg"
   },
   {
-    "filename": "archiveImage196.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage196.jpg"
   },
   {
-    "filename": "archiveImage197.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage197.jpg"
   },
   {
-    "filename": "archiveImage198.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage198.jpg"
   },
   {
-    "filename": "archiveImage199.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage199.jpg"
   },
   {
-    "filename": "archiveImage200.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage200.jpg"
   },
   {
-    "filename": "archiveImage201.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage201.jpg"
   },
   {
-    "filename": "archiveImage202.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage202.jpg"
   },
   {
-    "filename": "archiveImage203.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage203.jpg"
   },
   {
-    "filename": "archiveImage204.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage204.jpg"
   },
   {
-    "filename": "archiveImage205.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage205.jpg"
   },
   {
-    "filename": "archiveImage206.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage206.jpg"
   },
   {
-    "filename": "archiveImage207.jpg",
-    "artista": "Paola Villegas Ortiz (@polvocossmico)",
-    "descripcion": ""
+    "filename": "archiveImage207.jpg"
   },
   {
-    "filename": "archiveImage208.jpg",
-    "artista": "",
-    "descripcion": ""
+    "filename": "archiveImage208.jpg"
   },
   {
-    "filename": "archiveImage209.jpg",
-    "artista": "Bruno Chavarin (@bruce_chz)",
-    "descripcion": "Público de la Vampoonight 1/11/2025"
+    "filename": "archiveImage209.jpg"
   }
 ]

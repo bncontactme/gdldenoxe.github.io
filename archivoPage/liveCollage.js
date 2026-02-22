@@ -13,8 +13,7 @@
   let zIndex = 1;
   let recentNonGifs = [];
   let recentGifs = [];
-  let archiveImages = []; // Each entry: { path, artista?, descripcion? }
-  let imageMetadata = {}; // path -> { artista?, descripcion? }
+  let archiveImages = []; // Ordered list of image paths
   let imageTimeout = null;
   let resetTimeout = null;
 
@@ -62,13 +61,6 @@
     img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${++zIndex}`;
     img.draggable = false;
 
-    // Attach metadata if available
-    const meta = imageMetadata[src];
-    if (meta) {
-      if (meta.artista) img.dataset.artista = meta.artista;
-      if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
-    }
-
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
       this.dataset.height = this.naturalHeight;
@@ -80,7 +72,7 @@
 
     img.onclick = function(e) {
       e.stopPropagation();
-      openDetails(this);
+      openDetailsAsync(this);
     };
 
     collageContainer.appendChild(img);
@@ -126,6 +118,28 @@
   if (detailsOverlay) detailsOverlay.onclick = function(e) {
     if (e.target === detailsOverlay) closeDetailsPopup();
   };
+
+  // Read EXIF metadata from image on demand (cached in dataset after first read)
+  async function fetchExifIfNeeded(img) {
+    // Already have metadata from JSON or previous EXIF read → skip
+    if (img.dataset.artista || img.dataset.descripcion) return;
+    if (img.dataset.exifRead) return; // already attempted
+    img.dataset.exifRead = '1';
+
+    if (typeof readExifMeta !== 'function') return;
+    const src = img.dataset.src || img.src;
+    const meta = await readExifMeta(new URL(src, location.href).href);
+    if (meta) {
+      if (meta.artist)      img.dataset.artista = meta.artist;
+      if (meta.description) img.dataset.descripcion = meta.description;
+    }
+  }
+
+  // Async wrapper: read EXIF then open details
+  async function openDetailsAsync(img) {
+    await fetchExifIfNeeded(img);
+    openDetails(img);
+  }
 
   // Show image details — use parent panel on desktop, built-in popup otherwise
   function openDetails(img) {
@@ -179,17 +193,8 @@
         const entries = await res.json();
         files = [];
         for (const entry of entries) {
-          if (typeof entry === 'string') {
-            files.push('archiveImages/' + entry);
-          } else if (entry && entry.filename) {
-            const path = 'archiveImages/' + entry.filename;
-            files.push(path);
-            // Store metadata keyed by path
-            const meta = {};
-            if (entry.artista) meta.artista = entry.artista;
-            if (entry.descripcion) meta.descripcion = entry.descripcion;
-            if (Object.keys(meta).length) imageMetadata[path] = meta;
-          }
+          const fname = typeof entry === 'string' ? entry : entry && entry.filename;
+          if (fname) files.push('archiveImages/' + fname);
         }
       }
     } catch (e) { /* network error */ }
