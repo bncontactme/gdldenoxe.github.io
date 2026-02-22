@@ -299,10 +299,11 @@
     let parentHandled = false;
     if (parent !== window) {
       try {
-        // Check if parent has the details panel (desktop mode)
         parentHandled = !!parent.document.getElementById('win95-details-panel');
       } catch (e) { /* cross-origin */ }
-      parent.postMessage({ type: 'galeria-open-details', data }, '*');
+      if (parentHandled) {
+        parent.postMessage({ type: 'galeria-open-details', data }, '*');
+      }
     }
 
     // Show built-in popup when standalone or when parent doesn't have the panel
