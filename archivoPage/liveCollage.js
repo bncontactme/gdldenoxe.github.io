@@ -14,6 +14,7 @@
   let recentNonGifs = [];
   let recentGifs = [];
   let archiveImages = []; // Ordered list of image paths
+  let imageMetadata = {}; // path -> { artista, descripcion }
   let imageTimeout = null;
   let resetTimeout = null;
 
@@ -60,6 +61,13 @@
     img.dataset.src = src;
     img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${++zIndex}`;
     img.draggable = false;
+
+    // Attach metadata from JSON (sourced from EXIF at build time)
+    const meta = imageMetadata[src];
+    if (meta) {
+      if (meta.artista) img.dataset.artista = meta.artista;
+      if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+    }
 
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
@@ -193,8 +201,18 @@
         const entries = await res.json();
         files = [];
         for (const entry of entries) {
-          const fname = typeof entry === 'string' ? entry : entry && entry.filename;
-          if (fname) files.push('archiveImages/' + fname);
+          if (typeof entry === 'string') {
+            files.push('archiveImages/' + entry);
+          } else if (entry && entry.filename) {
+            const path = 'archiveImages/' + entry.filename;
+            files.push(path);
+            if (entry.artista || entry.descripcion) {
+              imageMetadata[path] = {
+                artista: entry.artista || '',
+                descripcion: entry.descripcion || ''
+              };
+            }
+          }
         }
       }
     } catch (e) { /* network error */ }
