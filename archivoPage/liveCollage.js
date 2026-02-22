@@ -444,29 +444,44 @@
 
   // Pause collage when page is not visible (saves CPU + network in background tabs/hidden iframes)
   let collagePaused = false;
+  let collageEverStarted = false;
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
+      // Don't pause if collage hasn't started yet (Instagram/WebView may fire hidden early)
+      if (!collageEverStarted) return;
       collagePaused = true;
       clearTimeout(imageTimeout);
       imageTimeout = null;
-    } else if (collagePaused) {
-      collagePaused = false;
-      if (displayImages.length) startDisplaying();
+    } else {
+      if (collagePaused) {
+        collagePaused = false;
+        if (displayImages.length) startDisplaying();
+      }
     }
   });
 
   // Display images periodically
   function startDisplaying() {
     if (imageTimeout) return; // don't double-start
+    collageEverStarted = true;
+    collagePaused = false; // force unpause in case WebView fired hidden during load
+    let dimensionRetries = 0;
     function addNext() {
       if (collagePaused) return;
       // Wait for container to have layout dimensions before placing
       const w = collageContainer.offsetWidth || window.innerWidth;
       const h = collageContainer.offsetHeight || window.innerHeight;
       if (w < 10 || h < 10) {
+        dimensionRetries++;
+        // After many retries, force dimensions via JS (WebView workaround)
+        if (dimensionRetries > 30) {
+          collageContainer.style.width = window.innerWidth + 'px';
+          collageContainer.style.height = window.innerHeight + 'px';
+        }
         requestAnimationFrame(addNext);
         return;
       }
+      dimensionRetries = 0;
       const path = selectImage();
       if (path) placeImage(path);
       imageTimeout = setTimeout(addNext, IMAGE_INTERVAL);
@@ -499,6 +514,12 @@
   // Initialize gallery — start discovery + display immediately
   function init() {
     collageContainer.style.display = 'block';
+    // Force explicit dimensions for WebViews where position:absolute/fixed
+    // may not compute proper dimensions inside iframes (Instagram, TikTok, etc.)
+    if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
+      collageContainer.style.width = '100vw';
+      collageContainer.style.height = '100vh';
+    }
     discoverImages();
   }
 
