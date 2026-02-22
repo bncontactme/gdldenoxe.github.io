@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
             win.style.top = Math.max(0, Math.floor((screenH - height) / 2) - 20) + 'px';
         }
 
+        // Lazy-load iframes on first open (prevents invisible resource waste)
+        const iframe = win.querySelector('iframe[data-src]:not([src])');
+        if (iframe) iframe.src = iframe.dataset.src;
+
         win.classList.remove('hidden', 'minimized');
         bringToFront(win);
         updateTaskbar();
@@ -559,16 +563,33 @@ juntxs y brillando.`
         draggedWindow.style.top = clampedY + 'px';
     };
 
-    document.addEventListener('mousemove', (e) => updateDragPosition(e.clientX, e.clientY, false));
+    // rAF-throttled drag — one layout calc per frame instead of per mousemove event
+    let dragRAF = null;
+    document.addEventListener('mousemove', (e) => {
+        if (!draggedWindow) return;
+        if (dragRAF) return;
+        dragRAF = requestAnimationFrame(() => {
+            updateDragPosition(e.clientX, e.clientY, false);
+            dragRAF = null;
+        });
+    });
 
     document.addEventListener('touchmove', (e) => {
         if (!draggedWindow) return;
-        updateDragPosition(e.touches[0].clientX, e.touches[0].clientY, true);
+        if (!dragRAF) {
+            dragRAF = requestAnimationFrame(() => {
+                updateDragPosition(e.touches[0].clientX, e.touches[0].clientY, true);
+                dragRAF = null;
+            });
+        }
         e.preventDefault();
     }, { passive: false });
 
     document.addEventListener('mouseup', () => { draggedWindow = null; });
-    document.addEventListener('touchend', () => { draggedWindow = null; });
+    document.addEventListener('touchend', () => {
+        if (draggedWindow) draggedWindow.classList.remove('dragging');
+        draggedWindow = null;
+    });
 
     // Traer ventana al frente
     function bringToFront(windowElement) {
@@ -738,7 +759,7 @@ juntxs y brillando.`
     }
 
     updateClock();
-    setInterval(updateClock, 1000);
+    setInterval(updateClock, 60000); // No seconds displayed — 60× fewer callbacks
 
     // Inicializar taskbar
     updateTaskbar();
@@ -898,7 +919,7 @@ juntxs y brillando.`
     if (radioMenuItem) radioMenuItem.style.display = '';
 
     function checkIcecastStatus() {
-        fetch(statusUrl)
+        return fetch(statusUrl)
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 var sources = (data && data.icestats && data.icestats.source) || [];
@@ -941,9 +962,18 @@ juntxs y brillando.`
             });
     }
 
-    // Initial check + poll every 60s (1:1 con original)
+    // Initial check + adaptive polling (60s live, 5min offline — saves fetch cycles)
+    let icecastInterval = 60000;
+    function scheduleIcecastCheck() {
+        setTimeout(() => {
+            checkIcecastStatus().finally(() => {
+                icecastInterval = radioAvailable ? 60000 : 300000;
+                scheduleIcecastCheck();
+            });
+        }, icecastInterval);
+    }
     checkIcecastStatus();
-    setInterval(checkIcecastStatus, 60000);
+    scheduleIcecastCheck();
 
     // ===== Panel de detalles de imagen (Galería) =====
     const detailsPanel = $('#win95-details-panel');
@@ -1032,8 +1062,9 @@ juntxs y brillando.`
         document.addEventListener('mouseup', () => { isDraggingDetails = false; });
     }
 
-    // Listen for messages from the gallery iframe
+    // Listen for messages from the gallery iframe (origin-validated)
     window.addEventListener('message', (e) => {
+        if (e.origin !== location.origin) return;
         if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
         if (e.data?.type === 'galeria-open-player') openPlayerPanel(e.data.list, e.data.index);
     });
@@ -1219,9 +1250,13 @@ juntxs y brillando.`
         return { rows, cols, mines, flagsLeft: mines, revealedCount: 0, over: false, cells };
       }
 
+      let cellGrid = []; // cached cell DOM refs — O(1) lookup vs O(n) querySelector
+
       function renderBoard() {
         msBoard.innerHTML = '';
         msBoard.style.gridTemplateColumns = `repeat(${st.cols}, 20px)`;
+        cellGrid = Array.from({ length: st.rows }, () => new Array(st.cols));
+        const frag = document.createDocumentFragment();
         for (let r = 0; r < st.rows; r++) {
           for (let c = 0; c < st.cols; c++) {
             const el = document.createElement('div');
@@ -1230,9 +1265,11 @@ juntxs y brillando.`
             el.dataset.c = c;
             el.addEventListener('click', onReveal);
             el.addEventListener('contextmenu', onFlag);
-            msBoard.appendChild(el);
+            frag.appendChild(el);
+            cellGrid[r][c] = el;
           }
         }
+        msBoard.appendChild(frag);
         updateCounters();
       }
 
@@ -1257,31 +1294,36 @@ juntxs y brillando.`
       }
 
       function getCellEl(r, c) {
-        return msBoard.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+        return cellGrid[r][c];
       }
 
+      // Iterative flood-fill — no stack overflow on Expert (16×30 = 480 cells)
       function revealCell(r, c) {
-        const cell = st.cells[r][c];
-        if (cell.revealed || cell.flagged) return;
-        cell.revealed = true;
-        st.revealedCount++;
-        const el = getCellEl(r, c);
-        el.classList.add('revealed');
-        if (cell.mine) {
-          el.innerHTML = SPRITES.mine;
-          el.classList.add('mine-hit');
-          endGame(false);
-          return;
-        }
-        if (cell.count > 0) {
-          el.textContent = cell.count;
-          el.classList.add('ms-n' + cell.count);
-        } else {
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              if (!dr && !dc) continue;
-              const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < st.rows && nc >= 0 && nc < st.cols) revealCell(nr, nc);
+        const stack = [[r, c]];
+        while (stack.length) {
+          const [cr, cc] = stack.pop();
+          const cell = st.cells[cr][cc];
+          if (cell.revealed || cell.flagged) continue;
+          cell.revealed = true;
+          st.revealedCount++;
+          const el = getCellEl(cr, cc);
+          el.classList.add('revealed');
+          if (cell.mine) {
+            el.innerHTML = SPRITES.mine;
+            el.classList.add('mine-hit');
+            endGame(false);
+            return;
+          }
+          if (cell.count > 0) {
+            el.textContent = cell.count;
+            el.classList.add('ms-n' + cell.count);
+          } else {
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (!dr && !dc) continue;
+                const nr = cr + dr, nc = cc + dc;
+                if (nr >= 0 && nr < st.rows && nc >= 0 && nc < st.cols) stack.push([nr, nc]);
+              }
             }
           }
         }

@@ -119,6 +119,11 @@ body {
     position: absolute;
     width: 280px;
     z-index: 1;
+    will-change: auto;
+}
+
+.win95-window.dragging {
+    will-change: transform, left, top;
 }
 
 .win95-window.hidden {
@@ -1038,8 +1043,8 @@ body {
 .ms-sprite {
     width: 14px;
     height: 14px;
-    image-rendering: pixelated;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
     pointer-events: none;
     display: block;
 }

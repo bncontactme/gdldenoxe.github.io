@@ -13,7 +13,8 @@
   let zIndex = 1;
   let recentNonGifs = [];
   let recentGifs = [];
-  let archiveImages = []; // Ordered list of image paths
+  let archiveImages = []; // Ordered list of image paths (ALL images, including GIFs)
+  let displayImages = []; // Shuffled subset for collage display (GIFs thinned)
   let imageMetadata = {}; // path -> { artista, descripcion }
   let imageTimeout = null;
   let resetTimeout = null;
@@ -278,8 +279,9 @@
     openExplorer();
   };
 
-  // Listen for parent requesting explorer open (desktop mode)
+  // Listen for parent requesting explorer open (desktop mode, origin-validated)
   window.addEventListener('message', function(e) {
+    if (e.origin !== location.origin) return;
     if (e.data?.type === 'open-file-explorer') openExplorer();
   });
 
@@ -354,29 +356,31 @@
 
     if (!files || !files.length) return;
 
-    // Add images, randomly thin out GIFs
+    // archiveImages = complete list (explorer uses this)
+    archiveImages = files;
+
+    // displayImages = thinned-out copy for collage (GIFs reduced, shuffled)
     for (const path of files) {
       if (path.endsWith('.gif') && Math.random() < 0.35) continue;
-      archiveImages.push(path);
+      displayImages.push(path);
     }
-
-    // Shuffle so display order is random
-    for (let i = archiveImages.length - 1; i > 0; i--) {
+    // Fisher-Yates shuffle
+    for (let i = displayImages.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [archiveImages[i], archiveImages[j]] = [archiveImages[j], archiveImages[i]];
+      [displayImages[i], displayImages[j]] = [displayImages[j], displayImages[i]];
     }
 
-    if (archiveImages.length) startDisplaying();
+    if (displayImages.length) startDisplaying();
   }
 
   // Select next image avoiding recent ones
   function selectImage() {
-    if (!archiveImages.length) return null;
+    if (!displayImages.length) return null;
 
     let idx, attempts = 0;
     do {
-      idx = Math.floor(Math.random() * archiveImages.length);
-      const path = archiveImages[idx];
+      idx = Math.floor(Math.random() * displayImages.length);
+      const path = displayImages[idx];
       const isGif = path.endsWith('.gif');
       const recent = isGif ? recentGifs : recentNonGifs;
 
@@ -384,7 +388,7 @@
       attempts++;
     } while (true);
 
-    const path = archiveImages[idx];
+    const path = displayImages[idx];
     const isGif = path.endsWith('.gif');
 
     if (isGif) {
@@ -398,9 +402,24 @@
     return path;
   }
 
+  // Pause collage when page is not visible (saves CPU + network in background tabs/hidden iframes)
+  let collagePaused = false;
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      collagePaused = true;
+      clearTimeout(imageTimeout);
+      imageTimeout = null;
+    } else if (collagePaused) {
+      collagePaused = false;
+      if (displayImages.length) startDisplaying();
+    }
+  });
+
   // Display images periodically
   function startDisplaying() {
+    if (imageTimeout) return; // don't double-start
     function addNext() {
+      if (collagePaused) return;
       // Wait for container to have layout dimensions before placing
       const w = collageContainer.offsetWidth || window.innerWidth;
       const h = collageContainer.offsetHeight || window.innerHeight;
