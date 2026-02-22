@@ -512,3 +512,23 @@ body {
     word-break: break-word;
   }
 }
+
+@media (max-width: 768px) {
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden !important;
+    position: fixed;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+  #live-collage-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    overflow: hidden !important;
+    background: #fff;
+  }
+}

@@ -12,17 +12,43 @@
   let imageMetadata = {};
   let imageTimeout = null;
   let imgIndex = 0;
+  let lastTop = -1;
+  let lastLeft = -1;
+  let recent = [];
 
   function placeImage(src) {
     const cH = collageContainer.offsetHeight || window.innerHeight;
     const cW = collageContainer.offsetWidth || window.innerWidth;
     const size = _mobile ? Math.random() * 130 + 90 : Math.random() * 180 + 120;
-    const top = Math.random() * Math.max(0, cH - size);
-    const left = Math.random() * Math.max(0, cW - size);
+
+    // Find best spot with least overlap
+    var imgs = collageContainer.querySelectorAll('img');
+    var bestTop = 0, bestLeft = 0, minOverlap = 1e9;
+    for (var tries = 0; tries < 8; tries++) {
+      var top = Math.random() * Math.max(0, cH - size);
+      var left = Math.random() * Math.max(0, cW - size);
+      var overlap = 0;
+      for (var i = 0; i < imgs.length; i++) {
+        var r = imgs[i].getBoundingClientRect();
+        var x1 = left, y1 = top, x2 = left + size, y2 = top + size;
+        var rx1 = r.left, ry1 = r.top, rx2 = r.left + r.width, ry2 = r.top + r.height;
+        var ox = Math.max(0, Math.min(x2, rx2) - Math.max(x1, rx1));
+        var oy = Math.max(0, Math.min(y2, ry2) - Math.max(y1, ry1));
+        overlap += ox * oy;
+      }
+      if (overlap < minOverlap) {
+        minOverlap = overlap;
+        bestTop = top;
+        bestLeft = left;
+      }
+      if (overlap < 10) break; // Found a nearly blank spot
+    }
+    lastTop = bestTop;
+    lastLeft = bestLeft;
 
     const img = document.createElement('img');
     img.dataset.src = src;
-    img.style.cssText = 'top:' + top + 'px;left:' + left + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
+    img.style.cssText = 'top:' + bestTop + 'px;left:' + bestLeft + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
     img.draggable = false;
     img.decoding = 'async';
     img.fetchPriority = 'low';
@@ -373,9 +399,16 @@
         collageContainer.style.width = '100vw';
         collageContainer.style.height = '100vh';
       }
-      // Walk through shuffled list, loop when done
-      placeImage(displayImages[imgIndex % displayImages.length]);
+      // Walk through shuffled list, skip if in recent 10
+      var src = displayImages[imgIndex % displayImages.length];
       imgIndex++;
+      while (recent.indexOf(src) !== -1) {
+        src = displayImages[imgIndex % displayImages.length];
+        imgIndex++;
+      }
+      recent.push(src);
+      if (recent.length > 10) recent.shift();
+      placeImage(src);
       imageTimeout = setTimeout(addNext, IMAGE_INTERVAL);
     }
     addNext();
@@ -390,6 +423,9 @@
     for (var i = 0; i < imgs.length; i++) imgs[i].remove();
     zIndex = 1;
     imgIndex = 0;
+    lastTop = -1;
+    lastLeft = -1;
+    recent = [];
     // Reshuffle
     for (var i = displayImages.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
