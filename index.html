@@ -204,6 +204,45 @@
             </div>
         </div>
 
+        <!-- Ventana independiente: Visor de imágenes -->
+        <div id="win95-player-panel" aria-hidden="true">
+            <div id="win95-player-titlebar">
+                <span id="win95-player-title">Visor de imágenes</span>
+                <button id="win95-player-close" aria-label="Cerrar">×</button>
+            </div>
+            <div id="win95-player-body">
+                <div id="win95-player-canvas">
+                    <img id="win95-player-image" alt="Imagen" />
+                </div>
+                <div id="win95-player-info">
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Archivo:</span>
+                        <span id="win95-player-filename"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Tipo:</span>
+                        <span id="win95-player-type"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Dimensiones:</span>
+                        <span id="win95-player-dimensions"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-player-artista-row">
+                        <span class="win95-detail-label">Artista:</span>
+                        <span id="win95-player-artista"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-player-descripcion-row">
+                        <span class="win95-detail-label">Descripción:</span>
+                        <span id="win95-player-descripcion"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="win95-player-controls">
+                <button id="win95-player-prev">◀ Anterior</button>
+                <button id="win95-player-next">Siguiente ▶</button>
+            </div>
+        </div>
+
         <!-- Ventana de Tienda -->
         <div class="win95-window hidden" data-window-id="tienda" style="left: 250px; top: 120px;">
             <div class="title-bar">

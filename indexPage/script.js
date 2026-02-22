@@ -600,6 +600,8 @@ juntxs y brillando.`
             if (win.dataset.windowId === 'galeria') {
                 const dp = $('#win95-details-panel');
                 if (dp) { dp.classList.remove('open'); dp.setAttribute('aria-hidden', 'true'); }
+                const pp = $('#win95-player-panel');
+                if (pp) { pp.classList.remove('open'); pp.setAttribute('aria-hidden', 'true'); }
             }
         } else if (btn.classList.contains('minimize-btn')) {
             win.classList.add('minimized');
@@ -984,8 +986,7 @@ juntxs y brillando.`
                 
                 Object.assign(detailsPanel.style, {
                     left: panelLeft + 'px',
-                    top: panelTop + 'px',
-                    height: gRect.height + 'px'
+                    top: panelTop + 'px'
                 });
             }
             detailsPanelHasBeenPositioned = true;
@@ -1037,6 +1038,7 @@ juntxs y brillando.`
     // Listen for messages from the gallery iframe
     window.addEventListener('message', (e) => {
         if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
+        if (e.data?.type === 'galeria-open-player') openPlayerPanel(e.data.list, e.data.index);
     });
 
     // "Explorar" button — tell iframe to open file explorer
@@ -1052,6 +1054,112 @@ juntxs y brillando.`
             }
             closeDetailsPanel();
         });
+    }
+
+    // ===== Visor de imágenes (Image Player) =====
+    const playerPanel = $('#win95-player-panel');
+    const playerImage = $('#win95-player-image');
+    const playerFilename = $('#win95-player-filename');
+    const playerType = $('#win95-player-type');
+    const playerDims = $('#win95-player-dimensions');
+    const playerArtista = $('#win95-player-artista');
+    const playerArtistaRow = $('#win95-player-artista-row');
+    const playerDescripcion = $('#win95-player-descripcion');
+    const playerDescripcionRow = $('#win95-player-descripcion-row');
+    const playerClose = $('#win95-player-close');
+    const playerPrev = $('#win95-player-prev');
+    const playerNext = $('#win95-player-next');
+    const playerTitlebar = $('#win95-player-titlebar');
+    const playerTitle = $('#win95-player-title');
+    let playerList = [];
+    let playerIndex = 0;
+    let playerHasBeenPositioned = false;
+
+    function showPlayerItem(idx) {
+        if (idx < 0 || idx >= playerList.length) return;
+        playerIndex = idx;
+        const item = playerList[idx];
+        if (playerImage) {
+            playerImage.src = item.src;
+            playerImage.onload = function() {
+                if (playerDims) playerDims.textContent = this.naturalWidth + ' × ' + this.naturalHeight;
+            };
+        }
+        if (playerTitle) playerTitle.textContent = item.fileName;
+        if (playerFilename) playerFilename.textContent = item.fileName;
+        if (playerType) playerType.textContent = item.fileType;
+        if (playerDims) playerDims.textContent = '—';
+        if (playerArtistaRow) playerArtistaRow.style.display = item.artista ? '' : 'none';
+        if (playerArtista) playerArtista.textContent = item.artista || '';
+        if (playerDescripcionRow) playerDescripcionRow.style.display = item.descripcion ? '' : 'none';
+        if (playerDescripcion) playerDescripcion.textContent = item.descripcion || '';
+        if (playerPrev) playerPrev.disabled = idx <= 0;
+        if (playerNext) playerNext.disabled = idx >= playerList.length - 1;
+    }
+
+    function openPlayerPanel(list, index) {
+        if (!playerPanel) return;
+        playerList = list || [];
+        playerIndex = (typeof index === 'number' && index >= 0) ? index : 0;
+        showPlayerItem(playerIndex);
+
+        if (!playerHasBeenPositioned) {
+            const galeriaWin = $('[data-window-id="galeria"]');
+            if (galeriaWin) {
+                const gRect = galeriaWin.getBoundingClientRect();
+                let panelLeft = gRect.right + 8;
+                let panelTop = Math.max(0, gRect.top);
+                if (panelLeft + 420 > window.innerWidth) panelLeft = Math.max(0, gRect.left - 428);
+                Object.assign(playerPanel.style, {
+                    left: panelLeft + 'px',
+                    top: panelTop + 'px'
+                });
+            }
+            playerHasBeenPositioned = true;
+        }
+
+        playerPanel.classList.add('open');
+        playerPanel.setAttribute('aria-hidden', 'false');
+        playerPanel.style.zIndex = ++highestZIndex;
+    }
+
+    function closePlayerPanel() {
+        if (!playerPanel) return;
+        playerPanel.classList.remove('open');
+        playerPanel.setAttribute('aria-hidden', 'true');
+        playerHasBeenPositioned = false;
+    }
+
+    playerClose?.addEventListener('click', closePlayerPanel);
+    playerPrev?.addEventListener('click', () => { if (playerIndex > 0) showPlayerItem(playerIndex - 1); });
+    playerNext?.addEventListener('click', () => { if (playerIndex < playerList.length - 1) showPlayerItem(playerIndex + 1); });
+
+    // Make the player panel draggable by its titlebar
+    if (playerTitlebar && playerPanel) {
+        let isDraggingPlayer = false;
+        let playerOffX = 0;
+        let playerOffY = 0;
+
+        playerTitlebar.addEventListener('mousedown', (e) => {
+            if (e.target === playerClose) return;
+            isDraggingPlayer = true;
+            playerOffX = e.clientX - playerPanel.offsetLeft;
+            playerOffY = e.clientY - playerPanel.offsetTop;
+            playerPanel.style.zIndex = ++highestZIndex;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingPlayer) return;
+            const x = e.clientX - playerOffX;
+            const y = e.clientY - playerOffY;
+            const maxX = window.innerWidth - playerPanel.offsetWidth;
+            const maxY = window.innerHeight - playerPanel.offsetHeight - 40;
+            playerPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            playerPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isDraggingPlayer = false; });
     }
 
     // ─── Buscaminas (embedded) ───

@@ -201,22 +201,25 @@
         + '<span class="fe-label">' + escapeHtml(fileName) + '</span>';
       item.title = fileName;
       item.onclick = function() {
-        // Open this image in the details popup
-        const thumb = item.querySelector('img');
-        if (thumb) {
-          closeExplorer();
-          // Create a temporary img-like object for openDetails
-          const fakeImg = document.createElement('img');
-          fakeImg.src = path;
-          fakeImg.dataset.src = path;
-          fakeImg.dataset.width = thumb.naturalWidth || '';
-          fakeImg.dataset.height = thumb.naturalHeight || '';
-          const meta = imageMetadata[path];
-          if (meta) {
-            if (meta.artista) fakeImg.dataset.artista = meta.artista;
-            if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
-          }
-          openDetails(fakeImg);
+        // On desktop, send to parent; standalone: use built-in player
+        const meta = imageMetadata[path];
+        const fileName = getFileName(path);
+        const fullSrc = new URL(path, location.href).href;
+        const fileType = getExtension(fileName);
+        // Build list with full URLs and metadata for parent
+        const listData = images.map(function(p) {
+          const m = imageMetadata[p];
+          return {
+            src: new URL(p, location.href).href,
+            fileName: getFileName(p),
+            fileType: getExtension(getFileName(p)),
+            artista: (m && m.artista) || '',
+            descripcion: (m && m.descripcion) || ''
+          };
+        });
+        const idx = images.indexOf(path);
+        if (parent !== window) {
+          parent.postMessage({ type: 'galeria-open-player', list: listData, index: idx }, '*');
         }
       };
       explorerBody.appendChild(item);
