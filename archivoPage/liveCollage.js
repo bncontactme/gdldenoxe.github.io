@@ -1,162 +1,31 @@
-// Live Collage Gallery - Optimized
+// Live Collage Gallery
 (function() {
   'use strict';
 
   const collageContainer = document.getElementById('live-collage-container');
   const _mobile = window.innerWidth <= 768;
-  const RESET_INTERVAL = 300000; // 5 min — only reset to reclaim memory
-  const MIN_DISTANCE = _mobile ? 100 : 150;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
-  const MAX_IMAGES = _mobile ? 20 : 52; // DOM ceiling before baking to canvas
-  const MAX_Z = 500;
 
-  // Background canvas — old images get painted here so they never disappear
-  const bgCanvas = document.createElement('canvas');
-  bgCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;cursor:pointer;';
-  let bgCtx = null; // lazily initialized after container has dimensions
-
-  // Hitmap — lightweight array of baked image rects + metadata for click detection
-  // Each entry: { left, top, w, h, src, artista, descripcion, naturalW, naturalH }
-  let bakedHits = [];
-
-  function ensureCanvas() {
-    if (bgCtx) return;
-    const w = collageContainer.offsetWidth || window.innerWidth;
-    const h = collageContainer.offsetHeight || window.innerHeight;
-    // Use CSS pixels (not device pixels) to keep memory low on mobile
-    bgCanvas.width = w;
-    bgCanvas.height = h;
-    bgCtx = bgCanvas.getContext('2d', { alpha: false });
-    bgCtx.fillStyle = '#ffffff';
-    bgCtx.fillRect(0, 0, w, h);
-    collageContainer.prepend(bgCanvas);
-  }
-
-  // Bake a DOM image onto the canvas, then remove it from DOM
-  function bakeImage(el) {
-    ensureCanvas();
-    // Only draw if the image actually loaded (complete & has real dimensions)
-    if (el.complete && el.naturalWidth > 0) {
-      try {
-        const top = parseFloat(el.style.top) || 0;
-        const left = parseFloat(el.style.left) || 0;
-        const cssW = parseFloat(el.style.width) || el.offsetWidth || 100;
-        const aspect = el.naturalHeight / el.naturalWidth;
-        const cssH = el.offsetHeight || Math.round(cssW * aspect) || 100;
-        bgCtx.drawImage(el, left, top, cssW, cssH);
-        // Store hit region for click detection on canvas
-        bakedHits.push({
-          left: left, top: top, w: cssW, h: cssH,
-          src: el.dataset.src || el.src,
-          artista: el.dataset.artista || '',
-          descripcion: el.dataset.descripcion || '',
-          naturalW: el.naturalWidth,
-          naturalH: el.naturalHeight
-        });
-      } catch (e) { /* tainted canvas / broken — skip silently */ }
-    }
-    el.onload = el.onerror = el.onclick = null;
-    el.removeAttribute('src');
-    el.remove();
-  }
-
-  // Canvas click handler — find topmost baked image under the tap
-  bgCanvas.addEventListener('click', function(e) {
-    const rect = bgCanvas.getBoundingClientRect();
-    const scaleX = bgCanvas.width / rect.width;
-    const scaleY = bgCanvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    // Iterate in reverse — last baked = visually on top
-    for (let i = bakedHits.length - 1; i >= 0; i--) {
-      const h = bakedHits[i];
-      if (x >= h.left && x <= h.left + h.w && y >= h.top && y <= h.top + h.h) {
-        // Build a fake img-like object with the data openDetails expects
-        const fakeImg = {
-          dataset: {
-            src: h.src,
-            artista: h.artista,
-            descripcion: h.descripcion,
-            width: h.naturalW,
-            height: h.naturalH
-          },
-          src: h.src,
-          naturalWidth: h.naturalW,
-          naturalHeight: h.naturalH
-        };
-        openDetails(fakeImg);
-        return;
-      }
-    }
-  });
-
-  // State
-  let lastPos = { top: null, left: null, size: null };
   let zIndex = 1;
-  let recentNonGifs = [];
-  let recentGifs = [];
-  let archiveImages = []; // Ordered list of image paths (ALL images, including GIFs)
-  let displayImages = []; // Shuffled subset for collage display (GIFs thinned)
-  let imageMetadata = {}; // path -> { artista, descripcion }
+  let archiveImages = [];
+  let displayImages = [];
+  let imageMetadata = {};
   let imageTimeout = null;
-  let resetTimeout = null;
+  let imgIndex = 0;
 
-  // Calculate distance between two points
-  function distance(x1, y1, x2, y2) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  // Get random position avoiding last placement
-  function getRandomPosition(size) {
-    // Use viewport size as fallback since container is position:fixed inset:0
-    const containerH = collageContainer.offsetHeight || window.innerHeight;
-    const containerW = collageContainer.offsetWidth || window.innerWidth;
-    const maxTop = Math.max(0, containerH - size);
-    const maxLeft = Math.max(0, containerW - size);
-    let top, left, attempts = 0;
-
-    do {
-      top = Math.random() * maxTop;
-      left = Math.random() * maxLeft;
-      attempts++;
-
-      if (lastPos.top === null || attempts >= 50) break;
-
-      const dist = distance(
-        left + size / 2, top + size / 2,
-        lastPos.left + lastPos.size / 2, lastPos.top + lastPos.size / 2
-      );
-      if (dist >= MIN_DISTANCE) break;
-    } while (attempts < 50);
-
-    return { top, left };
-  }
-
-  // Clean up an image element to prevent leaks
-  function cleanupImg(el) {
-    el.onload = el.onerror = el.onclick = null;
-    el.removeAttribute('src');
-    el.remove();
-  }
-
-  // Place image in collage
   function placeImage(src) {
+    const cH = collageContainer.offsetHeight || window.innerHeight;
+    const cW = collageContainer.offsetWidth || window.innerWidth;
     const size = _mobile ? Math.random() * 130 + 90 : Math.random() * 180 + 120;
-    const pos = getRandomPosition(size);
-
-    // Wrap z-index to avoid unbounded growth
-    if (++zIndex > MAX_Z) zIndex = 1;
+    const top = Math.random() * Math.max(0, cH - size);
+    const left = Math.random() * Math.max(0, cW - size);
 
     const img = document.createElement('img');
-    img.dataset.src = src; // always store original full-res path for details
-    img.style.cssText = `top:${pos.top}px;left:${pos.left}px;width:${size}px;height:auto;z-index:${zIndex}`;
+    img.dataset.src = src;
+    img.style.cssText = 'top:' + top + 'px;left:' + left + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
     img.draggable = false;
     img.decoding = 'async';
-    if (_mobile) img.loading = 'lazy';
 
-    // Attach metadata from JSON (sourced from EXIF at build time)
     const meta = imageMetadata[src];
     if (meta) {
       if (meta.artista) img.dataset.artista = meta.artista;
@@ -166,40 +35,19 @@
     img.onload = function() {
       this.dataset.width = this.naturalWidth;
       this.dataset.height = this.naturalHeight;
-      this.onload = null; // free handler after use
+      this.onload = null;
     };
+    img.onerror = function() { this.remove(); };
+    img.onclick = function(e) { e.stopPropagation(); openDetails(this); };
 
-    img.onerror = function() {
-      cleanupImg(this);
-    };
-
-    img.onclick = function(e) {
-      e.stopPropagation();
-      openDetails(this);
-    };
-
-    // Set src last so handlers are attached before load fires
     img.src = src;
-
     collageContainer.appendChild(img);
-    lastPos = { top: pos.top, left: pos.left, size };
-
-    // Bake oldest images onto canvas when DOM ceiling reached
-    const images = collageContainer.getElementsByTagName('img');
-    while (images.length > MAX_IMAGES) {
-      bakeImage(images[0]);
-    }
   }
 
-  // Extract filename from path
-  function getFileName(path) {
-    return path.split('/').pop() || path;
-  }
-
-  // Get file extension
-  function getExtension(fileName) {
-    const parts = fileName.split('.');
-    return parts.length > 1 ? parts.pop().toUpperCase() : 'Archivo';
+  function getFileName(path) { return path.split('/').pop() || path; }
+  function getExtension(fn) {
+    const p = fn.split('.');
+    return p.length > 1 ? p.pop().toUpperCase() : 'Archivo';
   }
 
   // Image details popup elements
@@ -462,13 +310,10 @@
     }
   }
 
-  // Local manifest listing all images (no API rate limits)
-  // To update after adding images:  cd archivoPage && bash generate-manifest.sh
   const MANIFEST_URL = 'images.json';
 
   async function discoverImages() {
     let files = null;
-
     try {
       const res = await fetch(MANIFEST_URL);
       if (res.ok) {
@@ -481,10 +326,7 @@
             const path = 'archiveImages/' + entry.filename;
             files.push(path);
             if (entry.artista || entry.descripcion) {
-              imageMetadata[path] = {
-                artista: entry.artista || '',
-                descripcion: entry.descripcion || ''
-              };
+              imageMetadata[path] = { artista: entry.artista || '', descripcion: entry.descripcion || '' };
             }
           }
         }
@@ -492,16 +334,10 @@
     } catch (e) { /* network error */ }
 
     if (!files || !files.length) return;
-
-    // archiveImages = complete list (explorer uses this)
     archiveImages = files;
 
-    // displayImages = thinned-out copy for collage (GIFs reduced, shuffled)
-    for (const path of files) {
-      if (path.endsWith('.gif') && Math.random() < 0.35) continue;
-      displayImages.push(path);
-    }
-    // Fisher-Yates shuffle
+    // Shuffle all images
+    displayImages = files.slice();
     for (let i = displayImages.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [displayImages[i], displayImages[j]] = [displayImages[j], displayImages[i]];
@@ -510,110 +346,61 @@
     if (displayImages.length) startDisplaying();
   }
 
-  // Select next image avoiding recent ones
-  function selectImage() {
-    if (!displayImages.length) return null;
-
-    let idx, attempts = 0;
-    do {
-      idx = Math.floor(Math.random() * displayImages.length);
-      const path = displayImages[idx];
-      const isGif = path.endsWith('.gif');
-      const recent = isGif ? recentGifs : recentNonGifs;
-
-      if (!recent.includes(path) || attempts >= 100) break;
-      attempts++;
-    } while (true);
-
-    const path = displayImages[idx];
-    const isGif = path.endsWith('.gif');
-
-    if (isGif) {
-      recentGifs.push(path);
-      if (recentGifs.length > 3) recentGifs.shift();
-    } else {
-      recentNonGifs.push(path);
-      if (recentNonGifs.length > 15) recentNonGifs.shift();
-    }
-
-    return path;
-  }
-
-  // Pause collage when page is not visible (saves CPU + network in background tabs/hidden iframes)
-  let collagePaused = false;
-  let collageEverStarted = false;
+  // Pause when tab hidden
+  let paused = false;
+  let started = false;
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-      // Don't pause if collage hasn't started yet (Instagram/WebView may fire hidden early)
-      if (!collageEverStarted) return;
-      collagePaused = true;
+      if (!started) return;
+      paused = true;
       clearTimeout(imageTimeout);
       imageTimeout = null;
-    } else {
-      if (collagePaused) {
-        collagePaused = false;
-        if (displayImages.length) startDisplaying();
-      }
+    } else if (paused) {
+      paused = false;
+      if (displayImages.length) startDisplaying();
     }
   });
 
-  // Display images periodically
   function startDisplaying() {
-    if (imageTimeout) return; // don't double-start
-    collageEverStarted = true;
-    collagePaused = false; // force unpause in case WebView fired hidden during load
-    let dimensionRetries = 0;
+    if (imageTimeout) return;
+    started = true;
+    paused = false;
+
     function addNext() {
-      if (collagePaused) return;
-      // Wait for container to have layout dimensions before placing
-      const w = collageContainer.offsetWidth || window.innerWidth;
-      const h = collageContainer.offsetHeight || window.innerHeight;
-      if (w < 10 || h < 10) {
-        dimensionRetries++;
-        // After many retries, force dimensions via JS (WebView workaround)
-        if (dimensionRetries > 30) {
-          collageContainer.style.width = window.innerWidth + 'px';
-          collageContainer.style.height = window.innerHeight + 'px';
-        }
-        requestAnimationFrame(addNext);
-        return;
+      if (paused) return;
+      if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
+        collageContainer.style.width = '100vw';
+        collageContainer.style.height = '100vh';
       }
-      dimensionRetries = 0;
-      const path = selectImage();
-      if (path) placeImage(path);
+      // Walk through shuffled list, loop when done
+      placeImage(displayImages[imgIndex % displayImages.length]);
+      imgIndex++;
       imageTimeout = setTimeout(addNext, IMAGE_INTERVAL);
     }
-
     addNext();
   }
 
-  // Reset gallery — bake remaining DOM images to canvas, reclaim DOM memory (every 5 min)
+  // Every 5 min: wipe all images and start fresh
   function reset() {
     clearTimeout(imageTimeout);
-    clearTimeout(resetTimeout);
     imageTimeout = null;
-    resetTimeout = null;
-
-    // Bake all live DOM images onto canvas so nothing disappears visually
-    const imgs = collageContainer.getElementsByTagName('img');
-    while (imgs.length) bakeImage(imgs[0]);
-
-    // Reset state
-    lastPos = { top: null, left: null, size: null };
+    // Remove all collage images
+    var imgs = collageContainer.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) imgs[i].remove();
     zIndex = 1;
-    recentNonGifs = [];
-    recentGifs = [];
-
-    // Restart
+    imgIndex = 0;
+    // Reshuffle
+    for (var i = displayImages.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = displayImages[i];
+      displayImages[i] = displayImages[j];
+      displayImages[j] = tmp;
+    }
     startDisplaying();
-    resetTimeout = setTimeout(reset, RESET_INTERVAL);
   }
 
-  // Initialize gallery — start discovery + display immediately
   function init() {
     collageContainer.style.display = 'block';
-    // Force explicit dimensions for WebViews where position:absolute/fixed
-    // may not compute proper dimensions inside iframes (Instagram, TikTok, etc.)
     if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
       collageContainer.style.width = '100vw';
       collageContainer.style.height = '100vh';
@@ -621,25 +408,19 @@
     discoverImages();
   }
 
-  // Setup popup handlers
   function setupPopup() {
     const overlay = document.getElementById('xp-popup-overlay');
     const okBtn = document.getElementById('xp-popup-ok');
     const closeBtn = document.getElementById('xp-popup-close');
-
-    // Start images loading behind the popup right away
     init();
-
     function dismiss() {
       overlay.style.display = 'none';
-      resetTimeout = setTimeout(reset, RESET_INTERVAL);
+      setInterval(reset, 300000); // clean & restart every 5 min
     }
-
     okBtn.onclick = dismiss;
     closeBtn.onclick = dismiss;
   }
 
-  // Start when DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupPopup);
   } else {
