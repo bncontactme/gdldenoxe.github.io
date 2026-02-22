@@ -46,6 +46,14 @@
     lastTop = bestTop;
     lastLeft = bestLeft;
 
+    // PERFORMANCE: On mobile, limit DOM images to 60
+    if (_mobile) {
+      var imgs = collageContainer.querySelectorAll('img');
+      if (imgs.length > 60) {
+        collageContainer.removeChild(imgs[0]);
+      }
+    }
+
     const img = document.createElement('img');
     img.dataset.src = src;
     img.style.cssText = 'top:' + bestTop + 'px;left:' + bestLeft + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
