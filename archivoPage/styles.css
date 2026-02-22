@@ -145,6 +145,12 @@ body {
   -webkit-user-drag: none;
   pointer-events: auto;
   touch-action: manipulation;
+  opacity: 0;
+  transition: opacity 0.4s ease-in;
+}
+
+#live-collage-container img.collage-visible {
+  opacity: 1;
 }
 
 /* Image Details Popup (mobile / standalone) */

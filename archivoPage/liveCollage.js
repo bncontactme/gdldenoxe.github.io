@@ -54,29 +54,41 @@
       }
     }
 
-    const img = document.createElement('img');
-    img.dataset.src = src;
-    img.style.cssText = 'top:' + bestTop + 'px;left:' + bestLeft + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
-    img.draggable = false;
-    img.decoding = 'async';
-    img.fetchPriority = 'low';
+    // Preload image off-DOM so it appears fully loaded (no progressive/choppy render)
+    const preload = new Image();
+    preload.src = src;
 
-    const meta = imageMetadata[src];
-    if (meta) {
-      if (meta.artista) img.dataset.artista = meta.artista;
-      if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+    function insert() {
+      if (paused) return; // Don't insert if gallery was closed/paused while loading
+      const img = document.createElement('img');
+      img.dataset.src = src;
+      img.style.cssText = 'top:' + bestTop + 'px;left:' + bestLeft + 'px;width:' + size + 'px;height:auto;z-index:' + (++zIndex);
+      img.draggable = false;
+      img.decoding = 'async';
+
+      const meta = imageMetadata[src];
+      if (meta) {
+        if (meta.artista) img.dataset.artista = meta.artista;
+        if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+      }
+
+      img.dataset.width = preload.naturalWidth;
+      img.dataset.height = preload.naturalHeight;
+      img.onclick = function(e) { e.stopPropagation(); openDetails(this); };
+
+      img.src = src;
+      collageContainer.appendChild(img);
+      // Trigger fade-in on next frame
+      requestAnimationFrame(function() { img.classList.add('collage-visible'); });
     }
 
-    img.onload = function() {
-      this.dataset.width = this.naturalWidth;
-      this.dataset.height = this.naturalHeight;
-      this.onload = null;
-    };
-    img.onerror = function() { this.remove(); };
-    img.onclick = function(e) { e.stopPropagation(); openDetails(this); };
-
-    img.src = src;
-    collageContainer.appendChild(img);
+    // Use decode() for jank-free insertion when available, fallback to onload
+    if (preload.decode) {
+      preload.decode().then(insert).catch(function() { /* skip broken images */ });
+    } else {
+      preload.onload = insert;
+      preload.onerror = function() { /* skip broken images */ };
+    }
   }
 
   function getFileName(path) { return path.split('/').pop() || path; }
