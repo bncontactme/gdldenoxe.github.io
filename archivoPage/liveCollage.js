@@ -4,11 +4,44 @@
 
   const collageContainer = document.getElementById('live-collage-container');
   const _mobile = window.innerWidth <= 768;
-  const RESET_INTERVAL = _mobile ? 120000 : 300000; // 2 min mobile, 5 min desktop
+  const RESET_INTERVAL = 300000; // 5 min — only reset to reclaim memory
   const MIN_DISTANCE = _mobile ? 100 : 150;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
-  const MAX_IMAGES = _mobile ? 18 : 50; // Tight DOM ceiling on mobile
-  const MAX_Z = 500; // Cap z-index to avoid compositor bloat
+  const MAX_IMAGES = _mobile ? 15 : 40; // DOM ceiling before baking to canvas
+  const MAX_Z = 500;
+
+  // Background canvas — old images get painted here so they never disappear
+  const bgCanvas = document.createElement('canvas');
+  bgCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
+  let bgCtx = null; // lazily initialized after container has dimensions
+
+  function ensureCanvas() {
+    if (bgCtx) return;
+    const w = collageContainer.offsetWidth || window.innerWidth;
+    const h = collageContainer.offsetHeight || window.innerHeight;
+    // Use CSS pixels (not device pixels) to keep memory low on mobile
+    bgCanvas.width = w;
+    bgCanvas.height = h;
+    bgCtx = bgCanvas.getContext('2d', { alpha: false });
+    bgCtx.fillStyle = '#ffffff';
+    bgCtx.fillRect(0, 0, w, h);
+    collageContainer.prepend(bgCanvas);
+  }
+
+  // Bake a DOM image onto the canvas, then remove it from DOM
+  function bakeImage(el) {
+    ensureCanvas();
+    try {
+      const top = parseFloat(el.style.top) || 0;
+      const left = parseFloat(el.style.left) || 0;
+      const width = el.offsetWidth || parseFloat(el.style.width) || 100;
+      const height = el.offsetHeight || el.naturalHeight * (width / (el.naturalWidth || 1)) || 100;
+      bgCtx.drawImage(el, left, top, width, height);
+    } catch (e) { /* CORS / broken image — just remove silently */ }
+    el.onload = el.onerror = el.onclick = null;
+    el.removeAttribute('src');
+    el.remove();
+  }
 
   // State
   let lastPos = { top: null, left: null, size: null };
@@ -104,10 +137,10 @@
     collageContainer.appendChild(img);
     lastPos = { top: pos.top, left: pos.left, size };
 
-    // Remove oldest images if too many on screen
+    // Bake oldest images onto canvas when DOM ceiling reached
     const images = collageContainer.getElementsByTagName('img');
     while (images.length > MAX_IMAGES) {
-      cleanupImg(images[0]);
+      bakeImage(images[0]);
     }
   }
 
@@ -507,16 +540,22 @@
     addNext();
   }
 
-  // Reset gallery for performance
+  // Reset gallery — wipe canvas + DOM to reclaim memory (every 5 min)
   function reset() {
     clearTimeout(imageTimeout);
     clearTimeout(resetTimeout);
     imageTimeout = null;
     resetTimeout = null;
 
-    // Properly clean up every image (null handlers, revoke src)
+    // Clean up all live DOM images
     const imgs = collageContainer.getElementsByTagName('img');
     while (imgs.length) cleanupImg(imgs[0]);
+
+    // Clear canvas
+    if (bgCtx) {
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+    }
 
     // Reset state
     lastPos = { top: null, left: null, size: null };
