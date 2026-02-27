@@ -500,9 +500,9 @@
         .bday-photo-well {
             border-top: 2px solid #808080;
             border-left: 2px solid #808080;
-            border-right: 2px solid #fff;
-            border-bottom: 2px solid #fff;
-            background: transparent;
+            border-right: 2px solid #d4d0c8;
+            border-bottom: 2px solid #d4d0c8;
+            background: #808080;
             padding: 0;
             margin: 10px 0 18px;
             line-height: 0;
@@ -513,6 +513,9 @@
         .bday-photo-well img {
             width: 190px; height: auto;
             display: block;
+            margin: 0;
+            padding: 0;
+            vertical-align: bottom;
         }
         @media (max-width: 480px) {
             .bday-photo-well img { width: 150px; height: auto; }
@@ -563,10 +566,10 @@
     </style>
 
     <!-- Birthday Overlay -->
-    <div class="bday-overlay" id="bdayOverlay"></div>
+    <div class="bday-overlay hidden" id="bdayOverlay"></div>
 
     <!-- Birthday Popup 1: Nuevo Mensaje -->
-    <div class="bday-window active" id="bdayMsg">
+    <div class="bday-window" id="bdayMsg">
         <div class="bday-titlebar">
             <div class="bday-titlebar-left">
                 <img src="https://win98icons.alexmeub.com/icons/png/outlook_express-0.png" alt="">
@@ -622,6 +625,13 @@
     <script>
     // ===== BIRTHDAY POPUP LOGIC =====
     (function() {
+        // Solo mostrar el 28 de febrero en hora de Mexico
+        var mx = new Date(new Date().toLocaleString('en-US', {timeZone: 'America/Mexico_City'}));
+        if (mx.getMonth() === 1 && mx.getDate() === 28) {
+            document.getElementById('bdayOverlay').classList.remove('hidden');
+            document.getElementById('bdayMsg').classList.add('active');
+        }
+
         function bdayCloseMsg() {
             document.getElementById('bdayMsg').classList.remove('active');
             document.getElementById('bdayOverlay').classList.add('hidden');
