@@ -336,6 +336,314 @@
         </div>
     </div>
 
+    <!-- ===== CUMPLEAÑOS POPUP ===== -->
+    <style>
+        /* ---- Overlay ---- */
+        .bday-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 999998;
+        }
+        .bday-overlay.hidden { display: none; }
+
+        /* ---- Window (matches site's .win95-window exactly) ---- */
+        .bday-window {
+            position: fixed;
+            background: var(--win95-gray, #c0c0c0);
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #000;
+            border-bottom: 2px solid #000;
+            box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                        2px 2px 0 rgba(0,0,0,0.2);
+            z-index: 999999;
+            display: none;
+            font-family: 'MS Sans Serif','Microsoft Sans Serif', sans-serif;
+        }
+        .bday-window.active { display: block; }
+
+        /* ---- Title bar (matches site's .title-bar) ---- */
+        .bday-titlebar {
+            background: linear-gradient(to right, #000080, #1084d0);
+            color: #fff;
+            padding: 3px 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 12px;
+            user-select: none;
+        }
+        .bday-titlebar-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+        .bday-titlebar-left img {
+            width: 16px; height: 16px;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .bday-titlebar-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-left: 2px;
+        }
+
+        /* ---- Title bar buttons (matches site's .title-bar-controls button) ---- */
+        .bday-titlebar-btns {
+            display: flex; gap: 2px;
+        }
+        .bday-titlebar-btns button {
+            width: 18px; height: 18px;
+            background: #c0c0c0;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 11px; font-weight: bold; font-family: inherit;
+            line-height: 1; padding: 0;
+            color: #000;
+        }
+        .bday-titlebar-btns button:active {
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+        }
+
+        /* ---- Window body ---- */
+        .bday-body { padding: 12px; }
+
+        /* ---- Win95 Button (matches site style) ---- */
+        .bday-btn {
+            background: #c0c0c0;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            padding: 3px 20px;
+            font-family: 'MS Sans Serif','Microsoft Sans Serif', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            min-width: 75px;
+            text-align: center;
+        }
+        .bday-btn:active {
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+        }
+        .bday-btn:focus {
+            outline: 1px dotted #000;
+            outline-offset: -4px;
+        }
+        .bday-btn-row { display: flex; justify-content: center; gap: 6px; }
+
+        /* ---- Popup 1: Message Dialog ---- */
+        #bdayMsg {
+            width: 360px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: bdayWinOpen 0.12s ease-out;
+        }
+        @media (max-width: 480px) { #bdayMsg { width: 92vw; } }
+
+        .bday-msg-body {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 12px 8px;
+        }
+        .bday-msg-body .bday-msg-icon {
+            width: 32px; height: 32px;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .bday-msg-body .bday-msg-text {
+            flex: 1;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .bday-msg-separator {
+            height: 2px;
+            background: #808080;
+            border-bottom: 1px solid #fff;
+            margin: 8px 0;
+        }
+        .bday-msg-footer {
+            padding: 4px 12px 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        /* ---- Popup 2: Certificate ---- */
+        #bdayEmployee {
+            width: 440px; max-width: 94vw;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: bdayWinOpen 0.15s ease-out;
+        }
+        #bdayEmployee .bday-body {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; padding: 16px 20px 20px;
+        }
+
+        /* Sunken frame for the photo (Win95 inset border) */
+        .bday-photo-well {
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            background: transparent;
+            padding: 0;
+            margin: 10px 0 18px;
+            line-height: 0;
+            font-size: 0;
+            overflow: hidden;
+        }
+        .bday-photo-well img {
+            width: 190px; height: auto;
+            display: block;
+            margin: 0; padding: 0;
+        }
+        @media (max-width: 480px) {
+            .bday-photo-well img { width: 150px; height: auto; }
+        }
+
+        .bday-emp-badge {
+            background: #c0c0c0;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            font-size: 10px; font-weight: bold;
+            padding: 2px 12px;
+            margin-top: -12px;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .bday-emp-title {
+            font-size: 16px; font-weight: bold; color: #000080;
+            margin: 8px 0 4px;
+            letter-spacing: 1px;
+        }
+
+        .bday-separator {
+            width: 90%;
+            height: 2px;
+            background: #808080;
+            border-bottom: 1px solid #fff;
+            margin: 6px 0;
+        }
+
+        .bday-emp-text {
+            font-size: 11px; line-height: 1.6; color: #000;
+            max-width: 380px; padding: 4px 8px;
+        }
+
+        .bday-emp-stars {
+            font-size: 14px; letter-spacing: 6px; color: #ffd700;
+            margin: 4px 0;
+        }
+
+        @keyframes bdayWinOpen {
+            from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+    </style>
+
+    <!-- Birthday Overlay -->
+    <div class="bday-overlay" id="bdayOverlay"></div>
+
+    <!-- Birthday Popup 1: Nuevo Mensaje -->
+    <div class="bday-window active" id="bdayMsg">
+        <div class="bday-titlebar">
+            <div class="bday-titlebar-left">
+                <img src="https://win98icons.alexmeub.com/icons/png/outlook_express-0.png" alt="">
+                <span class="bday-titlebar-text">Bandeja de Entrada</span>
+            </div>
+            <div class="bday-titlebar-btns">
+                <button onclick="bdayCloseMsg()">✕</button>
+            </div>
+        </div>
+        <div class="bday-msg-body">
+            <img class="bday-msg-icon" src="https://win98icons.alexmeub.com/icons/png/envelope_closed-0.png" alt="">
+            <span class="bday-msg-text">Tiene <strong>(1)</strong> mensaje nuevo</span>
+        </div>
+        <div class="bday-msg-separator"></div>
+        <div class="bday-msg-footer">
+            <button class="bday-btn" onclick="bdayOpenMessage()">Abrir</button>
+            <button class="bday-btn" onclick="bdayCloseMsg()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Birthday Popup 2: Empleado del Mes -->
+    <div class="bday-window" id="bdayEmployee">
+        <div class="bday-titlebar">
+            <div class="bday-titlebar-left">
+                <img src="https://win98icons.alexmeub.com/icons/png/certificate-0.png" alt="">
+                <span class="bday-titlebar-text">Certificado — Recursos Humanos</span>
+            </div>
+            <div class="bday-titlebar-btns">
+                <button onclick="bdayCloseEmployee()">✕</button>
+            </div>
+        </div>
+        <div class="bday-body">
+            <div class="bday-emp-stars">★ ★ ★ ★ ★</div>
+            <div class="bday-emp-title">Empleado del Mes</div>
+            <div class="bday-separator"></div>
+            <div class="bday-photo-well">
+                <img src="cumplePage/empleado.jpg" alt="Empleado del Mes">
+            </div>
+            <div class="bday-emp-badge">* FEBRERO 2026 *</div>
+            <div class="bday-separator"></div>
+            <p class="bday-emp-text">
+                Por su sobresaliente rendimiento y firme compromiso con la excelencia.
+                Su trabajo constante y actitud profesional fortalecen el crecimiento
+                y los valores de nuestra empresa.
+            </p>
+            <div class="bday-emp-stars">★ ★ ★ ★ ★</div>
+            <div style="margin-top:8px;">
+                <button class="bday-btn" onclick="bdayCloseEmployee()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ===== BIRTHDAY POPUP LOGIC =====
+    (function() {
+        function bdayCloseMsg() {
+            document.getElementById('bdayMsg').classList.remove('active');
+            document.getElementById('bdayOverlay').classList.add('hidden');
+        }
+        function bdayOpenMessage() {
+            document.getElementById('bdayMsg').classList.remove('active');
+            document.getElementById('bdayOverlay').classList.remove('hidden');
+            setTimeout(function() {
+                document.getElementById('bdayEmployee').classList.add('active');
+            }, 250);
+        }
+        function bdayCloseEmployee() {
+            document.getElementById('bdayEmployee').classList.remove('active');
+            document.getElementById('bdayOverlay').classList.add('hidden');
+        }
+        window.bdayCloseMsg = bdayCloseMsg;
+        window.bdayOpenMessage = bdayOpenMessage;
+        window.bdayCloseEmployee = bdayCloseEmployee;
+    })();
+    </script>
+    <!-- ===== END CUMPLEAÑOS POPUP ===== -->
+
     <!-- Matar paneles en móvil antes de que cualquier CSS/JS los toque -->
     <script>
     if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
