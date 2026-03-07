@@ -237,6 +237,223 @@ input[type="checkbox"] { display: none; }
 }
 
 /* ============================================================
+   DYNAMIC PAGE COMPOSITION — Layer System
+   Each page face is composed from stacked layers:
+     z1: .catalog-bg          — background image (fills entire face)
+     z2: .catalog-page-shadow — subtle shadow overlay
+     z3: .catalog-frame-shadow— shadow under product frames
+     z4: .catalog-frame       — decorative frame around product
+     z5: .catalog-product     — product item container (positioned %)
+           .catalog-product-image — product photo
+           .catalog-splash       — price starburst + overlaid price
+           .catalog-product-name — product name label
+           .catalog-badge        — corner badge ribbon
+     z6: .catalog-title       — text overlay
+         .catalog-logo        — logo image
+     z98: .edge_shading       — flipbook page bevel
+     z100: label              — page flip click target
+   ============================================================ */
+
+/* --- Background layer --- */
+.catalog-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    border-radius: inherit;
+}
+
+/* --- Page shadow overlay --- */
+.catalog-page-shadow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+}
+
+/* --- Product item container --- */
+.catalog-product {
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+    overflow: visible;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.catalog-product:hover {
+    transform: scale(1.04);
+    filter: brightness(1.08);
+    z-index: 10;
+}
+
+/* --- Frame image (behind product photo, provides colored border) --- */
+.catalog-frame {
+    position: absolute;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    object-fit: contain;
+    z-index: 2;
+    pointer-events: none;
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
+}
+
+/* --- Frame shadow --- */
+.catalog-frame-shadow {
+    position: absolute;
+    inset: -4%;
+    width: 108%;
+    height: 108%;
+    object-fit: contain;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.3;
+    filter: blur(3px);
+}
+
+/* --- Product photo (on top of frame) --- */
+.catalog-product-image {
+    position: absolute;
+    inset: 8%;
+    width: 84%;
+    height: 75%;
+    object-fit: cover;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+/* --- Price splash (starburst + text) --- */
+.catalog-splash {
+    position: absolute;
+    bottom: -8%;
+    right: -12%;
+    width: 50%;
+    height: 45%;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+.catalog-splash-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.catalog-splash-price {
+    position: relative;
+    z-index: 2;
+    font: 900 0.85rem/1 var(--font-impact);
+    color: #fff;
+    text-shadow:
+        1px 1px 0 rgba(0, 0, 0, 0.6),
+        -1px -1px 0 rgba(0, 0, 0, 0.3),
+        0 0 6px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* --- Price tag (when no splash image) --- */
+.catalog-price-tag {
+    position: absolute;
+    bottom: 4%;
+    right: 4%;
+    background: var(--store-price-bg);
+    color: var(--store-red);
+    font: 900 0.65rem/1 var(--font-impact);
+    padding: 3px 8px 4px;
+    border: 2px solid var(--dark-color);
+    border-radius: 2px;
+    z-index: 6;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+}
+
+/* --- Product name label --- */
+.catalog-product-name {
+    position: absolute;
+    bottom: 2%;
+    left: 4%;
+    right: 4%;
+    font: 700 0.4rem/1.15 var(--font-system);
+    color: #fff;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    z-index: 5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* --- Badge ribbon (OFERTA / NUEVO / 2x1) --- */
+.catalog-badge {
+    position: absolute;
+    top: -4%;
+    left: -6%;
+    background: var(--store-red);
+    color: #fff;
+    font: 900 0.45rem/1 var(--font-impact);
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+    z-index: 8;
+    transform: rotate(-12deg);
+    text-transform: uppercase;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.45);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Title text layer --- */
+.catalog-title {
+    position: absolute;
+    z-index: 6;
+    font-family: var(--font-impact);
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow:
+        2px 2px 0 rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    line-height: 1.1;
+}
+
+/* --- Logo image layer --- */
+.catalog-logo {
+    position: absolute;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.catalog-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* ============================================================
    PRODUCT HOTSPOT SYSTEM
    Clickable zones overlaid on catalog pages.
    z-index 101 sits above the label (100) so hotspot clicks

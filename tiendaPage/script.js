@@ -2,7 +2,7 @@
    TIENDA GDLDENOXE — Virtual Store Flipbook Engine
    ============================================================
    Modules (in order):
-     1. Catalog Engine — fetches catalog.json, builds flipbook
+     1. Catalog Engine — fetches catalog.json, builds layered flipbook
      2. Product Modal  — supermarket-style product detail popup
      3. Debug Mode     — hotspot positioning helper (?debug)
      4. Ads System     — periodic ad audio (unchanged)
@@ -15,77 +15,219 @@
 
 /****************************
  * 1. CATALOG ENGINE
- * Reads catalog.json, dynamically generates:
- *   - <input> checkboxes (siblings of #flip_book)
- *   - #flip_book with N .page elements
- *   - Product hotspot overlays on each page face
- *   - Dynamic CSS rules for z-index stacking & flip states
+ * Reads catalog.json, dynamically generates layered page compositions:
+ *   Background → Shadow → Frame/Product Image → Splash + Price → Titles
+ * Each page face is composed from individual asset layers, not flat images.
  * Preserves the original CSS-only checkbox flip mechanism 1:1.
  ****************************/
 
 (() => {
     const CATALOG_URL  = 'catalog.json';
-    const FRONT_SHADE  = 'assets/images/front_page_edge_shading.webp';
-    const BACK_SHADE   = 'assets/images/back_page_edge_shading.webp';
+    const FRONT_SHADE  = 'assets/front_page_edge_shading.webp';
+    const BACK_SHADE   = 'assets/back_page_edge_shading.webp';
 
     const catalogRoot = document.getElementById('catalog-root');
     const dynamicCSS  = document.getElementById('dynamic-flipbook-css');
     if (!catalogRoot || !dynamicCSS) return;
 
-    /* ---------- Hotspot factory ---------- */
+    /* ---------- Layer builders ---------- */
 
-    const createHotspot = (product) => {
-        const div = document.createElement('div');
-        div.className = 'product-hotspot';
-        div.dataset.productId = product.id;
-        div.dataset.product   = JSON.stringify(product);
+    /**
+     * Creates an absolutely-positioned element at given % coords.
+     */
+    const posEl = (tag, className, x, y, w, h) => {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        el.style.position = 'absolute';
+        el.style.left   = x + '%';
+        el.style.top    = y + '%';
+        el.style.width  = w + '%';
+        el.style.height = h + '%';
+        return el;
+    };
 
-        const hs = product.hotspot;
-        div.style.left   = hs.x + '%';
-        div.style.top    = hs.y + '%';
-        div.style.width  = hs.width + '%';
-        div.style.height = hs.height + '%';
+    /**
+     * Build a product item on a page face:
+     *   - Frame image (border/decoration around product)
+     *   - Product photo inside frame
+     *   - Splash (starburst) with price text overlaid
+     *   - Badge ribbon (OFERTA, NUEVO, etc.)
+     *   - Entire zone is clickable → opens modal
+     */
+    const buildProduct = (item, assets) => {
+        const wrapper = posEl('div', 'catalog-product', item.x, item.y, item.width, item.height);
+        wrapper.dataset.productId = item.id;
+        wrapper.style.zIndex = '5';
+        wrapper.style.cursor = 'pointer';
 
-        // Floating price tag
-        if (product.price != null) {
-            const tag = document.createElement('span');
-            tag.className   = 'hotspot-price';
-            tag.textContent = '$' + product.price + ' ' + (product.currency || 'MXN');
-            div.appendChild(tag);
+        // Frame image
+        if (item.frame && assets.frames[item.frame]) {
+            const frameImg = document.createElement('img');
+            frameImg.className = 'catalog-frame';
+            frameImg.src   = assets.frames[item.frame];
+            frameImg.alt   = '';
+            frameImg.loading = 'lazy';
+            wrapper.appendChild(frameImg);
+        }
+
+        // Shadow behind frame
+        if (assets.shadows && assets.shadows.frame) {
+            const shadowImg = document.createElement('img');
+            shadowImg.className = 'catalog-frame-shadow';
+            shadowImg.src   = assets.shadows.frame;
+            shadowImg.alt   = '';
+            shadowImg.loading = 'lazy';
+            wrapper.appendChild(shadowImg);
+        }
+
+        // Product photo
+        if (item.image) {
+            const prodImg = document.createElement('img');
+            prodImg.className = 'catalog-product-image';
+            prodImg.src   = item.image;
+            prodImg.alt   = item.name || '';
+            prodImg.loading = 'lazy';
+            wrapper.appendChild(prodImg);
+        }
+
+        // Splash with price overlay
+        if (item.splash && assets.splashes[item.splash] && item.price != null) {
+            const splashWrap = document.createElement('div');
+            splashWrap.className = 'catalog-splash';
+
+            const splashImg = document.createElement('img');
+            splashImg.className = 'catalog-splash-img';
+            splashImg.src   = assets.splashes[item.splash];
+            splashImg.alt   = '';
+            splashImg.loading = 'lazy';
+            splashWrap.appendChild(splashImg);
+
+            const priceText = document.createElement('span');
+            priceText.className   = 'catalog-splash-price';
+            priceText.textContent = '$' + item.price;
+            splashWrap.appendChild(priceText);
+
+            wrapper.appendChild(splashWrap);
+        } else if (item.price != null) {
+            // Price without splash — simple tag
+            const priceTag = document.createElement('span');
+            priceTag.className   = 'catalog-price-tag';
+            priceTag.textContent = '$' + item.price + ' ' + (item.currency || 'MXN');
+            wrapper.appendChild(priceTag);
+        }
+
+        // Product name label
+        if (item.name) {
+            const nameEl = document.createElement('span');
+            nameEl.className   = 'catalog-product-name';
+            nameEl.textContent = item.name;
+            wrapper.appendChild(nameEl);
         }
 
         // Badge ribbon
-        if (product.badge) {
+        if (item.badge) {
             const badge = document.createElement('span');
-            badge.className   = 'hotspot-badge';
-            badge.textContent = product.badge;
-            div.appendChild(badge);
+            badge.className   = 'catalog-badge';
+            badge.textContent = item.badge;
+            wrapper.appendChild(badge);
         }
 
-        // Click → open product modal (skip in debug mode)
-        div.addEventListener('click', (e) => {
+        // Click → open modal
+        wrapper.addEventListener('click', (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('debug-active')) return;
             if (typeof window.openProductModal === 'function') {
-                window.openProductModal(product);
+                window.openProductModal(item);
             }
         });
 
-        return div;
+        return wrapper;
     };
 
-    /* ---------- Page builder ---------- */
+    /**
+     * Build a title text element on a page face.
+     */
+    const buildTitle = (item) => {
+        const el = posEl('div', 'catalog-title', item.x, item.y, item.width, item.height);
+        el.textContent = item.text || '';
+        el.style.zIndex = '6';
+        if (item.fontSize) el.style.fontSize = item.fontSize;
+        if (item.color)    el.style.color    = item.color;
+        if (item.fontFamily) el.style.fontFamily = item.fontFamily;
+        return el;
+    };
 
-    const buildFace = (faceClass, imgClass, shadingSrc, contentSrc, contentAlt, checkboxId, products) => {
+    /**
+     * Build a logo image element on a page face.
+     */
+    const buildLogo = (item, assets) => {
+        const logoSrc = assets.logos[item.asset];
+        if (!logoSrc) return null;
+        const wrap = posEl('div', 'catalog-logo', item.x, item.y, item.width, item.height);
+        wrap.style.zIndex = '6';
+        const img = document.createElement('img');
+        img.className = 'catalog-logo-img';
+        img.src   = logoSrc;
+        img.alt   = 'GDLDENOXE';
+        img.loading = 'lazy';
+        wrap.appendChild(img);
+        return wrap;
+    };
+
+    /**
+     * Build a single page face (front or back) with layered composition:
+     *  z-order (bottom to top):
+     *    1. Background image (fills entire face)
+     *    2. Shadow overlay
+     *    3. Product items (frame + photo + splash + price)
+     *    4. Titles & logos
+     *    5. Edge shading (flipbook cosmetic)
+     *    6. Label (page flip trigger)
+     */
+    const buildFace = (faceClass, imgClass, shadingSrc, faceData, checkboxId, assets) => {
         const face = document.createElement('div');
         face.className = faceClass;
 
-        // Label — full-page click target for flipping
-        const label = document.createElement('label');
-        label.setAttribute('for', checkboxId);
-        face.appendChild(label);
+        // 1. Background image
+        const bgIdx = faceData.background != null ? faceData.background : 0;
+        const bgSrc = assets.backgrounds[bgIdx % assets.backgrounds.length];
+        const bgImg = document.createElement('img');
+        bgImg.className = 'catalog-bg';
+        bgImg.src       = bgSrc;
+        bgImg.alt       = '';
+        bgImg.loading   = 'lazy';
+        face.appendChild(bgImg);
 
-        // Edge shading overlay
+        // 2. Page shadow overlay
+        if (assets.shadows && assets.shadows.page) {
+            const shadowImg = document.createElement('img');
+            shadowImg.className = 'catalog-page-shadow';
+            shadowImg.src   = assets.shadows.page;
+            shadowImg.alt   = '';
+            shadowImg.loading = 'lazy';
+            face.appendChild(shadowImg);
+        }
+
+        // 3-4. Items (products, titles, logos)
+        if (faceData.items && faceData.items.length) {
+            faceData.items.forEach(item => {
+                let el = null;
+                switch (item.type) {
+                    case 'product':
+                        el = buildProduct(item, assets);
+                        break;
+                    case 'title':
+                        el = buildTitle(item);
+                        break;
+                    case 'logo':
+                        el = buildLogo(item, assets);
+                        break;
+                }
+                if (el) face.appendChild(el);
+            });
+        }
+
+        // 5. Edge shading overlay (flipbook cosmetic)
         const shade = document.createElement('img');
         shade.className = 'edge_shading';
         shade.src       = shadingSrc;
@@ -93,18 +235,10 @@
         shade.loading   = 'lazy';
         face.appendChild(shade);
 
-        // Page content image
-        const img = document.createElement('img');
-        img.className = imgClass;
-        img.src       = contentSrc;
-        img.alt       = contentAlt;
-        img.loading   = 'lazy';
-        face.appendChild(img);
-
-        // Product hotspots
-        if (products && products.length) {
-            products.forEach(p => face.appendChild(createHotspot(p)));
-        }
+        // 6. Label — full-page click target for flipping
+        const label = document.createElement('label');
+        label.setAttribute('for', checkboxId);
+        face.appendChild(label);
 
         return face;
     };
@@ -114,20 +248,17 @@
     const generateDynamicCSS = (N) => {
         let css = '/* Auto-generated: ' + N + ' pages */\n';
 
-        // Default z-index stacking (unflipped)
         for (let i = 1; i <= N; i++) {
             const z = (i === 1) ? N + 3 : N - i + 2;
             css += '#page' + i + ' { z-index: ' + z + '; }\n';
         }
 
-        // Flip states (checked)
         for (let i = 1; i <= N; i++) {
             const z = (i === N) ? N + 4 : i + 2;
             css += '#page' + i + '_checkbox:checked ~ #flip_book #page' + i +
                    ' { transform: rotateY(-180deg); z-index: ' + z + '; }\n';
         }
 
-        // Shift book right when any page is flipped
         const ids = [];
         for (let i = 1; i <= N; i++) ids.push('#page' + i + '_checkbox');
         css += ':is(' + ids.join(', ') + '):checked ~ #flip_book ' +
@@ -139,10 +270,10 @@
     /* ---------- Main build ---------- */
 
     const buildFlipbook = (catalog) => {
-        const { pages, marqueeText } = catalog;
+        const { pages, marqueeText, assets } = catalog;
         const N = pages.length;
 
-        // Update marquee text from JSON
+        // Update marquee text
         if (marqueeText) {
             document.querySelectorAll('.marquee-text').forEach(el => {
                 el.textContent = marqueeText;
@@ -151,7 +282,7 @@
 
         const frag = document.createDocumentFragment();
 
-        // Checkboxes (must precede #flip_book for ~ combinator)
+        // Checkboxes
         for (let i = 1; i <= N; i++) {
             const cb   = document.createElement('input');
             cb.type    = 'checkbox';
@@ -164,29 +295,21 @@
         book.id = 'flip_book';
 
         pages.forEach((page, idx) => {
-            const i = idx + 1;
+            const i    = idx + 1;
             const cbId = 'page' + i + '_checkbox';
 
             const pageDiv = document.createElement('div');
             pageDiv.className = 'page';
             pageDiv.id        = 'page' + i;
 
-            // Front face
             pageDiv.appendChild(
                 buildFace('front_page', 'front_content', FRONT_SHADE,
-                          page.front.image,
-                          page.front.alt || ('Página ' + (i * 2 - 1)),
-                          cbId,
-                          page.front.products)
+                          page.front, cbId, assets)
             );
 
-            // Back face
             pageDiv.appendChild(
                 buildFace('back_page', 'back_content', BACK_SHADE,
-                          page.back.image,
-                          page.back.alt || ('Página ' + (i * 2)),
-                          cbId,
-                          page.back.products)
+                          page.back, cbId, assets)
             );
 
             book.appendChild(pageDiv);
@@ -194,8 +317,6 @@
 
         frag.appendChild(book);
         catalogRoot.appendChild(frag);
-
-        // Inject z-index + flip CSS
         generateDynamicCSS(N);
     };
 
