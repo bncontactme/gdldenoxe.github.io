@@ -9,85 +9,20 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style id="dynamic-flipbook-css">/* Generated dynamically by catalog engine */</style>
     <script src="script.js" defer></script>
 </head>
 
 <body>
     <div id="marquee-bar">
         <div class="marquee-content">
-            <span class="marquee-text">*** BIENVENIDO A LA TIENDA GDLDENOXE *** NUEVOS PRODUCTOS DISPONIBLES *** ENVÍOS A TODO MÉXICO *** SIGUENOS EN NUESTRAS REDES ***</span>
+            <span class="marquee-text">*** BIENVENIDO A LA TIENDA GDLDENOXE ***</span>
         </div>
     </div>
 
     <main>
-        <input type="checkbox" id="page1_checkbox">
-        <input type="checkbox" id="page2_checkbox">
-        <input type="checkbox" id="page3_checkbox">
-        <input type="checkbox" id="page4_checkbox">
-        <input type="checkbox" id="page5_checkbox">
-
-        <div id="flip_book">
-            <div class="page" id="page1">
-                <div class="front_page">
-                    <label for="page1_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/front_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="front_content" src="assets/images/pages/page1.webp" alt="Página 1" loading="lazy">
-                </div>
-                <div class="back_page">
-                    <label for="page1_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/back_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="back_content" src="assets/images/pages/page2.webp" alt="Página 2" loading="lazy">
-                </div>
-            </div>
-            <div class="page" id="page2">
-                <div class="front_page">
-                    <label for="page2_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/front_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="front_content" src="assets/images/pages/page3.webp" alt="Página 3" loading="lazy">
-                </div>
-                <div class="back_page">
-                    <label for="page2_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/back_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="back_content" src="assets/images/pages/page4.webp" alt="Página 4" loading="lazy">
-                </div>
-            </div>
-            <div class="page" id="page3">
-                <div class="front_page">
-                    <label for="page3_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/front_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="front_content" src="assets/images/pages/page5.webp" alt="Página 5" loading="lazy">
-                </div>
-                <div class="back_page">
-                    <label for="page3_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/back_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="back_content" src="assets/images/pages/page6.webp" alt="Página 6" loading="lazy">
-                </div>
-            </div>
-            <div class="page" id="page4">
-                <div class="front_page">
-                    <label for="page4_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/front_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="front_content" src="assets/images/pages/page7.webp" alt="Página 7" loading="lazy">
-                </div>
-                <div class="back_page">
-                    <label for="page4_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/back_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="back_content" src="assets/images/pages/page8.webp" alt="Página 8" loading="lazy">
-                </div>
-            </div>
-            <div class="page" id="page5">
-                <div class="front_page">
-                    <label for="page5_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/front_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="front_content" src="assets/images/pages/page9.webp" alt="Página 9" loading="lazy">
-                </div>
-                <div class="back_page">
-                    <label for="page5_checkbox"></label>
-                    <img class="edge_shading" src="assets/images/back_page_edge_shading.webp" alt="" loading="lazy">
-                    <img class="back_content" src="assets/images/pages/page10.webp" alt="Página 10" loading="lazy">
-                </div>
-            </div>
-        </div>
+        <!-- Checkboxes + #flip_book are generated dynamically from catalog.json -->
+        <div id="catalog-root"></div>
 
         <button id="toggle-mode-btn" aria-label="Cambiar modo">
             <i class="bi bi-moon-stars-fill"></i>
@@ -102,6 +37,34 @@
         </audio>
     </main>
 
+    <!-- Product Detail Modal — 2000s Supermarket Style -->
+    <div id="product-modal" class="modal-hidden" role="dialog" aria-modal="true" aria-label="Detalle de producto">
+        <div class="modal-overlay"></div>
+        <div class="modal-card">
+            <button class="modal-close" aria-label="Cerrar">&times;</button>
+            <div class="modal-header">
+                <span class="modal-header-stars">&#9733; &#9733; &#9733;</span>
+                <span class="modal-header-title">PRODUCTO</span>
+                <span class="modal-header-stars">&#9733; &#9733; &#9733;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <div class="modal-badge"></div>
+                    <img class="modal-product-image" src="" alt="">
+                </div>
+                <div class="modal-info">
+                    <h2 class="modal-product-name"></h2>
+                    <div class="modal-price-starburst">
+                        <span class="modal-price-text"></span>
+                    </div>
+                    <p class="modal-product-description"></p>
+                    <a class="modal-buy-btn" href="#" target="_blank" rel="noopener noreferrer">
+                        &#161;COMPRAR AHORA!
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

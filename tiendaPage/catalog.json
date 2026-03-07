@@ -1,0 +1,98 @@
+{
+    "marqueeText": "*** BIENVENIDO A LA TIENDA GDLDENOXE *** NUEVOS PRODUCTOS DISPONIBLES *** ENVÍOS A TODO MÉXICO *** SIGUENOS EN NUESTRAS REDES ***",
+    "pages": [
+        {
+            "front": {
+                "image": "assets/images/pages/page1.webp",
+                "alt": "Portada",
+                "products": []
+            },
+            "back": {
+                "image": "assets/images/pages/page2.webp",
+                "alt": "Página 2",
+                "products": []
+            }
+        },
+        {
+            "front": {
+                "image": "assets/images/pages/page3.webp",
+                "alt": "Página 3",
+                "products": []
+            },
+            "back": {
+                "image": "assets/images/pages/page4.webp",
+                "alt": "Página 4",
+                "products": [
+                    {
+                        "id": "demo-product-01",
+                        "name": "Camiseta GDLDENOXE Edición Limitada",
+                        "price": 450,
+                        "currency": "MXN",
+                        "description": "Camiseta 100% algodón con diseño exclusivo Guadalajara de Noche. Tallas S, M, L, XL disponibles.",
+                        "image": "assets/images/pages/page4.webp",
+                        "link": "https://example.com/camiseta-gdldenoxe",
+                        "badge": "NUEVO",
+                        "hotspot": { "x": 10, "y": 15, "width": 38, "height": 35 }
+                    },
+                    {
+                        "id": "demo-product-02",
+                        "name": "Sticker Pack GDL",
+                        "price": 120,
+                        "currency": "MXN",
+                        "description": "Pack de 5 stickers holográficos con temática nocturna. Resistentes al agua.",
+                        "image": "assets/images/pages/page4.webp",
+                        "link": "https://example.com/stickers-gdl",
+                        "badge": "OFERTA",
+                        "hotspot": { "x": 55, "y": 15, "width": 38, "height": 35 }
+                    },
+                    {
+                        "id": "demo-product-03",
+                        "name": "Poster Nocturno GDL",
+                        "price": 280,
+                        "currency": "MXN",
+                        "description": "Poster de alta calidad 50x70cm. Impresión en papel couché.",
+                        "image": "assets/images/pages/page4.webp",
+                        "link": "https://example.com/poster-gdl",
+                        "hotspot": { "x": 25, "y": 58, "width": 50, "height": 35 }
+                    }
+                ]
+            }
+        },
+        {
+            "front": {
+                "image": "assets/images/pages/page5.webp",
+                "alt": "Página 5",
+                "products": []
+            },
+            "back": {
+                "image": "assets/images/pages/page6.webp",
+                "alt": "Página 6",
+                "products": []
+            }
+        },
+        {
+            "front": {
+                "image": "assets/images/pages/page7.webp",
+                "alt": "Página 7",
+                "products": []
+            },
+            "back": {
+                "image": "assets/images/pages/page8.webp",
+                "alt": "Página 8",
+                "products": []
+            }
+        },
+        {
+            "front": {
+                "image": "assets/images/pages/page9.webp",
+                "alt": "Página 9",
+                "products": []
+            },
+            "back": {
+                "image": "assets/images/pages/page10.webp",
+                "alt": "Página 10",
+                "products": []
+            }
+        }
+    ]
+}
