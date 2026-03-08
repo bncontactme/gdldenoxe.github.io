@@ -62,7 +62,7 @@
             "back": {
                 "background": 1,
                 "items": [
-                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 3, "width": 65, "height": 13 },
                     {
                         "type": "product", "id": "boxer-1",
                         "name": "BOXER GDLDENOXE #1", "price": 299, "currency": "MXN",
@@ -70,10 +70,10 @@
                         "frame": "tall", "splash": "large", "badge": "NUEVO",
                         "description": "Boxer exclusivo edición Guadalajara De Noche.",
                         "link": "#",
-                        "x": 3, "y": 19, "width": 55, "height": 65
+                        "x": 5, "y": 17, "width": 52, "height": 68
                     },
-                    { "type": "quote", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 56, "y": 26, "width": 42, "height": 28 },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 58, "y": 28, "width": 38, "height": 20, "fontSize": "0.35rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. Imágenes referenciales. www.guadalajaradenoxe.com", "x": 3, "y": 92, "width": 94, "height": 7, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -82,7 +82,7 @@
             "front": {
                 "background": 2,
                 "items": [
-                    { "type": "logo", "asset": "dark", "x": 42, "y": 1, "width": 56, "height": 12 },
+                    { "type": "logo", "asset": "dark", "x": 42, "y": 1, "width": 55, "height": 12 },
                     {
                         "type": "product", "id": "boxer-2",
                         "name": "BOXER GDLDENOXE #2", "price": 169, "currency": "MXN",
@@ -90,9 +90,9 @@
                         "frame": "square-lg", "splash": "medium-1", "badge": "EXCLUSIVO",
                         "description": "Diseño premium con estampado exclusivo.",
                         "link": "#",
-                        "x": 3, "y": 5, "width": 50, "height": 48
+                        "x": 5, "y": 6, "width": 52, "height": 48
                     },
-                    { "type": "title", "text": "HOY EN JUEVES DE TIANGUIS", "x": 50, "y": 3, "width": 48, "height": 22, "fontSize": "1rem", "color": "#FFD700" },
+                    { "type": "title", "text": "HOY EN JUEVES DE TIANGUIS", "x": 50, "y": 5, "width": 48, "height": 18, "fontSize": "0.85rem", "color": "#FFD700" },
                     {
                         "type": "product", "id": "boxer-2b",
                         "name": "BOXER #2 — VISTA ALTERNA", "price": 999, "currency": "MXN",
@@ -100,15 +100,15 @@
                         "frame": "featured-1", "splash": "burst-4",
                         "description": "Vista alternativa del Boxer #2.",
                         "link": "#",
-                        "x": 40, "y": 56, "width": 52, "height": 36
+                        "x": 42, "y": 56, "width": 50, "height": 36
                     },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 93, "width": 94, "height": 6, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 3,
                 "items": [
-                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 3, "width": 65, "height": 13 },
                     {
                         "type": "product", "id": "boxer-3",
                         "name": "BOXER GDLDENOXE #3", "price": 777, "currency": "MXN",
@@ -116,10 +116,10 @@
                         "frame": "featured-2", "splash": "large",
                         "description": "Boxer clásico con el sello Guadalajara De Noche.",
                         "link": "#",
-                        "x": 5, "y": 19, "width": 75, "height": 60
+                        "x": 5, "y": 17, "width": 52, "height": 68
                     },
-                    { "type": "quote", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 55, "y": 62, "width": 40, "height": 26 },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 92, "width": 94, "height": 7, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 58, "y": 28, "width": 38, "height": 20, "fontSize": "0.35rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. www.guadalajaradenoxe.com", "x": 3, "y": 92, "width": 94, "height": 7, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -136,7 +136,7 @@
                         "frame": "featured-3", "splash": "wide", "badge": "OFERTA",
                         "description": "Vista alternativa del Boxer #3.",
                         "link": "#",
-                        "x": 3, "y": 14, "width": 45, "height": 75,
+                        "x": 3, "y": 14, "width": 44, "height": 76,
                         "subtitle": "$220 / Guardaropa"
                     },
                     {
@@ -146,7 +146,7 @@
                         "frame": "square-sm", "splash": "star-1",
                         "description": "Edición premium Guadalajara De Noche.",
                         "link": "#",
-                        "x": 52, "y": 6, "width": 42, "height": 32
+                        "x": 52, "y": 5, "width": 42, "height": 34
                     },
                     {
                         "type": "product", "id": "boxer-5-md",
@@ -155,15 +155,15 @@
                         "frame": "square-lg", "splash": "star-2",
                         "description": "Nuevo diseño urbano Guadalajara De Noche.",
                         "link": "#",
-                        "x": 48, "y": 52, "width": 48, "height": 38
+                        "x": 50, "y": 50, "width": 46, "height": 38
                     },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 93, "width": 94, "height": 6, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 0,
                 "items": [
-                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 3, "width": 65, "height": 13 },
                     {
                         "type": "product", "id": "boxer-4",
                         "name": "BOXER GDLDENOXE #4", "price": 399, "currency": "MXN",
@@ -171,10 +171,10 @@
                         "frame": "tall", "splash": "medium-2", "badge": "PREMIUM",
                         "description": "Edición premium. Tela de alta gama.",
                         "link": "#",
-                        "x": 3, "y": 19, "width": 55, "height": 65
+                        "x": 5, "y": 17, "width": 52, "height": 68
                     },
-                    { "type": "title", "text": "EDICIÓN PREMIUM — SOLO PARA CONOCEDORES", "x": 58, "y": 24, "width": 40, "height": 22, "fontSize": "0.42rem", "color": "#FFD700" },
-                    { "type": "title", "text": "*Aplican restricciones. Envíos a todo México. www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "EDICIÓN PREMIUM — SOLO PARA CONOCEDORES", "x": 58, "y": 22, "width": 38, "height": 20, "fontSize": "0.42rem", "color": "#FFD700" },
+                    { "type": "title", "text": "*Aplican restricciones. Envíos a todo México. www.guadalajaradenoxe.com", "x": 3, "y": 92, "width": 94, "height": 7, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -183,7 +183,7 @@
             "front": {
                 "background": 1,
                 "items": [
-                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 55, "height": 12 },
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 3, "width": 55, "height": 12 },
                     {
                         "type": "product", "id": "boxer-5",
                         "name": "BOXER GDLDENOXE #5", "price": 319, "currency": "MXN",
@@ -191,9 +191,9 @@
                         "frame": "square-lg", "splash": "medium-3", "badge": "NUEVO",
                         "description": "Nuevo diseño Guadalajara De Noche.",
                         "link": "#",
-                        "x": 3, "y": 15, "width": 52, "height": 48
+                        "x": 5, "y": 16, "width": 50, "height": 46
                     },
-                    { "type": "title", "text": "LO NUEVO DE GUADALAJARA DE NOCHE", "x": 52, "y": 5, "width": 46, "height": 20, "fontSize": "0.7rem", "color": "#FFD700" },
+                    { "type": "title", "text": "LO NUEVO DE GUADALAJARA DE NOCHE", "x": 52, "y": 5, "width": 46, "height": 18, "fontSize": "0.65rem", "color": "#FFD700" },
                     {
                         "type": "product", "id": "boxer-5b",
                         "name": "BOXER #5 — VISTA ALTERNA", "price": 319, "currency": "MXN",
@@ -201,98 +201,18 @@
                         "frame": "featured-1", "splash": "medium-4",
                         "description": "Vista alternativa del Boxer #5.",
                         "link": "#",
-                        "x": 40, "y": 56, "width": 52, "height": 36
+                        "x": 42, "y": 56, "width": 50, "height": 36
                     },
-                    { "type": "title", "text": "*Aplican restricciones. Stock limitado. www.guadalajaradenoxe.com", "x": 3, "y": 93, "width": 94, "height": 6, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
+                    { "type": "title", "text": "*Aplican restricciones. Stock limitado. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
-                "background": 2,
-                "items": [
-                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 60, "height": 14 },
-                    {
-                        "type": "product", "id": "leche-1",
-                        "name": "LECHE Ent/Desc. x 1 litro c/u", "price": 666, "currency": "MXN",
-                        "frame": "tall", "splash": "burst-1",
-                        "description": "Leche entera o descremada, 1 litro cada una.",
-                        "link": "#",
-                        "x": 3, "y": 15, "width": 42, "height": 78,
-                        "subtitle": "$220 / Guardaropa"
-                    },
-                    {
-                        "type": "product", "id": "generico-1",
-                        "name": "PRODUCTO GDL", "price": 0, "currency": "MXN",
-                        "frame": "rounded", "splash": "burst-5",
-                        "description": "Producto exclusivo Guadalajara De Noche.",
-                        "link": "#",
-                        "x": 48, "y": 8, "width": 40, "height": 38
-                    },
-                    {
-                        "type": "product", "id": "cafe-molido",
-                        "name": "Café Molido La Virginia x 500g", "price": 999, "currency": "MXN",
-                        "frame": "rounded", "splash": "burst-3",
-                        "description": "Café molido de alta calidad, 500 gramos.",
-                        "link": "#",
-                        "x": 45, "y": 55, "width": 48, "height": 38,
-                        "subtitle": "$888 / Objeto Gdl"
-                    },
-                    { "type": "title", "text": "*Aplican restricciones. Encuentras más productos en www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
-                ]
-            }
-        },
-
-        {
-            "front": {
-                "background": 1,
-                "items": [
-                    { "type": "logo", "asset": "dark", "x": 5, "y": 2, "width": 90, "height": 16 },
-                    {
-                        "type": "product", "id": "queso-cremoso",
-                        "name": "QUESO CREMOSO La Serenísima, el Kilo", "price": 777, "currency": "MXN",
-                        "frame": "featured-2", "splash": "large",
-                        "description": "Queso cremoso La Serenísima, por kilo. Stock: 4 u.",
-                        "link": "#",
-                        "x": 5, "y": 18, "width": 72, "height": 68
-                    },
-                    { "type": "title", "text": "Stock: 4 u", "x": 10, "y": 72, "width": 30, "height": 6, "fontSize": "0.35rem", "color": "#FFFFFF", "fontFamily": "Tahoma, sans-serif" },
-                    { "type": "quote", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 55, "y": 68, "width": 42, "height": 26 },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 93, "width": 94, "height": 6, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
-                ]
-            },
-            "back": {
-                "background": 3,
-                "items": [
-                    { "type": "logo", "asset": "dark", "x": 5, "y": 2, "width": 90, "height": 16 },
-                    {
-                        "type": "product", "id": "queso-cremoso-2",
-                        "name": "QUESO CREMOSO La Serenísima, el Kilo", "price": 777, "currency": "MXN",
-                        "frame": "tall", "splash": "burst-2",
-                        "description": "Queso cremoso La Serenísima, por kilo. Stock: 4 u.",
-                        "link": "#",
-                        "x": 8, "y": 18, "width": 60, "height": 68
-                    },
-                    { "type": "title", "text": "Stock: 4 u", "x": 10, "y": 72, "width": 30, "height": 6, "fontSize": "0.35rem", "color": "#FFFFFF", "fontFamily": "Tahoma, sans-serif" },
-                    { "type": "quote", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 50, "y": 62, "width": 46, "height": 30 },
-                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 93, "width": 94, "height": 6, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
-                ]
-            }
-        },
-
-        {
-            "front": {
                 "background": 2,
                 "items": [
                     { "type": "logo", "asset": "dark", "x": 10, "y": 15, "width": 80, "height": 20 },
                     { "type": "title", "text": "GRACIAS POR TU VISITA", "x": 8, "y": 40, "width": 84, "height": 12, "fontSize": "1.2rem", "color": "#CC0000" },
                     { "type": "title", "text": "SÍGUENOS EN NUESTRAS REDES PARA MÁS PRODUCTOS EXCLUSIVOS", "x": 10, "y": 55, "width": 80, "height": 14, "fontSize": "0.5rem", "color": "#FFFFFF" },
                     { "type": "title", "text": "WWW.GUADALAJARADENOXE.COM", "x": 12, "y": 74, "width": 76, "height": 8, "fontSize": "0.55rem", "color": "#FFD700", "fontFamily": "Tahoma, sans-serif" }
-                ]
-            },
-            "back": {
-                "background": 0,
-                "items": [
-                    { "type": "logo", "asset": "dark", "x": 10, "y": 25, "width": 80, "height": 22 },
-                    { "type": "quote", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 22, "y": 55, "width": 56, "height": 35 }
                 ]
             }
         }

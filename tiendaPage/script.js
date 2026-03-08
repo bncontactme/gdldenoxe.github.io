@@ -80,14 +80,18 @@
             wrapper.appendChild(shadowImg);
         }
 
-        // Product photo
+        // Product photo — wrapped in a clip container so overflow is hidden
         if (item.image) {
+            const clipDiv = document.createElement('div');
+            clipDiv.className = 'catalog-image-clip';
+
             const prodImg = document.createElement('img');
             prodImg.className = 'catalog-product-image';
             prodImg.src   = item.image;
             prodImg.alt   = item.name || '';
             prodImg.loading = 'lazy';
-            wrapper.appendChild(prodImg);
+            clipDiv.appendChild(prodImg);
+            wrapper.appendChild(clipDiv);
         }
 
         // Splash with price overlay
@@ -137,8 +141,6 @@
             const sub = document.createElement('span');
             sub.className   = 'catalog-subtitle';
             sub.textContent = item.subtitle;
-            sub.style.bottom = '8%';
-            sub.style.left   = '4%';
             wrapper.appendChild(sub);
         }
 
@@ -183,21 +185,30 @@
 
         const text = document.createElement('div');
         text.className = 'catalog-quote-text';
-        // Format: "ES GRATIS" bold, rest normal
-        const fullText = item.text || '';
-        const parts = fullText.split(/(?<=ES GRATIS )/i);
-        if (parts.length > 1) {
-            const bold = document.createElement('strong');
-            bold.textContent = parts[0];
-            bold.style.fontSize = '120%';
-            bold.style.display = 'block';
-            bold.style.color = '#FF3333';
-            text.appendChild(bold);
-            const rest = document.createTextNode(parts.slice(1).join(''));
-            text.appendChild(rest);
-        } else {
-            text.textContent = fullText;
-        }
+        // Format the quote with styled segments matching the reference:
+        // "ES GRATIS" bold red, "disfrutar de las cosas que" white,
+        // "DE NOCHE" bold white, "NO TIENEN PRECIO.." red
+
+        const esGratis = document.createElement('strong');
+        esGratis.textContent = 'ES GRATIS';
+        esGratis.style.cssText = 'font-size:130%;display:block;color:#FF3333;margin-bottom:2px;';
+
+        const middle = document.createElement('span');
+        middle.textContent = 'disfrutar de las cosas que';
+        middle.style.cssText = 'display:block;font-weight:400;font-size:85%;';
+
+        const deNoche = document.createElement('strong');
+        deNoche.textContent = 'DE NOCHE';
+        deNoche.style.cssText = 'display:block;font-size:120%;margin:1px 0;';
+
+        const noTienen = document.createElement('span');
+        noTienen.textContent = 'NO TIENEN PRECIO..';
+        noTienen.style.cssText = 'display:block;color:#FF3333;font-size:85%;';
+
+        text.appendChild(esGratis);
+        text.appendChild(middle);
+        text.appendChild(deNoche);
+        text.appendChild(noTienen);
         inner.appendChild(text);
 
         wrap.appendChild(inner);
