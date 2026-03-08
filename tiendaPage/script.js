@@ -103,23 +103,26 @@
         ]
     };
 
-    /* Template D: 2 products diagonal (tianguis / market day layout)
-       Matches the page3.webp reference: large top-left + small bottom-right,
-       with "Hoy En Jueves de Tianguis" starburst overlapping top-right. */
+    /* Template D: 2 products diagonal layout
+       First image top-left (larger), second bottom-right (smaller),
+       both 4:3 aspect ratio, text to the side. */
     const TEMPLATE_D = {
         name: '2-diagonal',
         slots: [
             {
-                x: 2, y: 8, width: 62, height: 52,
-                framePool: 'large', splashPool: 'large',
-                splashX: 30, splashY: 52, splashW: 52, splashH: 38,
-                shadowOnly: true
+                x: 3, y: 14, width: 58, height: 44,
+                framePool: 'large', splashPool: 'small',
+                splashX: 72, splashY: -8, splashW: 36, splashH: 32,
+                shadowOnly: true,
+                textSide: 'left'
             },
             {
-                x: 36, y: 62, width: 58, height: 32,
+                x: 38, y: 56, width: 38, height: 32,
                 framePool: 'medium', splashPool: 'small',
-                splashX: 50, splashY: 38, splashW: 46, splashH: 50,
-                shadowOnly: true
+                splashX: 68, splashY: -14, splashW: 38, splashH: 40,
+                shadowOnly: true,
+                squareImage: true,
+                textSide: 'left'
             }
         ],
         decoration: 'tianguis'
@@ -158,6 +161,7 @@
         if (slot.shadowOnly) {
             // No decorative frame; product gets a stretched drop-shadow via CSS
             wrapper.classList.add('catalog-product-shadow-only');
+            if (slot.squareImage) wrapper.classList.add('catalog-product-square');
         } else if (assets.frames[frame]) {
             const frameImg = document.createElement('img');
             frameImg.className = 'catalog-frame';
@@ -180,8 +184,8 @@
             imageArea.appendChild(clipDiv);
         }
 
-        // Price splash (skip for shadowOnly / Template D slots)
-        if (!slot.shadowOnly && product.price != null && assets.splashes[splash]) {
+        // Price splash — for shadowOnly slots, place in corner; for others, normal position
+        if (product.price != null && assets.splashes[splash]) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
             if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
@@ -205,7 +209,7 @@
             priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
             splashWrap.appendChild(priceC);
             imageArea.appendChild(splashWrap);
-        } else if (!slot.shadowOnly && product.price != null) {
+        } else if (product.price != null) {
             // Standalone price (no splash image available)
             const priceWrap = document.createElement('div');
             priceWrap.className = 'catalog-price-standalone';
@@ -241,6 +245,7 @@
         if (product.name) {
             const nameEl = document.createElement('span');
             nameEl.className = 'catalog-product-name';
+            if (slot.textSide) nameEl.classList.add('catalog-text-' + slot.textSide);
             nameEl.textContent = product.name;
             wrapper.appendChild(nameEl);
         }
@@ -249,6 +254,7 @@
         if (product.stock || product.info) {
             const infoEl = document.createElement('div');
             infoEl.className = 'catalog-product-info';
+            if (slot.textSide) infoEl.classList.add('catalog-text-' + slot.textSide);
             const lines = [];
             if (product.info) lines.push(product.info);
             if (product.stock) lines.push('Stock: ' + product.stock);
