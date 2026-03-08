@@ -410,14 +410,9 @@
         const bgSrc = assets.backgrounds[0];
         const face = buildFaceShell('front_page', FRONT_SHADE, bgSrc, checkboxId, assets);
 
-        const logo = buildLogo(assets, 'dark', 5, 5, 90, 16);
+        // Logo centered on the page (matching original PDF cover 1:1)
+        const logo = buildLogo(assets, 'dark', 15, 38, 70, 16);
         if (logo) face.appendChild(logo);
-
-        if (cover.title)    face.appendChild(buildTitle(cover.title, 10, 30, 80, 14, '1.8rem', '#CC0000'));
-        if (cover.subtitle) face.appendChild(buildTitle(cover.subtitle, 15, 48, 70, 8, '0.9rem', '#FFFFFF'));
-        if (cover.tagline)  face.appendChild(buildTitle(cover.tagline, 12, 60, 76, 8, '1.1rem', '#FFD700'));
-        if (cover.footer)   face.appendChild(buildTitle(cover.footer, 15, 72, 70, 6, '0.5rem', '#FFFFFF'));
-        if (cover.url)      face.appendChild(buildTitle(cover.url, 15, 82, 70, 6, '0.4rem', '#FFFFFF', 'Tahoma, sans-serif'));
 
         return face;
     };
