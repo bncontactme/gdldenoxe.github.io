@@ -48,10 +48,14 @@
 
     /**
      * Build a product item on a page face:
+     *   - Optional background color fill inside frame
      *   - Frame image (border/decoration around product)
-     *   - Product photo inside frame
+     *   - Product photo inside frame (or bgColor fill)
      *   - Splash (starburst) with price text overlaid
+     *   - OR standalone price (no splash)
      *   - Badge ribbon (OFERTA, NUEVO, etc.)
+     *   - Subtitle (secondary price label)
+     *   - Product name + info below frame
      *   - Entire zone is clickable → opens modal
      */
     const buildProduct = (item, assets) => {
@@ -64,6 +68,14 @@
         // Image area — contains frame, photo, splash, badge, subtitle
         const imageArea = document.createElement('div');
         imageArea.className = 'catalog-image-area';
+
+        // Background color fill inside frame (for colored product areas)
+        if (item.bgColor) {
+            const bgFill = document.createElement('div');
+            bgFill.className = 'catalog-product-bgfill';
+            bgFill.style.backgroundColor = item.bgColor;
+            imageArea.appendChild(bgFill);
+        }
 
         // Frame image
         if (item.frame && assets.frames[item.frame]) {
@@ -99,10 +111,42 @@
             imageArea.appendChild(clipDiv);
         }
 
+        // --- Price rendering ---
+        // Helper: build the price text container ($amount + cents)
+        const buildPriceElements = (fontSize) => {
+            const container = document.createElement('div');
+            container.className = 'catalog-price-container';
+            if (fontSize) container.style.fontSize = fontSize;
+
+            const dollar = document.createElement('span');
+            dollar.className = 'catalog-price-dollar';
+            dollar.textContent = '$';
+            container.appendChild(dollar);
+
+            const amount = document.createElement('span');
+            amount.className = 'catalog-price-amount';
+            amount.textContent = String(item.price);
+            container.appendChild(amount);
+
+            const cents = document.createElement('span');
+            cents.className = 'catalog-price-cents';
+            cents.textContent = item.cents != null ? item.cents : '00';
+            container.appendChild(cents);
+
+            return container;
+        };
+
         // Splash with price overlay — inside image area
         if (item.splash && assets.splashes[item.splash] && item.price != null) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
+
+            // Custom splash position
+            if (item.splashX != null) splashWrap.style.left   = item.splashX + '%';
+            if (item.splashY != null) splashWrap.style.top    = item.splashY + '%';
+            if (item.splashY != null) splashWrap.style.bottom = 'auto';
+            if (item.splashW != null) splashWrap.style.width  = item.splashW + '%';
+            if (item.splashH != null) splashWrap.style.height = item.splashH + '%';
 
             const splashImg = document.createElement('img');
             splashImg.className = 'catalog-splash-img';
@@ -111,18 +155,23 @@
             splashImg.loading = 'lazy';
             splashWrap.appendChild(splashImg);
 
-            const priceText = document.createElement('span');
-            priceText.className   = 'catalog-splash-price';
-            priceText.textContent = '$' + item.price;
-            splashWrap.appendChild(priceText);
+            const priceEl = buildPriceElements(item.priceSize || null);
+            splashWrap.appendChild(priceEl);
 
             imageArea.appendChild(splashWrap);
         } else if (item.price != null) {
-            // Price without splash — simple tag
-            const priceTag = document.createElement('span');
-            priceTag.className   = 'catalog-price-tag';
-            priceTag.textContent = '$' + item.price + ' ' + (item.currency || 'MXN');
-            imageArea.appendChild(priceTag);
+            // Standalone price (no splash) — big red text with black stroke
+            const priceWrap = document.createElement('div');
+            priceWrap.className = 'catalog-price-standalone';
+
+            // Custom position
+            if (item.priceX != null) priceWrap.style.left   = item.priceX + '%';
+            if (item.priceY != null) priceWrap.style.top    = item.priceY + '%';
+            if (item.priceY != null) priceWrap.style.bottom = 'auto';
+
+            const priceEl = buildPriceElements(item.priceSize || null);
+            priceWrap.appendChild(priceEl);
+            imageArea.appendChild(priceWrap);
         }
 
         // Badge ribbon — inside image area
@@ -151,7 +200,7 @@
             wrapper.appendChild(nameEl);
         }
 
-        // Product info text (stock, weight, description below name)
+        // Product info text (brand, weight, stock — below name)
         if (item.stock || item.weight || item.info) {
             const infoEl = document.createElement('div');
             infoEl.className = 'catalog-product-info';
@@ -208,6 +257,31 @@
         if (item.fontSize) el.style.fontSize = item.fontSize;
         if (item.color) el.style.color = item.color;
         if (item.fontFamily) el.style.fontFamily = item.fontFamily;
+        return el;
+    };
+
+    /**
+     * Build a promotional splash — a positioned decorative image element
+     * (e.g., "PRECIOS DERRETIDOS", "Si pagas MAS...", "Hoy En Jueves de Tianguis")
+     */
+    const buildPromoSplash = (item, assets) => {
+        const el = posEl('div', 'catalog-promo-splash', item.x, item.y, item.width, item.height);
+        el.style.zIndex = item.zIndex || '7';
+
+        if (item.asset && assets.splashes[item.asset]) {
+            const img = document.createElement('img');
+            img.src = assets.splashes[item.asset];
+            img.alt = item.alt || '';
+            img.loading = 'lazy';
+            el.appendChild(img);
+        } else if (item.image) {
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.alt = item.alt || '';
+            img.loading = 'lazy';
+            el.appendChild(img);
+        }
+
         return el;
     };
 
@@ -330,6 +404,9 @@
                         break;
                     case 'promo':
                         el = buildPromo(item);
+                        break;
+                    case 'promoSplash':
+                        el = buildPromoSplash(item, assets);
                         break;
                 }
                 if (el) face.appendChild(el);
@@ -535,7 +612,7 @@
         imgEl.alt  = product.name  || '';
         nameEl.textContent  = product.name || '';
         priceEl.textContent = (product.price != null)
-            ? ('$' + product.price + ' ' + (product.currency || 'MXN'))
+            ? ('$' + product.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN'))
             : '';
         descEl.textContent = product.description || '';
 

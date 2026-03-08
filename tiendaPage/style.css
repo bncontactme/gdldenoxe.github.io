@@ -23,6 +23,7 @@
     --xp-blue-lighter: #c6d9f1;
     --xp-navy: #000080;
     --font-system: Tahoma, 'MS Sans Serif', sans-serif;
+    --font-roboto: 'Roboto Condensed', Tahoma, 'Arial Narrow', sans-serif;
 
     /* Supermarket / Store palette */
     --store-red: #CC0000;
@@ -34,6 +35,9 @@
     --store-green: #00AA00;
     --store-price-bg: #FFEE00;
     --font-impact: Impact, 'Arial Black', Tahoma, sans-serif;
+    --font-price: Impact, 'Arial Black', sans-serif;
+    --price-red: #CC0000;
+    --price-stroke: #000000;
 }
 
 /* GENERAL */
@@ -289,8 +293,8 @@ input[type="checkbox"] { display: none; }
 }
 
 .catalog-product:hover {
-    transform: scale(1.03);
-    filter: brightness(1.05);
+    transform: scale(1.02);
+    filter: brightness(1.04);
     z-index: 102;
 }
 
@@ -406,13 +410,13 @@ input[type="checkbox"] { display: none; }
     display: block;
 }
 
-/* --- Price splash (starburst + text) — stays inside image area --- */
+/* --- Price splash (starburst + price) — inside image area --- */
 .catalog-splash {
     position: absolute;
     bottom: 2%;
-    right: 2%;
-    width: 42%;
-    height: 38%;
+    left: 2%;
+    width: 48%;
+    height: 42%;
     z-index: 6;
     display: grid;
     place-items: center;
@@ -428,20 +432,75 @@ input[type="checkbox"] { display: none; }
     object-fit: contain;
 }
 
-.catalog-splash-price {
+/* --- Price text container (works inside splash or standalone) --- */
+.catalog-price-container {
     position: relative;
     z-index: 2;
-    font: 900 1rem/1 var(--font-impact);
-    color: #fff;
-    text-shadow:
-        1px 1px 0 rgba(0, 0, 0, 0.7),
-        -1px -1px 0 rgba(0, 0, 0, 0.4),
-        0 0 6px rgba(0, 0, 0, 0.4);
-    text-align: center;
-    letter-spacing: 0.5px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
 }
 
-/* --- Price tag (when no splash image) — inside image area --- */
+.catalog-price-dollar {
+    font: italic 900 0.75em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 1px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+    margin-right: 0px;
+    align-self: flex-start;
+}
+
+.catalog-price-amount {
+    font: italic 900 1em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 1.5px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+}
+
+.catalog-price-cents {
+    font: italic 900 0.42em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 0.8px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        1px 1px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.5);
+    vertical-align: super;
+    margin-left: 1px;
+    margin-top: 0;
+}
+
+/* Splash-based price: white text on dark splash, or red on bright splash */
+.catalog-splash .catalog-price-container {
+    font-size: 1.1rem;
+}
+
+/* Standalone price (no splash behind it) */
+.catalog-price-standalone {
+    position: absolute;
+    bottom: 8%;
+    left: 4%;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.catalog-price-standalone .catalog-price-container {
+    font-size: 1.6rem;
+}
+
+/* --- Price tag (simple fallback — inside image area) --- */
 .catalog-price-tag {
     position: absolute;
     bottom: 4%;
@@ -457,33 +516,62 @@ input[type="checkbox"] { display: none; }
     white-space: nowrap;
 }
 
+/* --- Product background fill (solid color inside frame) --- */
+.catalog-product-bgfill {
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 95%;
+    border-radius: 6px;
+    z-index: 1;
+}
+
+/* Per-frame bgfill adjustments */
+[data-frame="tall"] .catalog-product-bgfill {
+    top: 1.5%; left: 3%; width: 94%; height: 96%; border-radius: 8px;
+}
+[data-frame="square-lg"] .catalog-product-bgfill {
+    top: 2%; left: 2%; width: 96%; height: 95%; border-radius: 6px;
+}
+[data-frame="featured-1"] .catalog-product-bgfill {
+    top: 2.5%; left: 2.5%; width: 95%; height: 94%; border-radius: 8px;
+}
+[data-frame="featured-2"] .catalog-product-bgfill,
+[data-frame="featured-3"] .catalog-product-bgfill {
+    top: 2%; left: 2%; width: 96%; height: 95%; border-radius: 6px;
+}
+[data-frame="rounded"] .catalog-product-bgfill {
+    top: 4%; left: 4%; width: 92%; height: 90%; border-radius: 14px;
+}
+
 /* --- Product name label (flows below image area) --- */
 .catalog-product-name {
     flex-shrink: 0;
-    padding: 1px 3%;
-    font: 700 0.38rem/1.15 var(--font-system);
-    color: #fff;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    padding: 1px 3% 0;
+    font: 700 0.38rem/1.15 var(--font-roboto);
+    color: #111;
+    text-align: left;
+    text-shadow: none;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     z-index: 7;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    max-height: 1.2em;
+    max-height: 1.4em;
 }
 
 /* --- Badge ribbon (OFERTA / NUEVO / 2x1) — inside image area --- */
 .catalog-badge {
     position: absolute;
-    top: 2%;
-    left: 2%;
+    top: 4%;
+    left: 4%;
     background: var(--store-red);
     color: #fff;
-    font: 900 0.45rem/1 var(--font-impact);
-    padding: 3px 8px;
+    font: 900 0.42rem/1 var(--font-impact);
+    padding: 2px 7px 3px;
     border-radius: 2px;
     letter-spacing: 0.5px;
     z-index: 8;
@@ -515,17 +603,18 @@ input[type="checkbox"] { display: none; }
 /* --- Subtitle / secondary price label — inside image area --- */
 .catalog-subtitle {
     position: absolute;
-    bottom: 4%;
-    left: 3%;
-    z-index: 7;
-    font: 700 0.28rem/1.2 var(--font-system);
-    color: #fff;
-    background: rgba(0, 80, 0, 0.85);
-    padding: 2px 6px;
+    bottom: 3%;
+    right: 3%;
+    z-index: 8;
+    font: 700 0.22rem/1.2 var(--font-roboto);
+    color: #111;
+    background: #FFEE00;
+    padding: 2px 6px 2px 5px;
     border-radius: 2px;
     text-align: center;
     pointer-events: none;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
 }
 
 /* --- "ES GRATIS" decorative starburst quote --- */
@@ -563,23 +652,29 @@ input[type="checkbox"] { display: none; }
 .catalog-quote-text {
     position: relative;
     z-index: 2;
-    font: 900 0.32rem/1.3 var(--font-impact);
+    font: 900 0.32rem/1.2 var(--font-impact);
     color: #fff;
     text-align: center;
-    padding: 18%;
+    padding: 16%;
+    letter-spacing: 0.5px;
+}
+
+.catalog-quote-text strong {
+    font-family: var(--font-impact);
+    letter-spacing: 1px;
 }
 
 /* --- Product info text (flows below name) --- */
 .catalog-product-info {
     flex-shrink: 0;
-    padding: 0 4%;
-    font: 700 0.3rem/1.3 var(--font-system);
-    color: #fff;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+    padding: 0 3%;
+    font: 400 0.28rem/1.25 var(--font-roboto);
+    color: #222;
+    text-align: left;
+    text-shadow: none;
     z-index: 7;
     pointer-events: none;
-    max-height: 2em;
+    max-height: 2.2em;
     overflow: hidden;
 }
 
@@ -587,15 +682,15 @@ input[type="checkbox"] { display: none; }
 .catalog-disclaimer {
     position: absolute;
     z-index: 7;
-    font: 400 0.2rem/1.3 var(--font-system);
-    color: #333;
+    font: italic 400 0.17rem/1.2 var(--font-roboto);
+    color: #444;
     text-shadow: none;
     pointer-events: none;
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
     text-align: left;
-    line-height: 1.3;
+    line-height: 1.2;
     text-transform: none;
     letter-spacing: 0;
 }
@@ -604,7 +699,7 @@ input[type="checkbox"] { display: none; }
 .catalog-promo {
     position: absolute;
     z-index: 6;
-    font: 900 0.45rem/1.2 var(--font-impact);
+    font: 900 0.45rem/1.15 var(--font-impact);
     color: var(--store-yellow);
     text-align: center;
     text-transform: uppercase;
@@ -617,6 +712,23 @@ input[type="checkbox"] { display: none; }
     justify-content: center;
     pointer-events: none;
     line-height: 1.15;
+}
+
+/* --- Promo image splash (decorative full-element image) --- */
+.catalog-promo-splash {
+    position: absolute;
+    z-index: 6;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.catalog-promo-splash img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.35));
 }
 
 /* --- Logo image layer --- */
