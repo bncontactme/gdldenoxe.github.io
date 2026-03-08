@@ -350,6 +350,33 @@ input[type="checkbox"] { display: none; }
     text-align: right;
 }
 
+/* Row layout: text to the left of the image */
+.catalog-text-left-of-image {
+    position: absolute;
+    right: 105%;
+    bottom: 0;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    z-index: 7;
+    pointer-events: none;
+}
+
+.catalog-text-left-of-image .catalog-product-name {
+    padding: 0;
+    text-align: right;
+    font-size: 0.4rem;
+}
+
+.catalog-text-left-of-image .catalog-product-info {
+    padding: 0;
+    text-align: right;
+    font-size: 0.28rem;
+}
+
 /* --- Image clip container — crops photo ON TOP of frame --- */
 /* Default clip (fallback for unknown frame types) */
 .catalog-image-clip {

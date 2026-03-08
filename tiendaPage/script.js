@@ -117,12 +117,12 @@
                 textSide: 'left'
             },
             {
-                x: 56, y: 50, width: 36, height: 35,
+                x: 50, y: 58, width: 44, height: 28,
                 framePool: 'medium', splashPool: 'small',
                 splashX: 68, splashY: -10, splashW: 36, splashH: 36,
                 shadowOnly: true,
                 squareImage: true,
-                textSide: 'right'
+                textLayout: 'left-of-image'
             }
         ]
     };
@@ -259,6 +259,17 @@
             if (product.stock) lines.push('Stock: ' + product.stock);
             infoEl.innerHTML = lines.join('<br>');
             wrapper.appendChild(infoEl);
+        }
+
+        // If textLayout is 'left-of-image', move name+info to an absolute container to the left
+        if (slot.textLayout === 'left-of-image') {
+            const textBlock = document.createElement('div');
+            textBlock.className = 'catalog-text-left-of-image';
+            const nameEl = wrapper.querySelector('.catalog-product-name');
+            const infoEl = wrapper.querySelector('.catalog-product-info');
+            if (nameEl) textBlock.appendChild(nameEl);
+            if (infoEl) textBlock.appendChild(infoEl);
+            wrapper.appendChild(textBlock);
         }
 
         // Click → modal
