@@ -112,12 +112,14 @@
             {
                 x: 2, y: 8, width: 62, height: 52,
                 framePool: 'large', splashPool: 'large',
-                splashX: 30, splashY: 52, splashW: 52, splashH: 38
+                splashX: 30, splashY: 52, splashW: 52, splashH: 38,
+                shadowOnly: true
             },
             {
                 x: 36, y: 62, width: 58, height: 32,
                 framePool: 'medium', splashPool: 'small',
-                splashX: 50, splashY: 38, splashW: 46, splashH: 50
+                splashX: 50, splashY: 38, splashW: 46, splashH: 50,
+                shadowOnly: true
             }
         ],
         decoration: 'tianguis'
@@ -152,8 +154,11 @@
         const imageArea = document.createElement('div');
         imageArea.className = 'catalog-image-area';
 
-        // Frame image
-        if (assets.frames[frame]) {
+        // Frame image (or no frame for template D — shadow only via CSS)
+        if (slot.shadowOnly) {
+            // No decorative frame; product gets a stretched drop-shadow via CSS
+            wrapper.classList.add('catalog-product-shadow-only');
+        } else if (assets.frames[frame]) {
             const frameImg = document.createElement('img');
             frameImg.className = 'catalog-frame';
             frameImg.src = assets.frames[frame];
@@ -175,8 +180,8 @@
             imageArea.appendChild(clipDiv);
         }
 
-        // Price splash
-        if (product.price != null && assets.splashes[splash]) {
+        // Price splash (skip for shadowOnly / Template D slots)
+        if (!slot.shadowOnly && product.price != null && assets.splashes[splash]) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
             if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
@@ -200,7 +205,7 @@
             priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
             splashWrap.appendChild(priceC);
             imageArea.appendChild(splashWrap);
-        } else if (product.price != null) {
+        } else if (!slot.shadowOnly && product.price != null) {
             // Standalone price (no splash image available)
             const priceWrap = document.createElement('div');
             priceWrap.className = 'catalog-price-standalone';
@@ -379,16 +384,6 @@
         bgImg.loading = 'lazy';
         face.appendChild(bgImg);
 
-        // Page shadow
-        if (assets.shadows && assets.shadows.page) {
-            const shadowImg = document.createElement('img');
-            shadowImg.className = 'catalog-page-shadow';
-            shadowImg.src = assets.shadows.page;
-            shadowImg.alt = '';
-            shadowImg.loading = 'lazy';
-            face.appendChild(shadowImg);
-        }
-
         // Edge shading
         const shade = document.createElement('img');
         shade.className = 'edge_shading';
@@ -510,6 +505,16 @@
     const buildContentFace = (faceData, faceClass, shadingSrc, checkboxId, assets, faceIndex) => {
         const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
 
+        // Page shadow — only for Template D, stretched 40% larger
+        if (faceData.template === TEMPLATE_D && assets.shadows && assets.shadows.page) {
+            const shadowImg = document.createElement('img');
+            shadowImg.className = 'catalog-page-shadow catalog-page-shadow-stretched';
+            shadowImg.src = assets.shadows.page;
+            shadowImg.alt = '';
+            shadowImg.loading = 'lazy';
+            face.appendChild(shadowImg);
+        }
+
         // Logo top-left
         const logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
         if (logo) face.appendChild(logo);
@@ -524,10 +529,7 @@
             face.appendChild(buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators));
         });
 
-        // Template-specific decorations
-        if (faceData.template.decoration === 'tianguis') {
-            face.appendChild(buildTianguisHeader(46, 2, 52, 24));
-        }
+        // Template-specific decorations (tianguis header removed)
 
         // Disclaimer
         face.appendChild(buildDisclaimer(3, 93, 94, 6));
