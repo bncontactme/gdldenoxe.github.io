@@ -117,9 +117,10 @@
                 splashX: 60, splashY: -2, splashW: 42, splashH: 36
             },
             {
-                x: 34, y: 52, width: 62, height: 40,
+                x: 50, y: 54, width: 48, height: 34,
                 framePool: 'medium', splashPool: 'medium',
-                splashX: -4, splashY: -2, splashW: 40, splashH: 36,
+                splashX: -6, splashY: -6, splashW: 38, splashH: 34,
+                squareImage: true,
                 textLayout: 'left-of-image'
             }
         ]
