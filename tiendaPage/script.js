@@ -103,7 +103,27 @@
         ]
     };
 
-    const TEMPLATES = [TEMPLATE_A, TEMPLATE_B, TEMPLATE_C];
+    /* Template D: 2 products diagonal (tianguis / market day layout)
+       Matches the page3.webp reference: large top-left + small bottom-right,
+       with "Hoy En Jueves de Tianguis" starburst overlapping top-right. */
+    const TEMPLATE_D = {
+        name: '2-diagonal',
+        slots: [
+            {
+                x: 2, y: 8, width: 62, height: 52,
+                framePool: 'large', splashPool: 'large',
+                splashX: 30, splashY: 52, splashW: 52, splashH: 38
+            },
+            {
+                x: 36, y: 62, width: 58, height: 32,
+                framePool: 'medium', splashPool: 'small',
+                splashX: 50, splashY: 38, splashW: 46, splashH: 50
+            }
+        ],
+        decoration: 'tianguis'
+    };
+
+    const TEMPLATES = [TEMPLATE_A, TEMPLATE_B, TEMPLATE_C, TEMPLATE_D];
 
     /* ── DOM helpers ── */
 
@@ -243,13 +263,50 @@
         return wrapper;
     };
 
+    /* ── Build tianguis promotional header ── */
+
+    const buildTianguisHeader = (x, y, w, h) => {
+        const wrap = posEl('div', 'catalog-tianguis-header', x, y, w, h);
+        wrap.style.zIndex = '140';
+        const inner = document.createElement('div');
+        inner.className = 'catalog-tianguis-inner';
+
+        // Yellow starburst background
+        const bg = document.createElement('div');
+        bg.className = 'catalog-tianguis-bg';
+        inner.appendChild(bg);
+
+        // Text lines
+        const text = document.createElement('div');
+        text.className = 'catalog-tianguis-text';
+
+        const line1 = document.createElement('span');
+        line1.textContent = 'Hoy En';
+        line1.className = 'catalog-tianguis-line';
+
+        const line2 = document.createElement('span');
+        line2.textContent = 'Jueves de';
+        line2.className = 'catalog-tianguis-line';
+
+        const line3 = document.createElement('span');
+        line3.textContent = 'Tianguis';
+        line3.className = 'catalog-tianguis-line catalog-tianguis-accent';
+
+        text.appendChild(line1);
+        text.appendChild(line2);
+        text.appendChild(line3);
+        inner.appendChild(text);
+        wrap.appendChild(inner);
+        return wrap;
+    };
+
     /* ── Build decorative elements ── */
 
     const buildLogo = (assets, variant, x, y, w, h) => {
         const logoSrc = assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
-        wrap.style.zIndex = '6';
+        wrap.style.zIndex = '150';
         const img = document.createElement('img');
         img.className = 'catalog-logo-img';
         img.src = logoSrc;
@@ -262,7 +319,7 @@
     const buildTitle = (text, x, y, w, h, fontSize, color, fontFamily) => {
         const el = posEl('div', 'catalog-title', x, y, w, h);
         el.textContent = text;
-        el.style.zIndex = '6';
+        el.style.zIndex = '130';
         if (fontSize) el.style.fontSize = fontSize;
         if (color) el.style.color = color;
         if (fontFamily) el.style.fontFamily = fontFamily;
@@ -277,7 +334,7 @@
 
     const buildQuote = (x, y, w, h) => {
         const wrap = posEl('div', 'catalog-quote', x, y, w, h);
-        wrap.style.zIndex = '7';
+        wrap.style.zIndex = '130';
         const inner = document.createElement('div');
         inner.className = 'catalog-quote-inner';
         const bg = document.createElement('div');
@@ -378,8 +435,6 @@
             let tmpl;
             if (remaining === 1) {
                 tmpl = TEMPLATE_A;
-            } else if (remaining === 2) {
-                tmpl = TEMPLATE_B;
             } else {
                 tmpl = TEMPLATES[templateIdx % TEMPLATES.length];
                 templateIdx++;
@@ -408,9 +463,25 @@
     const buildCoverFace = (catalog, checkboxId, assets) => {
         const cover = catalog.cover || {};
         const bgSrc = assets.backgrounds[0];
-        const face = buildFaceShell('front_page', FRONT_SHADE, bgSrc, checkboxId, assets);
 
-        // Logo centered on the page (matching original PDF cover 1:1)
+        // Build cover WITHOUT shadows or edge shading
+        const face = document.createElement('div');
+        face.className = 'front_page';
+
+        // Background
+        const bgImg = document.createElement('img');
+        bgImg.className = 'catalog-bg';
+        bgImg.src = bgSrc;
+        bgImg.alt = '';
+        bgImg.loading = 'lazy';
+        face.appendChild(bgImg);
+
+        // Flip label (no shadow, no edge shading)
+        const label = document.createElement('label');
+        label.setAttribute('for', checkboxId);
+        face.appendChild(label);
+
+        // Logo centered on the page (with drop-shadow)
         const logo = buildLogo(assets, 'dark', 15, 38, 70, 16);
         if (logo) face.appendChild(logo);
 
@@ -452,6 +523,11 @@
             if (!slot) return;
             face.appendChild(buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators));
         });
+
+        // Template-specific decorations
+        if (faceData.template.decoration === 'tianguis') {
+            face.appendChild(buildTianguisHeader(46, 2, 52, 24));
+        }
 
         // Disclaimer
         face.appendChild(buildDisclaimer(3, 93, 94, 6));
