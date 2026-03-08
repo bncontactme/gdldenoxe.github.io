@@ -61,6 +61,10 @@
         wrapper.style.zIndex = '101';
         wrapper.style.cursor = 'pointer';
 
+        // Image area — contains frame, photo, splash, badge, subtitle
+        const imageArea = document.createElement('div');
+        imageArea.className = 'catalog-image-area';
+
         // Frame image
         if (item.frame && assets.frames[item.frame]) {
             const frameImg = document.createElement('img');
@@ -68,7 +72,7 @@
             frameImg.src   = assets.frames[item.frame];
             frameImg.alt   = '';
             frameImg.loading = 'lazy';
-            wrapper.appendChild(frameImg);
+            imageArea.appendChild(frameImg);
         }
 
         // Shadow behind frame
@@ -78,7 +82,7 @@
             shadowImg.src   = assets.shadows.frame;
             shadowImg.alt   = '';
             shadowImg.loading = 'lazy';
-            wrapper.appendChild(shadowImg);
+            imageArea.appendChild(shadowImg);
         }
 
         // Product photo — wrapped in a clip container so overflow is hidden
@@ -92,10 +96,10 @@
             prodImg.alt   = item.name || '';
             prodImg.loading = 'lazy';
             clipDiv.appendChild(prodImg);
-            wrapper.appendChild(clipDiv);
+            imageArea.appendChild(clipDiv);
         }
 
-        // Splash with price overlay
+        // Splash with price overlay — inside image area
         if (item.splash && assets.splashes[item.splash] && item.price != null) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
@@ -112,16 +116,34 @@
             priceText.textContent = '$' + item.price;
             splashWrap.appendChild(priceText);
 
-            wrapper.appendChild(splashWrap);
+            imageArea.appendChild(splashWrap);
         } else if (item.price != null) {
             // Price without splash — simple tag
             const priceTag = document.createElement('span');
             priceTag.className   = 'catalog-price-tag';
             priceTag.textContent = '$' + item.price + ' ' + (item.currency || 'MXN');
-            wrapper.appendChild(priceTag);
+            imageArea.appendChild(priceTag);
         }
 
-        // Product name label
+        // Badge ribbon — inside image area
+        if (item.badge) {
+            const badge = document.createElement('span');
+            badge.className   = 'catalog-badge';
+            badge.textContent = item.badge;
+            imageArea.appendChild(badge);
+        }
+
+        // Subtitle / secondary price label — inside image area
+        if (item.subtitle) {
+            const sub = document.createElement('span');
+            sub.className   = 'catalog-subtitle';
+            sub.textContent = item.subtitle;
+            imageArea.appendChild(sub);
+        }
+
+        wrapper.appendChild(imageArea);
+
+        // Product name label — flows below image area
         if (item.name) {
             const nameEl = document.createElement('span');
             nameEl.className   = 'catalog-product-name';
@@ -129,20 +151,16 @@
             wrapper.appendChild(nameEl);
         }
 
-        // Badge ribbon
-        if (item.badge) {
-            const badge = document.createElement('span');
-            badge.className   = 'catalog-badge';
-            badge.textContent = item.badge;
-            wrapper.appendChild(badge);
-        }
-
-        // Subtitle / secondary price label
-        if (item.subtitle) {
-            const sub = document.createElement('span');
-            sub.className   = 'catalog-subtitle';
-            sub.textContent = item.subtitle;
-            wrapper.appendChild(sub);
+        // Product info text (stock, weight, description below name)
+        if (item.stock || item.weight || item.info) {
+            const infoEl = document.createElement('div');
+            infoEl.className = 'catalog-product-info';
+            const lines = [];
+            if (item.info) lines.push(item.info);
+            if (item.weight) lines.push(item.weight);
+            if (item.stock) lines.push('Stock: ' + item.stock);
+            infoEl.innerHTML = lines.join('<br>');
+            wrapper.appendChild(infoEl);
         }
 
         // Click → open modal
@@ -166,6 +184,29 @@
         el.style.zIndex = '6';
         if (item.fontSize) el.style.fontSize = item.fontSize;
         if (item.color)    el.style.color    = item.color;
+        if (item.fontFamily) el.style.fontFamily = item.fontFamily;
+        return el;
+    };
+
+    /**
+     * Build a disclaimer footer element.
+     */
+    const buildDisclaimer = (item) => {
+        const el = posEl('div', 'catalog-disclaimer', item.x || 3, item.y || 92, item.width || 94, item.height || 7);
+        el.textContent = item.text || '*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com';
+        if (item.color) el.style.color = item.color;
+        return el;
+    };
+
+    /**
+     * Build a promotional text block.
+     */
+    const buildPromo = (item) => {
+        const el = posEl('div', 'catalog-promo', item.x, item.y, item.width, item.height);
+        el.textContent = item.text || '';
+        el.style.zIndex = '6';
+        if (item.fontSize) el.style.fontSize = item.fontSize;
+        if (item.color) el.style.color = item.color;
         if (item.fontFamily) el.style.fontFamily = item.fontFamily;
         return el;
     };
@@ -284,6 +325,12 @@
                     case 'quote':
                         el = buildQuote(item);
                         break;
+                    case 'disclaimer':
+                        el = buildDisclaimer(item);
+                        break;
+                    case 'promo':
+                        el = buildPromo(item);
+                        break;
                 }
                 if (el) face.appendChild(el);
             });
@@ -324,7 +371,7 @@
         const ids = [];
         for (let i = 1; i <= N; i++) ids.push('#page' + i + '_checkbox');
         css += ':is(' + ids.join(', ') + '):checked ~ #flip_book ' +
-               '{ transform: translateX(144px) scale(1.03); }\n';
+               '{ transform: translateX(50%) scale(1.03); }\n';
 
         dynamicCSS.textContent = css;
     };
@@ -344,12 +391,16 @@
 
         const frag = document.createDocumentFragment();
 
-        // Checkboxes
+        // Scale wrapper — holds checkboxes + flip_book so CSS ~ selectors work
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flipbook-scale-wrapper';
+
+        // Checkboxes (must be siblings of #flip_book for CSS ~ selectors)
         for (let i = 1; i <= N; i++) {
             const cb   = document.createElement('input');
             cb.type    = 'checkbox';
             cb.id      = 'page' + i + '_checkbox';
-            frag.appendChild(cb);
+            wrapper.appendChild(cb);
         }
 
         // Flip book container
@@ -377,10 +428,60 @@
             book.appendChild(pageDiv);
         });
 
-        frag.appendChild(book);
+        wrapper.appendChild(book);
+        frag.appendChild(wrapper);
         catalogRoot.appendChild(frag);
         generateDynamicCSS(N);
+
+        // --- Responsive scaling ---
+        requestAnimationFrame(() => resizeFlipbook());
     };
+
+    /* ---------- Responsive scaling ---------- */
+
+    const DESIGN_W = 298;
+    const DESIGN_H = 420;
+
+    const resizeFlipbook = () => {
+        const wrapper = document.querySelector('.flipbook-scale-wrapper');
+        if (!wrapper) return;
+
+        const marqueeH = document.getElementById('marquee-bar')?.offsetHeight || 40;
+        const availW = window.innerWidth - 32;   // 16px padding each side
+        const availH = window.innerHeight - marqueeH - 48; // marquee + breathing room
+
+        const scale = Math.min(availW / DESIGN_W, availH / DESIGN_H, 2.5);
+
+        // Scale the wrapper — #flip_book stays untouched for CSS checked-state transforms
+        wrapper.style.transform = 'scale(' + scale + ')';
+        wrapper.style.transformOrigin = 'top center';
+        wrapper.style.width  = DESIGN_W + 'px';
+        wrapper.style.height = DESIGN_H + 'px';
+
+        // Outer container provides correct layout space for the scaled wrapper
+        const root = document.getElementById('catalog-root');
+        if (root) {
+            root.style.width  = (DESIGN_W * scale) + 'px';
+            root.style.height = (DESIGN_H * scale) + 'px';
+        }
+    };
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeFlipbook, 80);
+    }, { passive: true });
+
+    // Also re-scale when a checkbox is toggled (book shifts with translateX)
+    document.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox' && e.target.id.includes('_checkbox')) {
+            // Small delay so the CSS transition starts first
+            setTimeout(resizeFlipbook, 50);
+        }
+    });
+
+    // Expose for external use
+    window._resizeFlipbook = resizeFlipbook;
 
     /* ---------- Fetch & initialise ---------- */
 
@@ -670,7 +771,6 @@
 
 (() => {
     const toggleModeBtn = document.getElementById('toggle-mode-btn');
-    const responsiveWarning = document.getElementById('responsive-warning');
     if (!toggleModeBtn) return;
 
     const { body } = document;
@@ -684,9 +784,6 @@
         const isDark = mode === DARK;
         toggleModeBtn.style.color = isDark ? '#f5f5f5' : '#020408';
         toggleModeBtn.innerHTML = '<i class="bi bi-' + (isDark ? 'sun-fill' : 'moon-stars-fill') + '"></i>';
-        if (responsiveWarning) {
-            responsiveWarning.style.backgroundColor = isDark ? '#020408' : '#f5f5f5';
-        }
     };
 
     applyMode(localStorage.getItem('mode') || LIGHT);
@@ -696,11 +793,6 @@
         applyMode(newMode);
         localStorage.setItem('mode', newMode);
     });
-
-    // Show responsive warning on mobile
-    if (responsiveWarning && window.innerWidth <= 768) {
-        responsiveWarning.classList.add('show');
-    }
 })();
 
 
