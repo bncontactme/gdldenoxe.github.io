@@ -132,6 +132,16 @@
             wrapper.appendChild(badge);
         }
 
+        // Subtitle / secondary price label
+        if (item.subtitle) {
+            const sub = document.createElement('span');
+            sub.className   = 'catalog-subtitle';
+            sub.textContent = item.subtitle;
+            sub.style.bottom = '8%';
+            sub.style.left   = '4%';
+            wrapper.appendChild(sub);
+        }
+
         // Click → open modal
         wrapper.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -155,6 +165,43 @@
         if (item.color)    el.style.color    = item.color;
         if (item.fontFamily) el.style.fontFamily = item.fontFamily;
         return el;
+    };
+
+    /**
+     * Build a decorative "ES GRATIS..." quote with black starburst background.
+     */
+    const buildQuote = (item) => {
+        const wrap = posEl('div', 'catalog-quote', item.x, item.y, item.width, item.height);
+        wrap.style.zIndex = '7';
+
+        const inner = document.createElement('div');
+        inner.className = 'catalog-quote-inner';
+
+        const bg = document.createElement('div');
+        bg.className = 'catalog-quote-bg';
+        inner.appendChild(bg);
+
+        const text = document.createElement('div');
+        text.className = 'catalog-quote-text';
+        // Format: "ES GRATIS" bold, rest normal
+        const fullText = item.text || '';
+        const parts = fullText.split(/(?<=ES GRATIS )/i);
+        if (parts.length > 1) {
+            const bold = document.createElement('strong');
+            bold.textContent = parts[0];
+            bold.style.fontSize = '120%';
+            bold.style.display = 'block';
+            bold.style.color = '#FF3333';
+            text.appendChild(bold);
+            const rest = document.createTextNode(parts.slice(1).join(''));
+            text.appendChild(rest);
+        } else {
+            text.textContent = fullText;
+        }
+        inner.appendChild(text);
+
+        wrap.appendChild(inner);
+        return wrap;
     };
 
     /**
@@ -221,6 +268,9 @@
                         break;
                     case 'logo':
                         el = buildLogo(item, assets);
+                        break;
+                    case 'quote':
+                        el = buildQuote(item);
                         break;
                 }
                 if (el) face.appendChild(el);
