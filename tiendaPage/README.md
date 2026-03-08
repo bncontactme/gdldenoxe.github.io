@@ -33,7 +33,7 @@ A CSS-checkbox-driven flip book transformed into a **virtual store catalog** wit
      - **Template A**: 1 featured product (full-page)
      - **Template B**: 2 products side-by-side
      - **Template C**: 1 large + 2 small (magazine layout)
-     - **Template D**: 2 products diagonal with drop shadows
+     - **Template D**: 2 products staggered offset with mirrored splashes
    - Generates the cover (logo only) and back cover automatically
    - Composes each page face from layered assets: background → shadow → frame → product photo → price splash → name/info
    - Injects CSS stacking and flip-state rules into `<style id="dynamic-flipbook-css">`

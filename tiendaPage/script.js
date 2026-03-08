@@ -17,10 +17,11 @@
  * 1. CATALOG ENGINE — AUTO-LAYOUT
  *
  * Reads catalog.json with a flat products[] array.
- * Auto-generates flipbook pages by cycling through 3 layout templates:
+ * Auto-generates flipbook pages by cycling through 4 layout templates:
  *   A) 1 product  (full-page featured)
  *   B) 2 products (side-by-side split)
  *   C) 1 large + 2 small (magazine layout)
+ *   D) 2 products (staggered offset)
  * Cover and back-cover pages are auto-generated from config.
  * Backgrounds, frames, and splashes are auto-rotated.
  ****************************/
@@ -103,25 +104,22 @@
         ]
     };
 
-    /* Template D: 2 products diagonal layout
-       First image top-left (larger), second bottom-right (smaller),
-       both 4:3 aspect ratio, text to the side. */
+    /* Template D: 2 products staggered offset layout
+       Product 1 upper-left with splash to its right,
+       Product 2 lower-right with splash to its left —
+       creates a dynamic zigzag arrangement. */
     const TEMPLATE_D = {
-        name: '2-diagonal',
+        name: '2-offset',
         slots: [
             {
-                x: 3, y: 14, width: 58, height: 44,
-                framePool: 'large', splashPool: 'small',
-                splashX: 72, splashY: -8, splashW: 36, splashH: 32,
-                shadowOnly: true,
-                textSide: 'left'
+                x: 4, y: 12, width: 58, height: 38,
+                framePool: 'large', splashPool: 'medium',
+                splashX: 60, splashY: -2, splashW: 42, splashH: 36
             },
             {
-                x: 50, y: 58, width: 44, height: 28,
-                framePool: 'medium', splashPool: 'small',
-                splashX: 68, splashY: -10, splashW: 36, splashH: 36,
-                shadowOnly: true,
-                squareImage: true,
+                x: 34, y: 52, width: 62, height: 40,
+                framePool: 'medium', splashPool: 'medium',
+                splashX: -4, splashY: -2, splashW: 40, splashH: 36,
                 textLayout: 'left-of-image'
             }
         ]
@@ -483,16 +481,6 @@
 
     const buildContentFace = (faceData, faceClass, shadingSrc, checkboxId, assets, faceIndex) => {
         const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
-
-        // Page shadow — only for Template D, stretched 40% larger
-        if (faceData.template === TEMPLATE_D && assets.shadows && assets.shadows.page) {
-            const shadowImg = document.createElement('img');
-            shadowImg.className = 'catalog-page-shadow catalog-page-shadow-stretched';
-            shadowImg.src = assets.shadows.page;
-            shadowImg.alt = '';
-            shadowImg.loading = 'lazy';
-            face.appendChild(shadowImg);
-        }
 
         // Logo top-left
         const logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
