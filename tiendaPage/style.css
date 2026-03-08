@@ -282,7 +282,7 @@ input[type="checkbox"] { display: none; }
 /* --- Product item container --- */
 .catalog-product {
     position: absolute;
-    z-index: 5;
+    z-index: 101;
     cursor: pointer;
     overflow: visible;
     transition: transform 0.2s ease, filter 0.2s ease;
@@ -291,17 +291,17 @@ input[type="checkbox"] { display: none; }
 .catalog-product:hover {
     transform: scale(1.03);
     filter: brightness(1.05);
-    z-index: 10;
+    z-index: 102;
 }
 
-/* --- Frame image (ON TOP of product photo — acts as a real frame border) --- */
+/* --- Frame image (sits UNDER product photo — border peeks around clip edge) --- */
 .catalog-frame {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: fill;
-    z-index: 4;
+    z-index: 3;
     pointer-events: none;
     filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
 }
@@ -319,16 +319,75 @@ input[type="checkbox"] { display: none; }
     filter: blur(3px);
 }
 
-/* --- Image clip container — crops photo to frame interior --- */
+/* --- Image clip container — crops photo ON TOP of frame --- */
+/* Default clip (fallback for unknown frame types) */
 .catalog-image-clip {
     position: absolute;
-    top: 5%;
-    left: 5%;
-    width: 90%;
-    height: 87%;
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 94%;
     overflow: hidden;
-    z-index: 2;
-    border-radius: 4px;
+    z-index: 5;
+    border-radius: 6px;
+    background: transparent;
+}
+
+/* Per-frame-type clip overrides — match each frame's red border inner edge */
+/* tall: red rectangular border, narrow sides */
+[data-frame="tall"] .catalog-image-clip {
+    top: 1.5%;
+    left: 3%;
+    width: 94%;
+    height: 96%;
+    border-radius: 8px;
+}
+
+/* square-lg: red rectangular, medium border */
+[data-frame="square-lg"] .catalog-image-clip {
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 95%;
+    border-radius: 6px;
+}
+
+/* square-sm / square-sm2: red rectangular, thinner */
+[data-frame="square-sm"] .catalog-image-clip,
+[data-frame="square-sm2"] .catalog-image-clip {
+    top: 1.5%;
+    left: 1.5%;
+    width: 97%;
+    height: 96%;
+    border-radius: 5px;
+}
+
+/* featured-1: decorative, thicker borders */
+[data-frame="featured-1"] .catalog-image-clip {
+    top: 2.5%;
+    left: 2.5%;
+    width: 95%;
+    height: 94%;
+    border-radius: 8px;
+}
+
+/* featured-2 / featured-3: decorative, thick borders */
+[data-frame="featured-2"] .catalog-image-clip,
+[data-frame="featured-3"] .catalog-image-clip {
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 95%;
+    border-radius: 6px;
+}
+
+/* rounded: green rounded border, thick edges */
+[data-frame="rounded"] .catalog-image-clip {
+    top: 4%;
+    left: 4%;
+    width: 92%;
+    height: 90%;
+    border-radius: 14px;
 }
 
 /* --- Product photo (fills clip container) --- */
@@ -342,10 +401,10 @@ input[type="checkbox"] { display: none; }
 /* --- Price splash (starburst + text) --- */
 .catalog-splash {
     position: absolute;
-    bottom: -6%;
-    right: -10%;
-    width: 48%;
-    height: 42%;
+    bottom: -4%;
+    right: -6%;
+    width: 46%;
+    height: 40%;
     z-index: 6;
     display: grid;
     place-items: center;
@@ -393,16 +452,17 @@ input[type="checkbox"] { display: none; }
 /* --- Product name label (below frame as caption) --- */
 .catalog-product-name {
     position: absolute;
-    bottom: -6%;
+    bottom: -9%;
     left: 0;
     right: 0;
+    padding: 0 2%;
     font: 700 0.36rem/1.2 var(--font-system);
     color: #fff;
     text-align: center;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    z-index: 5;
+    z-index: 7;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;

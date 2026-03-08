@@ -57,7 +57,8 @@
     const buildProduct = (item, assets) => {
         const wrapper = posEl('div', 'catalog-product', item.x, item.y, item.width, item.height);
         wrapper.dataset.productId = item.id;
-        wrapper.style.zIndex = '5';
+        if (item.frame) wrapper.dataset.frame = item.frame;
+        wrapper.style.zIndex = '101';
         wrapper.style.cursor = 'pointer';
 
         // Frame image

@@ -90,9 +90,9 @@
                         "frame": "square-lg", "splash": "medium-1", "badge": "EXCLUSIVO",
                         "description": "Diseño premium con estampado exclusivo.",
                         "link": "#",
-                        "x": 5, "y": 6, "width": 52, "height": 48
+                        "x": 3, "y": 5, "width": 55, "height": 52
                     },
-                    { "type": "title", "text": "HOY EN JUEVES DE TIANGUIS", "x": 50, "y": 5, "width": 48, "height": 18, "fontSize": "0.85rem", "color": "#FFD700" },
+                    { "type": "title", "text": "HOY EN JUEVES DE TIANGUIS", "x": 50, "y": 13, "width": 48, "height": 18, "fontSize": "0.85rem", "color": "#FFD700" },
                     {
                         "type": "product", "id": "boxer-2b",
                         "name": "BOXER #2 — VISTA ALTERNA", "price": 999, "currency": "MXN",
@@ -100,7 +100,7 @@
                         "frame": "featured-1", "splash": "burst-4",
                         "description": "Vista alternativa del Boxer #2.",
                         "link": "#",
-                        "x": 42, "y": 56, "width": 50, "height": 36
+                        "x": 40, "y": 52, "width": 54, "height": 40
                     },
                     { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
@@ -136,7 +136,7 @@
                         "frame": "featured-3", "splash": "wide", "badge": "OFERTA",
                         "description": "Vista alternativa del Boxer #3.",
                         "link": "#",
-                        "x": 3, "y": 14, "width": 44, "height": 76,
+                        "x": 2, "y": 13, "width": 46, "height": 78,
                         "subtitle": "$220 / Guardaropa"
                     },
                     {
@@ -146,7 +146,7 @@
                         "frame": "square-sm", "splash": "star-1",
                         "description": "Edición premium Guadalajara De Noche.",
                         "link": "#",
-                        "x": 52, "y": 5, "width": 42, "height": 34
+                        "x": 50, "y": 3, "width": 46, "height": 38
                     },
                     {
                         "type": "product", "id": "boxer-5-md",
@@ -155,7 +155,7 @@
                         "frame": "square-lg", "splash": "star-2",
                         "description": "Nuevo diseño urbano Guadalajara De Noche.",
                         "link": "#",
-                        "x": 50, "y": 50, "width": 46, "height": 38
+                        "x": 48, "y": 46, "width": 48, "height": 44
                     },
                     { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
@@ -191,7 +191,7 @@
                         "frame": "square-lg", "splash": "medium-3", "badge": "NUEVO",
                         "description": "Nuevo diseño Guadalajara De Noche.",
                         "link": "#",
-                        "x": 5, "y": 16, "width": 50, "height": 46
+                        "x": 3, "y": 15, "width": 52, "height": 50
                     },
                     { "type": "title", "text": "LO NUEVO DE GUADALAJARA DE NOCHE", "x": 52, "y": 5, "width": 46, "height": 18, "fontSize": "0.65rem", "color": "#FFD700" },
                     {
@@ -201,7 +201,7 @@
                         "frame": "featured-1", "splash": "medium-4",
                         "description": "Vista alternativa del Boxer #5.",
                         "link": "#",
-                        "x": 42, "y": 56, "width": 50, "height": 36
+                        "x": 40, "y": 52, "width": 54, "height": 40
                     },
                     { "type": "title", "text": "*Aplican restricciones. Stock limitado. www.guadalajaradenoxe.com", "x": 3, "y": 94, "width": 94, "height": 5, "fontSize": "0.18rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
