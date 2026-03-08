@@ -40,10 +40,10 @@ body {
     overflow: hidden;
     color: transparent;
     /* Logo wallpaper centrado */
-    background-image: url('../articulosPage/articuloImages/articulo1.jpg');
+    background-image: url('indexImages/guadalajaraDeNocheThreeLines.png');
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: 200px auto;
+    background-size: 220px auto;
 }
 
 .desktop > * {
