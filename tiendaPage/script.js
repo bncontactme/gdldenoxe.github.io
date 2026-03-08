@@ -4,7 +4,7 @@
    Modules (in order):
      1. Catalog Engine — auto-layout from flat product list
      2. Product Modal  — supermarket-style product detail popup
-     3. Debug Mode     — hotspot positioning helper (?debug)
+     3. Debug Mode     — page coordinate helper (?debug)
      4. Ads System     — periodic ad audio
      5. Music System   — background music crossfade
      6. Marquee Setup  — seamless scroll duplication
@@ -117,15 +117,14 @@
                 textSide: 'left'
             },
             {
-                x: 38, y: 56, width: 38, height: 32,
+                x: 56, y: 50, width: 36, height: 35,
                 framePool: 'medium', splashPool: 'small',
-                splashX: 68, splashY: -14, splashW: 38, splashH: 40,
+                splashX: 68, splashY: -10, splashW: 36, splashH: 36,
                 shadowOnly: true,
                 squareImage: true,
-                textSide: 'left'
+                textSide: 'right'
             }
-        ],
-        decoration: 'tianguis'
+        ]
     };
 
     const TEMPLATES = [TEMPLATE_A, TEMPLATE_B, TEMPLATE_C, TEMPLATE_D];
@@ -272,43 +271,6 @@
         });
 
         return wrapper;
-    };
-
-    /* ── Build tianguis promotional header ── */
-
-    const buildTianguisHeader = (x, y, w, h) => {
-        const wrap = posEl('div', 'catalog-tianguis-header', x, y, w, h);
-        wrap.style.zIndex = '140';
-        const inner = document.createElement('div');
-        inner.className = 'catalog-tianguis-inner';
-
-        // Yellow starburst background
-        const bg = document.createElement('div');
-        bg.className = 'catalog-tianguis-bg';
-        inner.appendChild(bg);
-
-        // Text lines
-        const text = document.createElement('div');
-        text.className = 'catalog-tianguis-text';
-
-        const line1 = document.createElement('span');
-        line1.textContent = 'Hoy En';
-        line1.className = 'catalog-tianguis-line';
-
-        const line2 = document.createElement('span');
-        line2.textContent = 'Jueves de';
-        line2.className = 'catalog-tianguis-line';
-
-        const line3 = document.createElement('span');
-        line3.textContent = 'Tianguis';
-        line3.className = 'catalog-tianguis-line catalog-tianguis-accent';
-
-        text.appendChild(line1);
-        text.appendChild(line2);
-        text.appendChild(line3);
-        inner.appendChild(text);
-        wrap.appendChild(inner);
-        return wrap;
     };
 
     /* ── Build decorative elements ── */
@@ -535,8 +497,6 @@
             face.appendChild(buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators));
         });
 
-        // Template-specific decorations (tianguis header removed)
-
         // Disclaimer
         face.appendChild(buildDisclaimer(3, 93, 94, 6));
 
@@ -709,7 +669,7 @@
 
     document.addEventListener('change', (e) => {
         if (e.target.type === 'checkbox' && e.target.id.includes('_checkbox')) {
-            setTimeout(resizeFlipbook, 50);
+            setTimeout(resizeFlipbook, 600);
         }
     });
 
@@ -807,8 +767,7 @@
 
     console.log(
         '%c[DEBUG MODE] Hotspot positioning helper active.\n' +
-        'Click anywhere on a page face to log x/y percentages.\n' +
-        'Copy the values into catalog.json → hotspot: { x, y, width, height }.',
+        'Click anywhere on a page face to log x/y percentages.',
         'color: #0f0; font-weight: bold; font-size: 13px;'
     );
 
@@ -970,6 +929,7 @@
 
     window.startMusic = () => {
         if (!active.paused) return;
+        active.muted = false;
         active.currentTime = START_TIME;
         active.volume = 0;
         active.play().then(() => {
@@ -1032,5 +992,8 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         window.stopMusic?.();
         window.stopAds?.();
+    } else {
+        window.startMusic?.();
+        window.startAds?.();
     }
 }, { passive: true });

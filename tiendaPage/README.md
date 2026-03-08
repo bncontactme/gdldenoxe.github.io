@@ -2,9 +2,9 @@
 
 ## Description
 
-A CSS-checkbox-driven flip book transformed into a **virtual store catalog**. Each page can have clickable product hotspots that open a retro 2000s-supermarket product modal with an external purchase link. The entire catalog is configured through a single JSON file — no HTML edits needed to add pages or products.
+A CSS-checkbox-driven flip book transformed into a **virtual store catalog** with a retro 2000s-supermarket aesthetic. Products are defined in a flat JSON array and the engine **auto-layouts** them across flipbook pages using rotating templates (full-page featured, side-by-side, magazine, diagonal). Clicking any product opens a supermarket-styled modal with an external purchase link.
 
-**Original flip book concept by [Fabien CHAVONET](https://github.com/fchavonet).** Extended with a data-driven catalog engine, product hotspot overlay system, modal UI, and debug positioning tools.
+**Original flip book concept by [Fabien CHAVONET](https://github.com/fchavonet).** Extended with a data-driven auto-layout catalog engine, product modal UI, and debug positioning tools.
 
 ## Tech Stack
 
@@ -16,132 +16,134 @@ A CSS-checkbox-driven flip book transformed into a **virtual store catalog**. Ea
 
 | **FILE**         | **DESCRIPTION**                                                    |
 | :--------------: | ------------------------------------------------------------------ |
-| `catalog.json`   | **The catalog data** — pages, product hotspots, prices, links.     |
+| `catalog.json`   | **The catalog data** — products, assets, cover/back-cover config.  |
 | `index.html`     | HTML skeleton (modal template, audio, marquee).                    |
-| `style.css`      | All styles: flipbook, hotspots, modal, debug mode.                 |
+| `style.css`      | All styles: flipbook, product cards, modal, debug mode.            |
 | `script.js`      | Catalog engine, modal system, debug mode, music, ads, theme toggle.|
-| `assets/images/pages/`    | Full-page catalog images (page1.webp – pageN.webp).       |
-| `assets/images/products/` | Product detail images (shown in the modal).                |
+| `assets/products/`       | Product images (boxer photos, etc.).                       |
+| `assets/webAssets/`      | Background, frame, splash, shadow, and logo assets.        |
 
 ---
 
 ## How It Works
 
-1. **`catalog.json`** defines the pages and their products.
-2. On page load, `script.js` fetches `catalog.json` and dynamically generates:
-   - Hidden `<input type="checkbox">` elements (one per page)
-   - The `#flip_book` with all `.page` divs, content images, edge shading, and labels
-   - Product hotspot overlays positioned via percentage coordinates
-   - CSS rules for z-index stacking and flip states (injected into `<style id="dynamic-flipbook-css">`)
-3. The **CSS-only checkbox flip mechanism** is preserved 1:1 — clicking page edges flips them.
-4. Clicking a **product hotspot** opens a retro-styled modal with image, price starburst, description, and a **"¡COMPRAR AHORA!"** button that links to an external store.
+1. **`catalog.json`** defines a flat `products[]` array and shared visual assets.
+2. On page load, `script.js` fetches `catalog.json` and:
+   - **Auto-distributes products** across flipbook pages by cycling through 4 layout templates:
+     - **Template A**: 1 featured product (full-page)
+     - **Template B**: 2 products side-by-side
+     - **Template C**: 1 large + 2 small (magazine layout)
+     - **Template D**: 2 products diagonal with drop shadows
+   - Generates the cover (logo only) and back cover automatically
+   - Composes each page face from layered assets: background → shadow → frame → product photo → price splash → name/info
+   - Injects CSS stacking and flip-state rules into `<style id="dynamic-flipbook-css">`
+3. The **CSS-only checkbox flip mechanism** is preserved — clicking page edges flips them.
+4. Clicking any **product card** opens a retro-styled modal with image, price starburst, description, and a **"¡COMPRAR AHORA!"** button.
 
 ---
 
-## Adding / Removing Pages
+## Adding / Removing Products
 
-Edit `catalog.json` → `pages` array. Each entry represents one physical page (2 sides):
-
-```json
-{
-    "front": {
-        "image": "assets/images/pages/page11.webp",
-        "alt": "Página 11",
-        "products": []
-    },
-    "back": {
-        "image": "assets/images/pages/page12.webp",
-        "alt": "Página 12",
-        "products": []
-    }
-}
-```
-
-Drop the corresponding images into `assets/images/pages/`. The engine auto-generates all CSS stacking and flip rules for any number of pages.
-
-### Image Specs
-
-| Property          | Value                    |
-| :---------------- | :----------------------- |
-| Content area      | 288 × 400 px             |
-| Format            | `.webp` (recommended)    |
-| Image file size   | 287 × 398 px (1px inset) |
-
----
-
-## Adding Product Hotspots
-
-Each product is an object inside a page face's `products` array:
+Edit `catalog.json` → `products` array. Each product is a flat object:
 
 ```json
 {
-    "id": "camiseta-gdl-01",
-    "name": "Camiseta GDLDENOXE Edición Limitada",
-    "price": 450,
+    "id": "boxer-1",
+    "name": "BOXER GDLDENOXE #1",
+    "price": 299,
+    "cents": "00",
     "currency": "MXN",
-    "description": "Camiseta 100% algodón con diseño exclusivo. Tallas S, M, L, XL.",
-    "image": "assets/images/products/camiseta-gdl-01.webp",
-    "link": "https://your-store.com/product/camiseta-gdl-01",
+    "image": "assets/products/boxers/boxer 1.jpg",
+    "description": "Boxer exclusivo edición Guadalajara De Noche.",
+    "link": "https://your-store.com/product/boxer-1",
+    "info": "Talla Única",
+    "stock": "5 u",
     "badge": "NUEVO",
-    "hotspot": {
-        "x": 10,
-        "y": 20,
-        "width": 35,
-        "height": 30
+    "subtitle": "$220 / Guardaropa"
+}
+```
+
+The engine **automatically arranges** products into pages — no manual page layout or coordinates needed. Just add or remove products from the array and the flipbook adjusts.
+
+### Product Fields
+
+| Field         | Type     | Required | Description                                        |
+| :------------ | :------- | :------: | :------------------------------------------------- |
+| `id`          | string   | yes      | Unique identifier                                  |
+| `name`        | string   | yes      | Product name (shown on card + modal header)        |
+| `price`       | number   | no       | Price (shown in splash starburst)                  |
+| `cents`       | string   | no       | Cent digits (default: `"00"`)                      |
+| `currency`    | string   | no       | Currency code (default: `"MXN"`)                   |
+| `description` | string   | no       | Product description (shown in modal)               |
+| `image`       | string   | no       | Path to product photo                              |
+| `link`        | string   | yes      | External store / purchase URL                      |
+| `info`        | string   | no       | Extra info line (size, weight, etc.)               |
+| `stock`       | string   | no       | Stock indicator (e.g., `"5 u"`)                    |
+| `badge`       | string   | no       | Corner ribbon: `"OFERTA"`, `"NUEVO"`, `"2x1"`      |
+| `subtitle`    | string   | no       | Secondary price label (bottom-right of image)      |
+
+---
+
+## Assets Configuration
+
+The `assets` object in `catalog.json` defines the visual elements used to compose pages:
+
+| Key            | Description                                                |
+| :------------- | :--------------------------------------------------------- |
+| `backgrounds`  | Array of page background images (auto-rotated)             |
+| `shadows`      | `page` and `frame` shadow overlay images                   |
+| `frames`       | Named frame images (`tall`, `square-sm`, `featured-1`...)  |
+| `splashes`     | Named price starburst images (`large`, `star-1`, `burst-1`...)|
+| `logos`        | `dark` and `light` variants of the store logo              |
+
+Frames and splashes are **automatically rotated** through pools matched to each template slot size (large, medium, small).
+
+---
+
+## Cover & Back Cover
+
+Configured via `cover` and `backCover` objects in `catalog.json`:
+
+```json
+{
+    "cover": {
+        "title": "CATÁLOGO 2026",
+        "subtitle": "EDICIÓN ESPECIAL",
+        "tagline": "BOXERS EXCLUSIVOS",
+        "footer": "ENVÍOS A TODO MÉXICO",
+        "url": "www.guadalajaradenoxe.com"
+    },
+    "backCover": {
+        "title": "GRACIAS POR TU VISITA",
+        "subtitle": "SÍGUENOS EN NUESTRAS REDES...",
+        "url": "WWW.GUADALAJARADENOXE.COM"
     }
 }
 ```
 
-### Hotspot Fields
-
-| Field       | Type     | Required | Description                                        |
-| :---------- | :------- | :------: | :------------------------------------------------- |
-| `id`        | string   | yes      | Unique identifier                                  |
-| `name`      | string   | yes      | Product name (shown in modal header)               |
-| `price`     | number   | no       | Price (shown in starburst + floating tag)           |
-| `currency`  | string   | no       | Currency code (default: `"MXN"`)                   |
-| `description` | string | no       | Product description                                |
-| `image`     | string   | no       | Path to product detail image (modal)               |
-| `link`      | string   | yes      | External store / purchase URL                      |
-| `badge`     | string   | no       | Corner ribbon label: `"OFERTA"`, `"NUEVO"`, `"2x1"` |
-| `hotspot`   | object   | yes      | `{ x, y, width, height }` — all in **percentages** (0–100) relative to the page face |
-
 ---
 
-## Debug Mode — Hotspot Positioning
+## Debug Mode
 
-Append `?debug` to the URL to activate debug mode:
+Append `?debug` to the URL:
 
 ```
 index.html?debug
 ```
 
 This enables:
-- **10% grid overlay** on every page face (red vertical, blue horizontal lines)
-- **Click logging** — click anywhere on a page to log `{ x, y }` percentages to the browser console
-- **Coordinate tooltip** — a floating label shows the coordinates at the click point
-- **Hotspot boundaries** — existing hotspots are drawn with dashed green borders and show their `id`
-- **Modal suppressed** — clicking hotspots logs coordinates instead of opening the modal
-
-### Workflow
-
-1. Open the page with `?debug` appended
-2. Flip to the page you want to add products to
-3. Click the **top-left corner** of a product area → note the `x, y` from the console
-4. Click the **bottom-right corner** → calculate `width = x2 - x1`, `height = y2 - y1`
-5. Add the hotspot object to `catalog.json` with these values
-6. Refresh to see the hotspot rendered
+- **10% grid overlay** on every page face
+- **Click logging** — click anywhere on a page to log `{ x, y }` percentages to console
+- **Coordinate tooltip** — floating label at click point
+- **Modal suppressed** — product clicks log coordinates instead of opening modal
 
 ---
 
 ## Marquee Text
 
-The scrolling banner text can be configured in `catalog.json`:
-
 ```json
 {
-    "marqueeText": "*** YOUR CUSTOM TEXT HERE ***",
-    "pages": [ ... ]
+    "marqueeText": "*** YOUR CUSTOM TEXT HERE ***"
 }
 ```
 
@@ -149,10 +151,11 @@ The scrolling banner text can be configured in `catalog.json`:
 
 ## Architecture Notes
 
-- **CSS-only flip mechanism preserved**: The engine generates the exact same `<input type="checkbox">` + `<label>` + sibling combinator (`~`) CSS rules used in the original. No JavaScript is involved in the actual page flipping.
-- **Hotspot z-index layering**: Hotspots sit at z-index 101 (above the label at 100). Clicking a hotspot reaches the JS handler; clicking anywhere else on the page reaches the label and triggers the flip.
-- **Percentage-based coordinates**: Hotspot positions are defined as percentages of the page face, so they scale correctly regardless of display size.
-- **Music & Ads**: The background music crossfade system, periodic ad audio, and parent iframe API (`window.startMusic()`, `window.stopMusic()`, etc.) are fully unchanged and decoupled from the catalog.
+- **Auto-layout engine**: Products are distributed into pages automatically by cycling through 4 templates. No manual page definitions or coordinate positioning needed.
+- **CSS-only flip mechanism**: The engine generates `<input type="checkbox">` + `<label>` + sibling combinator (`~`) CSS rules. No JavaScript is involved in page flipping.
+- **Layered page composition**: Each page face is built from stacked layers (background → shadow → frame → product image → splash/price → name/info → edge shading → flip label).
+- **Responsive scaling**: The flipbook is scaled via CSS `transform: scale()` to fit any viewport while preserving the internal 298×420px coordinate system.
+- **Music & Ads**: Background music crossfade and periodic ad audio systems are included. Control via `window.startMusic()`, `window.stopMusic()`, `window.startAds()`, `window.stopAds()`.
 
 ## Original Author
 
