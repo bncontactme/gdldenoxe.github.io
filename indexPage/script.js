@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         win.innerHTML = `
             <div class="title-bar">
-                <div class="title-bar-text">Artículo #${art.id}</div>
+                <div class="title-bar-text">${art.titulo}</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn">_</button>
                     <button class="maximize-btn">□</button>
