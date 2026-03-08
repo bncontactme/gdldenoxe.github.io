@@ -597,15 +597,18 @@
 
     const DESIGN_W = 298;
     const DESIGN_H = 420;
+    /* Open spread is ~2 pages wide (translateX(50%) doubles the visual footprint) */
+    const SPREAD_W = DESIGN_W * 2;
 
     const resizeFlipbook = () => {
         const wrapper = document.querySelector('.flipbook-scale-wrapper');
         if (!wrapper) return;
 
         const marqueeH = document.getElementById('marquee-bar')?.offsetHeight || 40;
-        const availW = window.innerWidth - 32;
-        const availH = window.innerHeight - marqueeH - 48;
-        const scale = Math.min(availW / DESIGN_W, availH / DESIGN_H, 2.5);
+        const availW = window.innerWidth - 16;
+        const availH = window.innerHeight - marqueeH - 32;
+        /* Scale to fit the OPEN spread (2 pages) so nothing is ever clipped */
+        const scale = Math.min(availW / SPREAD_W, availH / DESIGN_H, 2.5);
 
         wrapper.style.transform = 'scale(' + scale + ') translateZ(0)';
         wrapper.style.transformOrigin = 'top center';
@@ -614,7 +617,7 @@
 
         const root = document.getElementById('catalog-root');
         if (root) {
-            root.style.width  = (DESIGN_W * scale) + 'px';
+            root.style.width  = (SPREAD_W * scale) + 'px';
             root.style.height = (DESIGN_H * scale) + 'px';
         }
     };

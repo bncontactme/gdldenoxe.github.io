@@ -52,7 +52,7 @@ body {
     padding-top: 3rem;
     padding-bottom: 1rem;
     transition: background-color 0.3s ease-out;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 body.light-mode {
@@ -270,16 +270,17 @@ input[type="checkbox"] { display: none; }
     border-radius: inherit;
 }
 
-/* --- Page shadow overlay --- */
+/* --- Page shadow overlay (stretched so visible area fills ~85%) --- */
 .catalog-page-shadow {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 2;
+    top: -20%;
+    left: -18%;
+    width: 136%;
+    height: 125%;
+    object-fit: fill;
+    z-index: 5;
     pointer-events: none;
-    opacity: 0.2;
+    opacity: 0.4;
 }
 
 /* --- Product item container (flex column: image area + name + info) --- */
@@ -1243,13 +1244,14 @@ input[type="checkbox"] { display: none; }
     }
 }
 
-/* --- Prevent horizontal overflow on any screen --- */
+/* --- Prevent overflow — contained inside Win95 iframe --- */
 main {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 #catalog-root {
@@ -1258,4 +1260,5 @@ main {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
