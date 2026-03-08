@@ -2,299 +2,321 @@
    TIENDA GDLDENOXE — Virtual Store Flipbook Engine
    ============================================================
    Modules (in order):
-     1. Catalog Engine — auto-layout from flat product list
+     1. Catalog Engine — fetches catalog.json, builds layered flipbook
      2. Product Modal  — supermarket-style product detail popup
      3. Debug Mode     — hotspot positioning helper (?debug)
-     4. Ads System     — periodic ad audio
-     5. Music System   — background music crossfade
-     6. Marquee Setup  — seamless scroll duplication
-     7. Mode Toggle    — light/dark theme
-     8. Visibility     — pause audio on tab hide
+     4. Ads System     — periodic ad audio (unchanged)
+     5. Music System   — background music crossfade (unchanged)
+     6. Marquee Setup  — seamless scroll duplication (unchanged)
+     7. Mode Toggle    — light/dark theme (unchanged)
+     8. Visibility     — pause audio on tab hide (unchanged)
    ============================================================ */
 
 
 /****************************
- * 1. CATALOG ENGINE — AUTO-LAYOUT
- *
- * Reads catalog.json with a flat products[] array.
- * Auto-generates flipbook pages by cycling through 3 layout templates:
- *   A) 1 product  (full-page featured)
- *   B) 2 products (side-by-side split)
- *   C) 1 large + 2 small (magazine layout)
- * Cover and back-cover pages are auto-generated from config.
- * Backgrounds, frames, and splashes are auto-rotated.
+ * 1. CATALOG ENGINE
+ * Reads catalog.json, dynamically generates layered page compositions:
+ *   Background → Shadow → Frame/Product Image → Splash + Price → Titles
+ * Each page face is composed from individual asset layers, not flat images.
+ * Preserves the original CSS-only checkbox flip mechanism 1:1.
  ****************************/
 
 (() => {
-    const CATALOG_URL = 'catalog.json';
-    const FRONT_SHADE = 'assets/front_page_edge_shading.webp';
-    const BACK_SHADE  = 'assets/back_page_edge_shading.webp';
+    const CATALOG_URL  = 'catalog.json';
+    const FRONT_SHADE  = 'assets/front_page_edge_shading.webp';
+    const BACK_SHADE   = 'assets/back_page_edge_shading.webp';
 
     const catalogRoot = document.getElementById('catalog-root');
     const dynamicCSS  = document.getElementById('dynamic-flipbook-css');
     if (!catalogRoot || !dynamicCSS) return;
 
-    /* ── Rotation helpers ── */
-    const rotator = (arr) => { let i = 0; return () => arr[(i++) % arr.length]; };
+    /* ---------- Layer builders ---------- */
 
-    /* Frame rotation pools by slot size */
-    const LARGE_FRAMES  = ['tall', 'featured-2', 'featured-3', 'featured-1'];
-    const MEDIUM_FRAMES = ['square-lg', 'featured-1', 'featured-2', 'tall'];
-    const SMALL_FRAMES  = ['rounded', 'square-sm', 'square-sm2', 'square-lg'];
-
-    /* Splash rotation pools by slot size */
-    const LARGE_SPLASHES  = ['large', 'wide', 'medium-1', 'medium-3'];
-    const MEDIUM_SPLASHES = ['medium-1', 'medium-2', 'medium-4', 'large'];
-    const SMALL_SPLASHES  = ['star-1', 'star-2', 'burst-1', 'burst-2', 'burst-3', 'burst-4', 'burst-5', 'medium-2'];
-
-    /* ── Layout template definitions ──
-       Each template defines slots as {x, y, width, height} percentages,
-       plus the frame/splash pool to draw from, and splash position overrides.
-    */
-
-    /* Template A: single featured product */
-    const TEMPLATE_A = {
-        name: '1-featured',
-        slots: [
-            {
-                x: 8, y: 14, width: 84, height: 72,
-                framePool: 'large', splashPool: 'large',
-                splashX: 2, splashY: 56, splashW: 48, splashH: 40
-            }
-        ]
-    };
-
-    /* Template B: two products side by side */
-    const TEMPLATE_B = {
-        name: '2-split',
-        slots: [
-            {
-                x: 2, y: 14, width: 47, height: 72,
-                framePool: 'medium', splashPool: 'medium',
-                splashX: 2, splashY: 58, splashW: 52, splashH: 38
-            },
-            {
-                x: 51, y: 14, width: 47, height: 72,
-                framePool: 'medium', splashPool: 'medium',
-                splashX: 2, splashY: 58, splashW: 52, splashH: 38
-            }
-        ]
-    };
-
-    /* Template C: 1 large left + 2 small right (magazine) */
-    const TEMPLATE_C = {
-        name: '1L-2S',
-        slots: [
-            {
-                x: 2, y: 12, width: 52, height: 78,
-                framePool: 'large', splashPool: 'large',
-                splashX: 30, splashY: 68, splashW: 52, splashH: 28
-            },
-            {
-                x: 56, y: 12, width: 42, height: 36,
-                framePool: 'small', splashPool: 'small',
-                splashX: 52, splashY: -4, splashW: 44, splashH: 38
-            },
-            {
-                x: 56, y: 52, width: 42, height: 38,
-                framePool: 'small', splashPool: 'small',
-                splashX: 48, splashY: 36, splashW: 48, splashH: 42
-            }
-        ]
-    };
-
-    const TEMPLATES = [TEMPLATE_A, TEMPLATE_B, TEMPLATE_C];
-
-    /* ── DOM helpers ── */
-
+    /**
+     * Creates an absolutely-positioned element at given % coords.
+     */
     const posEl = (tag, className, x, y, w, h) => {
         const el = document.createElement(tag);
         if (className) el.className = className;
-        el.style.cssText = 'position:absolute;left:' + x + '%;top:' + y + '%;width:' + w + '%;height:' + h + '%;';
+        el.style.position = 'absolute';
+        el.style.left   = x + '%';
+        el.style.top    = y + '%';
+        el.style.width  = w + '%';
+        el.style.height = h + '%';
         return el;
     };
 
-    /* ── Build a single product card ── */
-
-    const buildProduct = (product, slot, assets, frameRotators, splashRotators) => {
-        const wrapper = posEl('div', 'catalog-product', slot.x, slot.y, slot.width, slot.height);
-        wrapper.dataset.productId = product.id;
-
-        // Pick frame & splash from pool rotation
-        const poolKey = slot.framePool || 'medium';
-        const frame = frameRotators[poolKey]();
-        const splash = splashRotators[slot.splashPool || 'medium']();
-
-        wrapper.dataset.frame = frame;
+    /**
+     * Build a product item on a page face:
+     *   - Optional background color fill inside frame
+     *   - Frame image (border/decoration around product)
+     *   - Product photo inside frame (or bgColor fill)
+     *   - Splash (starburst) with price text overlaid
+     *   - OR standalone price (no splash)
+     *   - Badge ribbon (OFERTA, NUEVO, etc.)
+     *   - Subtitle (secondary price label)
+     *   - Product name + info below frame
+     *   - Entire zone is clickable → opens modal
+     */
+    const buildProduct = (item, assets) => {
+        const wrapper = posEl('div', 'catalog-product', item.x, item.y, item.width, item.height);
+        wrapper.dataset.productId = item.id;
+        if (item.frame) wrapper.dataset.frame = item.frame;
         wrapper.style.zIndex = '101';
         wrapper.style.cursor = 'pointer';
 
+        // Image area — contains frame, photo, splash, badge, subtitle
         const imageArea = document.createElement('div');
         imageArea.className = 'catalog-image-area';
 
+        // Background color fill inside frame (for colored product areas)
+        if (item.bgColor) {
+            const bgFill = document.createElement('div');
+            bgFill.className = 'catalog-product-bgfill';
+            bgFill.style.backgroundColor = item.bgColor;
+            imageArea.appendChild(bgFill);
+        }
+
         // Frame image
-        if (assets.frames[frame]) {
+        if (item.frame && assets.frames[item.frame]) {
             const frameImg = document.createElement('img');
             frameImg.className = 'catalog-frame';
-            frameImg.src = assets.frames[frame];
-            frameImg.alt = '';
+            frameImg.src   = assets.frames[item.frame];
+            frameImg.alt   = '';
             frameImg.loading = 'lazy';
             imageArea.appendChild(frameImg);
         }
 
-        // Product photo clipped inside frame
-        if (product.image) {
+        // Shadow behind frame
+        if (assets.shadows && assets.shadows.frame) {
+            const shadowImg = document.createElement('img');
+            shadowImg.className = 'catalog-frame-shadow';
+            shadowImg.src   = assets.shadows.frame;
+            shadowImg.alt   = '';
+            shadowImg.loading = 'lazy';
+            imageArea.appendChild(shadowImg);
+        }
+
+        // Product photo — wrapped in a clip container so overflow is hidden
+        if (item.image) {
             const clipDiv = document.createElement('div');
             clipDiv.className = 'catalog-image-clip';
+
             const prodImg = document.createElement('img');
             prodImg.className = 'catalog-product-image';
-            prodImg.src = product.image;
-            prodImg.alt = product.name || '';
+            prodImg.src   = item.image;
+            prodImg.alt   = item.name || '';
             prodImg.loading = 'lazy';
             clipDiv.appendChild(prodImg);
             imageArea.appendChild(clipDiv);
         }
 
-        // Price splash
-        if (product.price != null && assets.splashes[splash]) {
+        // --- Price rendering ---
+        // Helper: build the price text container ($amount + cents)
+        const buildPriceElements = (fontSize) => {
+            const container = document.createElement('div');
+            container.className = 'catalog-price-container';
+            if (fontSize) container.style.fontSize = fontSize;
+
+            const dollar = document.createElement('span');
+            dollar.className = 'catalog-price-dollar';
+            dollar.textContent = '$';
+            container.appendChild(dollar);
+
+            const amount = document.createElement('span');
+            amount.className = 'catalog-price-amount';
+            amount.textContent = String(item.price);
+            container.appendChild(amount);
+
+            const cents = document.createElement('span');
+            cents.className = 'catalog-price-cents';
+            cents.textContent = item.cents != null ? item.cents : '00';
+            container.appendChild(cents);
+
+            return container;
+        };
+
+        // Splash with price overlay — inside image area
+        if (item.splash && assets.splashes[item.splash] && item.price != null) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
-            if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
-            if (slot.splashY != null) { splashWrap.style.top = slot.splashY + '%'; splashWrap.style.bottom = 'auto'; }
-            if (slot.splashW != null) splashWrap.style.width  = slot.splashW + '%';
-            if (slot.splashH != null) splashWrap.style.height = slot.splashH + '%';
+
+            // Custom splash position
+            if (item.splashX != null) splashWrap.style.left   = item.splashX + '%';
+            if (item.splashY != null) splashWrap.style.top    = item.splashY + '%';
+            if (item.splashY != null) splashWrap.style.bottom = 'auto';
+            if (item.splashW != null) splashWrap.style.width  = item.splashW + '%';
+            if (item.splashH != null) splashWrap.style.height = item.splashH + '%';
 
             const splashImg = document.createElement('img');
             splashImg.className = 'catalog-splash-img';
-            splashImg.src = assets.splashes[splash];
-            splashImg.alt = '';
+            splashImg.src   = assets.splashes[item.splash];
+            splashImg.alt   = '';
             splashImg.loading = 'lazy';
             splashWrap.appendChild(splashImg);
 
-            // Price text
-            const priceC = document.createElement('div');
-            priceC.className = 'catalog-price-container';
-            const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-            const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
-            const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
-            priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
-            splashWrap.appendChild(priceC);
+            const priceEl = buildPriceElements(item.priceSize || null);
+            splashWrap.appendChild(priceEl);
+
             imageArea.appendChild(splashWrap);
-        } else if (product.price != null) {
-            // Standalone price (no splash image available)
+        } else if (item.price != null) {
+            // Standalone price (no splash) — big red text with black stroke
             const priceWrap = document.createElement('div');
             priceWrap.className = 'catalog-price-standalone';
-            const priceC = document.createElement('div');
-            priceC.className = 'catalog-price-container';
-            const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-            const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
-            const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
-            priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
-            priceWrap.appendChild(priceC);
+
+            // Custom position
+            if (item.priceX != null) priceWrap.style.left   = item.priceX + '%';
+            if (item.priceY != null) priceWrap.style.top    = item.priceY + '%';
+            if (item.priceY != null) priceWrap.style.bottom = 'auto';
+
+            const priceEl = buildPriceElements(item.priceSize || null);
+            priceWrap.appendChild(priceEl);
             imageArea.appendChild(priceWrap);
         }
 
-        // Badge
-        if (product.badge) {
+        // Badge ribbon — inside image area
+        if (item.badge) {
             const badge = document.createElement('span');
-            badge.className = 'catalog-badge';
-            badge.textContent = product.badge;
+            badge.className   = 'catalog-badge';
+            badge.textContent = item.badge;
             imageArea.appendChild(badge);
         }
 
-        // Subtitle
-        if (product.subtitle) {
+        // Subtitle / secondary price label — inside image area
+        if (item.subtitle) {
             const sub = document.createElement('span');
-            sub.className = 'catalog-subtitle';
-            sub.textContent = product.subtitle;
+            sub.className   = 'catalog-subtitle';
+            sub.textContent = item.subtitle;
             imageArea.appendChild(sub);
         }
 
         wrapper.appendChild(imageArea);
 
-        // Product name
-        if (product.name) {
+        // Product name label — flows below image area
+        if (item.name) {
             const nameEl = document.createElement('span');
-            nameEl.className = 'catalog-product-name';
-            nameEl.textContent = product.name;
+            nameEl.className   = 'catalog-product-name';
+            nameEl.textContent = item.name;
             wrapper.appendChild(nameEl);
         }
 
-        // Info
-        if (product.stock || product.info) {
+        // Product info text (brand, weight, stock — below name)
+        if (item.stock || item.weight || item.info) {
             const infoEl = document.createElement('div');
             infoEl.className = 'catalog-product-info';
             const lines = [];
-            if (product.info) lines.push(product.info);
-            if (product.stock) lines.push('Stock: ' + product.stock);
+            if (item.info) lines.push(item.info);
+            if (item.weight) lines.push(item.weight);
+            if (item.stock) lines.push('Stock: ' + item.stock);
             infoEl.innerHTML = lines.join('<br>');
             wrapper.appendChild(infoEl);
         }
 
-        // Click → modal
+        // Click → open modal
         wrapper.addEventListener('click', (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('debug-active')) return;
             if (typeof window.openProductModal === 'function') {
-                window.openProductModal(product);
+                window.openProductModal(item);
             }
         });
 
         return wrapper;
     };
 
-    /* ── Build decorative elements ── */
-
-    const buildLogo = (assets, variant, x, y, w, h) => {
-        const logoSrc = assets.logos[variant || 'dark'];
-        if (!logoSrc) return null;
-        const wrap = posEl('div', 'catalog-logo', x, y, w, h);
-        wrap.style.zIndex = '6';
-        const img = document.createElement('img');
-        img.className = 'catalog-logo-img';
-        img.src = logoSrc;
-        img.alt = 'GDLDENOXE';
-        img.loading = 'lazy';
-        wrap.appendChild(img);
-        return wrap;
-    };
-
-    const buildTitle = (text, x, y, w, h, fontSize, color, fontFamily) => {
-        const el = posEl('div', 'catalog-title', x, y, w, h);
-        el.textContent = text;
+    /**
+     * Build a title text element on a page face.
+     */
+    const buildTitle = (item) => {
+        const el = posEl('div', 'catalog-title', item.x, item.y, item.width, item.height);
+        el.textContent = item.text || '';
         el.style.zIndex = '6';
-        if (fontSize) el.style.fontSize = fontSize;
-        if (color) el.style.color = color;
-        if (fontFamily) el.style.fontFamily = fontFamily;
+        if (item.fontSize) el.style.fontSize = item.fontSize;
+        if (item.color)    el.style.color    = item.color;
+        if (item.fontFamily) el.style.fontFamily = item.fontFamily;
         return el;
     };
 
-    const buildDisclaimer = (x, y, w, h) => {
-        const el = posEl('div', 'catalog-disclaimer', x || 3, y || 92, w || 94, h || 7);
-        el.textContent = '*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com';
+    /**
+     * Build a disclaimer footer element.
+     */
+    const buildDisclaimer = (item) => {
+        const el = posEl('div', 'catalog-disclaimer', item.x || 3, item.y || 92, item.width || 94, item.height || 7);
+        el.textContent = item.text || '*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com';
+        if (item.color) el.style.color = item.color;
         return el;
     };
 
-    const buildQuote = (x, y, w, h) => {
-        const wrap = posEl('div', 'catalog-quote', x, y, w, h);
+    /**
+     * Build a promotional text block.
+     */
+    const buildPromo = (item) => {
+        const el = posEl('div', 'catalog-promo', item.x, item.y, item.width, item.height);
+        el.textContent = item.text || '';
+        el.style.zIndex = '6';
+        if (item.fontSize) el.style.fontSize = item.fontSize;
+        if (item.color) el.style.color = item.color;
+        if (item.fontFamily) el.style.fontFamily = item.fontFamily;
+        return el;
+    };
+
+    /**
+     * Build a promotional splash — a positioned decorative image element
+     * (e.g., "PRECIOS DERRETIDOS", "Si pagas MAS...", "Hoy En Jueves de Tianguis")
+     */
+    const buildPromoSplash = (item, assets) => {
+        const el = posEl('div', 'catalog-promo-splash', item.x, item.y, item.width, item.height);
+        el.style.zIndex = item.zIndex || '7';
+
+        if (item.asset && assets.splashes[item.asset]) {
+            const img = document.createElement('img');
+            img.src = assets.splashes[item.asset];
+            img.alt = item.alt || '';
+            img.loading = 'lazy';
+            el.appendChild(img);
+        } else if (item.image) {
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.alt = item.alt || '';
+            img.loading = 'lazy';
+            el.appendChild(img);
+        }
+
+        return el;
+    };
+
+    /**
+     * Build a decorative "ES GRATIS..." quote with black starburst background.
+     */
+    const buildQuote = (item) => {
+        const wrap = posEl('div', 'catalog-quote', item.x, item.y, item.width, item.height);
         wrap.style.zIndex = '7';
+
         const inner = document.createElement('div');
         inner.className = 'catalog-quote-inner';
+
         const bg = document.createElement('div');
         bg.className = 'catalog-quote-bg';
         inner.appendChild(bg);
+
         const text = document.createElement('div');
         text.className = 'catalog-quote-text';
+        // Format the quote with styled segments matching the reference:
+        // "ES GRATIS" bold red, "disfrutar de las cosas que" white,
+        // "DE NOCHE" bold white, "NO TIENEN PRECIO.." red
 
         const esGratis = document.createElement('strong');
         esGratis.textContent = 'ES GRATIS';
         esGratis.style.cssText = 'font-size:130%;display:block;color:#FF3333;margin-bottom:2px;';
+
         const middle = document.createElement('span');
         middle.textContent = 'disfrutar de las cosas que';
         middle.style.cssText = 'display:block;font-weight:400;font-size:85%;';
+
         const deNoche = document.createElement('strong');
         deNoche.textContent = 'DE NOCHE';
         deNoche.style.cssText = 'display:block;font-size:120%;margin:1px 0;';
+
         const noTienen = document.createElement('span');
         noTienen.textContent = 'NO TIENEN PRECIO..';
         noTienen.style.cssText = 'display:block;color:#FF3333;font-size:85%;';
@@ -304,43 +326,102 @@
         text.appendChild(deNoche);
         text.appendChild(noTienen);
         inner.appendChild(text);
+
         wrap.appendChild(inner);
         return wrap;
     };
 
-    /* ── Build a single page face (shell: bg + shadow + shading + label) ── */
+    /**
+     * Build a logo image element on a page face.
+     */
+    const buildLogo = (item, assets) => {
+        const logoSrc = assets.logos[item.asset];
+        if (!logoSrc) return null;
+        const wrap = posEl('div', 'catalog-logo', item.x, item.y, item.width, item.height);
+        wrap.style.zIndex = '6';
+        const img = document.createElement('img');
+        img.className = 'catalog-logo-img';
+        img.src   = logoSrc;
+        img.alt   = 'GDLDENOXE';
+        img.loading = 'lazy';
+        wrap.appendChild(img);
+        return wrap;
+    };
 
-    const buildFaceShell = (faceClass, shadingSrc, bgSrc, checkboxId, assets) => {
+    /**
+     * Build a single page face (front or back) with layered composition:
+     *  z-order (bottom to top):
+     *    1. Background image (fills entire face)
+     *    2. Shadow overlay
+     *    3. Product items (frame + photo + splash + price)
+     *    4. Titles & logos
+     *    5. Edge shading (flipbook cosmetic)
+     *    6. Label (page flip trigger)
+     */
+    const buildFace = (faceClass, imgClass, shadingSrc, faceData, checkboxId, assets) => {
         const face = document.createElement('div');
         face.className = faceClass;
 
-        // Background
+        // 1. Background image
+        const bgIdx = faceData.background != null ? faceData.background : 0;
+        const bgSrc = assets.backgrounds[bgIdx % assets.backgrounds.length];
         const bgImg = document.createElement('img');
         bgImg.className = 'catalog-bg';
-        bgImg.src = bgSrc;
-        bgImg.alt = '';
-        bgImg.loading = 'lazy';
+        bgImg.src       = bgSrc;
+        bgImg.alt       = '';
+        bgImg.loading   = 'lazy';
         face.appendChild(bgImg);
 
-        // Page shadow
+        // 2. Page shadow overlay
         if (assets.shadows && assets.shadows.page) {
             const shadowImg = document.createElement('img');
             shadowImg.className = 'catalog-page-shadow';
-            shadowImg.src = assets.shadows.page;
-            shadowImg.alt = '';
+            shadowImg.src   = assets.shadows.page;
+            shadowImg.alt   = '';
             shadowImg.loading = 'lazy';
             face.appendChild(shadowImg);
         }
 
-        // Edge shading
+        // 3-4. Items (products, titles, logos)
+        if (faceData.items && faceData.items.length) {
+            faceData.items.forEach(item => {
+                let el = null;
+                switch (item.type) {
+                    case 'product':
+                        el = buildProduct(item, assets);
+                        break;
+                    case 'title':
+                        el = buildTitle(item);
+                        break;
+                    case 'logo':
+                        el = buildLogo(item, assets);
+                        break;
+                    case 'quote':
+                        el = buildQuote(item);
+                        break;
+                    case 'disclaimer':
+                        el = buildDisclaimer(item);
+                        break;
+                    case 'promo':
+                        el = buildPromo(item);
+                        break;
+                    case 'promoSplash':
+                        el = buildPromoSplash(item, assets);
+                        break;
+                }
+                if (el) face.appendChild(el);
+            });
+        }
+
+        // 5. Edge shading overlay (flipbook cosmetic)
         const shade = document.createElement('img');
         shade.className = 'edge_shading';
-        shade.src = shadingSrc;
-        shade.alt = '';
-        shade.loading = 'lazy';
+        shade.src       = shadingSrc;
+        shade.alt       = '';
+        shade.loading   = 'lazy';
         face.appendChild(shade);
 
-        // Flip label
+        // 6. Label — full-page click target for flipping
         const label = document.createElement('label');
         label.setAttribute('for', checkboxId);
         face.appendChild(label);
@@ -348,239 +429,78 @@
         return face;
     };
 
-    /* ── Auto-layout: distribute products into page face groups ──
-       Returns an array of face-data objects.
-    */
-
-    const autoLayout = (products, assets) => {
-        const faces = [];
-        let pi = 0;
-        let templateIdx = 0;
-
-        const bgRotate = rotator(assets.backgrounds);
-
-        // Shared rotators persist across all faces for variety
-        const frameRot = {
-            large:  rotator(LARGE_FRAMES),
-            medium: rotator(MEDIUM_FRAMES),
-            small:  rotator(SMALL_FRAMES)
-        };
-        const splashRot = {
-            large:  rotator(LARGE_SPLASHES),
-            medium: rotator(MEDIUM_SPLASHES),
-            small:  rotator(SMALL_SPLASHES)
-        };
-
-        while (pi < products.length) {
-            const remaining = products.length - pi;
-
-            // Pick template; downgrade if not enough products
-            let tmpl;
-            if (remaining === 1) {
-                tmpl = TEMPLATE_A;
-            } else if (remaining === 2) {
-                tmpl = TEMPLATE_B;
-            } else {
-                tmpl = TEMPLATES[templateIdx % TEMPLATES.length];
-                templateIdx++;
-                if (tmpl.slots.length > remaining) {
-                    tmpl = remaining >= 3 ? TEMPLATE_C : remaining >= 2 ? TEMPLATE_B : TEMPLATE_A;
-                }
-            }
-
-            const faceProducts = products.slice(pi, pi + tmpl.slots.length);
-            pi += faceProducts.length;
-
-            faces.push({
-                bgSrc: bgRotate(),
-                template: tmpl,
-                products: faceProducts,
-                frameRotators: frameRot,
-                splashRotators: splashRot
-            });
-        }
-
-        return faces;
-    };
-
-    /* ── Build cover face (front of first page) ── */
-
-    const buildCoverFace = (catalog, checkboxId, assets) => {
-        const cover = catalog.cover || {};
-        const bgSrc = assets.backgrounds[0];
-        const face = buildFaceShell('front_page', FRONT_SHADE, bgSrc, checkboxId, assets);
-
-        const logo = buildLogo(assets, 'dark', 5, 5, 90, 16);
-        if (logo) face.appendChild(logo);
-
-        if (cover.title)    face.appendChild(buildTitle(cover.title, 10, 30, 80, 14, '1.8rem', '#CC0000'));
-        if (cover.subtitle) face.appendChild(buildTitle(cover.subtitle, 15, 48, 70, 8, '0.9rem', '#FFFFFF'));
-        if (cover.tagline)  face.appendChild(buildTitle(cover.tagline, 12, 60, 76, 8, '1.1rem', '#FFD700'));
-        if (cover.footer)   face.appendChild(buildTitle(cover.footer, 15, 72, 70, 6, '0.5rem', '#FFFFFF'));
-        if (cover.url)      face.appendChild(buildTitle(cover.url, 15, 82, 70, 6, '0.4rem', '#FFFFFF', 'Tahoma, sans-serif'));
-
-        return face;
-    };
-
-    /* ── Build back-cover face (back of last page) ── */
-
-    const buildBackCoverFace = (catalog, checkboxId, assets) => {
-        const bc = catalog.backCover || {};
-        const bgSrc = assets.backgrounds[2 % assets.backgrounds.length];
-        const face = buildFaceShell('back_page', BACK_SHADE, bgSrc, checkboxId, assets);
-
-        const logo = buildLogo(assets, 'dark', 10, 15, 80, 18);
-        if (logo) face.appendChild(logo);
-
-        if (bc.title)    face.appendChild(buildTitle(bc.title, 8, 38, 84, 12, '1.2rem', '#CC0000'));
-        if (bc.subtitle) face.appendChild(buildTitle(bc.subtitle, 10, 53, 80, 14, '0.5rem', '#FFFFFF'));
-        if (bc.url)      face.appendChild(buildTitle(bc.url, 12, 72, 76, 8, '0.55rem', '#FFD700', 'Tahoma, sans-serif'));
-
-        return face;
-    };
-
-    /* ── Build a content face from auto-layout data ── */
-
-    const buildContentFace = (faceData, faceClass, shadingSrc, checkboxId, assets, faceIndex) => {
-        const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
-
-        // Logo top-left
-        const logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
-        if (logo) face.appendChild(logo);
-
-        // Sub-header
-        face.appendChild(buildTitle('DE NOCHE', 38, 4, 28, 5, '0.5rem', '#CC0000'));
-
-        // Products in their template slots
-        faceData.products.forEach((product, i) => {
-            const slot = faceData.template.slots[i];
-            if (!slot) return;
-            face.appendChild(buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators));
-        });
-
-        // Disclaimer
-        face.appendChild(buildDisclaimer(3, 93, 94, 6));
-
-        return face;
-    };
-
-    /* ── Dynamic CSS for N pages ── */
+    /* ---------- Dynamic CSS generator ---------- */
 
     const generateDynamicCSS = (N) => {
         let css = '/* Auto-generated: ' + N + ' pages */\n';
+
         for (let i = 1; i <= N; i++) {
             const z = (i === 1) ? N + 3 : N - i + 2;
             css += '#page' + i + ' { z-index: ' + z + '; }\n';
         }
+
         for (let i = 1; i <= N; i++) {
             const z = (i === N) ? N + 4 : i + 2;
             css += '#page' + i + '_checkbox:checked ~ #flip_book #page' + i +
                    ' { transform: rotateY(-180deg); z-index: ' + z + '; }\n';
         }
+
         const ids = [];
         for (let i = 1; i <= N; i++) ids.push('#page' + i + '_checkbox');
-        css += ':is(' + ids.join(', ') + '):checked ~ #flip_book { transform: translateX(50%) scale(1.03); }\n';
+        css += ':is(' + ids.join(', ') + '):checked ~ #flip_book ' +
+               '{ transform: translateX(50%) scale(1.03); }\n';
+
         dynamicCSS.textContent = css;
     };
 
-    /* ── Main build ── */
+    /* ---------- Main build ---------- */
 
     const buildFlipbook = (catalog) => {
-        const { products, marqueeText, assets } = catalog;
+        const { pages, marqueeText, assets } = catalog;
+        const N = pages.length;
 
-        // Update marquee
+        // Update marquee text
         if (marqueeText) {
             document.querySelectorAll('.marquee-text').forEach(el => {
                 el.textContent = marqueeText;
             });
         }
 
-        // Generate content faces from flat product list
-        const contentFaces = autoLayout(products || [], assets);
-
-        // Pair faces into physical pages: each page has front + back
-        // Page 1: front = cover, back = content[0]
-        // Pages 2..N-1: front = content[i], back = content[i+1]
-        // Last page: front = content[last] or filler, back = backCover
-
-        const pagePairs = [];
-
-        if (contentFaces.length === 0) {
-            pagePairs.push({ front: 'cover', back: 'backCover' });
-        } else {
-            // Page 1: cover + first content
-            pagePairs.push({ front: 'cover', back: contentFaces[0] });
-
-            // Pair remaining content faces two at a time
-            let fi = 1;
-            while (fi < contentFaces.length) {
-                if (fi + 1 < contentFaces.length) {
-                    pagePairs.push({ front: contentFaces[fi], back: contentFaces[fi + 1] });
-                    fi += 2;
-                } else {
-                    // Odd face left — it becomes front, backCover is back
-                    pagePairs.push({ front: contentFaces[fi], back: 'backCover' });
-                    fi++;
-                }
-            }
-
-            // If the last page's back isn't the backCover yet, add it
-            const lastPair = pagePairs[pagePairs.length - 1];
-            if (lastPair.back !== 'backCover') {
-                // Need a filler front for the backCover page
-                pagePairs.push({ front: 'filler', back: 'backCover' });
-            }
-        }
-
-        const N = pagePairs.length;
         const frag = document.createDocumentFragment();
+
+        // Scale wrapper — holds checkboxes + flip_book so CSS ~ selectors work
         const wrapper = document.createElement('div');
         wrapper.className = 'flipbook-scale-wrapper';
 
-        // Checkboxes (CSS flip mechanism)
+        // Checkboxes (must be siblings of #flip_book for CSS ~ selectors)
         for (let i = 1; i <= N; i++) {
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.id = 'page' + i + '_checkbox';
+            const cb   = document.createElement('input');
+            cb.type    = 'checkbox';
+            cb.id      = 'page' + i + '_checkbox';
             wrapper.appendChild(cb);
         }
 
+        // Flip book container
         const book = document.createElement('div');
         book.id = 'flip_book';
 
-        pagePairs.forEach((pair, idx) => {
-            const i = idx + 1;
+        pages.forEach((page, idx) => {
+            const i    = idx + 1;
             const cbId = 'page' + i + '_checkbox';
+
             const pageDiv = document.createElement('div');
             pageDiv.className = 'page';
-            pageDiv.id = 'page' + i;
+            pageDiv.id        = 'page' + i;
 
-            // ─── Front face ───
-            let frontFace;
-            if (pair.front === 'cover') {
-                frontFace = buildCoverFace(catalog, cbId, assets);
-            } else if (pair.front === 'filler') {
-                // Decorative filler page with quote
-                const bgSrc = assets.backgrounds[1 % assets.backgrounds.length];
-                frontFace = buildFaceShell('front_page', FRONT_SHADE, bgSrc, cbId, assets);
-                const logo = buildLogo(assets, 'dark', 5, 5, 60, 12);
-                if (logo) frontFace.appendChild(logo);
-                frontFace.appendChild(buildQuote(20, 20, 55, 45));
-                frontFace.appendChild(buildTitle('EDICIÓN LIMITADA', 10, 72, 80, 10, '0.8rem', '#FFD700'));
-                frontFace.appendChild(buildDisclaimer(3, 93, 94, 6));
-            } else {
-                frontFace = buildContentFace(pair.front, 'front_page', FRONT_SHADE, cbId, assets, idx * 2);
-            }
-            pageDiv.appendChild(frontFace);
+            pageDiv.appendChild(
+                buildFace('front_page', 'front_content', FRONT_SHADE,
+                          page.front, cbId, assets)
+            );
 
-            // ─── Back face ───
-            let backFace;
-            if (pair.back === 'backCover') {
-                backFace = buildBackCoverFace(catalog, cbId, assets);
-            } else {
-                backFace = buildContentFace(pair.back, 'back_page', BACK_SHADE, cbId, assets, idx * 2 + 1);
-            }
-            pageDiv.appendChild(backFace);
+            pageDiv.appendChild(
+                buildFace('back_page', 'back_content', BACK_SHADE,
+                          page.back, cbId, assets)
+            );
 
             book.appendChild(pageDiv);
         });
@@ -590,10 +510,11 @@
         catalogRoot.appendChild(frag);
         generateDynamicCSS(N);
 
+        // --- Responsive scaling ---
         requestAnimationFrame(() => resizeFlipbook());
     };
 
-    /* ── Responsive scaling ── */
+    /* ---------- Responsive scaling ---------- */
 
     const DESIGN_W = 298;
     const DESIGN_H = 420;
@@ -603,15 +524,18 @@
         if (!wrapper) return;
 
         const marqueeH = document.getElementById('marquee-bar')?.offsetHeight || 40;
-        const availW = window.innerWidth - 32;
-        const availH = window.innerHeight - marqueeH - 48;
+        const availW = window.innerWidth - 32;   // 16px padding each side
+        const availH = window.innerHeight - marqueeH - 48; // marquee + breathing room
+
         const scale = Math.min(availW / DESIGN_W, availH / DESIGN_H, 2.5);
 
-        wrapper.style.transform = 'scale(' + scale + ') translateZ(0)';
+        // Scale the wrapper — #flip_book stays untouched for CSS checked-state transforms
+        wrapper.style.transform = 'scale(' + scale + ')';
         wrapper.style.transformOrigin = 'top center';
         wrapper.style.width  = DESIGN_W + 'px';
         wrapper.style.height = DESIGN_H + 'px';
 
+        // Outer container provides correct layout space for the scaled wrapper
         const root = document.getElementById('catalog-root');
         if (root) {
             root.style.width  = (DESIGN_W * scale) + 'px';
@@ -625,15 +549,18 @@
         resizeTimer = setTimeout(resizeFlipbook, 80);
     }, { passive: true });
 
+    // Also re-scale when a checkbox is toggled (book shifts with translateX)
     document.addEventListener('change', (e) => {
         if (e.target.type === 'checkbox' && e.target.id.includes('_checkbox')) {
+            // Small delay so the CSS transition starts first
             setTimeout(resizeFlipbook, 50);
         }
     });
 
+    // Expose for external use
     window._resizeFlipbook = resizeFlipbook;
 
-    /* ── Fetch & init ── */
+    /* ---------- Fetch & initialise ---------- */
 
     fetch(CATALOG_URL)
         .then(res => {
@@ -730,11 +657,13 @@
         'color: #0f0; font-weight: bold; font-size: 13px;'
     );
 
+    // Tooltip element
     const tooltip = document.createElement('div');
     tooltip.className = 'debug-tooltip';
     tooltip.style.display = 'none';
     document.body.appendChild(tooltip);
 
+    // Add grid overlays once flip_book is generated
     const observer = new MutationObserver(() => {
         const flipBook = document.getElementById('flip_book');
         if (!flipBook) return;
@@ -750,6 +679,7 @@
     const root = document.getElementById('catalog-root') || document.body;
     observer.observe(root, { childList: true, subtree: true });
 
+    // Click handler — capture phase so it fires before labels
     let hideTimer = null;
     document.addEventListener('click', (e) => {
         const face = e.target.closest('.front_page, .back_page');
@@ -766,6 +696,7 @@
             'color: #0f0; font-size: 14px;'
         );
 
+        // Tooltip
         tooltip.textContent = pageId + ' ' + side + ':  x=' + x + '%  y=' + y + '%';
         tooltip.style.left    = (e.clientX + 14) + 'px';
         tooltip.style.top     = (e.clientY - 32) + 'px';

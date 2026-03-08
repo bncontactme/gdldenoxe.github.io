@@ -183,7 +183,6 @@ input[type="checkbox"] { display: none; }
     transform-origin: left center;
     transform-style: preserve-3d;
     transition: transform 0.5s ease-out;
-    will-change: transform;
 }
 
 .front_page,
@@ -218,11 +217,8 @@ input[type="checkbox"] { display: none; }
     position: absolute;
     width: 100%;
     height: 100%;
-    object-fit: fill;
     z-index: 98;
     pointer-events: none;
-    opacity: 0.55;
-    mix-blend-mode: multiply;
 }
 
 .front_content,
@@ -279,7 +275,8 @@ input[type="checkbox"] { display: none; }
     object-fit: cover;
     z-index: 2;
     pointer-events: none;
-    opacity: 0.2;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
 }
 
 /* --- Product item container (flex column: image area + name + info) --- */
@@ -287,7 +284,7 @@ input[type="checkbox"] { display: none; }
     position: absolute;
     z-index: 101;
     cursor: pointer;
-    overflow: visible;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     transition: transform 0.2s ease, filter 0.2s ease;
@@ -318,83 +315,91 @@ input[type="checkbox"] { display: none; }
     object-fit: fill;
     z-index: 3;
     pointer-events: none;
-    filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
 }
 
-/* --- Frame shadow (removed — single drop-shadow on .catalog-frame is sufficient) --- */
+/* --- Frame shadow --- */
 .catalog-frame-shadow {
-    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.3;
+    filter: blur(3px);
 }
 
 /* --- Image clip container — crops photo ON TOP of frame --- */
 /* Default clip (fallback for unknown frame types) */
 .catalog-image-clip {
     position: absolute;
-    top: 3.5%;
-    left: 3.5%;
-    width: 93%;
-    height: 92%;
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 94%;
     overflow: hidden;
     z-index: 5;
-    border-radius: 5px;
+    border-radius: 6px;
     background: transparent;
 }
 
-/* Per-frame-type clip overrides — insets tightened to prevent photo bleed */
+/* Per-frame-type clip overrides — match each frame's red border inner edge */
 /* tall: red rectangular border, narrow sides */
 [data-frame="tall"] .catalog-image-clip {
-    top: 3%;
-    left: 4.5%;
-    width: 91%;
-    height: 93%;
-    border-radius: 6px;
+    top: 1.5%;
+    left: 3%;
+    width: 94%;
+    height: 96%;
+    border-radius: 8px;
 }
 
 /* square-lg: red rectangular, medium border */
 [data-frame="square-lg"] .catalog-image-clip {
-    top: 3.5%;
-    left: 3.5%;
-    width: 93%;
-    height: 92%;
-    border-radius: 5px;
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 95%;
+    border-radius: 6px;
 }
 
 /* square-sm / square-sm2: red rectangular, thinner */
 [data-frame="square-sm"] .catalog-image-clip,
 [data-frame="square-sm2"] .catalog-image-clip {
-    top: 3%;
-    left: 3%;
-    width: 94%;
-    height: 93%;
-    border-radius: 4px;
+    top: 1.5%;
+    left: 1.5%;
+    width: 97%;
+    height: 96%;
+    border-radius: 5px;
 }
 
 /* featured-1: decorative, thicker borders */
 [data-frame="featured-1"] .catalog-image-clip {
-    top: 4%;
-    left: 4%;
-    width: 92%;
-    height: 91%;
-    border-radius: 6px;
+    top: 2.5%;
+    left: 2.5%;
+    width: 95%;
+    height: 94%;
+    border-radius: 8px;
 }
 
 /* featured-2 / featured-3: decorative, thick borders */
 [data-frame="featured-2"] .catalog-image-clip,
 [data-frame="featured-3"] .catalog-image-clip {
-    top: 3.5%;
-    left: 3.5%;
-    width: 93%;
-    height: 92%;
-    border-radius: 5px;
+    top: 2%;
+    left: 2%;
+    width: 96%;
+    height: 95%;
+    border-radius: 6px;
 }
 
 /* rounded: green rounded border, thick edges */
 [data-frame="rounded"] .catalog-image-clip {
-    top: 5.5%;
-    left: 5.5%;
-    width: 89%;
-    height: 87%;
-    border-radius: 12px;
+    top: 4%;
+    left: 4%;
+    width: 92%;
+    height: 90%;
+    border-radius: 14px;
 }
 
 /* --- Product photo (fills clip container) --- */
@@ -441,11 +446,13 @@ input[type="checkbox"] { display: none; }
 .catalog-price-dollar {
     font: italic 900 0.75em/1 var(--font-price);
     color: var(--price-red);
+    -webkit-text-stroke: 1px var(--price-stroke);
+    paint-order: stroke fill;
     text-shadow:
-        1px 1px 0 #000,
-        -1px -1px 0 #000,
-        1px -1px 0 #000,
-        -1px 1px 0 #000;
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
     margin-right: 0px;
     align-self: flex-start;
 }
@@ -453,20 +460,23 @@ input[type="checkbox"] { display: none; }
 .catalog-price-amount {
     font: italic 900 1em/1 var(--font-price);
     color: var(--price-red);
+    -webkit-text-stroke: 1.5px var(--price-stroke);
+    paint-order: stroke fill;
     text-shadow:
-        1px 1px 0 #000,
-        -1px -1px 0 #000,
-        1px -1px 0 #000,
-        -1px 1px 0 #000,
-        2px 2px 0 rgba(0,0,0,0.5);
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
 }
 
 .catalog-price-cents {
     font: italic 900 0.42em/1 var(--font-price);
     color: var(--price-red);
+    -webkit-text-stroke: 0.8px var(--price-stroke);
+    paint-order: stroke fill;
     text-shadow:
-        1px 1px 0 #000,
-        -1px -1px 0 #000;
+        1px 1px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.5);
     vertical-align: super;
     margin-left: 1px;
     margin-top: 0;
