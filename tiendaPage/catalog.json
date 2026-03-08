@@ -41,83 +41,33 @@
     },
 
     "pages": [
+
         {
             "front": {
                 "background": 0,
                 "items": [
-                    {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 8, "y": 15, "width": 84, "height": 22
-                    },
-                    {
-                        "type": "title",
-                        "text": "CATÁLOGO 2026",
-                        "x": 10, "y": 42, "width": 80, "height": 12,
-                        "fontSize": "1.8rem",
-                        "color": "#CC0000"
-                    },
-                    {
-                        "type": "title",
-                        "text": "EDICIÓN ESPECIAL",
-                        "x": 15, "y": 56, "width": 70, "height": 8,
-                        "fontSize": "0.9rem",
-                        "color": "#FFFFFF"
-                    },
-                    {
-                        "type": "title",
-                        "text": "BOXERS EXCLUSIVOS",
-                        "x": 12, "y": 66, "width": 76, "height": 8,
-                        "fontSize": "1.1rem",
-                        "color": "#FFD700"
-                    },
-                    {
-                        "type": "title",
-                        "text": "www.guadalajaradenoxe.com",
-                        "x": 15, "y": 82, "width": 70, "height": 6,
-                        "fontSize": "0.4rem",
-                        "color": "#FFFFFF",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "logo", "asset": "dark", "x": 5, "y": 8, "width": 90, "height": 18 },
+                    { "type": "title", "text": "CATÁLOGO 2026", "x": 10, "y": 35, "width": 80, "height": 14, "fontSize": "1.8rem", "color": "#CC0000" },
+                    { "type": "title", "text": "EDICIÓN ESPECIAL", "x": 15, "y": 52, "width": 70, "height": 8, "fontSize": "0.9rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "BOXERS EXCLUSIVOS", "x": 12, "y": 64, "width": 76, "height": 8, "fontSize": "1.1rem", "color": "#FFD700" },
+                    { "type": "title", "text": "www.guadalajaradenoxe.com", "x": 15, "y": 80, "width": 70, "height": 6, "fontSize": "0.4rem", "color": "#FFFFFF", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 1,
                 "items": [
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-1",
-                        "name": "BOXER GDLDENOXE #1",
-                        "price": 299,
-                        "currency": "MXN",
+                        "type": "product", "id": "boxer-1",
+                        "name": "BOXER GDLDENOXE #1", "price": 299, "currency": "MXN",
                         "image": "assets/products/boxers/boxer 1.jpg",
-                        "frame": "tall",
-                        "splash": "large",
-                        "badge": "NUEVO",
-                        "description": "Boxer exclusivo edición Guadalajara De Noche. Tela premium, diseño único.",
+                        "frame": "tall", "splash": "large", "badge": "NUEVO",
+                        "description": "Boxer exclusivo edición Guadalajara De Noche.",
                         "link": "#",
-                        "x": 4, "y": 18, "width": 50, "height": 56
+                        "x": 3, "y": 19, "width": 55, "height": 65
                     },
-                    {
-                        "type": "title",
-                        "text": "ES GRATIS DISFRUTAR DE LAS COSAS QUE DE NOCHE NO TIENEN PRECIO..",
-                        "x": 55, "y": 22, "width": 42, "height": 22,
-                        "fontSize": "0.45rem",
-                        "color": "#FFFFFF"
-                    },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. PROMOCIÓN VÁLIDA HASTA AGOTAR STOCK. IMÁGENES REFERENCIALES. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "title", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 58, "y": 28, "width": 40, "height": 22, "fontSize": "0.42rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -127,77 +77,42 @@
                 "background": 2,
                 "items": [
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-2",
-                        "name": "BOXER GDLDENOXE #2",
-                        "price": 349,
-                        "currency": "MXN",
+                        "type": "product", "id": "boxer-2",
+                        "name": "BOXER GDLDENOXE #2", "price": 169, "currency": "MXN",
                         "image": "assets/products/boxers/boxer 2.jpg",
-                        "frame": "featured-1",
-                        "splash": "medium-1",
-                        "badge": "EXCLUSIVO",
-                        "description": "Diseño premium con estampado exclusivo Guadalajara De Noche.",
+                        "frame": "square-lg", "splash": "medium-1", "badge": "EXCLUSIVO",
+                        "description": "Diseño premium con estampado exclusivo.",
                         "link": "#",
-                        "x": 4, "y": 18, "width": 50, "height": 56
+                        "x": 3, "y": 5, "width": 50, "height": 48
                     },
+                    { "type": "title", "text": "Hoy En Jueves de Tianguis", "x": 50, "y": 3, "width": 48, "height": 22, "fontSize": "0.9rem", "color": "#FFD700" },
                     {
-                        "type": "title",
-                        "text": "DISEÑO EXCLUSIVO GUADALAJARA DE NOCHE",
-                        "x": 55, "y": 24, "width": 42, "height": 18,
-                        "fontSize": "0.45rem",
-                        "color": "#FFD700"
+                        "type": "product", "id": "boxer-2b",
+                        "name": "BOXER #2 — VISTA ALTERNA", "price": 999, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 2.2.jpg",
+                        "frame": "featured-1", "splash": "small-1",
+                        "description": "Vista alternativa del Boxer #2.",
+                        "link": "#",
+                        "x": 40, "y": 56, "width": 52, "height": 36
                     },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. PROMOCIÓN VÁLIDA HASTA AGOTAR STOCK. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 3,
                 "items": [
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-2b",
-                        "name": "BOXER #2 — VISTA ALTERNA",
-                        "price": 349,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 2.2.jpg",
-                        "frame": "featured-2",
-                        "splash": "small-1",
-                        "description": "Vista alternativa del Boxer #2. Mismo precio, mismo estilo.",
+                        "type": "product", "id": "boxer-3",
+                        "name": "BOXER GDLDENOXE #3", "price": 777, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 3.jpg",
+                        "frame": "featured-2", "splash": "large",
+                        "description": "Boxer clásico con el sello Guadalajara De Noche.",
                         "link": "#",
-                        "x": 38, "y": 18, "width": 50, "height": 56
+                        "x": 5, "y": 19, "width": 82, "height": 65
                     },
-                    {
-                        "type": "title",
-                        "text": "CALIDAD PREMIUM HECHA EN MÉXICO",
-                        "x": 3, "y": 24, "width": 34, "height": 18,
-                        "fontSize": "0.45rem",
-                        "color": "#FFFFFF"
-                    },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. IMÁGENES REFERENCIALES. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "title", "text": "ES GRATIS disfrutar de las cosas que DE NOCHE NO TIENEN PRECIO..", "x": 55, "y": 65, "width": 40, "height": 18, "fontSize": "0.38rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -206,78 +121,52 @@
             "front": {
                 "background": 4,
                 "items": [
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 55, "height": 12 },
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-3",
-                        "name": "BOXER GDLDENOXE #3",
-                        "price": 279,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 3.jpg",
-                        "frame": "square-lg",
-                        "splash": "medium-2",
-                        "badge": "OFERTA",
-                        "description": "Boxer clásico con el sello Guadalajara De Noche. Comodidad garantizada.",
+                        "type": "product", "id": "boxer-3b",
+                        "name": "BOXER #3 — VISTA ALTERNA", "price": 666, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 3.2.jpg",
+                        "frame": "featured-3", "splash": "wide", "badge": "OFERTA",
+                        "description": "Vista alternativa del Boxer #3.",
                         "link": "#",
-                        "x": 4, "y": 18, "width": 50, "height": 56
+                        "x": 3, "y": 14, "width": 45, "height": 75
                     },
                     {
-                        "type": "title",
-                        "text": "¡OFERTA ESPECIAL! APROVECHA ANTES DE QUE SE ACABE",
-                        "x": 55, "y": 22, "width": 42, "height": 22,
-                        "fontSize": "0.45rem",
-                        "color": "#FF3333"
+                        "type": "product", "id": "boxer-4-sm",
+                        "name": "BOXER GDLDENOXE #4", "price": 399, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 4.jpg",
+                        "frame": "square-sm", "splash": "star-1",
+                        "description": "Edición premium Guadalajara De Noche.",
+                        "link": "#",
+                        "x": 52, "y": 6, "width": 38, "height": 28
                     },
                     {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. STOCK LIMITADO. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                        "type": "product", "id": "boxer-5-md",
+                        "name": "BOXER GDLDENOXE #5", "price": 999, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 5.jpg",
+                        "frame": "square-lg", "splash": "star-2",
+                        "description": "Nuevo diseño urbano Guadalajara De Noche.",
+                        "link": "#",
+                        "x": 48, "y": 55, "width": 46, "height": 36
+                    },
+                    { "type": "title", "text": "*Aplican restricciones. Promoción válida hasta agotar stock de cada producto. Imágenes referenciales. Encuentras más productos y marcas en www.guadalajaradenoxe.com", "x": 3, "y": 91, "width": 94, "height": 8, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 0,
                 "items": [
+                    { "type": "logo", "asset": "dark", "x": 3, "y": 2, "width": 70, "height": 15 },
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-3b",
-                        "name": "BOXER #3 — VISTA ALTERNA",
-                        "price": 279,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 3.2.jpg",
-                        "frame": "featured-3",
-                        "splash": "small-2",
-                        "description": "Vista alternativa del Boxer #3. Mismo estilo, misma calidad.",
+                        "type": "product", "id": "boxer-4",
+                        "name": "BOXER GDLDENOXE #4", "price": 399, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 4.jpg",
+                        "frame": "tall", "splash": "medium-2", "badge": "PREMIUM",
+                        "description": "Edición premium. Tela de alta gama.",
                         "link": "#",
-                        "x": 38, "y": 18, "width": 50, "height": 56
+                        "x": 3, "y": 19, "width": 55, "height": 65
                     },
-                    {
-                        "type": "title",
-                        "text": "EL ESTILO QUE TE MERECES",
-                        "x": 3, "y": 30, "width": 34, "height": 14,
-                        "fontSize": "0.5rem",
-                        "color": "#FFD700"
-                    },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. IMÁGENES REFERENCIALES. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "title", "text": "EDICIÓN PREMIUM — SOLO PARA CONOCEDORES", "x": 58, "y": 24, "width": 40, "height": 22, "fontSize": "0.42rem", "color": "#FFD700" },
+                    { "type": "title", "text": "*Aplican restricciones. Envíos a todo México. www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         },
@@ -287,151 +176,34 @@
                 "background": 1,
                 "items": [
                     {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-4",
-                        "name": "BOXER GDLDENOXE #4",
-                        "price": 399,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 4.jpg",
-                        "frame": "square-sm",
-                        "splash": "medium-3",
-                        "badge": "PREMIUM",
-                        "description": "Edición premium. Tela de alta gama con diseño Guadalajara De Noche.",
+                        "type": "product", "id": "boxer-5",
+                        "name": "BOXER GDLDENOXE #5", "price": 319, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 5.jpg",
+                        "frame": "square-lg", "splash": "medium-3", "badge": "NUEVO",
+                        "description": "Nuevo diseño Guadalajara De Noche.",
                         "link": "#",
-                        "x": 4, "y": 18, "width": 50, "height": 56
+                        "x": 3, "y": 5, "width": 50, "height": 48
                     },
+                    { "type": "title", "text": "LO NUEVO DE GUADALAJARA DE NOCHE", "x": 52, "y": 5, "width": 46, "height": 20, "fontSize": "0.7rem", "color": "#FFD700" },
                     {
-                        "type": "title",
-                        "text": "EDICIÓN PREMIUM — SOLO PARA CONOCEDORES",
-                        "x": 55, "y": 24, "width": 42, "height": 20,
-                        "fontSize": "0.42rem",
-                        "color": "#FFFFFF"
+                        "type": "product", "id": "boxer-5b",
+                        "name": "BOXER #5 — VISTA ALTERNA", "price": 319, "currency": "MXN",
+                        "image": "assets/products/boxers/boxer 5.2.jpg",
+                        "frame": "featured-1", "splash": "medium-4",
+                        "description": "Vista alternativa del Boxer #5.",
+                        "link": "#",
+                        "x": 40, "y": 56, "width": 52, "height": 36
                     },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. ENVÍOS A TODO MÉXICO. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "title", "text": "*Aplican restricciones. Stock limitado. www.guadalajaradenoxe.com", "x": 3, "y": 90, "width": 94, "height": 9, "fontSize": "0.2rem", "color": "#333333", "fontFamily": "Tahoma, sans-serif" }
                 ]
             },
             "back": {
                 "background": 2,
                 "items": [
-                    {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-5",
-                        "name": "BOXER GDLDENOXE #5",
-                        "price": 319,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 5.jpg",
-                        "frame": "square-sm2",
-                        "splash": "medium-4",
-                        "badge": "NUEVO",
-                        "description": "Nuevo diseño Guadalajara De Noche. Comodidad y estilo urbano.",
-                        "link": "#",
-                        "x": 38, "y": 18, "width": 50, "height": 56
-                    },
-                    {
-                        "type": "title",
-                        "text": "LO NUEVO DE GUADALAJARA DE NOCHE",
-                        "x": 3, "y": 26, "width": 34, "height": 16,
-                        "fontSize": "0.48rem",
-                        "color": "#FFD700"
-                    },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. STOCK LIMITADO. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
-                ]
-            }
-        },
-
-        {
-            "front": {
-                "background": 3,
-                "items": [
-                    {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 3, "y": 1, "width": 65, "height": 14
-                    },
-                    {
-                        "type": "product",
-                        "id": "boxer-5b",
-                        "name": "BOXER #5 — VISTA ALTERNA",
-                        "price": 319,
-                        "currency": "MXN",
-                        "image": "assets/products/boxers/boxer 5.2.jpg",
-                        "frame": "tall",
-                        "splash": "wide",
-                        "description": "Vista alternativa del Boxer #5. Diseño urbano Guadalajara De Noche.",
-                        "link": "#",
-                        "x": 4, "y": 18, "width": 50, "height": 56
-                    },
-                    {
-                        "type": "title",
-                        "text": "ESTILO URBANO NOCTURNO",
-                        "x": 55, "y": 26, "width": 42, "height": 16,
-                        "fontSize": "0.48rem",
-                        "color": "#FFFFFF"
-                    },
-                    {
-                        "type": "title",
-                        "text": "*APLICAN RESTRICCIONES. IMÁGENES REFERENCIALES. WWW.GUADALAJARADENOXE.COM",
-                        "x": 3, "y": 90, "width": 94, "height": 8,
-                        "fontSize": "0.22rem",
-                        "color": "#333333",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
-                ]
-            },
-            "back": {
-                "background": 4,
-                "items": [
-                    {
-                        "type": "logo",
-                        "asset": "dark",
-                        "x": 10, "y": 18, "width": 80, "height": 20
-                    },
-                    {
-                        "type": "title",
-                        "text": "GRACIAS POR TU VISITA",
-                        "x": 8, "y": 42, "width": 84, "height": 10,
-                        "fontSize": "1.2rem",
-                        "color": "#CC0000"
-                    },
-                    {
-                        "type": "title",
-                        "text": "SÍGUENOS EN NUESTRAS REDES PARA MÁS PRODUCTOS EXCLUSIVOS",
-                        "x": 10, "y": 55, "width": 80, "height": 12,
-                        "fontSize": "0.5rem",
-                        "color": "#FFFFFF"
-                    },
-                    {
-                        "type": "title",
-                        "text": "WWW.GUADALAJARADENOXE.COM",
-                        "x": 12, "y": 72, "width": 76, "height": 8,
-                        "fontSize": "0.55rem",
-                        "color": "#FFD700",
-                        "fontFamily": "Tahoma, sans-serif"
-                    }
+                    { "type": "logo", "asset": "dark", "x": 10, "y": 15, "width": 80, "height": 20 },
+                    { "type": "title", "text": "GRACIAS POR TU VISITA", "x": 8, "y": 40, "width": 84, "height": 12, "fontSize": "1.2rem", "color": "#CC0000" },
+                    { "type": "title", "text": "SÍGUENOS EN NUESTRAS REDES PARA MÁS PRODUCTOS EXCLUSIVOS", "x": 10, "y": 55, "width": 80, "height": 14, "fontSize": "0.5rem", "color": "#FFFFFF" },
+                    { "type": "title", "text": "WWW.GUADALAJARADENOXE.COM", "x": 12, "y": 74, "width": 76, "height": 8, "fontSize": "0.55rem", "color": "#FFD700", "fontFamily": "Tahoma, sans-serif" }
                 ]
             }
         }
