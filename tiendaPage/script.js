@@ -70,36 +70,36 @@
         name: '2-split',
         slots: [
             {
-                x: 2, y: 14, width: 47, height: 72,
+                x: 4, y: 14, width: 44, height: 66,
                 framePool: 'medium', splashPool: 'medium',
                 splashX: 2, splashY: 58, splashW: 52, splashH: 38
             },
             {
-                x: 51, y: 14, width: 47, height: 72,
+                x: 50, y: 20, width: 44, height: 66,
                 framePool: 'medium', splashPool: 'medium',
                 splashX: 2, splashY: 58, splashW: 52, splashH: 38
             }
         ]
     };
 
-    /* Template C: 1 large left + 2 small right (magazine) */
+    /* Template C: 2 small left + 1 large right (magazine) */
     const TEMPLATE_C = {
-        name: '1L-2S',
+        name: '2S-1L',
         slots: [
             {
-                x: 2, y: 12, width: 52, height: 78,
+                x: 46, y: 12, width: 52, height: 78,
                 framePool: 'large', splashPool: 'large',
-                splashX: 30, splashY: 68, splashW: 52, splashH: 28
+                splashX: 18, splashY: 68, splashW: 52, splashH: 28
             },
             {
-                x: 56, y: 12, width: 42, height: 36,
+                x: 2, y: 12, width: 42, height: 36,
                 framePool: 'small', splashPool: 'small',
-                splashX: 52, splashY: -4, splashW: 44, splashH: 38
+                splashX: 4, splashY: -4, splashW: 44, splashH: 38
             },
             {
-                x: 56, y: 52, width: 42, height: 38,
+                x: 2, y: 52, width: 42, height: 38,
                 framePool: 'small', splashPool: 'small',
-                splashX: 48, splashY: 36, splashW: 48, splashH: 42
+                splashX: 0, splashY: 36, splashW: 48, splashH: 42
             }
         ]
     };
@@ -114,12 +114,13 @@
             {
                 x: 4, y: 12, width: 58, height: 38,
                 framePool: 'large', splashPool: 'medium',
-                splashX: 60, splashY: -2, splashW: 42, splashH: 36
+                splashX: 60, splashY: -2, splashW: 42, splashH: 36,
+                textLayout: 'right-of-image'
             },
             {
-                x: 50, y: 54, width: 48, height: 34,
+                x: 45, y: 56, width: 48, height: 34,
                 framePool: 'medium', splashPool: 'medium',
-                splashX: -6, splashY: -6, splashW: 38, splashH: 34,
+                splashX: 62, splashY: -18, splashW: 42, splashH: 34,
                 squareImage: true,
                 textLayout: 'left-of-image'
             }
@@ -260,10 +261,10 @@
             wrapper.appendChild(infoEl);
         }
 
-        // If textLayout is 'left-of-image', move name+info to an absolute container to the left
-        if (slot.textLayout === 'left-of-image') {
+        // If textLayout is 'left-of-image' or 'right-of-image', move name+info to an absolute container
+        if (slot.textLayout === 'left-of-image' || slot.textLayout === 'right-of-image') {
             const textBlock = document.createElement('div');
-            textBlock.className = 'catalog-text-left-of-image';
+            textBlock.className = 'catalog-text-' + slot.textLayout;
             const nameEl = wrapper.querySelector('.catalog-product-name');
             const infoEl = wrapper.querySelector('.catalog-product-info');
             if (nameEl) textBlock.appendChild(nameEl);
@@ -420,7 +421,7 @@
             pi += faceProducts.length;
 
             faces.push({
-                bgSrc: bgRotate(),
+                bgSrc: tmpl === TEMPLATE_D ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png' : bgRotate(),
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
@@ -435,7 +436,7 @@
 
     const buildCoverFace = (catalog, checkboxId, assets) => {
         const cover = catalog.cover || {};
-        const bgSrc = assets.backgrounds[0];
+        const bgSrc = 'assets/webAssets/pages/page1.webp';
 
         // Build cover WITHOUT shadows or edge shading
         const face = document.createElement('div');
@@ -454,9 +455,7 @@
         label.setAttribute('for', checkboxId);
         face.appendChild(label);
 
-        // Logo centered on the page (with drop-shadow)
-        const logo = buildLogo(assets, 'dark', 15, 38, 70, 16);
-        if (logo) face.appendChild(logo);
+        // Logo is already part of page1.webp — no dynamic logo needed
 
         return face;
     };
@@ -483,18 +482,35 @@
     const buildContentFace = (faceData, faceClass, shadingSrc, checkboxId, assets, faceIndex) => {
         const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
 
-        // Logo top-left
-        const logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
+        // Template D: remove edge shading (background image already has border)
+        if (faceData.template === TEMPLATE_D) {
+            const shading = face.querySelector('.edge_shading');
+            if (shading) shading.remove();
+        }
+
+        // Template D: no shadow overlay — uses dedicated background image
+
+        // Logo — large & centered for Template A, small top-left for others, none for Template D
+        let logo;
+        if (faceData.template === TEMPLATE_D) {
+            logo = null;
+        } else if (faceData.template === TEMPLATE_A) {
+            logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
+        } else {
+            logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
+        }
         if (logo) face.appendChild(logo);
 
-        // Sub-header
-        face.appendChild(buildTitle('DE NOCHE', 38, 4, 28, 5, '0.5rem', '#CC0000'));
+        // Border color alternates per page face (same color for all products on a face)
+        const borderClass = (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
 
         // Products in their template slots
         faceData.products.forEach((product, i) => {
             const slot = faceData.template.slots[i];
             if (!slot) return;
-            face.appendChild(buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators));
+            const card = buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators);
+            card.classList.add(borderClass);
+            face.appendChild(card);
         });
 
         // Disclaimer
