@@ -256,6 +256,11 @@
             imageArea.appendChild(sub);
         }
 
+        // Corner effects on small/medium frames only
+        if (poolKey === 'small' || poolKey === 'medium') {
+            addFrameCornerEffects(imageArea, assets);
+        }
+
         wrapper.appendChild(imageArea);
 
         // Product name
@@ -377,6 +382,31 @@
         inner.appendChild(text);
         wrap.appendChild(inner);
         return wrap;
+    };
+
+    /* ── Corner effect rotator ── */
+    let cornerEffectRotator = null;
+
+    const cornerPositions = ['tl', 'tr', 'bl', 'br'];
+    let cornerPosIdx = 0;
+
+    const addFrameCornerEffects = (imageArea, assets) => {
+        const corners = assets.cornerEffects;
+        if (!corners || !corners.length) return;
+        if (!cornerEffectRotator) cornerEffectRotator = rotator(corners);
+
+        // Pick one corner per product, cycling through positions
+        const pos = cornerPositions[cornerPosIdx % cornerPositions.length];
+        cornerPosIdx++;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'catalog-corner-effect corner-' + pos;
+        const img = document.createElement('img');
+        img.src = cornerEffectRotator();
+        img.alt = '';
+        img.loading = 'lazy';
+        wrap.appendChild(img);
+        imageArea.appendChild(wrap);
     };
 
     /* ── Build a single page face (shell: bg + shadow + shading + label) ── */

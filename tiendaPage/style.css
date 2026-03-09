@@ -754,6 +754,27 @@ input[type="checkbox"] { display: none; }
 }
 
 /* --- Logo image layer --- */
+
+/* --- Corner effect decorations (on product frames) --- */
+.catalog-corner-effect {
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+    width: 55%;
+    aspect-ratio: 179 / 166;
+    overflow: visible;
+}
+.catalog-corner-effect img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+/* Position each corner — image edge aligned to the frame corner */
+.catalog-corner-effect.corner-tl { top: 0; left: 0; transform: translate(-34%, -34%); }
+.catalog-corner-effect.corner-tr { top: 0; right: 0; transform: translate(34%, -34%); }
+.catalog-corner-effect.corner-bl { bottom: 0; left: 0; transform: translate(-34%, 34%); }
+.catalog-corner-effect.corner-br { bottom: 0; right: 0; transform: translate(34%, 34%); }
+
 .catalog-logo {
     position: absolute;
     z-index: 6;

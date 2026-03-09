@@ -71,7 +71,11 @@
             "dark":  "assets/webAssets/logo/path206.png",
             "light": "assets/webAssets/logo/path277.png",
             "alt":   "assets/webAssets/logo/path1517.png"
-        }
+        },
+        "cornerEffects": [
+            "assets/webAssets/splashes/corner effects/image2845.png",
+            "assets/webAssets/splashes/corner effects/path2270.png"
+        ]
     },
 
     "products": [
