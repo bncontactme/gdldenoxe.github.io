@@ -405,6 +405,27 @@ input[type="checkbox"] { display: none; }
     font-size: 0.28rem;
 }
 
+.catalog-text-price {
+    color: var(--store-red, #CC0000);
+    font-family: var(--font-price, 'Impact', sans-serif);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 0.7rem;
+    line-height: 1;
+    margin-bottom: 0.05rem;
+    -webkit-text-stroke: 1px var(--price-stroke, rgba(0,0,0,0.3));
+}
+
+.catalog-text-price .catalog-price-dollar {
+    font-size: 0.5rem;
+    vertical-align: super;
+}
+
+.catalog-text-price .catalog-price-cents {
+    font-size: 0.35rem;
+    vertical-align: super;
+}
+
 /* --- Image clip container — crops photo ON TOP of frame --- */
 /* Default clip (fallback for unknown frame types) */
 .catalog-image-clip {

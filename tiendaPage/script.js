@@ -104,25 +104,17 @@
         ]
     };
 
-    /* Template D: 2 products staggered offset layout
-       Product 1 upper-left with splash to its right,
-       Product 2 lower-right with splash to its left —
-       creates a dynamic zigzag arrangement. */
+    /* Template D: 1 featured product on the left
+       Large frame on left side, splash on the right,
+       price and info at bottom-right. */
     const TEMPLATE_D = {
-        name: '2-offset',
+        name: '1-left-featured',
         slots: [
             {
-                x: 4, y: 12, width: 58, height: 38,
-                framePool: 'large', splashPool: 'medium',
-                splashX: 60, splashY: -2, splashW: 42, splashH: 36,
+                x: 5, y: 18, width: 55, height: 68,
+                framePool: 'large', splashPool: 'large',
+                splashX: 55, splashY: 20, splashW: 44, splashH: 38,
                 textLayout: 'right-of-image'
-            },
-            {
-                x: 45, y: 56, width: 48, height: 34,
-                framePool: 'medium', splashPool: 'medium',
-                splashX: 62, splashY: -18, splashW: 42, splashH: 34,
-                squareImage: true,
-                textLayout: 'left-of-image'
             }
         ]
     };
@@ -265,6 +257,18 @@
         if (slot.textLayout === 'left-of-image' || slot.textLayout === 'right-of-image') {
             const textBlock = document.createElement('div');
             textBlock.className = 'catalog-text-' + slot.textLayout;
+
+            // Add red price above name
+            if (product.price != null) {
+                const priceLine = document.createElement('div');
+                priceLine.className = 'catalog-text-price';
+                const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
+                const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
+                const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
+                priceLine.appendChild(d); priceLine.appendChild(a); priceLine.appendChild(c);
+                textBlock.appendChild(priceLine);
+            }
+
             const nameEl = wrapper.querySelector('.catalog-product-name');
             const infoEl = wrapper.querySelector('.catalog-product-info');
             if (nameEl) textBlock.appendChild(nameEl);
@@ -421,7 +425,7 @@
             pi += faceProducts.length;
 
             faces.push({
-                bgSrc: tmpl === TEMPLATE_D ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png' : bgRotate(),
+                bgSrc: tmpl === TEMPLATE_D ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png' : tmpl === TEMPLATE_C ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png' : (tmpl === TEMPLATE_A || tmpl === TEMPLATE_B) ? 'assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png' : bgRotate(),
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
@@ -490,21 +494,21 @@
 
         // Template D: no shadow overlay — uses dedicated background image
 
-        // Logo — large & centered for Template A, small top-right for D, small top-left for C, none for Template B
+        // Logo — large & centered for Template A & D, small for B, small top-left for C
         let logo;
         if (faceData.template === TEMPLATE_B) {
             logo = buildLogo(assets, 'light', 57, 13, 32, 7);
+        } else if (faceData.template === TEMPLATE_D) {
+            logo = buildLogo(assets, 'dark', 5, 5, 90, 14);
         } else if (faceData.template === TEMPLATE_A) {
             logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
-        } else if (faceData.template === TEMPLATE_D) {
-            logo = buildLogo(assets, 'dark', 52, 2, 45, 10);
         } else {
             logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
         }
         if (logo) face.appendChild(logo);
 
-        // Border color alternates per page face (same color for all products on a face)
-        const borderClass = (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
+        // Border color: always red for Template D, alternates for others
+        const borderClass = (faceData.template === TEMPLATE_D) ? 'catalog-border-red' : (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
 
         // Products in their template slots
         faceData.products.forEach((product, i) => {
