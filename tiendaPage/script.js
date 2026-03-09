@@ -70,12 +70,12 @@
         name: '2-split',
         slots: [
             {
-                x: 4, y: 14, width: 44, height: 66,
+                x: 4, y: 10, width: 44, height: 66,
                 framePool: 'medium', splashPool: 'medium',
                 splashX: 2, splashY: 58, splashW: 52, splashH: 38
             },
             {
-                x: 50, y: 20, width: 44, height: 66,
+                x: 50, y: 26, width: 44, height: 66,
                 framePool: 'medium', splashPool: 'medium',
                 splashX: 2, splashY: 58, splashW: 52, splashH: 38
             }
@@ -490,12 +490,14 @@
 
         // Template D: no shadow overlay — uses dedicated background image
 
-        // Logo — large & centered for Template A, small top-left for others, none for Template D
+        // Logo — large & centered for Template A, small top-right for D, small top-left for C, none for Template B
         let logo;
-        if (faceData.template === TEMPLATE_D) {
+        if (faceData.template === TEMPLATE_B) {
             logo = null;
         } else if (faceData.template === TEMPLATE_A) {
             logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
+        } else if (faceData.template === TEMPLATE_D) {
+            logo = buildLogo(assets, 'dark', 52, 2, 45, 10);
         } else {
             logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
         }
