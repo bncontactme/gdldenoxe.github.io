@@ -29,7 +29,8 @@
     "pageNoLogo": [false, false, false, false, false, false, false, false],
 
     "pageCustomLogo": {
-        "1": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 }
+        "1": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
+        "5": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 }
     },
 
     "assets": {
