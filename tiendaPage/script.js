@@ -92,12 +92,12 @@
                 splashX: 16, splashY: 64, splashW: 50, splashH: 28
             },
             {
-                x: 3, y: 8, width: 40, height: 34,
+                x: 6, y: 8, width: 40, height: 34,
                 framePool: 'small', splashPool: 'small',
                 splashX: 4, splashY: -4, splashW: 42, splashH: 36
             },
             {
-                x: 3, y: 46, width: 40, height: 36,
+                x: 6, y: 46, width: 40, height: 36,
                 framePool: 'small', splashPool: 'small',
                 splashX: 0, splashY: 34, splashW: 46, splashH: 40
             }
@@ -119,7 +119,7 @@
         ]
     };
 
-    const TEMPLATES = [TEMPLATE_D, TEMPLATE_C, TEMPLATE_A, TEMPLATE_B, TEMPLATE_A, TEMPLATE_B];
+    const TEMPLATES = [TEMPLATE_D, TEMPLATE_C, TEMPLATE_A, TEMPLATE_B, TEMPLATE_A, TEMPLATE_B, TEMPLATE_A, TEMPLATE_A];
 
     /* ── DOM helpers ── */
 
@@ -492,6 +492,12 @@
     /* ── Build a content face from auto-layout data ── */
 
     const buildContentFace = (faceData, faceClass, shadingSrc, checkboxId, assets, faceIndex) => {
+        // Blank page: just background, no products or decorations
+        if (faceData.products.length === 1 && faceData.products[0]._blank) {
+            const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
+            return face;
+        }
+
         const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
 
         // Template D: remove edge shading (background image already has border)

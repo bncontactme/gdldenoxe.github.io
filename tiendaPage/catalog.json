@@ -21,10 +21,12 @@
         "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
         "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
         "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png"
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png"
     ],
 
-    "pageNoLogo": [false, false, false, false, false, false],
+    "pageNoLogo": [false, false, false, false, false, false, false, false],
 
     "pageCustomLogo": {
         "1": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 }
@@ -182,6 +184,25 @@
             "info": "NESKIQ Bolsa x 800 g",
             "stock": "3 u",
             "subtitle": "$111 / Objeto"
+        },
+        {
+            "id": "boxer-9",
+            "name": "PRODUCTO #9",
+            "price": 349, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 1.jpg",
+            "description": "Producto página 7.",
+            "link": "#",
+            "info": "Info producto 9",
+            "stock": "3 u"
+        },
+        {
+            "id": "blank-page-8",
+            "_blank": true,
+            "name": "",
+            "price": null,
+            "image": "",
+            "description": "",
+            "link": "#"
         }
     ]
 }
