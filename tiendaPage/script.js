@@ -70,7 +70,7 @@
         name: '2-split',
         slots: [
             {
-                x: 4, y: 10, width: 44, height: 66,
+                x: 4, y: 6, width: 44, height: 66,
                 framePool: 'medium', splashPool: 'medium',
                 splashX: 2, splashY: 58, splashW: 52, splashH: 38
             },
@@ -493,7 +493,7 @@
         // Logo — large & centered for Template A, small top-right for D, small top-left for C, none for Template B
         let logo;
         if (faceData.template === TEMPLATE_B) {
-            logo = null;
+            logo = buildLogo(assets, 'light', 57, 13, 32, 7);
         } else if (faceData.template === TEMPLATE_A) {
             logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
         } else if (faceData.template === TEMPLATE_D) {
