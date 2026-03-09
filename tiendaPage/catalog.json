@@ -77,10 +77,10 @@
             "assets/webAssets/splashes/corner effects/path2270.png"
         ],
         "bigSplashes": [
-            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png",
-            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png",
-            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png",
-            "assets/webAssets/splashes/big splashes/path4038.png"
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png", "position": "middle-center" },
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-right" },
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "bottom-right" },
+            { "src": "assets/webAssets/splashes/big splashes/path4038.png",                           "position": "top-right" }
         ]
     },
 
@@ -89,6 +89,7 @@
             "id": "boxer-5",
             "name": "QUESO CREMOSO",
             "price": 777, "cents": "00", "currency": "MXN",
+            "noSplash": true,
             "image": "assets/products/boxers/boxer 5.jpg",
             "description": "Nuevo diseño Guadalajara De Noche.",
             "link": "#",

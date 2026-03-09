@@ -755,19 +755,19 @@ input[type="checkbox"] { display: none; }
 
 /* --- Logo image layer --- */
 
-/* --- Big splash decoration (on large frames) --- */
+/* --- Big splash decoration (on large frames, reaches past edges) --- */
 .catalog-big-splash {
     position: absolute;
-    z-index: 7;
+    z-index: 5;
     pointer-events: none;
-    width: 45%;
+    width: 55%;
     height: auto;
 }
 .catalog-big-splash img {
     width: 100%;
     height: auto;
     object-fit: contain;
-    filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.35));
 }
 
 /* --- Corner effect decorations (on product frames) --- */
@@ -843,234 +843,371 @@ input[type="checkbox"] { display: none; }
 .modal-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 128, 128, 0.75);
 }
 
-/* Card */
-.modal-card {
+/* ============================================================
+   WINDOWS 95 MODAL
+   ============================================================ */
+
+.win95-window {
+    --w95-bg: #c0c0c0;
+    --w95-dark: #808080;
+    --w95-darker: #404040;
+    --w95-light: #dfdfdf;
+    --w95-white: #ffffff;
+    --w95-blue: #000080;
+    --w95-text: #000000;
+    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+    --w95-mono: 'Fixedsys', 'Courier New', monospace;
+
     position: relative;
-    width: 380px;
-    max-width: 92vw;
-    max-height: 88dvh;
+    width: 420px;
+    max-width: 94vw;
+    max-height: 90dvh;
     overflow-y: auto;
-    background: #FFFFF0;
-    border: 3px solid var(--store-red);
-    border-radius: 4px;
-    box-shadow:
-        0 0 0 2px var(--store-yellow),
-        4px 4px 0 rgba(0, 0, 0, 0.3),
-        0 8px 32px rgba(0, 0, 0, 0.5);
-    animation: modal-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: var(--w95-bg);
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark),
+                2px 2px 0 #000,
+                4px 4px 12px rgba(0, 0, 0, 0.5);
+    animation: win95-pop 0.2s ease-out;
+    font-family: var(--w95-font);
+    font-size: 12px;
+    color: var(--w95-text);
     -webkit-overflow-scrolling: touch;
+    border-radius: 0;
 }
 
-@keyframes modal-pop {
-    from { transform: scale(0.8); opacity: 0; }
+@keyframes win95-pop {
+    from { transform: scale(0.92); opacity: 0; }
     to   { transform: scale(1);   opacity: 1; }
 }
 
-/* Close button — XP red */
-.modal-close {
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    background: var(--store-red);
-    color: #fff;
-    border: 2px outset #ff6666;
-    border-radius: 3px;
-    font: 900 1.1rem/1 sans-serif;
+/* Title bar */
+.win95-titlebar {
+    background: linear-gradient(90deg, var(--w95-blue), #1084d0);
+    padding: 2px 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 20px;
+    user-select: none;
+}
+
+.win95-titlebar-icon {
+    font-size: 14px;
+    line-height: 1;
+    filter: grayscale(0.3);
+}
+
+.win95-titlebar-text {
+    flex: 1;
+    color: var(--w95-white);
+    font-family: var(--w95-font);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.win95-titlebar-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.win95-titlebar-buttons button {
+    width: 16px;
+    height: 14px;
+    background: var(--w95-bg);
+    border-top: 1px solid var(--w95-white);
+    border-left: 1px solid var(--w95-white);
+    border-right: 1px solid var(--w95-dark);
+    border-bottom: 1px solid var(--w95-dark);
+    font-family: var(--w95-font);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--w95-text);
     cursor: pointer;
     display: grid;
     place-items: center;
-    z-index: 10;
-    transition: background 0.15s;
+    padding: 0;
+    border-radius: 0;
 }
 
-.modal-close:hover  { background: #ff0000; }
-.modal-close:active { border-style: inset; }
+.win95-titlebar-buttons button:active {
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+}
 
-/* Header banner — supermarket gradient */
-.modal-header {
-    background: linear-gradient(180deg, var(--store-red-bright) 0%, var(--store-red) 40%, var(--store-red-dark) 100%);
-    padding: 10px 16px;
-    text-align: center;
-    border-bottom: 3px solid var(--store-yellow);
+/* Old .modal-close override — now inside titlebar */
+.win95-window .modal-close {
+    position: static;
+    width: 16px;
+    height: 14px;
+    background: var(--w95-bg);
+    border-top: 1px solid var(--w95-white);
+    border-left: 1px solid var(--w95-white);
+    border-right: 1px solid var(--w95-dark);
+    border-bottom: 1px solid var(--w95-dark);
+    color: var(--w95-text);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 0;
+    transition: none;
+}
+.win95-window .modal-close:hover { background: var(--w95-light); }
+.win95-window .modal-close:active {
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+}
+
+/* Menu bar */
+.win95-menubar {
+    background: var(--w95-bg);
+    padding: 2px 4px;
+    border-bottom: 1px solid var(--w95-dark);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    gap: 12px;
+    font-family: var(--w95-font);
+    font-size: 12px;
+    color: var(--w95-text);
 }
 
-.modal-header-stars {
-    color: var(--store-yellow);
-    font: 900 1rem/1 sans-serif;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+.win95-menu-item {
+    cursor: default;
+    padding: 1px 4px;
 }
-
-.modal-header-title {
-    color: #fff;
-    font: 900 1.3rem/1 var(--font-impact);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+.win95-menu-item:hover {
+    background: var(--w95-blue);
+    color: var(--w95-white);
 }
+.win95-menu-item u { text-decoration: underline; }
 
-/* Body */
-.modal-body {
-    padding: 16px;
+/* Body — sunken content */
+.win95-body {
+    margin: 6px;
+    padding: 12px;
+    background: var(--w95-white);
+    border-top: 2px solid var(--w95-dark);
+    border-left: 2px solid var(--w95-dark);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
-/* Product image */
-.modal-image-container {
+/* Image — sunken frame */
+.win95-image-frame {
     position: relative;
     width: 100%;
-    max-width: 220px;
+    max-width: 200px;
+    border-top: 2px solid var(--w95-dark);
+    border-left: 2px solid var(--w95-dark);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
 }
 
-.modal-product-image {
+.win95-window .modal-product-image {
     width: 100%;
     height: auto;
-    border: 2px solid #333;
-    border-radius: 2px;
-    background: #fff;
+    display: block;
+    border: none;
+    border-radius: 0;
+    background: var(--w95-white);
+    image-rendering: auto;
 }
 
-/* Badge ribbon (corner) */
-.modal-badge {
+/* Badge */
+.win95-window .modal-badge {
     display: none;
     position: absolute;
-    top: 10px;
-    left: -8px;
-    background: var(--store-red);
-    color: #fff;
-    font: 900 0.75rem/1 var(--font-impact);
-    padding: 4px 14px 4px 10px;
-    letter-spacing: 1px;
+    top: 4px;
+    left: 4px;
+    background: var(--w95-blue);
+    color: var(--w95-white);
+    font-family: var(--w95-font);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-top: 1px solid var(--w95-white);
+    border-left: 1px solid var(--w95-white);
+    border-right: 1px solid var(--w95-dark);
+    border-bottom: 1px solid var(--w95-dark);
+    transform: none;
+    box-shadow: none;
+    letter-spacing: 0;
     text-transform: uppercase;
-    transform: rotate(-5deg);
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
     z-index: 5;
 }
+.win95-window .modal-badge.has-badge { display: block; }
+.win95-window .modal-badge::after { display: none; }
 
-.modal-badge::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-left: 8px solid var(--store-red-dark);
-    border-bottom: 6px solid transparent;
+/* Info section */
+.win95-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
 }
 
-.modal-badge.has-badge { display: block; }
-
-/* Product name */
-.modal-product-name {
-    font: 900 1.1rem/1.2 var(--font-impact);
-    color: var(--store-red-dark);
+.win95-window .modal-product-name {
+    font-family: var(--w95-font);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--w95-text);
     text-align: center;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
+    text-shadow: none;
+}
+
+/* Price box — beveled raised panel */
+.win95-price-box {
+    background: var(--w95-bg);
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-dark);
+    border-bottom: 2px solid var(--w95-dark);
+    padding: 6px 16px;
+    text-align: center;
+}
+
+.win95-window .modal-price-text {
+    font-family: var(--w95-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: #cc0000;
+    text-shadow: none;
+    position: static;
+    z-index: auto;
 }
 
 /* Description */
-.modal-product-description {
-    font: 400 0.8rem/1.4 var(--font-system);
-    color: #333;
+.win95-window .modal-product-description {
+    font-family: var(--w95-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--w95-text);
     text-align: center;
-    max-width: 300px;
+    max-width: 320px;
 }
 
-/* === Price Starburst (CSS-only explosion shape) === */
-.modal-price-starburst {
-    position: relative;
-    width: 96px;
-    height: 96px;
-    display: grid;
-    place-items: center;
-    margin: 4px 0;
-}
-
-.modal-price-starburst::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--store-yellow);
-    clip-path: polygon(
-        50% 0%,  63% 10%, 78% 2%,  82% 18%, 98% 20%,
-        90% 34%, 100% 50%, 90% 66%, 98% 80%, 82% 82%,
-        78% 98%, 63% 88%, 50% 100%, 37% 88%, 22% 98%,
-        18% 82%, 2% 80%,  10% 66%, 0% 50%,  10% 34%,
-        2% 20%,  18% 18%, 22% 2%,  37% 10%
-    );
-    transform: rotate(15deg);
-    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.35));
-}
-
-.modal-price-text {
-    position: relative;
-    z-index: 2;
-    font: 900 1.15rem/1 var(--font-impact);
-    color: var(--store-red);
-    text-align: center;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-/* === Buy Button — XP beveled surface === */
-.modal-buy-btn {
+/* Buy button — classic Win95 push button */
+.win95-buy-btn {
     display: inline-block;
-    padding: 10px 28px;
-    background: linear-gradient(180deg, var(--store-yellow) 0%, var(--store-orange) 100%);
-    color: var(--store-red-dark);
-    font: 900 1rem/1 var(--font-impact);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    padding: 4px 24px;
+    background: var(--w95-bg);
+    color: var(--w95-text);
+    font-family: var(--w95-font);
+    font-size: 12px;
+    font-weight: 700;
     text-decoration: none;
-    border: 2px outset #ffcc00;
-    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
     cursor: pointer;
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
-    transition: transform 0.1s, box-shadow 0.1s;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: none;
+    border-radius: 0;
+    text-shadow: none;
 }
 
-.modal-buy-btn:hover {
-    background: linear-gradient(180deg, var(--store-yellow-light) 0%, var(--store-yellow) 100%);
-    transform: translateY(-1px);
-    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+.win95-buy-btn:hover {
+    background: var(--w95-light);
+    transform: none;
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
 }
 
-.modal-buy-btn:active {
-    border-style: inset;
-    transform: translateY(1px);
-    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+.win95-buy-btn:active {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+    padding: 5px 23px 3px 25px;
+    transform: none;
+}
+
+/* focus dotted outline inside button */
+.win95-buy-btn:focus-visible {
+    outline: 1px dotted var(--w95-text);
+    outline-offset: -4px;
+}
+
+/* Status bar */
+.win95-statusbar {
+    background: var(--w95-bg);
+    display: flex;
+    gap: 4px;
+    padding: 2px 4px;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    color: var(--w95-text);
+    border-top: 1px solid var(--w95-dark);
+}
+
+.win95-status-section {
+    flex: 1;
+    padding: 1px 4px;
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ============================================================
    DARK MODE — Modal & Hotspot Adaptations
    ============================================================ */
 
-.dark-mode .modal-card {
-    background: #1a1a2e;
-    border-color: var(--store-red);
+.dark-mode .win95-window {
+    --w95-bg: #2a2a3e;
+    --w95-dark: #1a1a2e;
+    --w95-darker: #0a0a1e;
+    --w95-light: #3a3a4e;
+    --w95-white: #4a4a5e;
+    --w95-text: #e0e0e0;
+    background: var(--w95-bg);
+    border-color: var(--w95-white) var(--w95-darker) var(--w95-darker) var(--w95-white);
 }
 
-.dark-mode .modal-product-name {
+.dark-mode .win95-body {
+    background: #1a1a2e;
+}
+
+.dark-mode .win95-window .modal-product-name {
     color: var(--store-yellow);
 }
 
-.dark-mode .modal-product-description {
+.dark-mode .win95-window .modal-product-description {
     color: #ccc;
 }
 
-.dark-mode .modal-product-image {
+.dark-mode .win95-window .modal-product-image {
     border-color: #555;
 }
 
@@ -1148,49 +1285,40 @@ input[type="checkbox"] { display: none; }
         font-size: 0.85rem;
     }
 
-    .modal-card {
+    .win95-window {
         max-width: 96vw;
         max-height: 90dvh;
     }
 
-    .modal-header {
-        padding: 8px 10px;
+    .win95-titlebar-text {
+        font-size: 11px;
     }
 
-    .modal-header-title {
-        font-size: 1rem;
-        letter-spacing: 1.5px;
-    }
-
-    .modal-header-stars {
-        font-size: 0.8rem;
-    }
-
-    .modal-body {
-        padding: 10px;
+    .win95-menubar {
+        font-size: 11px;
         gap: 8px;
     }
 
-    .modal-product-name {
-        font-size: 0.9rem;
+    .win95-body {
+        padding: 8px;
+        gap: 8px;
     }
 
-    .modal-product-description {
-        font-size: 0.7rem;
+    .win95-window .modal-product-name {
+        font-size: 12px;
     }
 
-    .modal-price-starburst {
-        width: 72px;
-        height: 72px;
+    .win95-window .modal-product-description {
+        font-size: 11px;
     }
 
-    .modal-price-text {
-        font-size: 0.9rem;
+    .win95-window .modal-price-text {
+        font-size: 15px;
     }
 
-    .modal-buy-btn {
-        padding: 8px 20px;
-        font-size: 0.85rem;
+    .win95-buy-btn {
+        padding: 3px 16px;
+        font-size: 11px;
     }
 }
 

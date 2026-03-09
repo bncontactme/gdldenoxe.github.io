@@ -60,7 +60,7 @@
             {
                 x: 8, y: 14, width: 84, height: 72,
                 framePool: 'large', splashPool: 'large',
-                splashX: 2, splashY: 56, splashW: 48, splashH: 40
+                splashX: 2, splashY: 60, splashW: 38, splashH: 34
             }
         ]
     };
@@ -89,7 +89,7 @@
             {
                 x: 48, y: 16, width: 48, height: 70,
                 framePool: 'large', splashPool: 'large',
-                splashX: 16, splashY: 64, splashW: 50, splashH: 28
+                splashX: 16, splashY: 68, splashW: 40, splashH: 24
             },
             {
                 x: 6, y: 8, width: 40, height: 34,
@@ -113,7 +113,7 @@
             {
                 x: 5, y: 18, width: 55, height: 68,
                 framePool: 'large', splashPool: 'large',
-                splashX: 55, splashY: 20, splashW: 44, splashH: 38,
+                splashX: 55, splashY: 30, splashW: 36, splashH: 30,
                 textLayout: 'right-of-image'
             }
         ]
@@ -145,7 +145,7 @@
 
     /* ── Build a single product card ── */
 
-    const buildProduct = (product, slot, assets, frameRotators, splashRotators) => {
+    const buildProduct = (product, slot, assets, frameRotators, splashRotators, templateName) => {
         const wrapper = posEl('div', 'catalog-product', slot.x, slot.y, slot.width, slot.height);
         wrapper.dataset.productId = product.id;
 
@@ -189,7 +189,7 @@
         }
 
         // Price splash — for shadowOnly slots, place in corner; for others, normal position
-        if (product.price != null && assets.splashes[splash]) {
+        if (product.price != null && assets.splashes[splash] && !product.noSplash) {
             const splashWrap = document.createElement('div');
             splashWrap.className = 'catalog-splash';
             if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
@@ -226,7 +226,7 @@
             priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
             splashWrap.appendChild(priceC);
             imageArea.appendChild(splashWrap);
-        } else if (product.price != null) {
+        } else if (product.price != null && !product.noSplash) {
             // Standalone price (no splash image available)
             const priceWrap = document.createElement('div');
             priceWrap.className = 'catalog-price-standalone';
@@ -263,7 +263,7 @@
 
         // Big splash on large frames only
         if (poolKey === 'large') {
-            addBigSplash(imageArea, slot, assets);
+            addBigSplash(imageArea, slot, assets, templateName);
         }
 
         wrapper.appendChild(imageArea);
@@ -389,42 +389,64 @@
         return wrap;
     };
 
-    /* ── Big splash rotator (for large frames) ── */
+    /* ── Big splash system (for large frames) ──
+       Position is specified per-image in catalog.json using named positions.
+       Available positions:
+         top-left, top-center, top-right,
+         middle-left, middle-right,
+         bottom-left, bottom-center, bottom-right
+    */
+
+    // Image metadata: natural aspect ratios for sizing
+    const BIG_SPLASH_META = {
+        'image1126': { w: 416, h: 301, ratio: 416/301 },  // wide
+        'image3732': { w: 251, h: 251, ratio: 1 },         // square
+        'image4252': { w: 629, h: 527, ratio: 629/527 },   // slightly wide
+        'path4038':  { w: 353, h: 254, ratio: 353/254 },    // wide
+    };
+
+    const getBigSplashMeta = (src) => {
+        for (const key of Object.keys(BIG_SPLASH_META)) {
+            if (src.includes(key)) return BIG_SPLASH_META[key];
+        }
+        return { w: 400, h: 300, ratio: 4/3 }; // fallback
+    };
+
+    // Named positions → CSS coordinates (% relative to imageArea)
+    const NAMED_POSITIONS = {
+        'top-left':       { left: -10, top: -8,  cssW: 55 },
+        'top-center':     { left: 20,  top: -12, cssW: 52 },
+        'top-right':      { left: 55,  top: -8,  cssW: 55 },
+        'middle-left':    { left: -12, top: 30,  cssW: 50 },
+        'middle-center':  { left: 68,  top: 15,  cssW: 75 },
+        'middle-right':   { left: 62,  top: 30,  cssW: 50 },
+        'bottom-left':    { left: -10, top: 60,  cssW: 55 },
+        'bottom-center':  { left: 20,  top: 65,  cssW: 52 },
+        'bottom-right':   { left: 55,  top: 60,  cssW: 55 },
+    };
+
     let bigSplashRotator = null;
 
-    const addBigSplash = (imageArea, slot, assets) => {
+    const addBigSplash = (imageArea, slot, assets, templateName) => {
         const bigs = assets.bigSplashes;
         if (!bigs || !bigs.length) return;
         if (!bigSplashRotator) bigSplashRotator = rotator(bigs);
 
-        // Price splash position
-        const splashX = slot.splashX != null ? slot.splashX : 2;
-        const splashY = slot.splashY != null ? slot.splashY : 56;
-        const isLeft = splashX < 50;
-        const isTop = splashY < 50;
+        const entry = bigSplashRotator();
+        // Support both old format (string) and new format (object with src + position)
+        const src = typeof entry === 'string' ? entry : entry.src;
+        const posName = (typeof entry === 'object' && entry.position) ? entry.position : 'top-right';
 
-        // Possible positions on the margin, away from price splash
-        // Each: { style object to apply }
-        const candidates = [];
-        // Opposite corner
-        candidates.push({ [isTop ? 'bottom' : 'top']: '-3%', [isLeft ? 'right' : 'left']: '-3%' });
-        // Middle of opposite horizontal edge
-        candidates.push({ [isTop ? 'bottom' : 'top']: '-3%', left: '50%', transform: 'translateX(-50%)' });
-        // Middle of opposite vertical edge
-        candidates.push({ top: '50%', [isLeft ? 'right' : 'left']: '-3%', transform: 'translateY(-50%)' });
-        // Same-side top/bottom but opposite horizontal
-        candidates.push({ [isTop ? 'top' : 'bottom']: '-3%', [isLeft ? 'right' : 'left']: '-3%' });
-
-        // Pick one, cycling through
-        if (!addBigSplash._idx) addBigSplash._idx = 0;
-        const pos = candidates[addBigSplash._idx % candidates.length];
-        addBigSplash._idx++;
+        const meta = getBigSplashMeta(src);
+        const pos = NAMED_POSITIONS[posName] || NAMED_POSITIONS['top-right'];
 
         const wrap = document.createElement('div');
         wrap.className = 'catalog-big-splash';
-        Object.keys(pos).forEach(k => { wrap.style[k] = pos[k]; });
+        wrap.style.left = pos.left + '%';
+        wrap.style.top = pos.top + '%';
+        wrap.style.width = pos.cssW + '%';
         const img = document.createElement('img');
-        img.src = bigSplashRotator();
+        img.src = src;
         img.alt = '';
         img.loading = 'lazy';
         wrap.appendChild(img);
@@ -631,7 +653,7 @@
         faceData.products.forEach((product, i) => {
             const slot = faceData.template.slots[i];
             if (!slot) return;
-            const card = buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators);
+            const card = buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators, faceData.template.name);
             card.classList.add(borderClass);
             face.appendChild(card);
         });

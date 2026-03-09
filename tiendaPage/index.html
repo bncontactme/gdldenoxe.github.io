@@ -40,31 +40,48 @@
         </audio>
     </main>
 
-    <!-- Product Detail Modal — 2000s Supermarket Style -->
+    <!-- Product Detail Modal — Windows 95 Style -->
     <div id="product-modal" class="modal-hidden" role="dialog" aria-modal="true" aria-label="Detalle de producto">
         <div class="modal-overlay"></div>
-        <div class="modal-card">
-            <button class="modal-close" aria-label="Cerrar">&times;</button>
-            <div class="modal-header">
-                <span class="modal-header-stars">&#9733; &#9733; &#9733;</span>
-                <span class="modal-header-title">PRODUCTO</span>
-                <span class="modal-header-stars">&#9733; &#9733; &#9733;</span>
+        <div class="modal-card win95-window">
+            <!-- Title bar -->
+            <div class="win95-titlebar">
+                <span class="win95-titlebar-icon">&#128230;</span>
+                <span class="win95-titlebar-text">producto.exe</span>
+                <div class="win95-titlebar-buttons">
+                    <button class="win95-btn-minimize" aria-label="Minimizar">_</button>
+                    <button class="win95-btn-maximize" aria-label="Maximizar">&#9633;</button>
+                    <button class="modal-close win95-btn-close" aria-label="Cerrar">&times;</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <div class="modal-image-container">
+            <!-- Menu bar -->
+            <div class="win95-menubar">
+                <span class="win95-menu-item"><u>A</u>rchivo</span>
+                <span class="win95-menu-item"><u>E</u>dición</span>
+                <span class="win95-menu-item"><u>V</u>er</span>
+                <span class="win95-menu-item">A<u>y</u>uda</span>
+            </div>
+            <!-- Body — sunken content area -->
+            <div class="modal-body win95-body">
+                <div class="modal-image-container win95-image-frame">
                     <div class="modal-badge"></div>
                     <img class="modal-product-image" src="" alt="">
                 </div>
-                <div class="modal-info">
+                <div class="modal-info win95-info">
                     <h2 class="modal-product-name"></h2>
-                    <div class="modal-price-starburst">
+                    <div class="win95-price-box">
                         <span class="modal-price-text"></span>
                     </div>
                     <p class="modal-product-description"></p>
-                    <a class="modal-buy-btn" href="#" target="_blank" rel="noopener noreferrer">
+                    <a class="modal-buy-btn win95-buy-btn" href="#" target="_blank" rel="noopener noreferrer">
                         &#161;COMPRAR AHORA!
                     </a>
                 </div>
+            </div>
+            <!-- Status bar -->
+            <div class="win95-statusbar">
+                <span class="win95-status-section">Listo</span>
+                <span class="win95-status-section">GDLDENOXE.COM</span>
             </div>
         </div>
     </div>
