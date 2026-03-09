@@ -24,7 +24,11 @@
         "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png"
     ],
 
-    "pageNoLogo": [false, true, false, false, false, false],
+    "pageNoLogo": [false, false, false, false, false, false],
+
+    "pageCustomLogo": {
+        "1": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 }
+    },
 
     "assets": {
         "backgrounds": [
@@ -67,7 +71,8 @@
         },
         "logos": {
             "dark":  "assets/webAssets/logo/path206.png",
-            "light": "assets/webAssets/logo/path277.png"
+            "light": "assets/webAssets/logo/path277.png",
+            "alt":   "assets/webAssets/logo/path1517.png"
         }
     },
 

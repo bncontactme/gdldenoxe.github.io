@@ -387,7 +387,7 @@
        Returns an array of face-data objects.
     */
 
-    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo) => {
+    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo, pageCustomLogo) => {
         const faces = [];
         let pi = 0;
         let templateIdx = 0;
@@ -436,7 +436,8 @@
                 products: faceProducts,
                 frameRotators: frameRot,
                 splashRotators: splashRot,
-                noLogo: !!(pageNoLogo && pageNoLogo[faceIdx - 1])
+                noLogo: !!(pageNoLogo && pageNoLogo[faceIdx - 1]),
+                customLogo: pageCustomLogo && pageCustomLogo[String(faceIdx - 1)] || null
             });
         }
 
@@ -503,7 +504,10 @@
 
         // Logo — large & centered for Template A & D, small for B, small top-left for C
         let logo;
-        if (faceData.noLogo) {
+        if (faceData.customLogo) {
+            const cl = faceData.customLogo;
+            logo = buildLogo(assets, cl.variant || 'dark', cl.x, cl.y, cl.w, cl.h);
+        } else if (faceData.noLogo) {
             logo = null;
         } else if (faceData.template === TEMPLATE_B) {
             logo = buildLogo(assets, 'light', 57, 13, 32, 7);
@@ -566,7 +570,7 @@
         }
 
         // Generate content faces from flat product list
-        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo);
+        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo, catalog.pageCustomLogo);
 
         // Pair faces into physical pages: each page has front + back
         // Page 1: front = cover, back = content[0]
