@@ -15,6 +15,17 @@
         "url": "WWW.GUADALAJARADENOXE.COM"
     },
 
+    "pageBackgrounds": [
+        "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png"
+    ],
+
+    "pageNoLogo": [false, true, false, false, false, false],
+
     "assets": {
         "backgrounds": [
             "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
@@ -62,38 +73,14 @@
 
     "products": [
         {
-            "id": "boxer-1",
-            "name": "BOXER GDLDENOXE #1",
-            "price": 299, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 1.jpg",
-            "description": "Boxer exclusivo edición Guadalajara De Noche.",
-            "link": "#",
-            "info": "Talla Única",
-            "stock": "5 u",
-            "badge": "NUEVO",
-            "subtitle": "$220 / Guardaropa"
-        },
-        {
-            "id": "boxer-2",
+            "id": "boxer-5",
             "name": "QUESO CREMOSO",
-            "price": 169, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 2.jpg",
-            "description": "Diseño premium con estampado exclusivo.",
+            "price": 777, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 5.jpg",
+            "description": "Nuevo diseño Guadalajara De Noche.",
             "link": "#",
             "info": "La Serenísima, el Kilo",
-            "stock": "4 u",
-            "subtitle": "$220 / Guardaropa"
-        },
-        {
-            "id": "boxer-2b",
-            "name": "CACAO EN POLVO",
-            "price": 999, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 2.2.jpg",
-            "description": "Vista alternativa del Boxer #2.",
-            "link": "#",
-            "info": "NESKIQ Bolsa x 800 g",
-            "stock": "3 u",
-            "subtitle": "$111 / Objeto"
+            "stock": "4 u"
         },
         {
             "id": "boxer-3",
@@ -127,25 +114,69 @@
             "subtitle": "$888 / Objeto Gdl"
         },
         {
-            "id": "boxer-5",
-            "name": "QUESO CREMOSO",
-            "price": 777, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 5.jpg",
-            "description": "Nuevo diseño Guadalajara De Noche.",
+            "id": "boxer-6",
+            "name": "PRODUCTO #6",
+            "price": 399, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 1.jpg",
+            "description": "Producto página 5.",
             "link": "#",
-            "info": "La Serenísima, el Kilo",
-            "stock": "4 u"
+            "info": "Info producto 6",
+            "stock": "5 u",
+            "badge": "NUEVO"
         },
         {
-            "id": "boxer-5b",
-            "name": "MANTECA VEGETAL",
+            "id": "boxer-7",
+            "name": "PRODUCTO #7",
             "price": 499, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 5.2.jpg",
-            "description": "Diseño alternativo urbano Guadalajara De Noche.",
+            "image": "assets/products/boxers/boxer 2.jpg",
+            "description": "Producto página 6 izquierda.",
             "link": "#",
-            "info": "Crisol x 500g",
-            "stock": "2 u",
-            "badge": "NUEVO"
+            "info": "Info producto 7",
+            "stock": "3 u"
+        },
+        {
+            "id": "boxer-8",
+            "name": "PRODUCTO #8",
+            "price": 599, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 3.jpg",
+            "description": "Producto página 6 derecha.",
+            "link": "#",
+            "info": "Info producto 8",
+            "stock": "2 u"
+        },
+        {
+            "id": "boxer-1",
+            "name": "BOXER GDLDENOXE #1",
+            "price": 299, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 1.jpg",
+            "description": "Boxer exclusivo edición Guadalajara De Noche.",
+            "link": "#",
+            "info": "Talla Única",
+            "stock": "5 u",
+            "badge": "NUEVO",
+            "subtitle": "$220 / Guardaropa"
+        },
+        {
+            "id": "boxer-2",
+            "name": "QUESO CREMOSO",
+            "price": 169, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 2.jpg",
+            "description": "Diseño premium con estampado exclusivo.",
+            "link": "#",
+            "info": "La Serenísima, el Kilo",
+            "stock": "4 u",
+            "subtitle": "$220 / Guardaropa"
+        },
+        {
+            "id": "boxer-2b",
+            "name": "CACAO EN POLVO",
+            "price": 999, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 2.2.jpg",
+            "description": "Vista alternativa del Boxer #2.",
+            "link": "#",
+            "info": "NESKIQ Bolsa x 800 g",
+            "stock": "3 u",
+            "subtitle": "$111 / Objeto"
         }
     ]
 }

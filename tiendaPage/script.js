@@ -119,7 +119,7 @@
         ]
     };
 
-    const TEMPLATES = [TEMPLATE_A, TEMPLATE_B, TEMPLATE_C, TEMPLATE_D];
+    const TEMPLATES = [TEMPLATE_D, TEMPLATE_C, TEMPLATE_A, TEMPLATE_B, TEMPLATE_A, TEMPLATE_B];
 
     /* ── DOM helpers ── */
 
@@ -387,10 +387,11 @@
        Returns an array of face-data objects.
     */
 
-    const autoLayout = (products, assets) => {
+    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo) => {
         const faces = [];
         let pi = 0;
         let templateIdx = 0;
+        let faceIdx = 0;
 
         const bgRotate = rotator(assets.backgrounds);
 
@@ -424,12 +425,18 @@
             const faceProducts = products.slice(pi, pi + tmpl.slots.length);
             pi += faceProducts.length;
 
+            const bg = (pageBackgrounds && pageBackgrounds[faceIdx])
+                ? pageBackgrounds[faceIdx]
+                : bgRotate();
+            faceIdx++;
+
             faces.push({
-                bgSrc: tmpl === TEMPLATE_D ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png' : tmpl === TEMPLATE_C ? 'assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png' : (tmpl === TEMPLATE_A || tmpl === TEMPLATE_B) ? 'assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png' : bgRotate(),
+                bgSrc: bg,
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
-                splashRotators: splashRot
+                splashRotators: splashRot,
+                noLogo: !!(pageNoLogo && pageNoLogo[faceIdx - 1])
             });
         }
 
@@ -496,7 +503,9 @@
 
         // Logo — large & centered for Template A & D, small for B, small top-left for C
         let logo;
-        if (faceData.template === TEMPLATE_B) {
+        if (faceData.noLogo) {
+            logo = null;
+        } else if (faceData.template === TEMPLATE_B) {
             logo = buildLogo(assets, 'light', 57, 13, 32, 7);
         } else if (faceData.template === TEMPLATE_D) {
             logo = buildLogo(assets, 'dark', 5, 5, 90, 14);
@@ -557,7 +566,7 @@
         }
 
         // Generate content faces from flat product list
-        const contentFaces = autoLayout(products || [], assets);
+        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo);
 
         // Pair faces into physical pages: each page has front + back
         // Page 1: front = cover, back = content[0]
