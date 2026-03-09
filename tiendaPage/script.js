@@ -204,6 +204,19 @@
             splashImg.loading = 'lazy';
             splashWrap.appendChild(splashImg);
 
+            // Per-image splash scaling adjustments (image only, not price)
+            const splashSrc = assets.splashes[splash];
+            if (splashSrc.includes('image2563')) {
+                splashImg.style.transform = 'scale(0.80)';
+                splashImg.style.transformOrigin = 'center';
+            } else if (splashSrc.includes('image2561')) {
+                splashImg.style.transform = 'scale(1.68)';
+                splashImg.style.transformOrigin = 'center';
+            } else if (splashSrc.includes('image2786') || splashSrc.includes('image2816')) {
+                splashImg.style.transform = 'scale(1.18)';
+                splashImg.style.transformOrigin = 'center';
+            }
+
             // Price text
             const priceC = document.createElement('div');
             priceC.className = 'catalog-price-container';
