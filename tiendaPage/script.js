@@ -87,19 +87,19 @@
         name: '2S-1L',
         slots: [
             {
-                x: 46, y: 12, width: 52, height: 78,
+                x: 48, y: 16, width: 48, height: 70,
                 framePool: 'large', splashPool: 'large',
-                splashX: 18, splashY: 68, splashW: 52, splashH: 28
+                splashX: 16, splashY: 64, splashW: 50, splashH: 28
             },
             {
-                x: 2, y: 12, width: 42, height: 36,
+                x: 3, y: 8, width: 40, height: 34,
                 framePool: 'small', splashPool: 'small',
-                splashX: 4, splashY: -4, splashW: 44, splashH: 38
+                splashX: 4, splashY: -4, splashW: 42, splashH: 36
             },
             {
-                x: 2, y: 52, width: 42, height: 38,
+                x: 3, y: 46, width: 40, height: 36,
                 framePool: 'small', splashPool: 'small',
-                splashX: 0, splashY: 36, splashW: 48, splashH: 42
+                splashX: 0, splashY: 34, splashW: 46, splashH: 40
             }
         ]
     };
