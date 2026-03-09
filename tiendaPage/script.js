@@ -119,7 +119,20 @@
         ]
     };
 
-    const TEMPLATES = [TEMPLATE_D, TEMPLATE_C, TEMPLATE_A, TEMPLATE_B, TEMPLATE_A, TEMPLATE_C, TEMPLATE_A, TEMPLATE_A];
+    /* ── Per-face config: template + logo in one place ──
+       Edit this array to control each face's layout AND logo.
+       When faces exceed this list, it cycles from the start.
+    */
+    const FACE_CONFIG = [
+        { template: TEMPLATE_D, logo: { variant: 'dark',  x: 5,  y: 5,  w: 90, h: 14 } },
+        { template: TEMPLATE_B, logo: { variant: 'light', x: 57, y: 13, w: 32, h: 7  } },
+        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
+        { template: TEMPLATE_C, logo: { variant: 'alt',   x: 52, y: 5,  w: 42, h: 10 } },
+        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
+        { template: TEMPLATE_B, logo: { variant: 'light', x: 57, y: 13, w: 32, h: 7  } },
+        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
+        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
+    ];
 
     /* ── DOM helpers ── */
 
@@ -387,10 +400,10 @@
        Returns an array of face-data objects.
     */
 
-    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo, pageCustomLogo) => {
+    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo) => {
         const faces = [];
         let pi = 0;
-        let templateIdx = 0;
+        let configIdx = 0;
         let faceIdx = 0;
 
         const bgRotate = rotator(assets.backgrounds);
@@ -409,14 +422,15 @@
 
         while (pi < products.length) {
             const remaining = products.length - pi;
+            const cfg = FACE_CONFIG[configIdx % FACE_CONFIG.length];
+            configIdx++;
 
-            // Pick template; downgrade if not enough products
+            // Pick template from config; downgrade if not enough products
             let tmpl;
             if (remaining === 1) {
                 tmpl = TEMPLATE_A;
             } else {
-                tmpl = TEMPLATES[templateIdx % TEMPLATES.length];
-                templateIdx++;
+                tmpl = cfg.template;
                 if (tmpl.slots.length > remaining) {
                     tmpl = remaining >= 3 ? TEMPLATE_C : remaining >= 2 ? TEMPLATE_B : TEMPLATE_A;
                 }
@@ -437,7 +451,7 @@
                 frameRotators: frameRot,
                 splashRotators: splashRot,
                 noLogo: !!(pageNoLogo && pageNoLogo[faceIdx - 1]),
-                customLogo: pageCustomLogo && pageCustomLogo[String(faceIdx - 1)] || null
+                logoConfig: cfg.logo
             });
         }
 
@@ -508,21 +522,15 @@
 
         // Template D: no shadow overlay — uses dedicated background image
 
-        // Logo — large & centered for Template A & D, small for B, small top-left for C
+        // Logo — position comes from FACE_CONFIG (bundled with template)
         let logo;
-        if (faceData.customLogo) {
-            const cl = faceData.customLogo;
-            logo = buildLogo(assets, cl.variant || 'dark', cl.x, cl.y, cl.w, cl.h);
-        } else if (faceData.noLogo) {
+        if (faceData.noLogo) {
             logo = null;
-        } else if (faceData.template === TEMPLATE_B) {
-            logo = buildLogo(assets, 'light', 57, 13, 32, 7);
-        } else if (faceData.template === TEMPLATE_D) {
-            logo = buildLogo(assets, 'dark', 5, 5, 90, 14);
-        } else if (faceData.template === TEMPLATE_A) {
-            logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
+        } else if (faceData.logoConfig) {
+            const lc = faceData.logoConfig;
+            logo = buildLogo(assets, lc.variant || 'dark', lc.x, lc.y, lc.w, lc.h);
         } else {
-            logo = buildLogo(assets, 'dark', 3, 2, 45, 10);
+            logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
         }
         if (logo) face.appendChild(logo);
 
@@ -576,7 +584,7 @@
         }
 
         // Generate content faces from flat product list
-        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo, catalog.pageCustomLogo);
+        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo);
 
         // Pair faces into physical pages: each page has front + back
         // Page 1: front = cover, back = content[0]
