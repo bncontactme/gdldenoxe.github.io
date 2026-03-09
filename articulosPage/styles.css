@@ -1,12 +1,18 @@
+/* ============================
+   Windows 95 Article Viewer
+   ============================ */
+
 :root {
-    --color-bg: #f5f5f5;
-    --color-text: #1a1a1a;
-    --color-text-light: #333;
-    --color-text-muted: #666;
-    --color-border: #e0e0e0;
-    --color-accent: #000;
-    --font-serif: 'Georgia', 'Times New Roman', serif;
-    --font-sans: 'Arial', sans-serif;
+    --win95-bg: #c0c0c0;
+    --win95-dark: #808080;
+    --win95-darker: #404040;
+    --win95-light: #dfdfdf;
+    --win95-white: #ffffff;
+    --win95-blue: #000080;
+    --win95-title-blue: #000080;
+    --win95-text: #000000;
+    --win95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+    --win95-mono: 'Fixedsys', 'Courier New', monospace;
 }
 
 * {
@@ -16,184 +22,265 @@
 }
 
 body {
-    font-family: var(--font-serif);
-    background: var(--color-bg);
-    color: var(--color-text);
-    line-height: 1.6;
-}
-
-.article-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
+    font-family: var(--win95-font);
+    background: #008080;
+    color: var(--win95-text);
+    line-height: 1.4;
+    font-size: 13px;
+    display: flex;
+    justify-content: center;
+    padding: 8px;
     min-height: 100vh;
 }
 
+/* === Window container === */
+.article-container {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--win95-bg);
+    min-height: auto;
+    border-top: 2px solid var(--win95-white);
+    border-left: 2px solid var(--win95-white);
+    border-right: 2px solid var(--win95-darker);
+    border-bottom: 2px solid var(--win95-darker);
+    box-shadow: inset 1px 1px 0 var(--win95-light),
+                inset -1px -1px 0 var(--win95-dark),
+                1px 1px 0 #000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* === Title bar === */
 .article-header {
-    padding: 40px 40px 20px;
-    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(90deg, var(--win95-title-blue), #1084d0);
+    padding: 3px 4px;
+    border-bottom: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
 }
 
 .back-link {
     display: inline-block;
-    color: var(--color-text-muted);
+    font-family: var(--win95-font);
+    font-size: 11px;
+    color: var(--win95-text);
     text-decoration: none;
-    font-size: 14px;
-    margin-bottom: 20px;
-    transition: color 0.2s;
+    background: var(--win95-bg);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-dark);
+    border-bottom: 1px solid var(--win95-dark);
+    padding: 1px 6px;
+    cursor: pointer;
+    margin: 0;
+    transition: none;
 }
 
 .back-link:hover {
-    color: var(--color-accent);
+    color: var(--win95-text);
+}
+
+.back-link:active {
+    border-top: 1px solid var(--win95-dark);
+    border-left: 1px solid var(--win95-dark);
+    border-right: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-white);
+    padding: 2px 5px 0px 7px;
 }
 
 .article-header h1 {
-    font-size: 48px;
+    font-size: 13px;
     font-weight: 700;
-    margin-bottom: 10px;
-    line-height: 1.2;
+    color: var(--win95-white);
+    line-height: 18px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+    letter-spacing: 0;
 }
 
 .article-meta {
-    color: var(--color-text-muted);
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-family: var(--font-sans);
+    color: var(--win95-white);
+    font-size: 11px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--win95-font);
+    width: 100%;
+    opacity: 0.85;
 }
 
-.article-hero {
+/* === Menu bar (simulated) === */
+.article-header::after {
+    content: '';
+    display: block;
     width: 100%;
-    height: 500px;
+    order: 10;
+}
+
+/* === Hero image — inside sunken frame === */
+.article-hero {
+    width: calc(100% - 16px);
+    max-height: 360px;
+    height: auto;
     object-fit: cover;
     display: block;
+    margin: 8px auto 0;
+    border-top: 2px solid var(--win95-dark);
+    border-left: 2px solid var(--win95-dark);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+    image-rendering: auto;
 }
 
+/* === Content area — sunken white text field === */
 .article-content {
-    padding: 60px 40px;
+    margin: 8px;
+    padding: 12px;
+    background: var(--win95-white);
+    border-top: 2px solid var(--win95-dark);
+    border-left: 2px solid var(--win95-dark);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+    font-family: var(--win95-mono);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--win95-text);
+    overflow-y: auto;
 }
 
 .lead {
-    font-size: 24px;
+    font-size: 14px;
     line-height: 1.5;
-    margin-bottom: 40px;
-    color: var(--color-text-light);
-    font-weight: 400;
+    margin-bottom: 16px;
+    color: var(--win95-text);
+    font-weight: 700;
+    font-family: var(--win95-mono);
+    border-bottom: 1px solid var(--win95-bg);
+    padding-bottom: 10px;
 }
 
 .article-content h2 {
-    font-size: 32px;
-    margin: 40px 0 20px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    text-decoration: underline;
+    font-family: var(--win95-font);
+    color: var(--win95-blue);
 }
 
 .article-content p {
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: var(--color-text-light);
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: var(--win95-text);
+    font-family: var(--win95-mono);
 }
 
 .article-content blockquote {
-    border-left: 4px solid var(--color-accent);
-    padding-left: 20px;
-    margin: 40px 0;
-    font-size: 24px;
+    border-left: 3px solid var(--win95-dark);
+    padding: 6px 12px;
+    margin: 16px 0;
+    font-size: 13px;
     font-style: italic;
-    color: var(--color-text-muted);
+    color: var(--win95-darker);
+    background: var(--win95-light);
+    font-family: var(--win95-mono);
+    border-top: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-dark);
 }
 
+/* === Footer — status bar style === */
 .article-footer {
-    padding: 40px;
-    border-top: 1px solid var(--color-border);
+    background: var(--win95-bg);
+    padding: 3px 6px;
+    border-top: 2px solid var(--win95-light);
+    display: flex;
+    align-items: center;
 }
 
-/* Responsive */
+.article-footer .back-link {
+    font-size: 11px;
+}
+
+/* === Scrollbar (Webkit — Win95 aesthetic) === */
+.article-content::-webkit-scrollbar {
+    width: 16px;
+}
+.article-content::-webkit-scrollbar-track {
+    background: var(--win95-light);
+    border: 1px solid var(--win95-dark);
+}
+.article-content::-webkit-scrollbar-thumb {
+    background: var(--win95-bg);
+    border-top: 2px solid var(--win95-white);
+    border-left: 2px solid var(--win95-white);
+    border-right: 2px solid var(--win95-dark);
+    border-bottom: 2px solid var(--win95-dark);
+}
+
+/* === Responsive === */
 @media (max-width: 768px) {
+    body {
+        padding: 4px;
+    }
     .article-container {
         margin: 0;
     }
-
     .article-header {
-        padding: 20px;
+        padding: 2px 3px;
     }
-    
     .article-header h1 {
-        font-size: 32px;
-        line-height: 1.3;
-    }
-    
-    .article-meta {
         font-size: 12px;
     }
-
-    .back-link {
-        font-size: 13px;
-        padding: 8px 0;
-        display: inline-block;
-    }
-    
     .article-hero {
-        height: 250px;
+        max-height: 220px;
+        width: calc(100% - 12px);
+        margin: 6px auto 0;
     }
-    
     .article-content {
-        padding: 30px 20px;
+        margin: 6px;
+        padding: 8px;
+        font-size: 12px;
     }
-    
     .lead {
-        font-size: 18px;
-        margin-bottom: 30px;
+        font-size: 12px;
     }
-    
     .article-content h2 {
-        font-size: 24px;
-        margin: 30px 0 15px;
+        font-size: 13px;
     }
-    
     .article-content p {
-        font-size: 16px;
-        margin-bottom: 20px;
+        font-size: 12px;
     }
-    
     .article-content blockquote {
-        font-size: 18px;
-        padding: 15px 20px;
-        margin: 25px 0;
-    }
-    
-    .article-footer {
-        padding: 20px;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
     .article-header h1 {
-        font-size: 26px;
+        font-size: 11px;
     }
-
     .article-hero {
-        height: 200px;
+        max-height: 160px;
     }
-
     .article-content {
-        padding: 25px 15px;
+        padding: 6px;
+        font-size: 11px;
     }
-
     .lead {
-        font-size: 17px;
+        font-size: 11px;
     }
-
-    .article-content h2 {
-        font-size: 22px;
-    }
-
     .article-content p {
-        font-size: 15px;
+        font-size: 11px;
     }
-
     .article-content blockquote {
-        font-size: 16px;
-        padding: 12px 15px;
+        font-size: 11px;
+        padding: 4px 8px;
     }
 }
 
