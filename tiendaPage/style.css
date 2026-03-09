@@ -755,6 +755,21 @@ input[type="checkbox"] { display: none; }
 
 /* --- Logo image layer --- */
 
+/* --- Big splash decoration (on large frames) --- */
+.catalog-big-splash {
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+    width: 45%;
+    height: auto;
+}
+.catalog-big-splash img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
+}
+
 /* --- Corner effect decorations (on product frames) --- */
 .catalog-corner-effect {
     position: absolute;

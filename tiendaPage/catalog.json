@@ -75,6 +75,12 @@
         "cornerEffects": [
             "assets/webAssets/splashes/corner effects/image2845.png",
             "assets/webAssets/splashes/corner effects/path2270.png"
+        ],
+        "bigSplashes": [
+            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png",
+            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png",
+            "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png",
+            "assets/webAssets/splashes/big splashes/path4038.png"
         ]
     },
 

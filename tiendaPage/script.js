@@ -261,6 +261,11 @@
             addFrameCornerEffects(imageArea, assets);
         }
 
+        // Big splash on large frames only
+        if (poolKey === 'large') {
+            addBigSplash(imageArea, slot, assets);
+        }
+
         wrapper.appendChild(imageArea);
 
         // Product name
@@ -382,6 +387,48 @@
         inner.appendChild(text);
         wrap.appendChild(inner);
         return wrap;
+    };
+
+    /* ── Big splash rotator (for large frames) ── */
+    let bigSplashRotator = null;
+
+    const addBigSplash = (imageArea, slot, assets) => {
+        const bigs = assets.bigSplashes;
+        if (!bigs || !bigs.length) return;
+        if (!bigSplashRotator) bigSplashRotator = rotator(bigs);
+
+        // Price splash position
+        const splashX = slot.splashX != null ? slot.splashX : 2;
+        const splashY = slot.splashY != null ? slot.splashY : 56;
+        const isLeft = splashX < 50;
+        const isTop = splashY < 50;
+
+        // Possible positions on the margin, away from price splash
+        // Each: { style object to apply }
+        const candidates = [];
+        // Opposite corner
+        candidates.push({ [isTop ? 'bottom' : 'top']: '-3%', [isLeft ? 'right' : 'left']: '-3%' });
+        // Middle of opposite horizontal edge
+        candidates.push({ [isTop ? 'bottom' : 'top']: '-3%', left: '50%', transform: 'translateX(-50%)' });
+        // Middle of opposite vertical edge
+        candidates.push({ top: '50%', [isLeft ? 'right' : 'left']: '-3%', transform: 'translateY(-50%)' });
+        // Same-side top/bottom but opposite horizontal
+        candidates.push({ [isTop ? 'top' : 'bottom']: '-3%', [isLeft ? 'right' : 'left']: '-3%' });
+
+        // Pick one, cycling through
+        if (!addBigSplash._idx) addBigSplash._idx = 0;
+        const pos = candidates[addBigSplash._idx % candidates.length];
+        addBigSplash._idx++;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'catalog-big-splash';
+        Object.keys(pos).forEach(k => { wrap.style[k] = pos[k]; });
+        const img = document.createElement('img');
+        img.src = bigSplashRotator();
+        img.alt = '';
+        img.loading = 'lazy';
+        wrap.appendChild(img);
+        imageArea.appendChild(wrap);
     };
 
     /* ── Corner effect rotator ── */
