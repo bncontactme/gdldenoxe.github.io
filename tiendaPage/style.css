@@ -995,30 +995,31 @@ input[type="checkbox"] { display: none; }
 }
 .win95-menu-item u { text-decoration: underline; }
 
-/* Body — sunken content */
+/* Body — gray dialog area (authentic Win95 dialogs are gray, not white) */
 .win95-body {
-    margin: 6px;
-    padding: 12px;
-    background: var(--w95-white);
-    border-top: 2px solid var(--w95-dark);
-    border-left: 2px solid var(--w95-dark);
-    border-right: 2px solid var(--w95-white);
-    border-bottom: 2px solid var(--w95-white);
+    margin: 0;
+    padding: 12px 10px;
+    background: var(--w95-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    border: none;
 }
 
-/* Image — sunken frame */
+/* Image — sunken frame (white inset like a Win95 picture control) */
 .win95-image-frame {
     position: relative;
     width: 100%;
-    max-width: 200px;
-    border-top: 2px solid var(--w95-dark);
-    border-left: 2px solid var(--w95-dark);
-    border-right: 2px solid var(--w95-white);
-    border-bottom: 2px solid var(--w95-white);
+    max-width: 220px;
+    background: var(--w95-white);
+    padding: 2px;
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-white);
 }
 
 .win95-window .modal-product-image {
@@ -1057,13 +1058,19 @@ input[type="checkbox"] { display: none; }
 .win95-window .modal-badge.has-badge { display: block; }
 .win95-window .modal-badge::after { display: none; }
 
-/* Info section */
+/* Groupbox — etched border around product info */
 .win95-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     width: 100%;
+    padding: 10px 8px;
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+    position: relative;
 }
 
 .win95-window .modal-product-name {
@@ -1077,14 +1084,16 @@ input[type="checkbox"] { display: none; }
     text-shadow: none;
 }
 
-/* Price box — beveled raised panel */
+/* Price box — sunken text field style (white bg like an input) */
 .win95-price-box {
-    background: var(--w95-bg);
-    border-top: 2px solid var(--w95-white);
-    border-left: 2px solid var(--w95-white);
-    border-right: 2px solid var(--w95-dark);
-    border-bottom: 2px solid var(--w95-dark);
-    padding: 6px 16px;
+    background: var(--w95-white);
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-white);
+    padding: 4px 20px;
     text-align: center;
 }
 
@@ -1098,14 +1107,23 @@ input[type="checkbox"] { display: none; }
     z-index: auto;
 }
 
-/* Description */
+/* Description — sunken read-only text area */
 .win95-window .modal-product-description {
     font-family: var(--w95-mono);
     font-size: 12px;
     line-height: 1.5;
     color: var(--w95-text);
-    text-align: center;
-    max-width: 320px;
+    text-align: left;
+    width: 100%;
+    padding: 4px 6px;
+    background: var(--w95-white);
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-white);
+    max-width: none;
 }
 
 /* Buy button — classic Win95 push button */
