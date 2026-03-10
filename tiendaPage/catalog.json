@@ -78,7 +78,7 @@
         ],
         "bigSplashes": [
             { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png", "position": "middle-center" },
-            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-right" },
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" },
             { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "bottom-right" },
             { "src": "assets/webAssets/splashes/big splashes/path4038.png",                           "position": "top-right" }
         ]
@@ -135,8 +135,7 @@
             "description": "Producto página 5.",
             "link": "#",
             "info": "Info producto 6",
-            "stock": "5 u",
-            "badge": "NUEVO"
+            "stock": "5 u"
         },
         {
             "id": "boxer-7",

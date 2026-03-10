@@ -60,7 +60,8 @@
             {
                 x: 8, y: 14, width: 84, height: 72,
                 framePool: 'large', splashPool: 'large',
-                splashX: 2, splashY: 60, splashW: 38, splashH: 34
+                splashX: 2, splashY: 60, splashW: 38, splashH: 34,
+                noBigSplash: true
             }
         ]
     };
@@ -89,7 +90,7 @@
             {
                 x: 48, y: 16, width: 48, height: 70,
                 framePool: 'large', splashPool: 'large',
-                splashX: 16, splashY: 68, splashW: 40, splashH: 24
+                splashX: 65, splashY: 80, splashW: 40, splashH: 24
             },
             {
                 x: 6, y: 8, width: 40, height: 34,
@@ -262,7 +263,7 @@
         }
 
         // Big splash on large frames only
-        if (poolKey === 'large') {
+        if (poolKey === 'large' && !slot.noBigSplash) {
             addBigSplash(imageArea, slot, assets, templateName);
         }
 
@@ -418,7 +419,7 @@
         'top-center':     { left: 20,  top: -12, cssW: 52 },
         'top-right':      { left: 55,  top: -8,  cssW: 55 },
         'middle-left':    { left: -12, top: 30,  cssW: 50 },
-        'middle-center':  { left: 68,  top: 15,  cssW: 75 },
+        'middle-center':  { left: 65,  top: 15,  cssW: 93 },
         'middle-right':   { left: 62,  top: 30,  cssW: 50 },
         'bottom-left':    { left: -10, top: 60,  cssW: 55 },
         'bottom-center':  { left: 20,  top: 65,  cssW: 52 },
