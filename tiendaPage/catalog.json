@@ -53,16 +53,16 @@
             "products": ["boxer-2", "boxer-2b"]
         },
         {
-            "template": "1-featured",
+            "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
-            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
-            "products": ["boxer-9"]
+            "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
+            "products": ["boxer-9", "boxer-10", "boxer-11"]
         },
         {
-            "template": "1-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
-            "noLogo": true,
-            "_blank": true
+            "template": "2-split",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
+            "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
+            "products": ["boxer-12", "boxer-12b"]
         }
     ],
 
@@ -156,6 +156,7 @@
             "id": "boxer-3b",
             "name": "LECHE ENT/DESC.",
             "price": 666, "cents": "00", "currency": "MXN",
+            "splashOverride": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_image2786.png",
             "image": "assets/products/boxers_model/DSC01120.jpg",
             "description": "Vista alternativa del Boxer #3.",
             "link": "#",
@@ -241,10 +242,50 @@
             "id": "boxer-9",
             "name": "PRODUCTO #9",
             "price": 349, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 1.jpg",
+            "image": "assets/products/boxers_model/DSC00478 copia.jpg",
             "description": "Producto página 7.",
             "link": "#",
             "info": "Info producto 9",
+            "stock": "3 u"
+        },
+        {
+            "id": "boxer-10",
+            "name": "PRODUCTO #10",
+            "price": 449, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 4.jpg",
+            "description": "Producto página 7.",
+            "link": "#",
+            "info": "Info producto 10",
+            "stock": "4 u"
+        },
+        {
+            "id": "boxer-11",
+            "name": "PRODUCTO #11",
+            "price": 549, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers_model/DSC00964.jpg",
+            "description": "Producto página 7.",
+            "link": "#",
+            "info": "Info producto 11",
+            "stock": "2 u"
+        },
+        {
+            "id": "boxer-12",
+            "name": "PRODUCTO #12",
+            "price": 399, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers_model/DSC01034.jpg",
+            "description": "Producto página 8.",
+            "link": "#",
+            "info": "Info producto 12",
+            "stock": "5 u"
+        },
+        {
+            "id": "boxer-12b",
+            "name": "PRODUCTO #12B",
+            "price": 599, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers_model/DSC01043.jpg",
+            "description": "Producto página 8.",
+            "link": "#",
+            "info": "Info producto 12b",
             "stock": "3 u"
         }
     ]

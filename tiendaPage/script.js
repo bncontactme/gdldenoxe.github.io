@@ -235,8 +235,9 @@ const tienda = (() => {
         }
 
         // Price splash
-        if (product.price != null && assets.splashes[splash] && !product.noSplash) {
-            imageArea.appendChild(buildSplashEl(product, slot, assets.splashes[splash], assets));
+        const splashSrc = product.splashOverride || assets.splashes[splash];
+        if (product.price != null && splashSrc && !product.noSplash) {
+            imageArea.appendChild(buildSplashEl(product, slot, splashSrc, assets));
         } else if (product.price != null && !product.noSplash) {
             // Standalone price (no splash image available)
             const priceWrap = document.createElement('div');
@@ -822,7 +823,7 @@ const tienda = (() => {
         const scale = Math.min(availW / SPREAD_W, availH / DESIGN_H, 2.5);
 
         wrapper.style.transform = 'scale(' + scale + ') translateZ(0)';
-        wrapper.style.transformOrigin = 'top center';
+        wrapper.style.transformOrigin = 'center center';
         wrapper.style.width  = DESIGN_W + 'px';
         wrapper.style.height = DESIGN_H + 'px';
 
