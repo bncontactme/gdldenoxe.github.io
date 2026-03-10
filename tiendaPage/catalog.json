@@ -15,18 +15,56 @@
         "url": "WWW.GUADALAJARADENOXE.COM"
     },
 
-    "pageBackgrounds": [
-        "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
-        "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png"
+    "pages": [
+        {
+            "template": "1-left-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "logo": { "variant": "dark", "x": 5, "y": 5, "w": 90, "h": 14 },
+            "products": ["boxer-5"]
+        },
+        {
+            "template": "2-split",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
+            "products": ["boxer-3", "boxer-3b"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["boxer-4"]
+        },
+        {
+            "template": "2S-1L",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
+            "products": ["boxer-6", "boxer-7", "boxer-8"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["boxer-1"]
+        },
+        {
+            "template": "2-split",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
+            "products": ["boxer-2", "boxer-2b"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["boxer-9"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "noLogo": true,
+            "_blank": true
+        }
     ],
-
-    "pageNoLogo": [false, false, false, false, false, false, false, false],
 
     "assets": {
         "splashScales": {
@@ -206,15 +244,6 @@
             "link": "#",
             "info": "Info producto 9",
             "stock": "3 u"
-        },
-        {
-            "id": "blank-page-8",
-            "_blank": true,
-            "name": "",
-            "price": null,
-            "image": "",
-            "description": "",
-            "link": "#"
         }
     ]
 }

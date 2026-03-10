@@ -2,7 +2,7 @@
    TIENDA GDLDENOXE — Virtual Store Flipbook Engine
    ============================================================
    Modules (in order):
-     1. Catalog Engine — auto-layout from flat product list
+     1. Catalog Engine — JSON-driven page layout from pages[] config
      2. Product Modal  — supermarket-style product detail popup
      3. Debug Mode     — page coordinate helper (?debug)
      4. Ads System     — periodic ad audio
@@ -29,16 +29,14 @@ const tienda = (() => {
 
 
 /****************************
- * 1. CATALOG ENGINE — AUTO-LAYOUT
+ * 1. CATALOG ENGINE — JSON-DRIVEN PAGES
  *
- * Reads catalog.json with a flat products[] array.
- * Auto-generates flipbook pages by cycling through 4 layout templates:
- *   A) 1 product  (full-page featured)
- *   B) 2 products (side-by-side split)
- *   C) 1 large + 2 small (magazine layout)
- *   D) 2 products (staggered offset)
- * Cover and back-cover pages are auto-generated from config.
- * Backgrounds, frames, and splashes are auto-rotated.
+ * Reads catalog.json with a pages[] array.
+ * Each page explicitly defines its template, background,
+ * logo, and products (by ID) — no auto-distribution.
+ * Templates: A) 1-featured, B) 2-split, C) 2S-1L, D) 1-left-featured
+ * Cover and back-cover are auto-generated from config.
+ * Frames, splashes, and corner effects are auto-rotated.
  ****************************/
 
 (() => {
@@ -143,20 +141,7 @@ const tienda = (() => {
         '1-left-featured': TEMPLATE_D,
     };
 
-    /* ── Per-face config: template + logo in one place ──
-       Edit this array to control each face's layout AND logo.
-       When faces exceed this list, it cycles from the start.
-    */
-    const FACE_CONFIG = [
-        { template: TEMPLATE_D, logo: { variant: 'dark',  x: 5,  y: 5,  w: 90, h: 14 } },
-        { template: TEMPLATE_B, logo: { variant: 'light', x: 57, y: 13, w: 32, h: 7  } },
-        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
-        { template: TEMPLATE_C, logo: { variant: 'alt',   x: 52, y: 5,  w: 42, h: 10 } },
-        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
-        { template: TEMPLATE_B, logo: { variant: 'light', x: 57, y: 13, w: 32, h: 7  } },
-        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
-        { template: TEMPLATE_A, logo: { variant: 'dark',  x: 10, y: 2,  w: 80, h: 14 } },
-    ];
+    /* FACE_CONFIG removed — page layout is now fully JSON-driven via catalog.pages[] */
 
     /* ── DOM helpers ── */
 
@@ -212,7 +197,7 @@ const tienda = (() => {
 
     /* ── Build a single product card ── */
 
-    const buildProduct = ({ product, slot, assets, frameRotators, splashRotators, templateName }) => {
+    const buildProduct = ({ product, slot, assets, frameRotators, splashRotators, templateName, pageCornerEffects, pageBigSplash }) => {
         const wrapper = posEl('div', 'catalog-product', slot.x, slot.y, slot.width, slot.height);
         wrapper.dataset.productId = product.id;
 
@@ -276,13 +261,19 @@ const tienda = (() => {
             imageArea.appendChild(sub);
         }
 
-        // Corner effects on small/medium frames only
-        if (poolKey === 'small' || poolKey === 'medium') {
+        // Corner effects: default = small/medium frames; overridable per-page via JSON
+        const showCorners = pageCornerEffects !== undefined
+            ? pageCornerEffects
+            : (poolKey === 'small' || poolKey === 'medium');
+        if (showCorners) {
             addFrameCornerEffects(imageArea, assets);
         }
 
-        // Big splash on large frames only
-        if (poolKey === 'large' && !slot.noBigSplash) {
+        // Big splash: default = large frames + no noBigSplash flag; overridable per-page via JSON
+        const showBigSplash = pageBigSplash !== undefined
+            ? pageBigSplash
+            : (poolKey === 'large' && !slot.noBigSplash);
+        if (showBigSplash) {
             addBigSplash(imageArea, slot, assets, templateName);
         }
 
@@ -529,16 +520,13 @@ const tienda = (() => {
         return face;
     };
 
-    /* ── Auto-layout: distribute products into page face groups ──
+    /* ── Auto-layout: build face groups from JSON page configs ──
+       Each entry in catalog.pages[] explicitly defines its template,
+       background, logo, and products (by ID).
        Returns an array of face-data objects.
     */
 
-    const autoLayout = (products, assets, pageBackgrounds, pageNoLogo) => {
-        const faces = [];
-        let pi = 0;
-        let configIdx = 0;
-        let faceIdx = 0;
-
+    const autoLayout = (pages, productMap, assets) => {
         const bgRotate = rotator(assets.backgrounds);
 
         // Shared rotators persist across all faces for variety
@@ -553,42 +541,31 @@ const tienda = (() => {
             small:  rotator(SMALL_SPLASHES)
         };
 
-        while (pi < products.length) {
-            const remaining = products.length - pi;
-            const cfg = FACE_CONFIG[configIdx % FACE_CONFIG.length];
-            configIdx++;
+        return pages.map(page => {
+            const tmpl = TEMPLATES[page.template] || TEMPLATE_A;
 
-            // Pick template from config; downgrade if not enough products
-            let tmpl;
-            if (remaining === 1) {
-                tmpl = TEMPLATE_A;
-            } else {
-                tmpl = cfg.template;
-                if (tmpl.slots.length > remaining) {
-                    tmpl = remaining >= 3 ? TEMPLATE_C : remaining >= 2 ? TEMPLATE_B : TEMPLATE_A;
-                }
-            }
+            // Resolve products by ID; blank pages have no products array
+            const faceProducts = page._blank
+                ? [{ _blank: true }]
+                : (page.products || []).map(id => {
+                    const p = productMap[id];
+                    if (!p) console.warn('[tienda] Product not found:', id);
+                    return p || { _blank: true, name: id };
+                });
 
-            const faceProducts = products.slice(pi, pi + tmpl.slots.length);
-            pi += faceProducts.length;
-
-            const bg = (pageBackgrounds && pageBackgrounds[faceIdx])
-                ? pageBackgrounds[faceIdx]
-                : bgRotate();
-            faceIdx++;
-
-            faces.push({
-                bgSrc: bg,
+            return {
+                bgSrc: page.background || bgRotate(),
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
                 splashRotators: splashRot,
-                noLogo: !!(pageNoLogo && pageNoLogo[faceIdx - 1]),
-                logoConfig: cfg.logo
-            });
-        }
-
-        return faces;
+                noLogo: !!page.noLogo,
+                logoConfig: page.logo || null,
+                // Optional per-page overrides (undefined = use defaults)
+                cornerEffects: page.cornerEffects,
+                bigSplash: page.bigSplash,
+            };
+        });
     };
 
     /* ── Build cover face (front of first page) ── */
@@ -672,7 +649,15 @@ const tienda = (() => {
         faceData.products.forEach((product, i) => {
             const slot = faceData.template.slots[i];
             if (!slot) return;
-            const card = buildProduct({ product, slot, assets, frameRotators: faceData.frameRotators, splashRotators: faceData.splashRotators, templateName: faceData.template.name });
+            const card = buildProduct({
+                product, slot, assets,
+                frameRotators: faceData.frameRotators,
+                splashRotators: faceData.splashRotators,
+                templateName: faceData.template.name,
+                // Per-page overrides from JSON (undefined = use defaults)
+                pageCornerEffects: faceData.cornerEffects,
+                pageBigSplash: faceData.bigSplash,
+            });
             card.classList.add(borderClass);
             face.appendChild(card);
         });
@@ -705,7 +690,7 @@ const tienda = (() => {
     /* ── Main build ── */
 
     const buildFlipbook = (catalog) => {
-        const { products, marqueeText, assets } = catalog;
+        const { products, pages, marqueeText, assets } = catalog;
 
         // Update marquee
         if (marqueeText) {
@@ -714,8 +699,12 @@ const tienda = (() => {
             });
         }
 
-        // Generate content faces from flat product list
-        const contentFaces = autoLayout(products || [], assets, catalog.pageBackgrounds, catalog.pageNoLogo);
+        // Build product lookup map (by id)
+        const productMap = {};
+        (products || []).forEach(p => { if (p.id) productMap[p.id] = p; });
+
+        // Generate content faces from explicit page configs
+        const contentFaces = autoLayout(pages || [], productMap, assets);
 
         // Pair faces into physical pages: each page has front + back
         // Page 1: front = cover, back = content[0]
