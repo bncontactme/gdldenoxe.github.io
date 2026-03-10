@@ -261,20 +261,27 @@ const tienda = (() => {
             imageArea.appendChild(sub);
         }
 
-        // Corner effects: default = small/medium frames; overridable per-page via JSON
-        const showCorners = pageCornerEffects !== undefined
-            ? pageCornerEffects
-            : (poolKey === 'small' || poolKey === 'medium');
+        // Corner effects: per-product noCornerEffect takes priority, then per-page override, then pool default
+        const showCorners = product.noCornerEffect
+            ? false
+            : pageCornerEffects !== undefined
+                ? pageCornerEffects
+                : (poolKey === 'small' || poolKey === 'medium');
         if (showCorners) {
             addFrameCornerEffects(imageArea, assets);
         }
 
-        // Big splash: default = large frames + no noBigSplash flag; overridable per-page via JSON
-        const showBigSplash = pageBigSplash !== undefined
-            ? pageBigSplash
-            : (poolKey === 'large' && !slot.noBigSplash);
-        if (showBigSplash) {
-            addBigSplash(imageArea, slot, assets, templateName);
+        // Per-product big splash override (takes priority over everything)
+        if (product.bigSplash) {
+            addBigSplash(imageArea, slot, assets, templateName, product.bigSplash);
+        } else {
+            // Big splash: default = large frames + no noBigSplash flag; overridable per-page via JSON
+            const showBigSplash = pageBigSplash !== undefined
+                ? pageBigSplash
+                : (poolKey === 'large' && !slot.noBigSplash);
+            if (showBigSplash) {
+                addBigSplash(imageArea, slot, assets, templateName);
+            }
         }
 
         wrapper.appendChild(imageArea);
@@ -439,12 +446,12 @@ const tienda = (() => {
 
     let bigSplashRotator = null;
 
-    const addBigSplash = (imageArea, slot, assets, templateName) => {
+    const addBigSplash = (imageArea, slot, assets, templateName, forcedEntry) => {
         const bigs = assets.bigSplashes;
-        if (!bigs || !bigs.length) return;
-        if (!bigSplashRotator) bigSplashRotator = rotator(bigs);
+        if (!forcedEntry && (!bigs || !bigs.length)) return;
+        if (!forcedEntry && !bigSplashRotator) bigSplashRotator = rotator(bigs);
 
-        const entry = bigSplashRotator();
+        const entry = forcedEntry || bigSplashRotator();
         // Support both old format (string) and new format (object with src + position)
         const src = typeof entry === 'string' ? entry : entry.src;
         const posName = (typeof entry === 'object' && entry.position) ? entry.position : 'top-right';
