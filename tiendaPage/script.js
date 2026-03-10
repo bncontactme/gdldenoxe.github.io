@@ -504,11 +504,9 @@ const tienda = (() => {
         face.className = faceClass;
 
         // Background
-        const bgImg = document.createElement('img');
+        const bgImg = document.createElement('div');
         bgImg.className = 'catalog-bg';
-        bgImg.src = bgSrc;
-        bgImg.alt = '';
-        bgImg.loading = 'lazy';
+        bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
         face.appendChild(bgImg);
 
         // Edge shading
@@ -586,11 +584,9 @@ const tienda = (() => {
         face.className = 'front_page';
 
         // Background
-        const bgImg = document.createElement('img');
+        const bgImg = document.createElement('div');
         bgImg.className = 'catalog-bg';
-        bgImg.src = bgSrc;
-        bgImg.alt = '';
-        bgImg.loading = 'eager';
+        bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
         face.appendChild(bgImg);
         const label = document.createElement('label');
         label.setAttribute('for', checkboxId);
