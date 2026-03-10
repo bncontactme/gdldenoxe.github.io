@@ -26,6 +26,19 @@
         <!-- Checkboxes + #flip_book are generated dynamically from catalog.json -->
         <div id="catalog-root" role="region" aria-label="Catálogo de productos"></div>
 
+        <!-- Windows 95 Flipbook Navigation — sits below flipbook, right-aligned -->
+        <div id="flipbook-nav" role="navigation" aria-label="Navegación del catálogo">
+            <div class="fnav-titlebar">
+                <span class="fnav-titlebar-icon">&#128196;</span>
+                <span class="fnav-titlebar-text">navegar.exe</span>
+            </div>
+            <div class="fnav-body">
+                <button id="fnav-back" class="fnav-btn" aria-label="Página anterior" disabled>&#9668; Atrás</button>
+                <span id="fnav-counter" class="fnav-counter">1 / 1</span>
+                <button id="fnav-next" class="fnav-btn" aria-label="Página siguiente">Siguiente &#9658;</button>
+            </div>
+        </div>
+
         <!-- Screen reader announcements -->
         <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 

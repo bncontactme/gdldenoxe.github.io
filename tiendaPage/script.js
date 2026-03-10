@@ -225,6 +225,7 @@ const tienda = (() => {
         if (product.image) {
             const clipDiv = document.createElement('div');
             clipDiv.className = 'catalog-image-clip';
+            if (product.imageBg) clipDiv.style.backgroundColor = product.imageBg;
             const prodImg = document.createElement('img');
             prodImg.className = 'catalog-product-image';
             prodImg.src = product.image;
@@ -269,7 +270,7 @@ const tienda = (() => {
                 ? pageCornerEffects
                 : (poolKey === 'small' || poolKey === 'medium');
         if (showCorners) {
-            addFrameCornerEffects(imageArea, assets);
+            addFrameCornerEffects(imageArea, assets, product.cornerPosition || null);
         }
 
         // Per-product big splash override (takes priority over everything)
@@ -349,8 +350,8 @@ const tienda = (() => {
 
     /* ── Build decorative elements ── */
 
-    const buildLogo = (assets, variant, x, y, w, h) => {
-        const logoSrc = assets.logos[variant || 'dark'];
+    const buildLogo = (assets, variant, x, y, w, h, src) => {
+        const logoSrc = src || assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
         const img = document.createElement('img');
@@ -479,13 +480,13 @@ const tienda = (() => {
     const cornerPositions = ['tl', 'tr', 'bl', 'br'];
     let cornerPosIdx = 0;
 
-    const addFrameCornerEffects = (imageArea, assets) => {
+    const addFrameCornerEffects = (imageArea, assets, forcedPos) => {
         const corners = assets.cornerEffects;
         if (!corners || !corners.length) return;
         if (!cornerEffectRotator) cornerEffectRotator = rotator(corners);
 
         // Pick one corner per product, cycling through positions
-        const pos = cornerPositions[cornerPosIdx % cornerPositions.length];
+        const pos = forcedPos || cornerPositions[cornerPosIdx % cornerPositions.length];
         cornerPosIdx++;
 
         const wrap = document.createElement('div');
@@ -640,7 +641,7 @@ const tienda = (() => {
             logo = null;
         } else if (faceData.logoConfig) {
             const lc = faceData.logoConfig;
-            logo = buildLogo(assets, lc.variant || 'dark', lc.x, lc.y, lc.w, lc.h);
+            logo = buildLogo(assets, lc.variant || 'dark', lc.x, lc.y, lc.w, lc.h, lc.src || null);
         } else {
             logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
         }
@@ -842,6 +843,17 @@ const tienda = (() => {
 
     document.addEventListener('change', (e) => {
         if (e.target.type === 'checkbox' && e.target.id.includes('_checkbox')) {
+            /* Temporarily elevate the flipping page so it stays ON TOP of
+               both unchecked AND already-checked pages during the 0.5s CSS
+               flip animation.  Without this, later pages (whose unchecked
+               z-index is low) appear to flip behind the book. */
+            const pageId = e.target.id.replace('_checkbox', '');
+            const pageEl = document.getElementById(pageId);
+            if (pageEl) {
+                const N = document.querySelectorAll('#flip_book > .page').length;
+                pageEl.style.zIndex = N + 10;
+                setTimeout(() => { pageEl.style.zIndex = ''; }, 520);
+            }
             setTimeout(resizeFlipbook, 600);
         }
     });
@@ -1167,3 +1179,102 @@ document.addEventListener('visibilitychange', () => {
         tienda.emit('startAds');
     }
 }, { passive: true });
+
+
+/*************************************
+ * 8. FLIPBOOK NAVIGATION ARROWS
+ * Windows 95-style Back / Next panel
+ *************************************/
+
+(() => {
+    const backBtn   = document.getElementById('fnav-back');
+    const nextBtn   = document.getElementById('fnav-next');
+    const counter   = document.getElementById('fnav-counter');
+    if (!backBtn || !nextBtn || !counter) return;
+
+    const ANIM_MS = 620; // slightly longer than CSS transition (0.5s + buffer)
+    let animating = false;
+
+    /* Return ordered array of page checkboxes */
+    const getCheckboxes = () => {
+        const root = document.getElementById('catalog-root');
+        if (!root) return [];
+        return Array.from(root.querySelectorAll('input[type="checkbox"][id$="_checkbox"]'))
+            .sort((a, b) => {
+                const numA = parseInt(a.id.replace(/\D+/g, ''), 10);
+                const numB = parseInt(b.id.replace(/\D+/g, ''), 10);
+                return numA - numB;
+            });
+    };
+
+    const updateNav = () => {
+        const boxes = getCheckboxes();
+        const N = boxes.length;
+        const checked = boxes.filter(cb => cb.checked).length;
+        /* Spread 1 = cover (0 checked), spreads go up to N checked */
+        const page = checked + 1;
+        const total = N + 1;
+        counter.textContent = page + ' / ' + total;
+        backBtn.disabled = animating || (checked === 0);
+        nextBtn.disabled = animating || (checked === N);
+    };
+
+    const lockButtons = () => {
+        animating = true;
+        backBtn.disabled = true;
+        nextBtn.disabled = true;
+        setTimeout(() => {
+            animating = false;
+            updateNav();
+        }, ANIM_MS);
+    };
+
+    const goBack = () => {
+        if (animating) return;
+        const boxes = getCheckboxes();
+        /* Find last checked checkbox and uncheck it */
+        for (let i = boxes.length - 1; i >= 0; i--) {
+            if (boxes[i].checked) {
+                boxes[i].checked = false;
+                boxes[i].dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+            }
+        }
+        lockButtons();
+        updateNav();
+    };
+
+    const goNext = () => {
+        if (animating) return;
+        const boxes = getCheckboxes();
+        /* Find first unchecked checkbox and check it */
+        for (let i = 0; i < boxes.length; i++) {
+            if (!boxes[i].checked) {
+                boxes[i].checked = true;
+                boxes[i].dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+            }
+        }
+        lockButtons();
+        updateNav();
+    };
+
+    backBtn.addEventListener('click', goBack);
+    nextBtn.addEventListener('click', goNext);
+
+    /* Also sync counter when any checkbox changes (e.g. clicking page labels) */
+    document.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox' && e.target.id.includes('_checkbox')) {
+            updateNav();
+        }
+    });
+
+    /* Watch for flipbook being injected into the DOM, then initialise counter */
+    const observer = new MutationObserver(() => {
+        if (getCheckboxes().length > 0) {
+            observer.disconnect();
+            updateNav();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+})();

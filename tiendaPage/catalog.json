@@ -17,16 +17,16 @@
 
     "pages": [
         {
-            "template": "1-left-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
-            "logo": { "variant": "dark", "x": 5, "y": 5, "w": 90, "h": 14 },
-            "products": ["boxer-5"]
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["boxer-1"]
         },
         {
             "template": "2-split",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-3", "boxer-3b"]
+            "products": ["boxer-2", "boxer-2b"]
         },
         {
             "template": "1-featured",
@@ -41,18 +41,6 @@
             "products": ["boxer-6", "boxer-7", "boxer-8"]
         },
         {
-            "template": "1-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
-            "products": ["boxer-1"]
-        },
-        {
-            "template": "2-split",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-            "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-2", "boxer-2b"]
-        },
-        {
             "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
@@ -63,6 +51,29 @@
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
             "products": ["boxer-12", "boxer-12b"]
+        },
+        {
+            "template": "2-split",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
+            "products": ["boxer-3", "boxer-3b"]
+        },
+        {
+            "template": "2S-1L",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "logo": { "variant": "dark", "x": 52, "y": 5, "w": 42, "h": 10, "src": "assets/webAssets/logo/path1517.png" },
+            "bigSplash": false,
+            "products": ["boxer-5", "boxer-13", "boxer-14"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "logo": { "variant": "light", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["boxer-15"]
+        },
+        {
+            "_blank": true,
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png"
         }
     ],
 
@@ -179,6 +190,7 @@
             "name": "PRODUCTO #6",
             "price": 399, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers_model/DSC00771.jpg",
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" },
             "description": "Producto página 5.",
             "link": "#",
             "info": "Info producto 6",
@@ -273,6 +285,7 @@
             "id": "boxer-12",
             "name": "PRODUCTO #12",
             "price": 399, "cents": "00", "currency": "MXN",
+            "cornerPosition": "tl",
             "image": "assets/products/boxers_model/DSC01034.jpg",
             "description": "Producto página 8.",
             "link": "#",
@@ -288,6 +301,38 @@
             "link": "#",
             "info": "Info producto 12b",
             "stock": "3 u"
+        },
+        {
+            "id": "boxer-13",
+            "name": "PRODUCTO #13",
+            "price": 349, "cents": "00", "currency": "MXN",
+            "image": "assets/products/101/WhatsApp_Image_2025-12-12_at_10.44.10_AM-removebg-preview.png",
+            "imageBg": "#ffffff",
+            "description": "Producto página 7.",
+            "link": "#",
+            "info": "Info producto 13",
+            "stock": "3 u"
+        },
+        {
+            "id": "boxer-14",
+            "name": "PRODUCTO #14",
+            "price": 449, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers/boxer 5.jpg",
+            "description": "Producto página 7.",
+            "link": "#",
+            "info": "Info producto 14",
+            "stock": "2 u"
+        },
+        {
+            "id": "boxer-15",
+            "name": "PRODUCTO #15",
+            "price": 599, "cents": "00", "currency": "MXN",
+            "image": "assets/products/boxers_model/DSC01322.jpg",
+            "description": "Edición exclusiva Guadalajara De Noche.",
+            "link": "#",
+            "info": "Talla Única",
+            "stock": "5 u",
+            "badge": "NUEVO"
         }
     ]
 }

@@ -1310,3 +1310,130 @@ main {
     white-space: nowrap;
     border: 0;
 }
+
+/* ============================================================
+   WINDOWS 95 FLIPBOOK NAVIGATION ARROWS
+   ============================================================ */
+
+#flipbook-nav {
+    --w95-bg:     #c0c0c0;
+    --w95-dark:   #808080;
+    --w95-darker: #404040;
+    --w95-light:  #dfdfdf;
+    --w95-white:  #ffffff;
+    --w95-blue:   #000080;
+    --w95-text:   #000000;
+    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 500;
+
+    background: var(--w95-bg);
+    border-top:    2px solid var(--w95-white);
+    border-left:   2px solid var(--w95-white);
+    border-right:  2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark),
+                2px 2px 0 #000,
+                4px 4px 8px rgba(0, 0, 0, 0.4);
+
+    font-family: var(--w95-font);
+    font-size: 11px;
+    color: var(--w95-text);
+    user-select: none;
+    min-width: 180px;
+}
+
+.fnav-titlebar {
+    background: linear-gradient(90deg, var(--w95-blue), #1084d0);
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 18px;
+}
+
+.fnav-titlebar-icon {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fnav-titlebar-text {
+    flex: 1;
+    color: #fff;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fnav-body {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 6px;
+}
+
+.fnav-btn {
+    background: var(--w95-bg);
+    border-top:    2px solid var(--w95-white);
+    border-left:   2px solid var(--w95-white);
+    border-right:  2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--w95-text);
+    cursor: pointer;
+    padding: 3px 8px;
+    white-space: nowrap;
+    border-radius: 0;
+    min-width: 60px;
+    line-height: 1.3;
+    transition: none;
+}
+
+.fnav-btn:hover:not(:disabled) {
+    background: var(--w95-light);
+}
+
+.fnav-btn:active:not(:disabled) {
+    border-top:    2px solid var(--w95-darker);
+    border-left:   2px solid var(--w95-darker);
+    border-right:  2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+    padding: 4px 7px 2px 9px;
+}
+
+.fnav-btn:disabled {
+    color: var(--w95-dark);
+    cursor: default;
+    text-shadow: 1px 1px 0 var(--w95-white);
+}
+
+.fnav-counter {
+    flex: 1;
+    text-align: center;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--w95-text);
+    background: var(--w95-white);
+    border-top:    2px solid var(--w95-darker);
+    border-left:   2px solid var(--w95-darker);
+    border-right:  2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark);
+    padding: 2px 6px;
+    min-width: 36px;
+    white-space: nowrap;
+}
