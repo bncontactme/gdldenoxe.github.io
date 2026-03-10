@@ -8,9 +8,24 @@
      4. Ads System     — periodic ad audio
      5. Music System   — background music crossfade
      6. Marquee Setup  — seamless scroll duplication
-     7. Mode Toggle    — light/dark theme
-     8. Visibility     — pause audio on tab hide
+     7. Visibility     — pause audio on tab hide
    ============================================================ */
+
+
+/* ── Tiny event bus for cross-module communication ── */
+const tienda = (() => {
+    const _handlers = {};
+    return {
+        /** Register a handler: tienda.on('openModal', fn) */
+        on(event, fn) {
+            (_handlers[event] ||= []).push(fn);
+        },
+        /** Emit an event: tienda.emit('openModal', product) */
+        emit(event, ...args) {
+            (_handlers[event] || []).forEach(fn => fn(...args));
+        },
+    };
+})();
 
 
 /****************************
@@ -120,6 +135,14 @@
         ]
     };
 
+    /** Template registry — look up templates by name for JSON-driven config */
+    const TEMPLATES = {
+        '1-featured':      TEMPLATE_A,
+        '2-split':         TEMPLATE_B,
+        '2S-1L':           TEMPLATE_C,
+        '1-left-featured': TEMPLATE_D,
+    };
+
     /* ── Per-face config: template + logo in one place ──
        Edit this array to control each face's layout AND logo.
        When faces exceed this list, it cycles from the start.
@@ -144,9 +167,52 @@
         return el;
     };
 
+    /* ── Shared element builders ── */
+
+    /** Build $XX.CC price element with the given wrapper class */
+    const buildPriceEl = (price, cents, className) => {
+        const wrap = document.createElement('div');
+        wrap.className = className;
+        const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
+        const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(price);
+        const c = document.createElement('span'); c.className = 'catalog-price-cents';  c.textContent = cents || '00';
+        wrap.appendChild(d); wrap.appendChild(a); wrap.appendChild(c);
+        return wrap;
+    };
+
+    /** Build splash-with-price (image + price overlay) */
+    const buildSplashEl = (product, slot, splashSrc, assets) => {
+        const splashWrap = document.createElement('div');
+        splashWrap.className = 'catalog-splash';
+        if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
+        if (slot.splashY != null) { splashWrap.style.top = slot.splashY + '%'; splashWrap.style.bottom = 'auto'; }
+        if (slot.splashW != null) splashWrap.style.width  = slot.splashW + '%';
+        if (slot.splashH != null) splashWrap.style.height = slot.splashH + '%';
+
+        const splashImg = document.createElement('img');
+        splashImg.className = 'catalog-splash-img';
+        splashImg.src = splashSrc;
+        splashImg.alt = '';
+        splashImg.loading = 'lazy';
+        splashWrap.appendChild(splashImg);
+
+        // Per-image splash scaling (from catalog.json assets.splashScales)
+        const scales = assets.splashScales || {};
+        for (const [fragment, scale] of Object.entries(scales)) {
+            if (splashSrc.includes(fragment)) {
+                splashImg.style.transform = 'scale(' + scale + ')';
+                splashImg.style.transformOrigin = 'center';
+                break;
+            }
+        }
+
+        splashWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
+        return splashWrap;
+    };
+
     /* ── Build a single product card ── */
 
-    const buildProduct = (product, slot, assets, frameRotators, splashRotators, templateName) => {
+    const buildProduct = ({ product, slot, assets, frameRotators, splashRotators, templateName }) => {
         const wrapper = posEl('div', 'catalog-product', slot.x, slot.y, slot.width, slot.height);
         wrapper.dataset.productId = product.id;
 
@@ -156,18 +222,12 @@
         const splash = splashRotators[slot.splashPool || 'medium']();
 
         wrapper.dataset.frame = frame;
-        wrapper.style.zIndex = '101';
-        wrapper.style.cursor = 'pointer';
 
         const imageArea = document.createElement('div');
         imageArea.className = 'catalog-image-area';
 
-        // Frame image (or no frame for template D — shadow only via CSS)
-        if (slot.shadowOnly) {
-            // No decorative frame; product gets a stretched drop-shadow via CSS
-            wrapper.classList.add('catalog-product-shadow-only');
-            if (slot.squareImage) wrapper.classList.add('catalog-product-square');
-        } else if (assets.frames[frame]) {
+        // Frame image
+        if (assets.frames[frame]) {
             const frameImg = document.createElement('img');
             frameImg.className = 'catalog-frame';
             frameImg.src = assets.frames[frame];
@@ -189,55 +249,14 @@
             imageArea.appendChild(clipDiv);
         }
 
-        // Price splash — for shadowOnly slots, place in corner; for others, normal position
+        // Price splash
         if (product.price != null && assets.splashes[splash] && !product.noSplash) {
-            const splashWrap = document.createElement('div');
-            splashWrap.className = 'catalog-splash';
-            if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
-            if (slot.splashY != null) { splashWrap.style.top = slot.splashY + '%'; splashWrap.style.bottom = 'auto'; }
-            if (slot.splashW != null) splashWrap.style.width  = slot.splashW + '%';
-            if (slot.splashH != null) splashWrap.style.height = slot.splashH + '%';
-
-            const splashImg = document.createElement('img');
-            splashImg.className = 'catalog-splash-img';
-            splashImg.src = assets.splashes[splash];
-            splashImg.alt = '';
-            splashImg.loading = 'lazy';
-            splashWrap.appendChild(splashImg);
-
-            // Per-image splash scaling adjustments (image only, not price)
-            const splashSrc = assets.splashes[splash];
-            if (splashSrc.includes('image2563')) {
-                splashImg.style.transform = 'scale(0.80)';
-                splashImg.style.transformOrigin = 'center';
-            } else if (splashSrc.includes('image2561')) {
-                splashImg.style.transform = 'scale(1.68)';
-                splashImg.style.transformOrigin = 'center';
-            } else if (splashSrc.includes('image2786') || splashSrc.includes('image2816')) {
-                splashImg.style.transform = 'scale(1.18)';
-                splashImg.style.transformOrigin = 'center';
-            }
-
-            // Price text
-            const priceC = document.createElement('div');
-            priceC.className = 'catalog-price-container';
-            const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-            const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
-            const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
-            priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
-            splashWrap.appendChild(priceC);
-            imageArea.appendChild(splashWrap);
+            imageArea.appendChild(buildSplashEl(product, slot, assets.splashes[splash], assets));
         } else if (product.price != null && !product.noSplash) {
             // Standalone price (no splash image available)
             const priceWrap = document.createElement('div');
             priceWrap.className = 'catalog-price-standalone';
-            const priceC = document.createElement('div');
-            priceC.className = 'catalog-price-container';
-            const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-            const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
-            const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
-            priceC.appendChild(d); priceC.appendChild(a); priceC.appendChild(c);
-            priceWrap.appendChild(priceC);
+            priceWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
             imageArea.appendChild(priceWrap);
         }
 
@@ -297,13 +316,7 @@
 
             // Add red price above name
             if (product.price != null) {
-                const priceLine = document.createElement('div');
-                priceLine.className = 'catalog-text-price';
-                const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-                const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(product.price);
-                const c = document.createElement('span'); c.className = 'catalog-price-cents'; c.textContent = product.cents || '00';
-                priceLine.appendChild(d); priceLine.appendChild(a); priceLine.appendChild(c);
-                textBlock.appendChild(priceLine);
+                textBlock.appendChild(buildPriceEl(product.price, product.cents, 'catalog-text-price'));
             }
 
             const nameEl = wrapper.querySelector('.catalog-product-name');
@@ -313,12 +326,22 @@
             wrapper.appendChild(textBlock);
         }
 
-        // Click → modal
-        wrapper.addEventListener('click', (e) => {
+        // Accessibility
+        wrapper.setAttribute('role', 'button');
+        wrapper.setAttribute('tabindex', '0');
+        wrapper.setAttribute('aria-label', (product.name || 'Producto') + (product.price != null ? ' — $' + product.price : ''));
+
+        // Click & keyboard → modal
+        const openModal = (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('debug-active')) return;
-            if (typeof window.openProductModal === 'function') {
-                window.openProductModal(product);
+            tienda.emit('openModal', product);
+        };
+        wrapper.addEventListener('click', openModal);
+        wrapper.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal(e);
             }
         });
 
@@ -331,7 +354,6 @@
         const logoSrc = assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
-        wrap.style.zIndex = '150';
         const img = document.createElement('img');
         img.className = 'catalog-logo-img';
         img.src = logoSrc;
@@ -344,7 +366,6 @@
     const buildTitle = (text, x, y, w, h, fontSize, color, fontFamily) => {
         const el = posEl('div', 'catalog-title', x, y, w, h);
         el.textContent = text;
-        el.style.zIndex = '130';
         if (fontSize) el.style.fontSize = fontSize;
         if (color) el.style.color = color;
         if (fontFamily) el.style.fontFamily = fontFamily;
@@ -359,7 +380,6 @@
 
     const buildQuote = (x, y, w, h) => {
         const wrap = posEl('div', 'catalog-quote', x, y, w, h);
-        wrap.style.zIndex = '130';
         const inner = document.createElement('div');
         inner.className = 'catalog-quote-inner';
         const bg = document.createElement('div');
@@ -369,17 +389,17 @@
         text.className = 'catalog-quote-text';
 
         const esGratis = document.createElement('strong');
+        esGratis.className = 'quote-line-highlight';
         esGratis.textContent = 'ES GRATIS';
-        esGratis.style.cssText = 'font-size:130%;display:block;color:#FF3333;margin-bottom:2px;';
         const middle = document.createElement('span');
+        middle.className = 'quote-line-sub';
         middle.textContent = 'disfrutar de las cosas que';
-        middle.style.cssText = 'display:block;font-weight:400;font-size:85%;';
         const deNoche = document.createElement('strong');
+        deNoche.className = 'quote-line-main';
         deNoche.textContent = 'DE NOCHE';
-        deNoche.style.cssText = 'display:block;font-size:120%;margin:1px 0;';
         const noTienen = document.createElement('span');
+        noTienen.className = 'quote-line-highlight quote-line-sub';
         noTienen.textContent = 'NO TIENEN PRECIO..';
-        noTienen.style.cssText = 'display:block;color:#FF3333;font-size:85%;';
 
         text.appendChild(esGratis);
         text.appendChild(middle);
@@ -586,10 +606,8 @@
         bgImg.className = 'catalog-bg';
         bgImg.src = bgSrc;
         bgImg.alt = '';
-        bgImg.loading = 'lazy';
+        bgImg.loading = 'eager';
         face.appendChild(bgImg);
-
-        // Flip label (no shadow, no edge shading)
         const label = document.createElement('label');
         label.setAttribute('for', checkboxId);
         face.appendChild(label);
@@ -654,7 +672,7 @@
         faceData.products.forEach((product, i) => {
             const slot = faceData.template.slots[i];
             if (!slot) return;
-            const card = buildProduct(product, slot, assets, faceData.frameRotators, faceData.splashRotators, faceData.template.name);
+            const card = buildProduct({ product, slot, assets, frameRotators: faceData.frameRotators, splashRotators: faceData.splashRotators, templateName: faceData.template.name });
             card.classList.add(borderClass);
             face.appendChild(card);
         });
@@ -835,7 +853,7 @@
         }
     });
 
-    window._resizeFlipbook = resizeFlipbook;
+    tienda.on('resize', resizeFlipbook);
 
     /* ── Fetch & init ── */
 
@@ -874,17 +892,25 @@
     const badgeEl  = modal.querySelector('.modal-badge');
     const buyBtn   = modal.querySelector('.modal-buy-btn');
 
+    let previousFocus = null;
+
     const show = () => {
+        previousFocus = document.activeElement;
         modal.classList.remove('modal-hidden');
         modal.classList.add('modal-visible');
+        // Focus the close button for keyboard users
+        closeBtn?.focus();
     };
 
     const hide = () => {
         modal.classList.remove('modal-visible');
         modal.classList.add('modal-hidden');
+        // Restore focus to the element that opened the modal
+        previousFocus?.focus?.();
+        previousFocus = null;
     };
 
-    window.openProductModal = (product) => {
+    tienda.on('openModal', (product) => {
         imgEl.src  = product.image || '';
         imgEl.alt  = product.name  || '';
         nameEl.textContent  = product.name || '';
@@ -902,13 +928,27 @@
 
         buyBtn.href = product.link || '#';
         show();
-    };
+    });
 
     // Close triggers
     closeBtn?.addEventListener('click', hide);
     overlay?.addEventListener('click', hide);
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('modal-visible')) hide();
+        // Focus trap: Tab cycles within the modal
+        if (e.key === 'Tab' && modal.classList.contains('modal-visible')) {
+            const focusable = modal.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
     });
 })();
 
@@ -1008,17 +1048,20 @@
         }, delay);
     };
 
-    window.stopAds = () => {
+    const stopAds = () => {
         clearTimeout(adTimer);
         adTimer = null;
         adAudio.pause();
         adAudio.currentTime = 0;
     };
 
-    window.startAds = () => {
+    const startAds = () => {
         clearTimeout(adTimer);
         adTimer = setTimeout(scheduleNextAd, 30000);
     };
+
+    tienda.on('stopAds', stopAds);
+    tienda.on('startAds', startAds);
 })();
 
 
@@ -1078,7 +1121,7 @@
     backgroundMusic.volume = 0;
     bgClone.volume = 0;
 
-    window.stopMusic = () => {
+    const stopMusic = () => {
         clearTimeout(crossfadeTimer);
         crossfadeTimer = null;
         fadeIntervals.forEach(clearInterval);
@@ -1089,7 +1132,7 @@
         bgClone.volume = 0;
     };
 
-    window.startMusic = () => {
+    const startMusic = () => {
         if (!active.paused) return;
         active.muted = false;
         active.currentTime = START_TIME;
@@ -1099,6 +1142,9 @@
             scheduleNextLoop(active);
         }).catch(() => {});
     };
+
+    tienda.on('stopMusic', stopMusic);
+    tienda.on('startMusic', startMusic);
 })();
 
 
@@ -1115,47 +1161,16 @@
 })();
 
 
-/**********************
- * 7. MODE TOGGLE BEHAVIOR
- **********************/
-
-(() => {
-    const toggleModeBtn = document.getElementById('toggle-mode-btn');
-    if (!toggleModeBtn) return;
-
-    const { body } = document;
-    const LIGHT = 'light-mode';
-    const DARK  = 'dark-mode';
-
-    const applyMode = (mode) => {
-        body.classList.remove(LIGHT, DARK);
-        body.classList.add(mode);
-
-        const isDark = mode === DARK;
-        toggleModeBtn.style.color = isDark ? '#f5f5f5' : '#020408';
-        toggleModeBtn.innerHTML = '<i class="bi bi-' + (isDark ? 'sun-fill' : 'moon-stars-fill') + '"></i>';
-    };
-
-    applyMode(localStorage.getItem('mode') || LIGHT);
-
-    toggleModeBtn.addEventListener('click', () => {
-        const newMode = body.classList.contains(LIGHT) ? DARK : LIGHT;
-        applyMode(newMode);
-        localStorage.setItem('mode', newMode);
-    });
-})();
-
-
 /************************
- * 8. VISIBILITY SAFETY NET
+ * 7. VISIBILITY SAFETY NET
  ************************/
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        window.stopMusic?.();
-        window.stopAds?.();
+        tienda.emit('stopMusic');
+        tienda.emit('stopAds');
     } else {
-        window.startMusic?.();
-        window.startAds?.();
+        tienda.emit('startMusic');
+        tienda.emit('startAds');
     }
 }, { passive: true });

@@ -29,6 +29,12 @@
     "pageNoLogo": [false, false, false, false, false, false, false, false],
 
     "assets": {
+        "splashScales": {
+            "image2563": 0.80,
+            "image2561": 1.68,
+            "image2786": 1.18,
+            "image2816": 1.18
+        },
         "backgrounds": [
             "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
             "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",

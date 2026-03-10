@@ -11,7 +11,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style id="dynamic-flipbook-css">/* Generated dynamically by catalog engine */</style>
     <script src="script.js" defer></script>
 </head>
@@ -25,11 +24,10 @@
 
     <main>
         <!-- Checkboxes + #flip_book are generated dynamically from catalog.json -->
-        <div id="catalog-root"></div>
+        <div id="catalog-root" role="region" aria-label="Catálogo de productos"></div>
 
-        <button id="toggle-mode-btn" aria-label="Cambiar modo">
-            <i class="bi bi-moon-stars-fill"></i>
-        </button>
+        <!-- Screen reader announcements -->
+        <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
         <audio id="background-music" loop muted preload="none">
             <source src="assets/BACKGROUND WEB TIENDA MUSIC.mp3" type="audio/mpeg">
@@ -63,13 +61,13 @@
             </div>
             <!-- Body — sunken content area -->
             <div class="modal-body win95-body">
-                <div class="modal-image-container win95-image-frame">
+                <div class="modal-image-container win95-image-frame win95-sunken">
                     <div class="modal-badge"></div>
                     <img class="modal-product-image" src="" alt="">
                 </div>
-                <div class="modal-info win95-info">
+                <div class="modal-info win95-info win95-etched">
                     <h2 class="modal-product-name"></h2>
-                    <div class="win95-price-box">
+                    <div class="win95-price-box win95-sunken">
                         <span class="modal-price-text"></span>
                     </div>
                     <p class="modal-product-description"></p>
@@ -80,8 +78,8 @@
             </div>
             <!-- Status bar -->
             <div class="win95-statusbar">
-                <span class="win95-status-section">Listo</span>
-                <span class="win95-status-section">GDLDENOXE.COM</span>
+                <span class="win95-status-section win95-etched">Listo</span>
+                <span class="win95-status-section win95-etched">GDLDENOXE.COM</span>
             </div>
         </div>
     </div>
