@@ -103,17 +103,17 @@ const tienda = (() => {
             {
                 x: 48, y: 16, width: 48, height: 70,
                 framePool: 'large', splashPool: 'large',
-                splashX: 65, splashY: 80, splashW: 40, splashH: 24
+                splashX: 55, splashY: 72, splashW: 55, splashH: 34
             },
             {
                 x: 6, y: 8, width: 40, height: 34,
                 framePool: 'small', splashPool: 'small',
-                splashX: 4, splashY: -4, splashW: 42, splashH: 36
+                splashX: -8, splashY: -10, splashW: 65, splashH: 55
             },
             {
                 x: 6, y: 46, width: 40, height: 36,
                 framePool: 'small', splashPool: 'small',
-                splashX: 0, splashY: 34, splashW: 46, splashH: 40
+                splashX: -8, splashY: 26, splashW: 65, splashH: 55
             }
         ]
     };
