@@ -1067,6 +1067,10 @@ const tienda = (() => {
 
     tienda.on('stopAds', stopAds);
     tienda.on('startAds', startAds);
+
+    /* Expose globally so the parent frame can control ads. */
+    window.startAds = startAds;
+    window.stopAds  = stopAds;
 })();
 
 
@@ -1150,6 +1154,11 @@ const tienda = (() => {
 
     tienda.on('stopMusic', stopMusic);
     tienda.on('startMusic', startMusic);
+
+    /* Expose globally so the parent frame can trigger audio after
+       the user clicks the tienda icon (user-activation is on the parent). */
+    window.startMusic = startMusic;
+    window.stopMusic  = stopMusic;
 })();
 
 
@@ -1167,18 +1176,48 @@ const tienda = (() => {
 
 
 /************************
- * 7. VISIBILITY SAFETY NET
+ * 7. AUTOPLAY + VISIBILITY / LIFECYCLE
+ *
+ * Browsers block audio until the user interacts with the page.
+ * We listen for the first gesture, start music + ads, then remove
+ * the listener so it only fires once.
+ *
+ * We also stop everything whenever the page becomes hidden
+ * (tab switch, minimise, iframe hidden, page unload).
  ************************/
+
+/* ── Start on first user interaction ── */
+const _startAudio = () => {
+    tienda.emit('startMusic');
+    tienda.emit('startAds');
+    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
+        document.removeEventListener(ev, _startAudio)
+    );
+};
+['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
+    document.addEventListener(ev, _startAudio, { once: true, passive: true })
+);
+
+/* ── Stop when page/tab becomes invisible ── */
+const _stopAudio = () => {
+    tienda.emit('stopMusic');
+    tienda.emit('stopAds');
+};
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        tienda.emit('stopMusic');
-        tienda.emit('stopAds');
+        _stopAudio();
     } else {
         tienda.emit('startMusic');
         tienda.emit('startAds');
     }
 }, { passive: true });
+
+/* pagehide fires when navigating away or the iframe src changes */
+window.addEventListener('pagehide', _stopAudio, { passive: true });
+
+/* freeze fires in bfcache-freezing browsers */
+window.addEventListener('freeze', _stopAudio, { passive: true });
 
 
 /*************************************
