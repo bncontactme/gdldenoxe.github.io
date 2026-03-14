@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.className = 'folder-item';
         item.dataset.openArticle = 'art-' + art.id;
         item.innerHTML = `
-            <span class="folder-icon"><img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" class="folder-item-icon"></span>
+            <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
             <span class="folder-name">${art.titulo}.txt</span>`;
 
         item.addEventListener('click', (e) => {
@@ -911,7 +911,7 @@ juntxs y brillando.`
             const radioBtn = document.createElement('button');
             radioBtn.id = 'taskbar-radio';
             radioBtn.className = 'taskbar-item';
-            radioBtn.innerHTML = '<img src="https://win98icons.alexmeub.com/icons/png/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
+            radioBtn.innerHTML = '<img src="indexPage/indexImages/icons/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
             radioBtn.addEventListener('click', () => {
                 if (musicPlayer) {
                     musicPlayer.classList.remove('hidden');

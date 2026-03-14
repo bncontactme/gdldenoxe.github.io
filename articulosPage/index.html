@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#008080">
     <title>Artículos - GDLDENOXE</title>
-    <link rel="preconnect" href="https://win98icons.alexmeub.com" crossorigin>
     <style>
         :root {
             --win95-gray: #c0c0c0;
@@ -106,7 +105,7 @@
                     item.className = 'folder-item';
                     item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
                     item.target = '_top';
-                    item.innerHTML = `<img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
+                    item.innerHTML = `<img src="../indexPage/indexImages/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
                     fragment.appendChild(item);
                 });
                 grid.appendChild(fragment);
