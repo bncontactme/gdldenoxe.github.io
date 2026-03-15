@@ -9,6 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="assets/webAssets/pages/page1.webp" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style id="dynamic-flipbook-css">/* Generated dynamically by catalog engine */</style>
@@ -25,6 +26,12 @@
     <main>
         <!-- Checkboxes + #flip_book are generated dynamically from catalog.json -->
         <div id="catalog-root" role="region" aria-label="Catálogo de productos"></div>
+
+        <noscript>
+            <p style="color:#fff;background:#990000;padding:2rem;text-align:center;font-size:1rem;margin:2rem;">
+                Este catálogo requiere JavaScript para funcionar. Por favor, actívalo en tu navegador.
+            </p>
+        </noscript>
 
         <!-- Windows 95 Flipbook Navigation — sits below flipbook, right-aligned -->
         <div id="flipbook-nav" role="navigation" aria-label="Navegación del catálogo">
@@ -60,13 +67,13 @@
                 <span class="win95-titlebar-icon">&#128230;</span>
                 <span class="win95-titlebar-text">producto.exe</span>
                 <div class="win95-titlebar-buttons">
-                    <button class="win95-btn-minimize" aria-label="Minimizar">_</button>
-                    <button class="win95-btn-maximize" aria-label="Maximizar">&#9633;</button>
+                    <button class="win95-btn-minimize" aria-hidden="true" tabindex="-1" disabled>_</button>
+                    <button class="win95-btn-maximize" aria-hidden="true" tabindex="-1" disabled>&#9633;</button>
                     <button class="modal-close win95-btn-close" aria-label="Cerrar">&times;</button>
                 </div>
             </div>
             <!-- Menu bar -->
-            <div class="win95-menubar">
+            <div class="win95-menubar" role="presentation" aria-hidden="true">
                 <span class="win95-menu-item"><u>A</u>rchivo</span>
                 <span class="win95-menu-item"><u>E</u>dición</span>
                 <span class="win95-menu-item"><u>V</u>er</span>

@@ -479,12 +479,13 @@ const tienda = (() => {
 
         const meta = getBigSplashMeta(src);
         const pos = NAMED_POSITIONS[posName] || NAMED_POSITIONS['top-right'];
+        const offsetX = (typeof entry === 'object' && entry.offsetX != null) ? entry.offsetX : 0;
         const offsetY = (typeof entry === 'object' && entry.offsetY != null) ? entry.offsetY : 0;
         const offsetW = (typeof entry === 'object' && entry.offsetW != null) ? entry.offsetW : 0;
 
         const wrap = document.createElement('div');
         wrap.className = 'catalog-big-splash';
-        wrap.style.left = pos.left + '%';
+        wrap.style.left = (pos.left + offsetX) + '%';
         wrap.style.top = (pos.top + offsetY) + '%';
         wrap.style.width = (pos.cssW + offsetW) + '%';
         const img = document.createElement('img');
@@ -555,8 +556,6 @@ const tienda = (() => {
     */
 
     const autoLayout = (pages, productMap, assets) => {
-        const bgRotate = rotator(assets.backgrounds);
-
         // Shared rotators persist across all faces for variety
         const frameRot = {
             large:  rotator(LARGE_FRAMES),
@@ -582,7 +581,7 @@ const tienda = (() => {
                 });
 
             return {
-                bgSrc: page.background || bgRotate(),
+                bgSrc: page.background || assets.backgrounds[0],
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
@@ -606,11 +605,14 @@ const tienda = (() => {
         const face = document.createElement('div');
         face.className = 'front_page';
 
-        // Background
+        // Background — high priority since it's the first visible content
         const bgImg = document.createElement('div');
         bgImg.className = 'catalog-bg';
         bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
         face.appendChild(bgImg);
+
+        // Cover preload is already in index.html <head>
+
         const label = document.createElement('label');
         label.setAttribute('for', checkboxId);
         face.appendChild(label);
@@ -997,10 +999,11 @@ const tienda = (() => {
         })
         .catch(err => {
             console.error('[Catalog Engine] Failed to load catalog:', err);
-            catalogRoot.innerHTML =
-                '<p style="color:red;font-size:1rem;text-align:center;padding:2rem;">' +
-                'Error cargando el catálogo.<br>Verifica que <code>catalog.json</code> exista.' +
-                '</p>';
+            const errP = document.createElement('p');
+            errP.style.cssText = 'color:red;font-size:1rem;text-align:center;padding:2rem;';
+            errP.textContent = 'Error cargando el catálogo. Verifica que catalog.json exista.';
+            catalogRoot.textContent = '';
+            catalogRoot.appendChild(errP);
         });
 })();
 
@@ -1026,6 +1029,11 @@ const tienda = (() => {
 
     let previousFocus = null;
 
+    const srAnnounce = (msg) => {
+        const sr = document.getElementById('sr-announcements');
+        if (sr) sr.textContent = msg;
+    };
+
     const show = () => {
         previousFocus = document.activeElement;
         modal.classList.remove('modal-hidden');
@@ -1040,6 +1048,7 @@ const tienda = (() => {
         // Restore focus to the element that opened the modal
         previousFocus?.focus?.();
         previousFocus = null;
+        srAnnounce('Detalle de producto cerrado');
     };
 
     tienda.on('openModal', (product) => {
@@ -1060,6 +1069,7 @@ const tienda = (() => {
 
         buyBtn.href = product.link || '#';
         show();
+        srAnnounce('Detalle de producto: ' + (product.name || 'Producto'));
     });
 
     // Close triggers
@@ -1241,11 +1251,19 @@ const tienda = (() => {
     };
 
     const scheduleNextLoop = (audio) => {
-        const delay = Math.max(0, (audio.duration - END_OFFSET - FADE_DURATION) * 1000);
+        const dur = audio.duration;
+        // Guard: if duration is not yet available (NaN), wait for metadata
+        if (!isFinite(dur)) {
+            audio.addEventListener('loadedmetadata', () => scheduleNextLoop(audio), { once: true });
+            return;
+        }
+        const delay = Math.max(0, (dur - END_OFFSET - FADE_DURATION) * 1000);
         crossfadeTimer = setTimeout(crossfade, delay);
     };
 
     const crossfade = () => {
+        // Bail if music was stopped between schedule and fire
+        if (active.paused && inactive.paused) return;
         inactive.currentTime = START_TIME;
         inactive.play();
         fade(inactive, 0, 1, FADE_DURATION);
@@ -1314,12 +1332,12 @@ const tienda = (() => {
  ************************/
 
 /* ── Start on first user interaction ── */
+let _audioStarted = false;
 const _startAudio = () => {
+    if (_audioStarted) return;
+    _audioStarted = true;
     tienda.emit('startMusic');
     tienda.emit('startAds');
-    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
-        document.removeEventListener(ev, _startAudio)
-    );
 };
 ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
     document.addEventListener(ev, _startAudio, { once: true, passive: true })
@@ -1395,6 +1413,11 @@ window.addEventListener('freeze', _stopAudio, { passive: true });
         }, ANIM_MS);
     };
 
+    const announce = (msg) => {
+        const sr = document.getElementById('sr-announcements');
+        if (sr) sr.textContent = msg;
+    };
+
     const goBack = () => {
         if (animating) return;
         const boxes = getCheckboxes();
@@ -1408,6 +1431,7 @@ window.addEventListener('freeze', _stopAudio, { passive: true });
         }
         lockButtons();
         updateNav();
+        announce('Página anterior');
     };
 
     const goNext = () => {
@@ -1423,6 +1447,7 @@ window.addEventListener('freeze', _stopAudio, { passive: true });
         }
         lockButtons();
         updateNav();
+        announce('Página siguiente');
     };
 
     backBtn.addEventListener('click', goBack);

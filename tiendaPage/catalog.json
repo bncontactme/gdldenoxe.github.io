@@ -81,7 +81,6 @@
         "splashScales": {
             "image2563": 0.80,
             "image2561": 1.68,
-            "image2786": 1.18,
             "image2816": 1.18
         },
         "backgrounds": [
@@ -91,10 +90,6 @@
             "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
             "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png"
         ],
-        "shadows": {
-            "page":  "assets/webAssets/shadows/Guadalajara De Noche_PDF_Background_frame_Complete_Page.png",
-            "frame": "assets/webAssets/shadows/Guadalajara De Noche_PDF_Background_frame_Frame.png"
-        },
         "frames": {
             "square-sm":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1581.png",
             "square-lg":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1583.png",
@@ -145,7 +140,7 @@
             "name": "Boxer GDN",
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 3.jpg",
-            "description": "Boxer con estampado GDN.",
+            "description": "Estampado GDN. Talla única.",
             "link": "#",
             "info": "Talla Única",
             "stock": "2 u"
@@ -165,9 +160,9 @@
             "image": "assets/products/101/yeyo 2.jpg",
             "noCornerEffect": true,
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
-            "description": "Boxer de Oficina 101 x GDN con @yeyo.",
+            "description": "Collab con @yeyo. Pieza única.",
             "link": "#",
-            "info": "Diversión Arcor x500 g",
+            "info": "Talla Única",
             "stock": "01 u"
         },
         {
@@ -182,9 +177,9 @@
             "name": "GDN X OFICINA 101 (@notchinese)",
             "price": 777, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/2.jpg",
-            "description": "Boxer de Oficina 101 x GDN con @notchinese.",
+            "description": "Collab con @notchinese.",
             "link": "#",
-            "info": "La Virginia x 500g",
+            "info": "Talla Única",
             "stock": "4 u",
             "subtitle": "$888 / Objeto Gdl"
         },
@@ -203,7 +198,7 @@
             "name": "Gorra GDN X OFICINA 101",
             "price": 650, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/gorra oficina gdn .jpg",
-            "description": "Gorra de Oficina 101 x GDN.",
+            "description": "Cap 5 panel. Collab Oficina 101.",
             "link": "#",
             "info": "Talla Única",
             "stock": "3 u"
@@ -211,10 +206,9 @@
         {
             "id": "boxer-1",
             "name": "GDN X OFICINA 101 (Marcelo Borbolla)",
-            "mobileFeature": true,
             "price": 299, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/marcelo_borbolla x GDN.jpg",
-            "description": "Boxer de Oficina 101 x GDN con Marcelo Borbolla.",
+            "description": "Collab con Marcelo Borbolla.",
             "link": "#",
             "info": "Talla Única",
             "stock": "5 u",
@@ -227,9 +221,9 @@
             "mobileHide": true,
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 2.jpg",
-            "description": "Boxer con estampado GDN.",
+            "description": "Estampado GDN. Talla única.",
             "link": "#",
-            "info": "La Serenísima, el Kilo",
+            "info": "Talla Única",
             "stock": "4 u",
             "subtitle": "$220 / Guardaropa"
         },
@@ -256,7 +250,7 @@
             "mobileHide": true,
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 4.jpg",
-            "description": "Boxer con estampado GDN.",
+            "description": "Estampado GDN. Talla única.",
             "link": "#",
             "info": "Talla Única",
             "stock": "4 u",
@@ -278,7 +272,7 @@
             "price": 599, "cents": "00", "currency": "MXN",
             "cornerPosition": "tr",
             "image": "assets/products/boxers_model/DSC01043.jpg",
-            "description": "Boxer de Oficina 101 x GDN con @notchinese.",
+            "description": "Collab con @notchinese.",
             "link": "#",
             "info": "Talla Única",
             "stock": "3 u"
@@ -289,7 +283,7 @@
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/WhatsApp_Image_2025-12-12_at_10.44.10_AM-removebg-preview.png",
             "imageBg": "#ffffff",
-            "description": "Totebag con serigrafía GDN.",
+            "description": "Serigrafía GDN. Talla única.",
             "link": "#",
             "info": "Talla Única",
             "stock": "3 u"
@@ -301,7 +295,7 @@
             "badge": "AGOTADO",
             "price": 549, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/ambas bufas.jpg",
-            "description": "Bufanda con diseño GDN.",
+            "description": "Edición limitada GDN. Agotada.",
             "link": "#",
             "info": "Talla Única",
             "stock": "Agotado"
@@ -312,22 +306,19 @@
             "mobileHide": true,
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 5.jpg",
-            "description": "Boxer con estampado GDN.",
+            "description": "Estampado GDN. Talla única.",
             "link": "#",
             "info": "Talla Única",
             "stock": "2 u"
         },
         {
             "id": "boxer-15",
-            "name": "PRODUCTO #15",
+            "name": "GDN X OFICINA 101",
+            "noSplash": true,
+            "noModal": true,
             "mobileHide": true,
-            "price": 599, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers_model/DSC01322.jpg",
-            "description": "Pieza de la colección GDN.",
-            "link": "#",
-            "info": "Talla Única",
-            "stock": "5 u",
-            "badge": "NUEVO"
+            "image": "assets/products/boxers_model/DSC01220 copia.jpg",
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetX": 5, "offsetY": 20, "offsetW": -12 }
         }
     ]
 }
