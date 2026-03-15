@@ -97,8 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Lazy-load iframes on first open (prevents invisible resource waste)
+        // Tienda is unlocked separately via debug tap sequence — skip it here
         const iframe = win.querySelector('iframe[data-src]:not([src])');
-        if (iframe) iframe.src = iframe.dataset.src;
+        if (iframe && win.dataset.windowId !== 'tienda') iframe.src = iframe.dataset.src;
 
         win.classList.remove('hidden', 'minimized');
         bringToFront(win);
@@ -1450,6 +1451,37 @@ juntxs y brillando.`
       });
 
       resetGame();
+    })();
+
+    // ── Tienda debug unlock: 12 taps on the placeholder reveals the store ──
+    (function () {
+        const placeholder = document.getElementById('tienda-placeholder');
+        const container   = document.getElementById('tienda-iframe-container');
+        if (!placeholder || !container) return;
+
+        let taps = 0;
+        let resetTimer = null;
+
+        function onTap () {
+            clearTimeout(resetTimer);
+            taps++;
+
+            if (taps >= 12) {
+                // Unlock: load iframe and hide placeholder
+                const iframe = container.querySelector('iframe[data-src]:not([src])');
+                if (iframe) iframe.src = iframe.dataset.src;
+                placeholder.style.display = 'none';
+                container.style.display   = '';
+                taps = 0;
+                return;
+            }
+
+            // Reset counter if no tap within 3 seconds
+            resetTimer = setTimeout(() => { taps = 0; }, 3000);
+        }
+
+        placeholder.addEventListener('click',     onTap);
+        placeholder.addEventListener('touchstart', onTap, { passive: true });
     })();
 
 });

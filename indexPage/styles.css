@@ -602,6 +602,30 @@ body {
     height: 650px;
 }
 
+/* Tienda debug placeholder */
+#tienda-placeholder {
+    width: 100%;
+    height: 650px;
+    background: #c0c0c0;
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    box-shadow: inset 1px 1px 0 #808080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+#tienda-placeholder img {
+    width: 120px;
+    opacity: 0.4;
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
 .iframe-container iframe {
     width: 100%;
     height: 100%;

@@ -891,8 +891,7 @@ const tienda = (() => {
     };
 
     /* ─────────────────────────────────────────────────────────
-       MOBILE STORE — Win95 Card Grid (minimalist)
-       2-col grid of clean Win95 windows. No flipbook slop.
+       MOBILE STORE — Win95 card grid (image + price)
        ───────────────────────────────────────────────────────── */
 
     const buildMobileStore = (catalog) => {
@@ -904,24 +903,22 @@ const tienda = (() => {
             });
         }
 
-        const purchasable = (products || []).filter(p => !p.noModal && p.price != null);
+        const purchasable = (products || []).filter(p => !p.noModal && !p.mobileHide && p.price != null);
 
         const store = document.createElement('div');
         store.className = 'mobile-store';
 
-        // Header — simple Win95 window with logo
-        const header = document.createElement('div');
-        header.className = 'ms-header';
-        header.innerHTML =
-            '<div class="ms-titlebar">' +
-                '<span class="ms-tb-icon">\uD83D\uDECD\uFE0F</span>' +
-                '<span class="ms-tb-text">tienda.exe</span>' +
-                '<span class="ms-tb-buttons"><span>_</span><span>\u25A1</span><span>\u00D7</span></span>' +
-            '</div>' +
-            '<div class="ms-header-content">' +
-                (assets.logos && assets.logos.dark ? '<img class="ms-logo" src="' + assets.logos.dark + '" alt="GDLDENOXE">' : '') +
-            '</div>';
-        store.appendChild(header);
+        // Logo
+        if (assets && assets.logos && assets.logos.dark) {
+            const logoWrap = document.createElement('div');
+            logoWrap.className = 'ms-logo-wrap';
+            const logoImg = document.createElement('img');
+            logoImg.className = 'ms-logo';
+            logoImg.src = assets.logos.dark;
+            logoImg.alt = 'GDLDENOXE';
+            logoWrap.appendChild(logoImg);
+            store.appendChild(logoWrap);
+        }
 
         // Grid
         const grid = document.createElement('div');
@@ -931,14 +928,7 @@ const tienda = (() => {
             const card = document.createElement('div');
             card.className = 'ms-card';
 
-            // Title bar
-            const tb = document.createElement('div');
-            tb.className = 'ms-titlebar';
-            tb.innerHTML = '<span class="ms-tb-icon">\uD83D\uDCE6</span><span class="ms-tb-text">' +
-                (product.name || product.id).replace(/</g, '&lt;') + '</span>';
-            card.appendChild(tb);
-
-            // Image — sunken panel
+            // Image
             const imgWrap = document.createElement('div');
             imgWrap.className = 'ms-img-wrap';
             if (product.imageBg) imgWrap.style.backgroundColor = product.imageBg;
@@ -950,34 +940,34 @@ const tienda = (() => {
                 img.loading = 'lazy';
                 imgWrap.appendChild(img);
             }
-            // Badge overlay
-            if (product.badge) {
-                const badge = document.createElement('span');
-                badge.className = 'ms-badge';
-                if (product.badge === 'AGOTADO') badge.classList.add('ms-badge--out');
-                badge.textContent = product.badge;
-                imgWrap.appendChild(badge);
-            }
             card.appendChild(imgWrap);
 
-            // Price — sunken text field
+            // Info area: title + description + price
+            const info = document.createElement('div');
+            info.className = 'ms-info';
+
+            if (product.name) {
+                const title = document.createElement('div');
+                title.className = 'ms-title';
+                title.textContent = product.name;
+                info.appendChild(title);
+            }
+
+            if (product.description) {
+                const desc = document.createElement('div');
+                desc.className = 'ms-desc';
+                desc.textContent = product.description;
+                info.appendChild(desc);
+            }
+
             if (product.price != null) {
                 const priceEl = document.createElement('div');
                 priceEl.className = 'ms-price';
-                priceEl.textContent = '$' + product.price + '.' + (product.cents || '00') + ' ' + (product.currency || 'MXN');
-                card.appendChild(priceEl);
+                priceEl.textContent = '$' + product.price + '.' + (product.cents || '00');
+                info.appendChild(priceEl);
             }
 
-            // Status bar
-            const sbar = document.createElement('div');
-            sbar.className = 'ms-statusbar';
-            const s1 = document.createElement('span');
-            s1.textContent = product.stock ? product.stock : 'Disponible';
-            const s2 = document.createElement('span');
-            s2.textContent = product.info || '';
-            sbar.appendChild(s1);
-            sbar.appendChild(s2);
-            card.appendChild(sbar);
+            card.appendChild(info);
 
             card.addEventListener('click', () => tienda.emit('openModal', product));
             grid.appendChild(card);
