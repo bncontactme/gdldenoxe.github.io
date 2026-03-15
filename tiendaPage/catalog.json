@@ -256,7 +256,9 @@
             "description": "Producto página 7.",
             "link": "#",
             "info": "Info producto 10",
-            "stock": "4 u"
+            "stock": "4 u",
+            "splashRight": -5,
+            "splashBottom": true
         },
         {
             "id": "boxer-11",

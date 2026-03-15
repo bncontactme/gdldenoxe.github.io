@@ -169,10 +169,16 @@ const tienda = (() => {
     const buildSplashEl = (product, slot, splashSrc, assets) => {
         const splashWrap = document.createElement('div');
         splashWrap.className = 'catalog-splash';
-        if (slot.splashX != null) splashWrap.style.left   = slot.splashX + '%';
-        if (slot.splashY != null) { splashWrap.style.top = slot.splashY + '%'; splashWrap.style.bottom = 'auto'; }
-        if (slot.splashW != null) splashWrap.style.width  = slot.splashW + '%';
-        if (slot.splashH != null) splashWrap.style.height = slot.splashH + '%';
+        // Product-level overrides take priority over slot defaults
+        const sx = product.splashX != null ? product.splashX : slot.splashX;
+        const sy = product.splashY != null ? product.splashY : slot.splashY;
+        const sw = product.splashW != null ? product.splashW : slot.splashW;
+        const sh = product.splashH != null ? product.splashH : slot.splashH;
+        if (sx != null) splashWrap.style.left = sx + '%';
+        if (product.splashRight != null) { splashWrap.style.right = product.splashRight + '%'; splashWrap.style.left = 'auto'; }
+        if (!product.splashBottom && sy != null) { splashWrap.style.top = sy + '%'; splashWrap.style.bottom = 'auto'; }
+        if (sw != null) splashWrap.style.width  = sw + '%';
+        if (sh != null) splashWrap.style.height = sh + '%';
 
         const splashImg = document.createElement('img');
         splashImg.className = 'catalog-splash-img';
