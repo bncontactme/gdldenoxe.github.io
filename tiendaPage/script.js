@@ -881,6 +881,116 @@ const tienda = (() => {
 
     tienda.on('resize', resizeFlipbook);
 
+    /* ── Mobile detection ── */
+    /* If innerWidth is 0 the page is likely inside a hidden iframe
+       (e.g. the Win95 desktop loads the tienda in a display:none window).
+       Treat 0-width as desktop so the flipbook gets built. */
+    const isMobileWidth = () => {
+        const w = window.innerWidth;
+        return w > 0 && w <= 480;
+    };
+
+    /* ─────────────────────────────────────────────────────────
+       MOBILE STORE — Win95 Card Grid (minimalist)
+       2-col grid of clean Win95 windows. No flipbook slop.
+       ───────────────────────────────────────────────────────── */
+
+    const buildMobileStore = (catalog) => {
+        const { products, assets, marqueeText } = catalog;
+
+        if (marqueeText) {
+            document.querySelectorAll('.marquee-text').forEach(el => {
+                el.textContent = marqueeText;
+            });
+        }
+
+        const purchasable = (products || []).filter(p => !p.noModal && p.price != null);
+
+        const store = document.createElement('div');
+        store.className = 'mobile-store';
+
+        // Header — simple Win95 window with logo
+        const header = document.createElement('div');
+        header.className = 'ms-header';
+        header.innerHTML =
+            '<div class="ms-titlebar">' +
+                '<span class="ms-tb-icon">\uD83D\uDECD\uFE0F</span>' +
+                '<span class="ms-tb-text">tienda.exe</span>' +
+                '<span class="ms-tb-buttons"><span>_</span><span>\u25A1</span><span>\u00D7</span></span>' +
+            '</div>' +
+            '<div class="ms-header-content">' +
+                (assets.logos && assets.logos.dark ? '<img class="ms-logo" src="' + assets.logos.dark + '" alt="GDLDENOXE">' : '') +
+            '</div>';
+        store.appendChild(header);
+
+        // Grid
+        const grid = document.createElement('div');
+        grid.className = 'ms-grid';
+
+        purchasable.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'ms-card';
+
+            // Title bar
+            const tb = document.createElement('div');
+            tb.className = 'ms-titlebar';
+            tb.innerHTML = '<span class="ms-tb-icon">\uD83D\uDCE6</span><span class="ms-tb-text">' +
+                (product.name || product.id).replace(/</g, '&lt;') + '</span>';
+            card.appendChild(tb);
+
+            // Image — sunken panel
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'ms-img-wrap';
+            if (product.imageBg) imgWrap.style.backgroundColor = product.imageBg;
+            if (product.image) {
+                const img = document.createElement('img');
+                img.className = 'ms-img';
+                img.src = product.image;
+                img.alt = product.name || '';
+                img.loading = 'lazy';
+                imgWrap.appendChild(img);
+            }
+            // Badge overlay
+            if (product.badge) {
+                const badge = document.createElement('span');
+                badge.className = 'ms-badge';
+                if (product.badge === 'AGOTADO') badge.classList.add('ms-badge--out');
+                badge.textContent = product.badge;
+                imgWrap.appendChild(badge);
+            }
+            card.appendChild(imgWrap);
+
+            // Price — sunken text field
+            if (product.price != null) {
+                const priceEl = document.createElement('div');
+                priceEl.className = 'ms-price';
+                priceEl.textContent = '$' + product.price + '.' + (product.cents || '00') + ' ' + (product.currency || 'MXN');
+                card.appendChild(priceEl);
+            }
+
+            // Status bar
+            const sbar = document.createElement('div');
+            sbar.className = 'ms-statusbar';
+            const s1 = document.createElement('span');
+            s1.textContent = product.stock ? product.stock : 'Disponible';
+            const s2 = document.createElement('span');
+            s2.textContent = product.info || '';
+            sbar.appendChild(s1);
+            sbar.appendChild(s2);
+            card.appendChild(sbar);
+
+            card.addEventListener('click', () => tienda.emit('openModal', product));
+            grid.appendChild(card);
+        });
+
+        store.appendChild(grid);
+        catalogRoot.appendChild(store);
+
+        // Let body scroll
+        document.querySelector('main').style.overflow = 'visible';
+        catalogRoot.style.overflow = 'visible';
+    };
+
     /* ── Fetch & init ── */
 
     fetch(CATALOG_URL)
@@ -888,7 +998,13 @@ const tienda = (() => {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
         })
-        .then(buildFlipbook)
+        .then(catalog => {
+            if (isMobileWidth()) {
+                buildMobileStore(catalog);
+            } else {
+                buildFlipbook(catalog);
+            }
+        })
         .catch(err => {
             console.error('[Catalog Engine] Failed to load catalog:', err);
             catalogRoot.innerHTML =
