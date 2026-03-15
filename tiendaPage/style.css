@@ -52,9 +52,6 @@ body {
     transition: background-color 0.3s ease-out;
     overflow-x: hidden;
     overflow-y: auto;
-}
-
-body {
     color: var(--dark-color);
     background-color: var(--light-color);
 }
@@ -275,12 +272,6 @@ input[type="checkbox"] { display: none; }
     pointer-events: none;
     filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
 }
-
-
-
-
-
-
 
 /* Row layout: text to the left of the image (Legacy) */
 .catalog-text-left-of-image {
