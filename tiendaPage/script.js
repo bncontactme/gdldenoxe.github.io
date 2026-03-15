@@ -479,12 +479,13 @@ const tienda = (() => {
 
         const meta = getBigSplashMeta(src);
         const pos = NAMED_POSITIONS[posName] || NAMED_POSITIONS['top-right'];
+        const offsetX = (typeof entry === 'object' && entry.offsetX != null) ? entry.offsetX : 0;
         const offsetY = (typeof entry === 'object' && entry.offsetY != null) ? entry.offsetY : 0;
         const offsetW = (typeof entry === 'object' && entry.offsetW != null) ? entry.offsetW : 0;
 
         const wrap = document.createElement('div');
         wrap.className = 'catalog-big-splash';
-        wrap.style.left = pos.left + '%';
+        wrap.style.left = (pos.left + offsetX) + '%';
         wrap.style.top = (pos.top + offsetY) + '%';
         wrap.style.width = (pos.cssW + offsetW) + '%';
         const img = document.createElement('img');

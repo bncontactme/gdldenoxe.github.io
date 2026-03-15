@@ -314,15 +314,12 @@
         },
         {
             "id": "boxer-15",
-            "name": "Boxer GDN X OFICINA 101",
+            "name": "GDN X OFICINA 101",
+            "noSplash": true,
+            "noModal": true,
             "mobileHide": true,
-            "price": 599, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers_model/DSC01322.jpg",
-            "description": "Collab Oficina 101. Edición limitada.",
-            "link": "#",
-            "info": "Talla Única",
-            "stock": "5 u",
-            "badge": "NUEVO"
+            "image": "assets/products/boxers_model/DSC01220 copia.jpg",
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetX": 5, "offsetY": 20, "offsetW": -12 }
         }
     ]
 }
