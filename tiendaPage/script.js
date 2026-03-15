@@ -581,7 +581,7 @@ const tienda = (() => {
                 });
 
             return {
-                bgSrc: page.background || bgRotate(),
+                bgSrc: page.background || assets.backgrounds[0],
                 template: tmpl,
                 products: faceProducts,
                 frameRotators: frameRot,
@@ -611,13 +611,7 @@ const tienda = (() => {
         bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
         face.appendChild(bgImg);
 
-        // Preload cover image with high priority
-        const preloadLink = document.createElement('link');
-        preloadLink.rel = 'preload';
-        preloadLink.as = 'image';
-        preloadLink.href = bgSrc;
-        preloadLink.fetchPriority = 'high';
-        document.head.appendChild(preloadLink);
+        // Cover preload is already in index.html <head>
 
         const label = document.createElement('label');
         label.setAttribute('for', checkboxId);

@@ -192,8 +192,7 @@ input[type="checkbox"] { display: none; }
    DYNAMIC PAGE COMPOSITION — Layer System
    Each page face is composed from stacked layers:
      z1: .catalog-bg          — background image (fills entire face)
-     z2: .catalog-page-shadow — subtle shadow overlay
-     z3: .catalog-frame-shadow— shadow under product frames
+     z2: .catalog-frame-shadow— shadow under product frames
      z4: .catalog-frame       — decorative frame around product (ON TOP)
      z5: .catalog-product     — product item container (positioned %)
            .catalog-image-clip  — clipping container (overflow:hidden)
@@ -219,21 +218,6 @@ input[type="checkbox"] { display: none; }
     z-index: 1;
     border-radius: inherit;
 }
-
-/* --- Page shadow overlay --- */
-.catalog-page-shadow {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0.35;
-    mix-blend-mode: multiply;
-}
-
-
 
 /* --- Product item container (flex column: image area + name + info) --- */
 .catalog-product {
@@ -271,33 +255,6 @@ input[type="checkbox"] { display: none; }
     z-index: 3;
     pointer-events: none;
     filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
-}
-
-/* Row layout: text to the left of the image (Legacy) */
-.catalog-text-left-of-image {
-    position: absolute;
-    right: 105%;
-    bottom: 9%;
-    width: 80%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-end;
-    text-align: right;
-    z-index: 7;
-    pointer-events: none;
-}
-
-.catalog-text-left-of-image .catalog-product-name {
-    padding: 0;
-    text-align: right;
-    font-size: 0.4rem;
-}
-
-.catalog-text-left-of-image .catalog-product-info {
-    padding: 0;
-    text-align: right;
-    font-size: 0.28rem;
 }
 
 /* Text positioned to the right of the image (Template D slot 1) */
@@ -752,11 +709,6 @@ input[type="checkbox"] { display: none; }
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
 }
 
-/* Cover logo: no shadows at all */
-.catalog-logo--no-shadow .catalog-logo-img {
-    filter: none;
-}
-
 /* ============================================================
    PRODUCT MODAL — 2000s Supermarket Pop-Up
    Red/yellow gradients, impact font, starburst price,
@@ -816,15 +768,6 @@ input[type="checkbox"] { display: none; }
 }
 
 /* Win95 reusable border utilities */
-.win95-raised {
-    border-top: 2px solid var(--w95-white);
-    border-left: 2px solid var(--w95-white);
-    border-right: 2px solid var(--w95-darker);
-    border-bottom: 2px solid var(--w95-darker);
-    box-shadow: inset 1px 1px 0 var(--w95-light),
-                inset -1px -1px 0 var(--w95-dark);
-}
-
 .win95-sunken {
     border-top: 2px solid var(--w95-darker);
     border-left: 2px solid var(--w95-darker);
@@ -1014,7 +957,6 @@ input[type="checkbox"] { display: none; }
     z-index: 5;
 }
 .win95-window .modal-badge.has-badge { display: block; }
-.win95-window .modal-badge::after { display: none; }
 
 /* Groupbox — etched border around product info */
 .win95-info {

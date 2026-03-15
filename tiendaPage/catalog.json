@@ -206,7 +206,6 @@
         {
             "id": "boxer-1",
             "name": "GDN X OFICINA 101 (Marcelo Borbolla)",
-            "mobileFeature": true,
             "price": 299, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/marcelo_borbolla x GDN.jpg",
             "description": "Collab con Marcelo Borbolla.",
