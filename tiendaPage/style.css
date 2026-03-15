@@ -553,6 +553,10 @@ input[type="checkbox"] { display: none; }
     -webkit-box-orient: vertical;
 }
 
+.catalog-product--no-modal .catalog-product-name {
+    margin-top: -5%;
+}
+
 /* --- Badge ribbon (OFERTA / NUEVO / 2x1) — inside image area --- */
 .catalog-badge {
     position: absolute;

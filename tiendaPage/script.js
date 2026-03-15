@@ -191,7 +191,9 @@ const tienda = (() => {
             }
         }
 
-        splashWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
+        if (!product.splashNoPrice) {
+            splashWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
+        }
         return splashWrap;
     };
 
@@ -263,12 +265,14 @@ const tienda = (() => {
             imageArea.appendChild(sub);
         }
 
-        // Corner effects: per-product noCornerEffect takes priority, then per-page override, then pool default
+        // Corner effects: per-product noCornerEffect takes priority, then per-product cornerEffect forces it, then per-page override, then pool default
         const showCorners = product.noCornerEffect
             ? false
-            : pageCornerEffects !== undefined
-                ? pageCornerEffects
-                : (poolKey === 'small' || poolKey === 'medium');
+            : product.cornerEffect
+                ? true
+                : pageCornerEffects !== undefined
+                    ? pageCornerEffects
+                    : (poolKey === 'small' || poolKey === 'medium');
         if (showCorners) {
             addFrameCornerEffects(imageArea, assets, product.cornerPosition || null);
         }
@@ -327,23 +331,32 @@ const tienda = (() => {
         }
 
         // Accessibility
-        wrapper.setAttribute('role', 'button');
-        wrapper.setAttribute('tabindex', '0');
+        if (product.noModal) {
+            wrapper.setAttribute('role', 'img');
+            wrapper.removeAttribute('tabindex');
+            wrapper.style.cursor = 'default';
+            wrapper.classList.add('catalog-product--no-modal');
+        } else {
+            wrapper.setAttribute('role', 'button');
+            wrapper.setAttribute('tabindex', '0');
+        }
         wrapper.setAttribute('aria-label', (product.name || 'Producto') + (product.price != null ? ' — $' + product.price : ''));
 
         // Click & keyboard → modal
-        const openModal = (e) => {
-            e.stopPropagation();
-            if (document.body.classList.contains('debug-active')) return;
-            tienda.emit('openModal', product);
-        };
-        wrapper.addEventListener('click', openModal);
-        wrapper.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openModal(e);
-            }
-        });
+        if (!product.noModal) {
+            const openModal = (e) => {
+                e.stopPropagation();
+                if (document.body.classList.contains('debug-active')) return;
+                tienda.emit('openModal', product);
+            };
+            wrapper.addEventListener('click', openModal);
+            wrapper.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openModal(e);
+                }
+            });
+        }
 
         return wrapper;
     };
@@ -460,12 +473,14 @@ const tienda = (() => {
 
         const meta = getBigSplashMeta(src);
         const pos = NAMED_POSITIONS[posName] || NAMED_POSITIONS['top-right'];
+        const offsetY = (typeof entry === 'object' && entry.offsetY != null) ? entry.offsetY : 0;
+        const offsetW = (typeof entry === 'object' && entry.offsetW != null) ? entry.offsetW : 0;
 
         const wrap = document.createElement('div');
         wrap.className = 'catalog-big-splash';
         wrap.style.left = pos.left + '%';
-        wrap.style.top = pos.top + '%';
-        wrap.style.width = pos.cssW + '%';
+        wrap.style.top = (pos.top + offsetY) + '%';
+        wrap.style.width = (pos.cssW + offsetW) + '%';
         const img = document.createElement('img');
         img.src = src;
         img.alt = '';

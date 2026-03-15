@@ -142,18 +142,15 @@
     "products": [
         {
             "id": "boxer-5",
-            "name": "QUESO CREMOSO",
-            "price": 777, "cents": "00", "currency": "MXN",
+            "name": "@usuariox",
             "noSplash": true,
-            "image": "assets/products/boxers_model/DSC01295.jpg",
-            "description": "Nuevo diseño Guadalajara De Noche.",
-            "link": "#",
-            "info": "La Serenísima, el Kilo",
-            "stock": "4 u"
+            "noModal": true,
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png", "position": "bottom-right", "offsetW": -5 },
+            "image": "assets/products/boxers_model/DSC01295.jpg"
         },
         {
             "id": "boxer-3",
-            "name": "GALLETITAS SURATIDITO",
+            "name": "OFICINA 101 X GDN (@yeyo)",
             "price": 666, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/yeyo 2.jpg",
             "noCornerEffect": true,
@@ -165,18 +162,14 @@
         },
         {
             "id": "boxer-3b",
-            "name": "LECHE ENT/DESC.",
-            "price": 666, "cents": "00", "currency": "MXN",
-            "splashOverride": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_image2786.png",
-            "image": "assets/products/boxers_model/DSC01120.jpg",
-            "description": "Vista alternativa del Boxer #3.",
-            "link": "#",
-            "info": "x 1 litro c/u",
-            "subtitle": "$220 / Guardaropa"
+            "name": "@usuariox",
+            "noSplash": true,
+            "noModal": true,
+            "image": "assets/products/boxers_model/DSC01120.jpg"
         },
         {
             "id": "boxer-4",
-            "name": "CAFÉ MOLIDO",
+            "name": "OFICINA 101 X GDN (@notchinese)",
             "price": 777, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/2.jpg",
             "description": "Edición premium Guadalajara De Noche.",
@@ -187,19 +180,18 @@
         },
         {
             "id": "boxer-6",
-            "name": "PRODUCTO #6",
-            "price": 399, "cents": "00", "currency": "MXN",
+            "name": "@usuariox",
+            "noSplash": true,
+            "noModal": true,
+            "cornerEffect": true,
+            "cornerPosition": "tl",
             "image": "assets/products/boxers_model/DSC00771.jpg",
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" },
-            "description": "Producto página 5.",
-            "link": "#",
-            "info": "Info producto 6",
-            "stock": "5 u"
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetY": 20, "offsetW": -5.5 }
         },
         {
             "id": "boxer-7",
-            "name": "PRODUCTO #7",
-            "price": 499, "cents": "00", "currency": "MXN",
+            "name": "Gorra GDN",
+            "price": 650, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/gorra oficina gdn .jpg",
             "description": "Producto página 6 izquierda.",
             "link": "#",
@@ -208,8 +200,8 @@
         },
         {
             "id": "boxer-8",
-            "name": "PRODUCTO #8",
-            "price": 599, "cents": "00", "currency": "MXN",
+            "name": "Boxer GDN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 3.jpg",
             "description": "Producto página 6 derecha.",
             "link": "#",
@@ -218,7 +210,7 @@
         },
         {
             "id": "boxer-1",
-            "name": "BOXER GDLDENOXE #1",
+            "name": "OFICINA 101 X GDN (Marcelo Borbolla)",
             "price": 299, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/marcelo_borbolla x GDN.jpg",
             "description": "Boxer exclusivo edición Guadalajara De Noche.",
@@ -230,8 +222,8 @@
         },
         {
             "id": "boxer-2",
-            "name": "QUESO CREMOSO",
-            "price": 169, "cents": "00", "currency": "MXN",
+            "name": "Boxer GDN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 2.jpg",
             "description": "Diseño premium con estampado exclusivo.",
             "link": "#",
@@ -241,30 +233,25 @@
         },
         {
             "id": "boxer-2b",
-            "name": "CACAO EN POLVO",
-            "price": 999, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers_model/DSC00671.jpg",
-            "description": "Vista alternativa del Boxer #2.",
-            "link": "#",
-            "info": "NESKIQ Bolsa x 800 g",
-            "stock": "3 u",
-            "subtitle": "$111 / Objeto"
+            "name": "@usuariox",
+            "noSplash": true,
+            "noModal": true,
+            "noCornerEffect": true,
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right", "offsetY": 2 },
+            "image": "assets/products/boxers_model/DSC00671.jpg"
         },
         {
             "id": "boxer-9",
-            "name": "PRODUCTO #9",
-            "price": 349, "cents": "00", "currency": "MXN",
+            "name": "@usuariox",
+            "noSplash": true,
+            "noModal": true,
             "image": "assets/products/boxers_model/DSC00478 copia.jpg",
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" },
-            "description": "Producto página 7.",
-            "link": "#",
-            "info": "Info producto 9",
-            "stock": "3 u"
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" }
         },
         {
             "id": "boxer-10",
-            "name": "PRODUCTO #10",
-            "price": 449, "cents": "00", "currency": "MXN",
+            "name": "Boxer GDN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 4.jpg",
             "description": "Producto página 7.",
             "link": "#",
@@ -273,7 +260,9 @@
         },
         {
             "id": "boxer-11",
-            "name": "PRODUCTO #11",
+            "name": "Bufanda GDN",
+            "noSplash": true,
+            "badge": "AGOTADO",
             "price": 549, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/ambas bufas.jpg",
             "description": "Producto página 7.",
@@ -283,19 +272,17 @@
         },
         {
             "id": "boxer-12",
-            "name": "PRODUCTO #12",
-            "price": 399, "cents": "00", "currency": "MXN",
+            "name": "@usuariox",
+            "noSplash": true,
+            "noModal": true,
             "cornerPosition": "tl",
-            "image": "assets/products/boxers_model/DSC01034.jpg",
-            "description": "Producto página 8.",
-            "link": "#",
-            "info": "Info producto 12",
-            "stock": "5 u"
+            "image": "assets/products/boxers_model/DSC01034.jpg"
         },
         {
             "id": "boxer-12b",
-            "name": "PRODUCTO #12B",
+            "name": "OFICINA 101 X GDN (@notchinese)",
             "price": 599, "cents": "00", "currency": "MXN",
+            "cornerPosition": "tr",
             "image": "assets/products/boxers_model/DSC01043.jpg",
             "description": "Producto página 8.",
             "link": "#",
@@ -304,8 +291,8 @@
         },
         {
             "id": "boxer-13",
-            "name": "PRODUCTO #13",
-            "price": 349, "cents": "00", "currency": "MXN",
+            "name": "Totebag GDN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/WhatsApp_Image_2025-12-12_at_10.44.10_AM-removebg-preview.png",
             "imageBg": "#ffffff",
             "description": "Producto página 7.",
@@ -315,8 +302,8 @@
         },
         {
             "id": "boxer-14",
-            "name": "PRODUCTO #14",
-            "price": 449, "cents": "00", "currency": "MXN",
+            "name": "Boxer GDN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 5.jpg",
             "description": "Producto página 7.",
             "link": "#",
