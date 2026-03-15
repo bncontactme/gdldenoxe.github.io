@@ -517,10 +517,14 @@ input[type="checkbox"] { display: none; }
     border-radius: 2px;
     letter-spacing: 0.5px;
     z-index: 8;
+    /* transform now controlled by animation badge-swing */
     transform: rotate(-12deg);
+    transform-origin: 30% 0%;
     text-transform: uppercase;
     box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.45);
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+    animation: badge-swing 2s ease-in-out infinite;
+    will-change: transform;
 }
 
 /* --- Title text layer --- */
@@ -681,17 +685,20 @@ input[type="checkbox"] { display: none; }
     width: 55%;
     aspect-ratio: 179 / 166;
     overflow: visible;
+    animation: corner-float 3.5s ease-in-out infinite;
+    will-change: transform;
 }
 .catalog-corner-effect img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
-/* Position each corner — image edge aligned to the frame corner */
-.catalog-corner-effect.corner-tl { top: 0; left: 0; transform: translate(-34%, -34%); }
-.catalog-corner-effect.corner-tr { top: 0; right: 0; transform: translate(34%, -34%); }
-.catalog-corner-effect.corner-bl { bottom: 0; left: 0; transform: translate(-34%, 34%); }
-.catalog-corner-effect.corner-br { bottom: 0; right: 0; transform: translate(34%, 34%); }
+/* Position each corner — image edge aligned to the frame corner
+   Base translate is baked into the keyframes per corner. */
+.catalog-corner-effect.corner-tl { top: 0; left: 0;  --cx: -34%; --cy: -34%; --fx: -37%; --fy: -37%; transform: translate(-34%, -34%); }
+.catalog-corner-effect.corner-tr { top: 0; right: 0; --cx: 34%;  --cy: -34%; --fx: 37%;  --fy: -37%; transform: translate(34%, -34%);  animation-delay: 0.8s; }
+.catalog-corner-effect.corner-bl { bottom: 0; left: 0;  --cx: -34%; --cy: 34%;  --fx: -37%; --fy: 37%;  transform: translate(-34%, 34%);  animation-delay: 1.6s; }
+.catalog-corner-effect.corner-br { bottom: 0; right: 0; --cx: 34%;  --cy: 34%;  --fx: 37%;  --fy: 37%;  transform: translate(34%, 34%);  animation-delay: 2.4s; }
 
 .catalog-logo {
     position: absolute;
@@ -1316,6 +1323,65 @@ main {
 
 /* Mobile store is hidden by default (desktop shows flipbook) */
 .mobile-store { display: none; }
+
+/* ============================================================
+   MICRO-ANIMATIONS — Subtle ambient motion for decorative assets
+   All animations use transform / opacity / filter only (GPU-composited).
+   Automatically disabled by prefers-reduced-motion below.
+   ============================================================ */
+
+/* --- 1. Price text soft glow pulse --- */
+@keyframes price-glow {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.25) drop-shadow(0 0 6px rgba(204, 0, 0, 0.6));
+    }
+}
+.catalog-splash .catalog-price-container {
+    animation: price-glow 3s ease-in-out infinite;
+    will-change: filter;
+}
+
+/* --- 3. Corner effect decorations "gentle float" --- */
+/*    Animates the wrapper div itself. Uses CSS vars --cx/--cy   */
+/*    (base position) and --fx/--fy (float target) set per corner. */
+@keyframes corner-float {
+    0%, 100% { transform: translate(var(--cx), var(--cy)) scale(1); }
+    50%      { transform: translate(var(--fx), var(--fy)) scale(1.06); }
+}
+
+/* --- 4. Big splash slow drift + micro-rotation --- */
+@keyframes splash-drift {
+    0%   { transform: rotate(0deg)   scale(1); }
+    25%  { transform: rotate(2.5deg) scale(1.04); }
+    50%  { transform: rotate(0deg)   scale(1.05); }
+    75%  { transform: rotate(-2deg)  scale(1.03); }
+    100% { transform: rotate(0deg)   scale(1); }
+}
+.catalog-big-splash img {
+    animation: splash-drift 5s ease-in-out infinite;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+/* --- 5. Badge ribbon swing --- */
+@keyframes badge-swing {
+    0%, 100% { transform: rotate(-14deg) scale(1); }
+    25%      { transform: rotate(-8deg)  scale(1.05); }
+    75%      { transform: rotate(-15deg) scale(0.97); }
+}
+
+/* --- 6. Subtitle (yellow tag) brightness pulse --- */
+@keyframes tag-pulse {
+    0%, 100% { filter: brightness(1); transform: scale(1); }
+    50%      { filter: brightness(1.3); transform: scale(1.04); }
+}
+.catalog-subtitle {
+    animation: tag-pulse 3s ease-in-out infinite;
+    will-change: filter, transform;
+}
 
 /* --- Reduced motion preference --- */
 @media (prefers-reduced-motion: reduce) {
