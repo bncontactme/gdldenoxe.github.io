@@ -1,3 +1,8 @@
+/* ============================================================
+   TIENDA GDLDENOXE — Virtual Store Flipbook
+   2000s Supermarket Aesthetic + Windows XP Chrome
+   ============================================================ */
+
 /* RESET */
 *,
 *::before,
@@ -10,14 +15,27 @@
 /* VARIABLES */
 :root {
     --dark-color: #020408;
-    --dark-hover: rgba(255, 255, 255, 0.1);
     --light-color: #f5f5f5;
-    --light-hover: rgba(0, 0, 0, 0.1);
     --xp-blue: #316ac5;
     --xp-blue-light: #5c9fd6;
     --xp-blue-lighter: #c6d9f1;
     --xp-navy: #000080;
     --font-system: Tahoma, 'MS Sans Serif', sans-serif;
+    --font-roboto: 'Roboto Condensed', Tahoma, 'Arial Narrow', sans-serif;
+
+    /* Supermarket / Store palette */
+    --store-red: #CC0000;
+    --store-red-dark: #990000;
+    --store-red-bright: #FF3333;
+    --store-yellow: #FFD700;
+    --store-yellow-light: #FFF44F;
+    --store-orange: #FF6600;
+    --store-green: #00AA00;
+    --store-price-bg: #FFEE00;
+    --font-impact: Impact, 'Arial Black', Tahoma, sans-serif;
+    --font-price: Impact, 'Arial Black', sans-serif;
+    --price-red: #CC0000;
+    --price-stroke: #000000;
 }
 
 /* GENERAL */
@@ -29,22 +47,17 @@ body {
     align-items: center;
     font-family: monospace, sans-serif;
     font-size: 0.5rem;
-    padding-top: 2.5rem;
+    padding-top: 3rem;
+    padding-bottom: 1rem;
     transition: background-color 0.3s ease-out;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-body.light-mode {
+body {
     color: var(--dark-color);
     background-color: var(--light-color);
 }
-
-body.dark-mode {
-    color: var(--light-color);
-    background-color: var(--dark-color);
-}
-
-.light-mode #toggle-mode-btn:hover { background-color: var(--light-hover); }
-.dark-mode #toggle-mode-btn:hover { background-color: var(--dark-hover); }
 
 a {
     text-decoration: none;
@@ -53,7 +66,10 @@ a {
 
 input[type="checkbox"] { display: none; }
 
-/* MARQUEE BAR - WINDOWS XP STYLE */
+/* ========================
+   MARQUEE BAR — WINDOWS XP
+   ======================== */
+
 #marquee-bar {
     position: fixed;
     top: 0;
@@ -94,54 +110,32 @@ input[type="checkbox"] { display: none; }
     to { transform: translateX(-50%); }
 }
 
-/* TOGGLE MODE BUTTON */
-#toggle-mode-btn {
-    position: fixed;
-    top: calc(2.5rem + 1rem);
-    right: 1rem;
-    width: 2rem;
-    height: 2rem;
-    display: grid;
-    place-items: center;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    background: transparent;
-    cursor: pointer;
-    transition: background-color 0.2s ease-out;
-}
+/* ========================
+   FLIPBOOK SCALE WRAPPER
+   ======================== */
 
-/* RESPONSIVE WARNING */
-#responsive-warning {
-    position: fixed;
-    inset: 0;
-    padding: 2rem;
-    display: none;
-    flex-direction: column;
+.flipbook-scale-wrapper {
+    display: flex;
     justify-content: center;
     align-items: center;
-    gap: 2rem;
-    font-size: 1rem;
-    text-align: center;
-    z-index: 999;
+    /* Width/height set dynamically by JS to match scaled dimensions */
+    position: relative;
+    margin: 0 auto;
 }
 
-#responsive-warning.show { display: flex; }
+/* ========================
+   FLIP BOOK — Core Layout
+   (z-index stacking & flip
+    states injected via JS
+    into #dynamic-flipbook-css)
+   ======================== */
 
-.warning-icons { font-size: 10rem; }
-
-/* FLIP BOOK */
 #flip_book {
     position: relative;
     width: 298px;
     height: 420px;
     perspective: 2000px;
     transition: transform 0.6s ease-out;
-}
-
-.front_cover,
-.back_cover {
-    display: none;
 }
 
 .page {
@@ -155,6 +149,7 @@ input[type="checkbox"] { display: none; }
     transform-origin: left center;
     transform-style: preserve-3d;
     transition: transform 0.5s ease-out;
+    will-change: transform;
 }
 
 .front_page,
@@ -163,6 +158,8 @@ input[type="checkbox"] { display: none; }
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    overflow: hidden;
+    contain: layout style;
 }
 
 .back_page {
@@ -185,41 +182,1356 @@ input[type="checkbox"] { display: none; }
 
 .edge_shading {
     position: absolute;
-    width: 288px;
-    height: 400px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
     z-index: 98;
+    pointer-events: none;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
 }
 
-.front_content,
-.back_content {
+/* ============================================================
+   DYNAMIC PAGE COMPOSITION — Layer System
+   Each page face is composed from stacked layers:
+     z1: .catalog-bg          — background image (fills entire face)
+     z2: .catalog-page-shadow — subtle shadow overlay
+     z3: .catalog-frame-shadow— shadow under product frames
+     z4: .catalog-frame       — decorative frame around product (ON TOP)
+     z5: .catalog-product     — product item container (positioned %)
+           .catalog-image-clip  — clipping container (overflow:hidden)
+             .catalog-product-image — product photo (fills clip)
+           .catalog-splash       — price starburst + overlaid price
+           .catalog-product-name — product name label
+           .catalog-badge        — corner badge ribbon
+     z6: .catalog-title       — text overlay
+         .catalog-logo        — logo image
+     z98: .edge_shading       — flipbook page bevel
+     z100: label              — page flip click target
+   ============================================================ */
+
+/* --- Background layer --- */
+.catalog-bg {
     position: absolute;
-    top: 1px;
-    width: 287px;
-    height: 398px;
-    z-index: 97;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    border-radius: inherit;
 }
 
-.front_content { border-radius: 0 5px 5px 0; }
-.back_content {
-    left: 1px;
-    border-radius: 5px 0 0 5px;
+/* --- Page shadow overlay --- */
+.catalog-page-shadow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
 }
 
-/* Page z-index stacking */
-#page1 { z-index: 8; }
-#page2 { z-index: 5; }
-#page3 { z-index: 4; }
-#page4 { z-index: 3; }
-#page5 { z-index: 2; }
 
-/* Page flip states */
-#page1_checkbox:checked ~ #flip_book #page1 { transform: rotateY(-180deg); z-index: 3; }
-#page2_checkbox:checked ~ #flip_book #page2 { transform: rotateY(-180deg); z-index: 4; }
-#page3_checkbox:checked ~ #flip_book #page3 { transform: rotateY(-180deg); z-index: 5; }
-#page4_checkbox:checked ~ #flip_book #page4 { transform: rotateY(-180deg); z-index: 6; }
-#page5_checkbox:checked ~ #flip_book #page5 { transform: rotateY(-180deg); z-index: 9; }
 
-/* Center & zoom flipbook when opened */
-:is(#page1_checkbox, #page2_checkbox, #page3_checkbox, #page4_checkbox, #page5_checkbox):checked ~ #flip_book {
-    transform: translateX(144px) scale(1.03);
+/* --- Product item container (flex column: image area + name + info) --- */
+.catalog-product {
+    position: absolute;
+    z-index: 101;
+    cursor: pointer;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    min-width: 0;
+    min-height: 0;
+    contain: layout style;
+}
+
+.catalog-product:hover {
+    z-index: 102;
+}
+
+/* --- Image area: contains frame, photo, splash, badge, subtitle --- */
+.catalog-image-area {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible;
+}
+
+/* --- Frame image (sits UNDER product photo — border peeks around clip edge) --- */
+.catalog-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 3;
+    pointer-events: none;
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
+}
+
+
+
+
+
+
+
+/* Row layout: text to the left of the image (Legacy) */
+.catalog-text-left-of-image {
+    position: absolute;
+    right: 105%;
+    bottom: 9%;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    z-index: 7;
+    pointer-events: none;
+}
+
+.catalog-text-left-of-image .catalog-product-name {
+    padding: 0;
+    text-align: right;
+    font-size: 0.4rem;
+}
+
+.catalog-text-left-of-image .catalog-product-info {
+    padding: 0;
+    text-align: right;
+    font-size: 0.28rem;
+}
+
+/* Text positioned to the right of the image (Template D slot 1) */
+.catalog-text-right-of-image {
+    position: absolute;
+    left: 100%;
+    bottom: 5%;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    text-align: left;
+    z-index: 7;
+    pointer-events: none;
+}
+
+.catalog-text-right-of-image .catalog-product-name {
+    padding: 0;
+    text-align: left;
+    font-size: 0.4rem;
+}
+
+.catalog-text-right-of-image .catalog-product-info {
+    padding: 0;
+    text-align: left;
+    font-size: 0.28rem;
+}
+
+.catalog-text-price {
+    color: #E50000;
+    font-family: var(--font-price, 'Impact', sans-serif);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.05rem;
+    -webkit-text-stroke: 1px var(--price-stroke, rgba(0,0,0,0.3));
+}
+
+.catalog-text-price .catalog-price-dollar {
+    font-size: 1.4rem;
+    vertical-align: super;
+}
+
+.catalog-text-price .catalog-price-cents {
+    font-size: 1rem;
+    vertical-align: super;
+}
+
+/* --- Image clip container — crops photo ON TOP of frame --- */
+/* Default clip (fallback for unknown frame types) */
+.catalog-image-clip {
+    position: absolute;
+    top: 3.5%;
+    left: 3.5%;
+    width: 93%;
+    height: 92%;
+    overflow: hidden;
+    z-index: 5;
+    border-radius: 5px;
+    background: transparent;
+    border: 1.5px solid var(--store-red);
+}
+
+/* Border color set per-page (all products on a face share the same color) */
+.catalog-border-red .catalog-image-clip {
+    border-color: var(--store-red);
+}
+
+.catalog-border-black .catalog-image-clip {
+    border-color: #111;
+}
+
+/* Per-frame-type clip overrides — insets tightened to prevent photo bleed */
+/* tall: red rectangular border, narrow sides */
+[data-frame="tall"] .catalog-image-clip {
+    top: 3%;
+    left: 4.5%;
+    width: 91%;
+    height: 93%;
+    border-radius: 6px;
+}
+
+/* square-lg: red rectangular, medium border */
+[data-frame="square-lg"] .catalog-image-clip {
+    top: 3.5%;
+    left: 3.5%;
+    width: 93%;
+    height: 92%;
+    border-radius: 5px;
+}
+
+/* square-sm / square-sm2: red rectangular, thinner */
+[data-frame="square-sm"] .catalog-image-clip,
+[data-frame="square-sm2"] .catalog-image-clip {
+    top: 3%;
+    left: 3%;
+    width: 94%;
+    height: 93%;
+    border-radius: 4px;
+}
+
+/* featured-1: decorative, thicker borders */
+[data-frame="featured-1"] .catalog-image-clip {
+    top: 4%;
+    left: 4%;
+    width: 92%;
+    height: 91%;
+    border-radius: 6px;
+}
+
+/* featured-2 / featured-3: decorative, thick borders */
+[data-frame="featured-2"] .catalog-image-clip,
+[data-frame="featured-3"] .catalog-image-clip {
+    top: 3.5%;
+    left: 3.5%;
+    width: 93%;
+    height: 92%;
+    border-radius: 5px;
+}
+
+/* rounded: green rounded border, thick edges */
+[data-frame="rounded"] .catalog-image-clip {
+    top: 5.5%;
+    left: 5.5%;
+    width: 89%;
+    height: 87%;
+    border-radius: 12px;
+}
+
+/* --- Product photo (fills clip container) --- */
+.catalog-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* --- Price splash (starburst + price) — inside image area --- */
+.catalog-splash {
+    position: absolute;
+    bottom: 2%;
+    left: 2%;
+    width: 48%;
+    height: 42%;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    filter: drop-shadow(1px 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.catalog-splash-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* --- Price text container (works inside splash or standalone) --- */
+.catalog-price-container {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.catalog-price-dollar {
+    font: italic 900 0.75em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 1px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+    margin-right: 0px;
+    align-self: flex-start;
+}
+
+.catalog-price-amount {
+    font: italic 900 1em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 1.5px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+}
+
+.catalog-price-cents {
+    font: italic 900 0.42em/1 var(--font-price);
+    color: var(--price-red);
+    -webkit-text-stroke: 0.8px var(--price-stroke);
+    paint-order: stroke fill;
+    text-shadow:
+        1px 1px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.5);
+    vertical-align: super;
+    margin-left: 1px;
+    margin-top: 0;
+}
+
+/* Splash-based price: white text on dark splash, or red on bright splash */
+.catalog-splash .catalog-price-container {
+    font-size: 1.1rem;
+}
+
+/* Standalone price (no splash behind it) */
+.catalog-price-standalone {
+    position: absolute;
+    bottom: 8%;
+    left: 4%;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.catalog-price-standalone .catalog-price-container {
+    font-size: 1.6rem;
+}
+
+/* --- Product name label (flows below image area) --- */
+.catalog-product-name {
+    flex-shrink: 0;
+    padding: 1px 3% 0;
+    font: 700 0.38rem/1.15 var(--font-roboto);
+    color: #111;
+    text-align: left;
+    text-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    z-index: 7;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.catalog-product--no-modal .catalog-product-name {
+    margin-top: -5%;
+}
+
+/* --- Badge ribbon (OFERTA / NUEVO / 2x1) — inside image area --- */
+.catalog-badge {
+    position: absolute;
+    top: 4%;
+    left: 4%;
+    background: var(--store-red);
+    color: #fff;
+    font: 900 0.42rem/1 var(--font-impact);
+    padding: 2px 7px 3px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+    z-index: 8;
+    transform: rotate(-12deg);
+    text-transform: uppercase;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.45);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Title text layer --- */
+.catalog-title {
+    position: absolute;
+    z-index: 130;
+    font-family: var(--font-impact);
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow:
+        2px 2px 0 rgba(0, 0, 0, 0.5),
+        0 0 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    line-height: 1.1;
+}
+
+/* --- Subtitle / secondary price label — inside image area --- */
+.catalog-subtitle {
+    position: absolute;
+    bottom: 3%;
+    right: 3%;
+    z-index: 8;
+    font: 700 0.22rem/1.2 var(--font-roboto);
+    color: #111;
+    background: #FFEE00;
+    padding: 2px 6px 2px 5px;
+    border-radius: 2px;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+}
+
+/* --- "ES GRATIS" decorative starburst quote --- */
+.catalog-quote {
+    position: absolute;
+    z-index: 130;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.catalog-quote-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+
+.catalog-quote-bg {
+    position: absolute;
+    inset: 0;
+    background: #111;
+    clip-path: polygon(
+        50% 0%, 63% 10%, 78% 2%, 82% 18%, 98% 20%,
+        90% 34%, 100% 50%, 90% 66%, 98% 80%, 82% 82%,
+        78% 98%, 63% 88%, 50% 100%, 37% 88%, 22% 98%,
+        18% 82%, 2% 80%, 10% 66%, 0% 50%, 10% 34%,
+        2% 20%, 18% 18%, 22% 2%, 37% 10%
+    );
+    transform: rotate(8deg);
+}
+
+.catalog-quote-text {
+    position: relative;
+    z-index: 2;
+    font: 900 0.32rem/1.2 var(--font-impact);
+    color: #fff;
+    text-align: center;
+    padding: 16%;
+    letter-spacing: 0.5px;
+}
+
+.catalog-quote-text strong {
+    font-family: var(--font-impact);
+    letter-spacing: 1px;
+}
+
+/* Quote line variants */
+.quote-line-highlight {
+    font-size: 130%;
+    display: block;
+    color: #FF3333;
+    margin-bottom: 2px;
+}
+
+.quote-line-sub {
+    display: block;
+    font-weight: 400;
+    font-size: 85%;
+}
+
+.quote-line-main {
+    display: block;
+    font-size: 120%;
+    margin: 1px 0;
+}
+
+/* --- Product info text (flows below name) --- */
+.catalog-product-info {
+    flex-shrink: 0;
+    padding: 0 3%;
+    font: 400 0.28rem/1.25 var(--font-roboto);
+    color: #222;
+    text-align: left;
+    text-shadow: none;
+    z-index: 7;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* --- Disclaimer footer text --- */
+.catalog-disclaimer {
+    position: absolute;
+    z-index: 130;
+    font: italic 400 0.17rem/1.2 var(--font-roboto);
+    color: #444;
+    text-shadow: none;
+    pointer-events: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    line-height: 1.2;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* --- Logo image layer --- */
+
+/* --- Big splash decoration (on large frames, reaches past edges) --- */
+.catalog-big-splash {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    width: 55%;
+    height: auto;
+}
+.catalog-big-splash img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.35));
+}
+
+/* --- Corner effect decorations (on product frames) --- */
+.catalog-corner-effect {
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+    width: 55%;
+    aspect-ratio: 179 / 166;
+    overflow: visible;
+}
+.catalog-corner-effect img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+/* Position each corner — image edge aligned to the frame corner */
+.catalog-corner-effect.corner-tl { top: 0; left: 0; transform: translate(-34%, -34%); }
+.catalog-corner-effect.corner-tr { top: 0; right: 0; transform: translate(34%, -34%); }
+.catalog-corner-effect.corner-bl { bottom: 0; left: 0; transform: translate(-34%, 34%); }
+.catalog-corner-effect.corner-br { bottom: 0; right: 0; transform: translate(34%, 34%); }
+
+.catalog-logo {
+    position: absolute;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.catalog-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* Cover logo: no shadows at all */
+.catalog-logo--no-shadow .catalog-logo-img {
+    filter: none;
+}
+
+/* ============================================================
+   PRODUCT MODAL — 2000s Supermarket Pop-Up
+   Red/yellow gradients, impact font, starburst price,
+   beveled XP buttons — the full late-90s grocery flyer feel.
+   ============================================================ */
+
+#product-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+#product-modal.modal-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#product-modal.modal-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Dark backdrop */
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 0;
+}
+
+/* Ensure the window sits above the overlay */
+.modal-card {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   WINDOWS 95 MODAL
+   ============================================================ */
+
+.win95-window {
+    --w95-bg: #c0c0c0;
+    --w95-dark: #808080;
+    --w95-darker: #404040;
+    --w95-light: #dfdfdf;
+    --w95-white: #ffffff;
+    --w95-blue: #000080;
+    --w95-text: #000000;
+    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+    --w95-mono: 'Fixedsys', 'Courier New', monospace;
+}
+
+/* Win95 reusable border utilities */
+.win95-raised {
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+}
+
+.win95-sunken {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-white);
+}
+
+.win95-etched {
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+}
+
+.win95-window {
+    width: 420px;
+    max-width: 94vw;
+    max-height: 90dvh;
+    overflow-y: auto;
+    background: var(--w95-bg);
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark),
+                2px 2px 0 #000,
+                4px 4px 12px rgba(0, 0, 0, 0.5);
+    animation: win95-pop 0.2s ease-out;
+    font-family: var(--w95-font);
+    font-size: 12px;
+    color: var(--w95-text);
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0;
+}
+
+@keyframes win95-pop {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* Title bar */
+.win95-titlebar {
+    background: linear-gradient(90deg, var(--w95-blue), #1084d0);
+    padding: 2px 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 20px;
+    user-select: none;
+}
+
+.win95-titlebar-icon {
+    font-size: 14px;
+    line-height: 1;
+    filter: grayscale(0.3);
+}
+
+.win95-titlebar-text {
+    flex: 1;
+    color: var(--w95-white);
+    font-family: var(--w95-font);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.win95-titlebar-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.win95-titlebar-buttons button {
+    width: 16px;
+    height: 14px;
+    background: var(--w95-bg);
+    border-top: 1px solid var(--w95-white);
+    border-left: 1px solid var(--w95-white);
+    border-right: 1px solid var(--w95-dark);
+    border-bottom: 1px solid var(--w95-dark);
+    font-family: var(--w95-font);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--w95-text);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 0;
+}
+
+.win95-titlebar-buttons button:active {
+    border-top: 1px solid var(--w95-dark);
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+}
+
+/* Old .modal-close override — now inside titlebar, inherits button styles */
+.win95-window .modal-close {
+    position: static;
+    font-size: 11px;
+    transition: none;
+}
+.win95-window .modal-close:hover { background: var(--w95-light); }
+
+/* Menu bar */
+.win95-menubar {
+    background: var(--w95-bg);
+    padding: 2px 4px;
+    border-bottom: 1px solid var(--w95-dark);
+    display: flex;
+    gap: 12px;
+    font-family: var(--w95-font);
+    font-size: 12px;
+    color: var(--w95-text);
+}
+
+.win95-menu-item {
+    cursor: default;
+    padding: 1px 4px;
+}
+.win95-menu-item:hover {
+    background: var(--w95-blue);
+    color: var(--w95-white);
+}
+.win95-menu-item u { text-decoration: underline; }
+
+/* Body — gray dialog area (authentic Win95 dialogs are gray, not white) */
+.win95-body {
+    margin: 0;
+    padding: 12px 10px;
+    background: var(--w95-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: none;
+}
+
+/* Image — sunken frame (white inset like a Win95 picture control) */
+.win95-image-frame {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
+    background: var(--w95-white);
+    padding: 2px;
+}
+
+.win95-window .modal-product-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: none;
+    border-radius: 0;
+    background: var(--w95-white);
+    image-rendering: auto;
+}
+
+/* Badge */
+.win95-window .modal-badge {
+    display: none;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: var(--w95-blue);
+    color: var(--w95-white);
+    font-family: var(--w95-font);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-top: 1px solid var(--w95-white);
+    border-left: 1px solid var(--w95-white);
+    border-right: 1px solid var(--w95-dark);
+    border-bottom: 1px solid var(--w95-dark);
+    transform: none;
+    box-shadow: none;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    border-radius: 0;
+    z-index: 5;
+}
+.win95-window .modal-badge.has-badge { display: block; }
+.win95-window .modal-badge::after { display: none; }
+
+/* Groupbox — etched border around product info */
+.win95-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 8px;
+    position: relative;
+}
+
+.win95-window .modal-product-name {
+    font-family: var(--w95-font);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--w95-text);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    text-shadow: none;
+}
+
+/* Price box — sunken text field style (white bg like an input) */
+.win95-price-box {
+    background: var(--w95-white);
+    padding: 4px 20px;
+    text-align: center;
+}
+
+.win95-window .modal-price-text {
+    font-family: var(--w95-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: #cc0000;
+    text-shadow: none;
+    position: static;
+    z-index: auto;
+}
+
+/* Description — sunken read-only text area */
+.win95-window .modal-product-description {
+    font-family: var(--w95-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--w95-text);
+    text-align: left;
+    width: 100%;
+    padding: 4px 6px;
+    background: var(--w95-white);
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-white);
+    max-width: none;
+}
+
+/* Buy button — classic Win95 push button */
+.win95-buy-btn {
+    display: inline-block;
+    padding: 4px 24px;
+    background: var(--w95-bg);
+    color: var(--w95-text);
+    font-family: var(--w95-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+    cursor: pointer;
+    transition: none;
+    border-radius: 0;
+    text-shadow: none;
+}
+
+.win95-buy-btn:hover {
+    background: var(--w95-light);
+    transform: none;
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+}
+
+.win95-buy-btn:active {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+    padding: 5px 23px 3px 25px;
+    transform: none;
+}
+
+/* focus dotted outline inside button */
+.win95-buy-btn:focus-visible {
+    outline: 1px dotted var(--w95-text);
+    outline-offset: -4px;
+}
+
+/* Status bar */
+.win95-statusbar {
+    background: var(--w95-bg);
+    display: flex;
+    gap: 4px;
+    padding: 2px 4px;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    color: var(--w95-text);
+    border-top: 1px solid var(--w95-dark);
+}
+
+.win95-status-section {
+    flex: 1;
+    padding: 1px 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+
+/* ============================================================
+   DEBUG MODE — Hotspot Positioning Helper
+   Activated via ?debug in URL
+   ============================================================ */
+
+.debug-active .page {
+    outline: 1px dashed rgba(255, 0, 0, 0.4);
+}
+
+.debug-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 0, 0, 0.12) 0px,
+            rgba(255, 0, 0, 0.12) 1px,
+            transparent 1px,
+            transparent 10%
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 255, 0.12) 0px,
+            rgba(0, 0, 255, 0.12) 1px,
+            transparent 1px,
+            transparent 10%
+        );
+}
+
+.debug-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.88);
+    color: #0f0;
+    font: 600 0.7rem/1.3 monospace;
+    padding: 4px 8px;
+    border: 1px solid #0f0;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   RESPONSIVE — Media Queries
+   The flipbook is scaled via JS transform in .flipbook-scale-wrapper.
+   These queries handle surrounding UI elements (marquee, modal, toggle).
+   ============================================================ */
+
+/* --- Small phones (portrait) --- */
+@media (max-width: 480px) {
+    body {
+        padding-top: 2rem;
+        padding-bottom: 0;
+        background: #fff;
+        justify-content: flex-start;
+    }
+
+    main { overflow: visible; overflow-x: hidden; }
+    #catalog-root { overflow: visible; overflow-x: hidden; }
+
+    #marquee-bar { height: 1.8rem; }
+    .marquee-text { font-size: 0.65rem; padding: 0 1rem; }
+
+    /* Hide flipbook */
+    .flipbook-scale-wrapper { display: none !important; }
+    #flipbook-nav { display: none !important; }
+
+    /* Show mobile store */
+    .mobile-store {
+        display: block !important;
+        width: 100%;
+        padding: 4px;
+    }
+
+    /* ── Grid ── */
+    .ms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+
+    /* ── Card — Win95 window (image + price only) ── */
+    .ms-card {
+        background: #c0c0c0;
+        border-top: 2px solid #fff;
+        border-left: 2px solid #fff;
+        border-right: 2px solid #404040;
+        border-bottom: 2px solid #404040;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+    .ms-card:active {
+        border-top: 2px solid #404040;
+        border-left: 2px solid #404040;
+        border-right: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
+    }
+
+    /* Image — sunken panel */
+    .ms-img-wrap {
+        position: relative;
+        margin: 3px;
+        background: #fff;
+        border-top: 2px solid #404040;
+        border-left: 2px solid #404040;
+        border-right: 2px solid #dfdfdf;
+        border-bottom: 2px solid #dfdfdf;
+        box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff;
+        aspect-ratio: 1;
+        overflow: hidden;
+    }
+    .ms-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* Logo */
+    .ms-logo-wrap {
+        text-align: center;
+        padding: 8px 4px 4px;
+    }
+    .ms-logo {
+        height: 28px;
+        width: auto;
+        object-fit: contain;
+        opacity: 0.85;
+    }
+
+    /* Info area: title + desc + price */
+    .ms-info {
+        padding: 2px 3px 3px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    /* Title */
+    .ms-title {
+        font: 700 9px/1.2 'MS Sans Serif', Tahoma, sans-serif;
+        color: #000;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Description */
+    .ms-desc {
+        font: 400 8px/1.2 'MS Sans Serif', Tahoma, sans-serif;
+        color: #404040;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* Price — sunken text field */
+    .ms-price {
+        margin-top: 1px;
+        padding: 2px 4px;
+        background: #fff;
+        border-top: 2px solid #404040;
+        border-left: 2px solid #404040;
+        border-right: 2px solid #dfdfdf;
+        border-bottom: 2px solid #dfdfdf;
+        box-shadow: inset 1px 1px 0 #808080;
+        font: 700 11px/1.3 'Courier New', 'Fixedsys', monospace;
+        color: #cc0000;
+        text-align: center;
+    }
+
+    /* Win95 modal adjustments (existing) */
+    .win95-window { max-width: 96vw; max-height: 90dvh; }
+    .win95-titlebar-text { font-size: 11px; }
+    .win95-menubar { font-size: 11px; gap: 8px; }
+    .win95-body { padding: 8px; gap: 8px; }
+    .win95-window .modal-product-name { font-size: 12px; }
+    .win95-window .modal-product-description { font-size: 11px; }
+    .win95-window .modal-price-text { font-size: 15px; }
+    .win95-buy-btn { padding: 3px 16px; font-size: 11px; }
+}
+
+/* --- Tablets & small laptops --- */
+@media (min-width: 481px) and (max-width: 768px) {
+    body {
+        padding-top: 2.5rem;
+    }
+
+}
+
+/* --- Large screens: let flipbook scale bigger --- */
+@media (min-width: 1200px) {
+    body {
+        padding-top: 3rem;
+    }
+}
+
+/* --- Prevent overflow — contained inside Win95 iframe --- */
+main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#catalog-root {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Mobile store is hidden by default (desktop shows flipbook) */
+.mobile-store { display: none; }
+
+/* --- Reduced motion preference --- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .marquee-content {
+        animation: none !important;
+    }
+}
+
+/* --- Screen reader only (visually hidden) --- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================================
+   WINDOWS 95 FLIPBOOK NAVIGATION ARROWS
+   ============================================================ */
+
+#flipbook-nav {
+    --w95-bg:     #c0c0c0;
+    --w95-dark:   #808080;
+    --w95-darker: #404040;
+    --w95-light:  #dfdfdf;
+    --w95-white:  #ffffff;
+    --w95-blue:   #000080;
+    --w95-text:   #000000;
+    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 500;
+
+    background: var(--w95-bg);
+    border-top:    2px solid var(--w95-white);
+    border-left:   2px solid var(--w95-white);
+    border-right:  2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark),
+                2px 2px 0 #000,
+                4px 4px 8px rgba(0, 0, 0, 0.4);
+
+    font-family: var(--w95-font);
+    font-size: 11px;
+    color: var(--w95-text);
+    user-select: none;
+    min-width: 180px;
+}
+
+.fnav-titlebar {
+    background: linear-gradient(90deg, var(--w95-blue), #1084d0);
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 18px;
+}
+
+.fnav-titlebar-icon {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fnav-titlebar-text {
+    flex: 1;
+    color: #fff;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fnav-body {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 6px;
+}
+
+.fnav-btn {
+    background: var(--w95-bg);
+    border-top:    2px solid var(--w95-white);
+    border-left:   2px solid var(--w95-white);
+    border-right:  2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--w95-text);
+    cursor: pointer;
+    padding: 3px 8px;
+    white-space: nowrap;
+    border-radius: 0;
+    min-width: 60px;
+    line-height: 1.3;
+    transition: none;
+}
+
+.fnav-btn:hover:not(:disabled) {
+    background: var(--w95-light);
+}
+
+.fnav-btn:active:not(:disabled) {
+    border-top:    2px solid var(--w95-darker);
+    border-left:   2px solid var(--w95-darker);
+    border-right:  2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+    padding: 4px 7px 2px 9px;
+}
+
+.fnav-btn:disabled {
+    color: var(--w95-dark);
+    cursor: default;
+    text-shadow: 1px 1px 0 var(--w95-white);
+}
+
+.fnav-counter {
+    flex: 1;
+    text-align: center;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--w95-text);
+    background: var(--w95-white);
+    border-top:    2px solid var(--w95-darker);
+    border-left:   2px solid var(--w95-darker);
+    border-right:  2px solid var(--w95-light);
+    border-bottom: 2px solid var(--w95-light);
+    box-shadow: inset 1px 1px 0 var(--w95-dark);
+    padding: 2px 6px;
+    min-width: 36px;
+    white-space: nowrap;
 }
