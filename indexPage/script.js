@@ -732,6 +732,7 @@ juntxs y brillando.`
             const mobileActions = {
                 links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
                 palestina: () => window.open('https://www.unrwa.org/', '_blank'),
+                email: () => window.location.href = 'mailto:gdldenoxe@gmail.com',
                 radio: () => {
                     if (musicPlayer) {
                         musicPlayer.classList.remove('hidden');
@@ -761,6 +762,7 @@ juntxs y brillando.`
             minesweeper: () => openWindow('minesweeper'),
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
+            email: () => window.location.href = 'mailto:gdldenoxe@gmail.com',
             radio: () => {
                 const player = $('#musicPlayer');
                 if (player) {

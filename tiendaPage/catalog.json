@@ -196,10 +196,10 @@
         {
             "id": "boxer-7",
             "name": "Gorra GDN X OFICINA 101",
-            "price": 650, "cents": "00", "currency": "MXN",
+            "price": 500, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/gorra oficina gdn .jpg",
             "description": "Cap 5 panel. Collab Oficina 101.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/9EHPTJ7E8PY6L",
             "info": "Talla Única",
             "stock": "3 u"
         },
@@ -302,14 +302,16 @@
         },
         {
             "id": "boxer-14",
-            "name": "Boxer GDN",
-            "mobileHide": true,
-            "price": 250, "cents": "00", "currency": "MXN",
-            "image": "assets/products/boxers/boxer 5.jpg",
-            "description": "Estampado GDN. Talla única.",
-            "link": "#",
+            "name": "Bolsa GDN",
+            "price": 350, "cents": "00", "currency": "MXN",
+            "image": "assets/products/101/bolsa completa.jpg",
+            "imageBg": "#ffffff",
+            "description": "Bolsa GDN.",
+            "link": "https://www.paypal.com/ncp/payment/TMDB63GLDYX5U",
             "info": "Talla Única",
-            "stock": "2 u"
+            "stock": "1 u",
+            "splashX": -8, "splashY": -10, "splashW": 65, "splashH": 55,
+            "cornerPosition": "br"
         },
         {
             "id": "boxer-15",

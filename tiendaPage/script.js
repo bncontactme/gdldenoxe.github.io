@@ -541,10 +541,12 @@ const tienda = (() => {
         shade.loading = 'lazy';
         face.appendChild(shade);
 
-        // Flip label
-        const label = document.createElement('label');
-        label.setAttribute('for', checkboxId);
-        face.appendChild(label);
+        // Flip label (only if checkboxId exists — last page has none so it can't flip)
+        if (checkboxId) {
+            const label = document.createElement('label');
+            label.setAttribute('for', checkboxId);
+            face.appendChild(label);
+        }
 
         return face;
     };
@@ -700,18 +702,22 @@ const tienda = (() => {
 
     const generateDynamicCSS = (N) => {
         let css = '/* Auto-generated: ' + N + ' pages */\n';
+        // Static z-index for all pages
         for (let i = 1; i <= N; i++) {
             const z = (i === 1) ? N + 3 : N - i + 2;
             css += '#page' + i + ' { z-index: ' + z + '; }\n';
         }
-        for (let i = 1; i <= N; i++) {
-            const z = (i === N) ? N + 4 : i + 2;
+        // Flip transforms only for pages that have checkboxes (1..N-1, last page can't flip)
+        for (let i = 1; i < N; i++) {
+            const z = i + 2;
             css += '#page' + i + '_checkbox:checked ~ #flip_book #page' + i +
                    ' { transform: rotateY(-180deg); z-index: ' + z + '; }\n';
         }
         const ids = [];
-        for (let i = 1; i <= N; i++) ids.push('#page' + i + '_checkbox');
-        css += ':is(' + ids.join(', ') + '):checked ~ #flip_book { transform: translateX(50%) scale(1.03); }\n';
+        for (let i = 1; i < N; i++) ids.push('#page' + i + '_checkbox');
+        if (ids.length) {
+            css += ':is(' + ids.join(', ') + '):checked ~ #flip_book { transform: translateX(50%) scale(1.03); }\n';
+        }
         dynamicCSS.textContent = css;
     };
 
@@ -737,12 +743,12 @@ const tienda = (() => {
         // Pair faces into physical pages: each page has front + back
         // Page 1: front = cover, back = content[0]
         // Pages 2..N-1: front = content[i], back = content[i+1]
-        // Last page: front = content[last] or filler, back = backCover
+        // Last page stays open — no back cover, book cannot be closed
 
         const pagePairs = [];
 
         if (contentFaces.length === 0) {
-            pagePairs.push({ front: 'cover', back: 'backCover' });
+            pagePairs.push({ front: 'cover', back: 'filler' });
         } else {
             // Page 1: cover + first content
             pagePairs.push({ front: 'cover', back: contentFaces[0] });
@@ -754,17 +760,10 @@ const tienda = (() => {
                     pagePairs.push({ front: contentFaces[fi], back: contentFaces[fi + 1] });
                     fi += 2;
                 } else {
-                    // Odd face left — it becomes front, backCover is back
-                    pagePairs.push({ front: contentFaces[fi], back: 'backCover' });
+                    // Odd face left — pair with filler
+                    pagePairs.push({ front: contentFaces[fi], back: 'filler' });
                     fi++;
                 }
-            }
-
-            // If the last page's back isn't the backCover yet, add it
-            const lastPair = pagePairs[pagePairs.length - 1];
-            if (lastPair.back !== 'backCover') {
-                // Need a filler front for the backCover page
-                pagePairs.push({ front: 'filler', back: 'backCover' });
             }
         }
 
@@ -773,8 +772,8 @@ const tienda = (() => {
         const wrapper = document.createElement('div');
         wrapper.className = 'flipbook-scale-wrapper';
 
-        // Checkboxes (CSS flip mechanism)
-        for (let i = 1; i <= N; i++) {
+        // Checkboxes (CSS flip mechanism) — skip last page so it can't be flipped/closed
+        for (let i = 1; i < N; i++) {
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.id = 'page' + i + '_checkbox';
@@ -786,7 +785,8 @@ const tienda = (() => {
 
         pagePairs.forEach((pair, idx) => {
             const i = idx + 1;
-            const cbId = 'page' + i + '_checkbox';
+            const isLastPage = (i === N);
+            const cbId = isLastPage ? null : 'page' + i + '_checkbox';
             const pageDiv = document.createElement('div');
             pageDiv.className = 'page';
             pageDiv.id = 'page' + i;
@@ -813,6 +813,9 @@ const tienda = (() => {
             let backFace;
             if (pair.back === 'backCover') {
                 backFace = buildBackCoverFace(catalog, cbId, assets);
+            } else if (pair.back === 'filler') {
+                const bgSrc = assets.backgrounds[2 % assets.backgrounds.length];
+                backFace = buildFaceShell('back_page', BACK_SHADE, bgSrc, cbId, assets);
             } else {
                 backFace = buildContentFace(pair.back, 'back_page', BACK_SHADE, cbId, assets, idx * 2 + 1);
             }
