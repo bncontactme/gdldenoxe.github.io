@@ -1,6 +1,16 @@
 // Funcionalidad para el dashboard estilo Windows 95
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ─────────────────────────────────────────
+    // FEATURE FLAGS — set to true to enable
+    // ─────────────────────────────────────────
+    const FEATURES = {
+        TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
+        ROBLOX_POPUP:  false,   // Roblox server ad popup
+    };
+    // ─────────────────────────────────────────
+
     // Cache DOM elements
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
@@ -447,61 +457,54 @@ juntxs y brillando.`
 
     // Posicionar ventanas sin overlap, imagen a la izquierda del artículo
     function centerYtPopup() {
+        if (!FEATURES.TWITCH_POPUP) return;
         const win = $('[data-window-id="yt-popup"]');
-        if (!win || win.classList.contains('hidden')) return;
+        if (!win) return;
+        win.classList.remove('hidden');
+        // load iframe on first enable
+        const iframe = win.querySelector('iframe[data-src]');
+        if (iframe) { iframe.src = iframe.dataset.src; iframe.removeAttribute('data-src'); }
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44;
         if (isMobile()) {
             const mw = Math.min(screenW - 16, 340);
-            const iframe = win.querySelector('iframe');
-            if (iframe) {
-                iframe.width = mw - 12;
-                iframe.height = Math.round((mw - 12) * 9 / 16);
-            }
+            const ifrEl = win.querySelector('iframe');
+            if (ifrEl) { ifrEl.width = mw - 12; ifrEl.height = Math.round((mw - 12) * 9 / 16); }
             win.style.width = mw + 'px';
-            // rAF so browser has laid out the new height before we center vertically
             requestAnimationFrame(() => {
                 const h = win.offsetHeight || 220;
                 win.style.left = Math.floor((screenW - mw) / 2) + 'px';
                 win.style.top = Math.max(10, Math.floor((screenH - h) / 2)) + 'px';
-                win.style.zIndex = ++highestZIndex;
-                win.classList.add('active');
+                win.style.zIndex = ++highestZIndex; win.classList.add('active');
             });
         } else {
             win.style.width = '492px';
             requestAnimationFrame(() => {
                 const iconAreaW = 130;
-                const w = win.offsetWidth || 492;
-                const h = win.offsetHeight || 310;
-                // Top-left: just right of icons
                 win.style.left = iconAreaW + 'px';
                 win.style.top = '12px';
-                win.style.zIndex = ++highestZIndex;
-                win.classList.add('active');
+                win.style.zIndex = ++highestZIndex; win.classList.add('active');
             });
         }
     }
 
     function positionRobloxPopup() {
+        if (!FEATURES.ROBLOX_POPUP) return;
         const win = $('[data-window-id="roblox-popup"]');
-        if (!win || win.classList.contains('hidden')) return;
+        if (!win) return;
+        win.classList.remove('hidden');
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44;
         if (isMobile()) {
-            // Mobile: CSS handles it via fixed positioning
-            win.style.zIndex = ++highestZIndex;
-            win.classList.add('active');
+            win.style.zIndex = ++highestZIndex; win.classList.add('active');
         } else {
             requestAnimationFrame(() => {
                 const iconAreaW = 130;
                 const ytWin = $('[data-window-id="yt-popup"]');
                 const ytH = (ytWin && !ytWin.classList.contains('hidden')) ? (ytWin.offsetHeight || 310) : 0;
-                const w = win.offsetWidth || 320;
-                // Place directly below the Twitch popup
                 win.style.left = iconAreaW + 'px';
                 win.style.top = (12 + ytH + 10) + 'px';
-                win.style.zIndex = ++highestZIndex;
-                win.classList.add('active');
+                win.style.zIndex = ++highestZIndex; win.classList.add('active');
             });
         }
     }
