@@ -1621,6 +1621,23 @@ body {
         display: block;
     }
 
+    /* --- Roblox Popup (just above the Twitch popup) --- */
+    .win95-window[data-window-id="roblox-popup"] {
+        display: block !important;
+        position: fixed !important;
+        bottom: 290px !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 360px !important;
+        z-index: 19999 !important;
+    }
+
+    .win95-window[data-window-id="roblox-popup"].hidden {
+        display: none !important;
+    }
+
     /* --- Poema Widget (below articulo widget, half width) --- */
     .win95-window[data-window-id="poema1"] {        display: block !important;
         position: absolute !important;

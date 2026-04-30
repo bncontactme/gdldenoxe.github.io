@@ -389,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     window.addEventListener('resize', centerYtPopup);
+    window.addEventListener('resize', positionRobloxPopup);
 
     // Deseleccionar al hacer click en el escritorio
     desktop?.addEventListener('click', () => {
@@ -472,7 +473,7 @@ juntxs y brillando.`
                 const iconAreaW = 130;
                 const w = win.offsetWidth || 492;
                 const h = win.offsetHeight || 310;
-                // Lower-left: just right of icons, flush below taskbar
+                // Top-left: just right of icons
                 win.style.left = iconAreaW + 'px';
                 win.style.top = '12px';
                 win.style.zIndex = ++highestZIndex;
@@ -481,10 +482,35 @@ juntxs y brillando.`
         }
     }
 
+    function positionRobloxPopup() {
+        const win = $('[data-window-id="roblox-popup"]');
+        if (!win || win.classList.contains('hidden')) return;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44;
+        if (isMobile()) {
+            // Mobile: CSS handles it via fixed positioning
+            win.style.zIndex = ++highestZIndex;
+            win.classList.add('active');
+        } else {
+            requestAnimationFrame(() => {
+                const iconAreaW = 130;
+                const ytWin = $('[data-window-id="yt-popup"]');
+                const ytH = (ytWin && !ytWin.classList.contains('hidden')) ? (ytWin.offsetHeight || 310) : 0;
+                const w = win.offsetWidth || 320;
+                // Place directly below the Twitch popup
+                win.style.left = iconAreaW + 'px';
+                win.style.top = (12 + ytH + 10) + 'px';
+                win.style.zIndex = ++highestZIndex;
+                win.classList.add('active');
+            });
+        }
+    }
+
     function randomizeWindowPositions() {
         centerYtPopup();
+        positionRobloxPopup();
         if (isMobile()) return;
-        const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup');
+        const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup' && w.dataset.windowId !== 'roblox-popup');
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
