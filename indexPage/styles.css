@@ -1625,7 +1625,7 @@ body {
     .win95-window[data-window-id="roblox-popup"] {
         display: block !important;
         position: fixed !important;
-        bottom: 290px !important;
+        bottom: 320px !important;
         top: auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
