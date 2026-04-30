@@ -1597,9 +1597,32 @@ body {
         -webkit-box-orient: vertical;
     }
 
-    /* --- Poema Widget (below articulo widget, half width) --- */
-    .win95-window[data-window-id="poema1"] {
+    /* --- YouTube Popup (centered, on top of everything) --- */
+    .win95-window[data-window-id="yt-popup"] {
         display: block !important;
+        position: fixed !important;
+        bottom: 60px !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 360px !important;
+        z-index: 20000 !important;
+    }
+
+    .win95-window[data-window-id="yt-popup"].hidden {
+        display: none !important;
+    }
+
+    .win95-window[data-window-id="yt-popup"] iframe {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        display: block;
+    }
+
+    /* --- Poema Widget (below articulo widget, half width) --- */
+    .win95-window[data-window-id="poema1"] {        display: block !important;
         position: absolute !important;
         right: 12px !important;
         left: auto !important;
@@ -2072,4 +2095,12 @@ body {
     .music-player .time-display {
         font-size: 8px;
     }
+}
+/* ── YouTube popup ── */
+[data-window-id="yt-popup"] .window-body {
+    padding: 4px;
+}
+[data-window-id="yt-popup"] iframe {
+    display: block;
+    max-width: 100%;
 }

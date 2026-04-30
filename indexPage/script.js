@@ -388,6 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
             randomizeWindowPositions();
         });
 
+    window.addEventListener('resize', centerYtPopup);
+
     // Deseleccionar al hacer click en el escritorio
     desktop?.addEventListener('click', () => {
         $$('.desktop-icon').forEach(i => i.classList.remove('selected'));
@@ -443,9 +445,46 @@ juntxs y brillando.`
     }
 
     // Posicionar ventanas sin overlap, imagen a la izquierda del artículo
+    function centerYtPopup() {
+        const win = $('[data-window-id="yt-popup"]');
+        if (!win || win.classList.contains('hidden')) return;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44;
+        if (isMobile()) {
+            const mw = Math.min(screenW - 16, 340);
+            const iframe = win.querySelector('iframe');
+            if (iframe) {
+                iframe.width = mw - 12;
+                iframe.height = Math.round((mw - 12) * 9 / 16);
+            }
+            win.style.width = mw + 'px';
+            // rAF so browser has laid out the new height before we center vertically
+            requestAnimationFrame(() => {
+                const h = win.offsetHeight || 220;
+                win.style.left = Math.floor((screenW - mw) / 2) + 'px';
+                win.style.top = Math.max(10, Math.floor((screenH - h) / 2)) + 'px';
+                win.style.zIndex = ++highestZIndex;
+                win.classList.add('active');
+            });
+        } else {
+            win.style.width = '492px';
+            requestAnimationFrame(() => {
+                const iconAreaW = 130;
+                const w = win.offsetWidth || 492;
+                const h = win.offsetHeight || 310;
+                // Lower-left: just right of icons, flush below taskbar
+                win.style.left = iconAreaW + 'px';
+                win.style.top = '12px';
+                win.style.zIndex = ++highestZIndex;
+                win.classList.add('active');
+            });
+        }
+    }
+
     function randomizeWindowPositions() {
+        centerYtPopup();
         if (isMobile()) return;
-        const windows = Array.from($$('.win95-window:not(.hidden)'));
+        const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup');
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
@@ -649,6 +688,10 @@ juntxs y brillando.`
         if (btn.classList.contains('close-btn')) {
             win.classList.add('hidden');
             if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
+            if (win.dataset.windowId === 'yt-popup') {
+                const ytf = win.querySelector('iframe');
+                if (ytf) ytf.src = ytf.src;
+            }
             if (win.dataset.windowId === 'galeria') {
                 pauseGaleriaCollage();
                 const dp = $('#win95-details-panel');
