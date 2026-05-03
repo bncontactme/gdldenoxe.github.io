@@ -760,6 +760,7 @@
           // Signed upload via Worker (Phase 2)
           fd.append('upload_preset', signedParams.upload_preset);
           fd.append('folder',        signedParams.folder);
+          fd.append('asset_folder',  signedParams.asset_folder || signedParams.folder);
           fd.append('timestamp',     signedParams.timestamp);
           fd.append('api_key',       signedParams.api_key);
           fd.append('signature',     signedParams.signature);

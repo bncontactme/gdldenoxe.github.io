@@ -101,6 +101,7 @@ async function handleUpload(body, env, origin) {
     const folder = FOLDER + '/' + slug;
 
     const signingParams = {
+      asset_folder:  folder,
       folder,
       timestamp,
       upload_preset: uploadPreset,
@@ -119,7 +120,7 @@ async function handleUpload(body, env, origin) {
     const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
 
     return jsonResponse(
-      { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, context: signingParams.context || null },
+      { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, asset_folder: folder, context: signingParams.context || null },
       200, origin,
     );
 }
