@@ -192,24 +192,32 @@
     }
 
     /* ── Embedded mode (iframe inside win95-window, ?embed=1) ──────────── */
-    body.embedded {
+    html.embedded,
+    html.embedded body {
       background: #ECE9D8;
       padding: 0;
-      align-items: stretch;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      display: block;
       overflow: hidden;
     }
-    body.embedded .xp-window {
+    html.embedded .xp-window {
       width: 100%;
+      height: 100%;
       border: none;
       box-shadow: none;
+      background: #ECE9D8;
     }
-    body.embedded .xp-titlebar { display: none; }
-    body.embedded .xp-body {
-      padding: 12px 16px 12px;
+    html.embedded .xp-titlebar { display: none; }
+    html.embedded .xp-body {
+      padding: 14px 18px 14px;
       gap: 10px;
+      height: 100%;
     }
-    body.embedded #upload-zone { min-height: 80px; }
-    body.embedded #pw-overlay  { background: #ECE9D8; }
+    html.embedded #upload-zone { min-height: 80px; }
+    html.embedded #pw-overlay  { background: #ECE9D8; }
 
     /* Password gate */
     #pw-overlay {
@@ -342,7 +350,7 @@
 
     // Embed mode: strip redundant chrome when loaded inside win95-window iframe
     if (new URLSearchParams(location.search).get('embed') === '1') {
-      document.body.classList.add('embedded');
+      document.documentElement.classList.add('embedded');
     }
 
     // ── Password gate ─────────────────────────────────────────────────────────
