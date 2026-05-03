@@ -487,8 +487,7 @@ body {
 #upload-popup-window {
   width: 520px;
   max-width: 95vw;
-  height: 80vh;
-  max-height: 680px;
+  max-height: 90vh;
   background: #ECE9D8;
   border: 2px outset #ECE9D8;
   box-shadow: 2px 2px 12px rgba(0,0,0,0.5);
@@ -522,9 +521,10 @@ body {
   line-height: 1;
 }
 #upload-popup-frame {
-  flex: 1;
   width: 100%;
   border: none;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Upload folder item in explorer */

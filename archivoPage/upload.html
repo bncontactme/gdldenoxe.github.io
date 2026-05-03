@@ -328,8 +328,8 @@
                style="display:none" aria-hidden="true">
       </div>
 
-      <div id="file-list"></div>
-      <div id="upload-counter"></div>
+      <div id="file-list" style="display:none"></div>
+      <div id="upload-counter" style="display:none"></div>
 
       <div class="progress-bar-wrap" id="progress-wrap">
         <div class="progress-bar-fill" id="progress-fill"></div>
@@ -571,6 +571,13 @@
 
     function renderThumbs() {
       fileList.innerHTML = '';
+      if (selectedFiles.length === 0) {
+        fileList.style.display = 'none';
+        uploadCounter.style.display = 'none';
+        return;
+      }
+      fileList.style.display = 'flex';
+      uploadCounter.style.display = '';
       selectedFiles.forEach(function(f, i) {
         var wrap = document.createElement('div');
         wrap.className = 'file-thumb';

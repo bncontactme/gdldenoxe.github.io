@@ -364,8 +364,8 @@
     }
     if (!uploadPopupOverlay) return;
     // Lazy-load the iframe only on first open (use getAttribute to avoid resolved-URL false positive)
-    if (uploadPopupFrame && uploadPopupFrame.getAttribute('src') !== 'upload.html') {
-      uploadPopupFrame.src = 'upload.html';
+    if (uploadPopupFrame && uploadPopupFrame.getAttribute('src') !== 'upload.html?embed=1') {
+      uploadPopupFrame.src = 'upload.html?embed=1';
     }
     uploadPopupOverlay.classList.add('open');
   }
@@ -378,6 +378,14 @@
   if (uploadPopupOverlay) uploadPopupOverlay.onclick = function(e) {
     if (e.target === uploadPopupOverlay) closeUploadPopup();
   };
+
+  // Auto-resize upload iframe from postMessage
+  window.addEventListener('message', function(e) {
+    if (e.source !== uploadPopupFrame?.contentWindow) return;
+    if (e.data?.type === 'upload-resize' && uploadPopupFrame) {
+      uploadPopupFrame.style.height = e.data.height + 'px';
+    }
+  });
   // ========================
 
   if (explorerClose) explorerClose.onclick = closeExplorer;
