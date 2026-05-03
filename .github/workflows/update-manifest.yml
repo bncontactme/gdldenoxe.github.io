@@ -1,0 +1,152 @@
+name: Update Archive Manifest
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  update-manifest:
+    # Skip if this was triggered by the bot's own commit (prevents infinite loop)
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch Cloudinary resources and write images.json
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          python3 - <<'EOF'
+          import urllib.request, urllib.parse, json, os, hashlib, hmac, time, base64
+
+          cloud  = os.environ['CLOUDINARY_CLOUD_NAME']
+          key    = os.environ['CLOUDINARY_API_KEY']
+          secret = os.environ['CLOUDINARY_API_SECRET']
+          folder = 'archivo'
+
+          def cloudinary_get(endpoint, params):
+              """Call Cloudinary Admin API with HTTP Basic Auth."""
+              base = f'https://api.cloudinary.com/v1_1/{cloud}/{endpoint}'
+              url  = base + '?' + urllib.parse.urlencode(params)
+              creds = base64.b64encode(f'{key}:{secret}'.encode()).decode()
+              req = urllib.request.Request(url, headers={'Authorization': f'Basic {creds}'})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.loads(r.read())
+
+          def get_all_resources():
+              resources = []
+              # Try dynamic folder mode first (newer Cloudinary accounts)
+              try:
+                  params = {
+                      'asset_folder': folder,
+                      'context': 'true',
+                      'max_results': 500,
+                  }
+                  while True:
+                      data = cloudinary_get('resources/image', params)
+                      batch = data.get('resources', [])
+                      # Extra safety: only keep images whose asset_folder matches exactly
+                      batch = [r for r in batch if r.get('asset_folder', '') == folder]
+                      resources.extend(batch)
+                      cursor = data.get('next_cursor')
+                      if not cursor:
+                          break
+                      params['next_cursor'] = cursor
+                  if resources:
+                      print('Mode: dynamic folder (asset_folder)')
+                      return resources
+              except Exception as e:
+                  print(f'asset_folder query failed: {e}')
+
+              # Fall back to legacy prefix mode
+              params = {
+                  'type': 'upload',
+                  'prefix': folder + '/',
+                  'context': 'true',
+                  'max_results': 500,
+              }
+              while True:
+                  data = cloudinary_get('resources/image', params)
+                  resources.extend(data.get('resources', []))
+                  cursor = data.get('next_cursor')
+                  if not cursor:
+                      break
+                  params['next_cursor'] = cursor
+              if resources:
+                  print('Mode: legacy prefix')
+              return resources
+
+          resources = get_all_resources()
+
+          print(f'Found {len(resources)} resources in folder "{folder}/"')
+          if resources:
+              print('Sample public_ids:', [r['public_id'] for r in resources[:5]])
+          else:
+              # List ALL resources (no prefix) to see what folders exist
+              data = cloudinary_get('resources/image', {'type': 'upload', 'max_results': 20})
+              all_ids = [r['public_id'] for r in data.get('resources', [])]
+              print('All public_ids in account (first 20):', all_ids)
+              # Also list folders
+              try:
+                  fdata = cloudinary_get('folders', {})
+                  print('Top-level folders:', [f['name'] for f in fdata.get('folders', [])])
+              except Exception as fe:
+                  print('Could not list folders:', fe)
+
+          entries = []
+          for r in resources:
+              ctx   = r.get('context', {}).get('custom', {})
+              # Cloudinary secure_url is the full delivery URL
+              url   = r['secure_url']
+              # Derive thumbnail URL: insert c_thumb,w_96,h_96 transformation
+              # e.g. .../upload/v123/archivo/img.jpg → .../upload/c_thumb,w_96,h_96/v123/archivo/img.jpg
+              thumb = url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/', 1)
+              entries.append({
+                  'url':         url,
+                  'thumbUrl':    thumb,
+                  'artista':     ctx.get('artista', ''),
+                  'descripcion': ctx.get('descripcion', ''),
+                  'fecha':       ctx.get('fecha', ''),
+              })
+
+          # Sort by upload date (newest last) so collage order is stable
+          entries.sort(key=lambda x: x['url'])
+
+          out_path = 'archivoPage/images.json'
+          new_json = json.dumps(entries, ensure_ascii=False, indent=2)
+
+          # Only write if content changed (avoids empty commits)
+          try:
+              with open(out_path, 'r', encoding='utf-8') as f:
+                  old_json = f.read()
+          except FileNotFoundError:
+              old_json = ''
+
+          if new_json.strip() != old_json.strip():
+              with open(out_path, 'w', encoding='utf-8') as f:
+                  f.write(new_json)
+              print(f'Written {len(entries)} entries to {out_path}')
+          else:
+              print('No changes detected, skipping write.')
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add archivoPage/images.json
+          if git diff --cached --quiet; then
+            echo "images.json unchanged, nothing to commit."
+          else
+            git commit -m "chore: update archive manifest [skip ci]"
+            git pull --rebase origin HEAD
+            git push
+          fi
+

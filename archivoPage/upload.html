@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subir al Archivo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: #008080;
+      font-family: Tahoma, 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px 40px;
+    }
+
+    .xp-window {
+      width: 480px;
+      max-width: 100%;
+      background: #ECE9D8;
+      border: 2px outset #ECE9D8;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .xp-titlebar {
+      background: linear-gradient(#0054E3, #0042B3);
+      color: #fff;
+      padding: 4px 8px;
+      height: 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: bold;
+      user-select: none;
+    }
+    .xp-titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .xp-titlebar-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .xp-body {
+      padding: 20px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .xp-label {
+      font-weight: bold;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .xp-input {
+      width: 100%;
+      border: 2px inset #fff;
+      padding: 3px 5px;
+      font-family: Tahoma, 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      background: #fff;
+    }
+    .xp-input:focus {
+      outline: none;
+      border-color: #316AC5;
+    }
+
+    .xp-field { display: flex; flex-direction: column; }
+
+    .xp-divider {
+      border: none;
+      border-top: 1px solid #ACA899;
+      border-bottom: 1px solid #fff;
+      margin: 4px 0;
+    }
+
+    #upload-zone {
+      border: 2px dashed #ACA899;
+      background: #fff;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #555;
+      padding: 20px;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: center;
+    }
+    #upload-zone:hover, #upload-zone.drag-over {
+      border-color: #316AC5;
+      background: #EEF3FB;
+    }
+    #upload-zone svg { opacity: 0.5; }
+    #upload-zone p { font-size: 12px; }
+    #upload-zone small { font-size: 10px; color: #888; }
+
+    .xp-btn {
+      background: linear-gradient(#F2F0E8, #DAD7C9);
+      border: 2px outset #F2F0E8;
+      padding: 4px 18px;
+      font-family: Tahoma, 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      min-width: 75px;
+    }
+    .xp-btn:hover { background: linear-gradient(#ECF1FB, #C5CBDC); }
+    .xp-btn:active { border-style: inset; }
+    .xp-btn:disabled { opacity: 0.5; cursor: default; }
+    .xp-btn-primary {
+      background: linear-gradient(#316AC5, #1A52A0);
+      color: #fff;
+      border-color: #316AC5;
+    }
+    .xp-btn-primary:hover { background: linear-gradient(#4479CE, #2460B0); }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    #status-box {
+      display: none;
+      background: #fff;
+      border: 2px inset #fff;
+      padding: 8px 10px;
+      min-height: 40px;
+      font-size: 11px;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    #status-box.visible { display: block; }
+    #status-box.success { color: #1A6600; }
+    #status-box.error   { color: #900; }
+
+    #file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 2px 4px;
+      background: #F5F4EF;
+      border: 1px solid #D3D0C4;
+    }
+    .file-item-icon { font-size: 14px; flex-shrink: 0; }
+    .file-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item-remove {
+      background: none; border: none; cursor: pointer;
+      color: #900; font-size: 13px; line-height: 1; flex-shrink: 0;
+      font-family: Tahoma, sans-serif;
+    }
+
+    .progress-bar-wrap {
+      display: none;
+      width: 100%;
+      height: 14px;
+      background: #fff;
+      border: 2px inset #fff;
+    }
+    .progress-bar-wrap.visible { display: block; }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(#316AC5, #1A52A0);
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .note {
+      font-size: 10px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* Password gate */
+    #pw-overlay {
+      position: fixed; inset: 0;
+      background: #008080;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 99999;
+    }
+    #pw-overlay.hidden { display: none; }
+    #pw-window {
+      width: 340px; max-width: 90vw;
+      background: #ECE9D8;
+      border: 2px outset #ECE9D8;
+      box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+    }
+    #pw-titlebar {
+      background: linear-gradient(#0054E3, #0042B3);
+      color: #fff; padding: 4px 8px; height: 26px;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: bold; user-select: none;
+    }
+    #pw-body {
+      padding: 20px 24px 20px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    #pw-error {
+      color: #900; font-size: 11px; min-height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Password gate -->
+  <div id="pw-overlay">
+    <div id="pw-window">
+      <div id="pw-titlebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+          <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+          <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+        </svg>
+        Acceso restringido
+      </div>
+      <div id="pw-body">
+        <div class="xp-field">
+          <label class="xp-label" for="pw-input">Contraseña</label>
+          <input class="xp-input" type="password" id="pw-input"
+                 autocomplete="current-password" maxlength="80">
+        </div>
+        <div id="pw-error"></div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="xp-btn xp-btn-primary" type="button" id="pw-submit">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xp-window">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-left">
+        <!-- Folder icon -->
+        <svg class="xp-titlebar-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/>
+          <path d="M1 5h14v8H1z" fill="#FEE88A" stroke="#808080" stroke-width=".3"/>
+        </svg>
+        Subir al Archivo GDN
+      </div>
+    </div>
+    <div class="xp-body">
+
+      <div class="xp-field">
+        <label class="xp-label" for="input-artista">Artista</label>
+        <input class="xp-input" type="text" id="input-artista"
+               placeholder="Ej: Tu nombre o @handle"
+               autocomplete="off" maxlength="120">
+      </div>
+
+      <div class="xp-field">
+        <label class="xp-label" for="input-descripcion">Descripción <span style="font-weight:normal;color:#666">(opcional)</span></label>
+        <textarea class="xp-input" id="input-descripcion" rows="3"
+                  placeholder="Dónde, cuándo, qué..." maxlength="400"
+                  style="resize:vertical"></textarea>
+      </div>
+
+      <div class="xp-field">
+        <label class="xp-label" for="input-fecha">Fecha <span style="font-weight:normal;color:#666">(opcional)</span></label>
+        <input class="xp-input" type="date" id="input-fecha">
+      </div>
+
+      <hr class="xp-divider">
+
+      <div class="xp-field">
+        <span class="xp-label">Imágenes</span>
+        <div id="upload-zone" role="button" tabindex="0" aria-label="Seleccionar o arrastrar imágenes">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect x="3" y="9" width="30" height="22" rx="1" fill="#FED84F" stroke="#808080" stroke-width="1"/>
+            <rect x="3" y="9" width="30" height="3" fill="#3A6EA5" stroke="#808080" stroke-width="1"/>
+            <path d="M13 24 l5-7 l5 7" fill="#316AC5" opacity=".7"/>
+            <circle cx="22" cy="19" r="2" fill="#316AC5" opacity=".7"/>
+          </svg>
+          <p>Arrastra imágenes aquí o haz clic para seleccionar</p>
+          <small>JPG, PNG, GIF, WEBP · máx 10 MB por archivo</small>
+        </div>
+        <input id="file-input" type="file" accept="image/*" multiple
+               style="display:none" aria-hidden="true">
+      </div>
+
+      <div id="file-list"></div>
+
+      <div class="progress-bar-wrap" id="progress-wrap">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+
+      <div id="status-box" role="status" aria-live="polite"></div>
+
+      <p class="note">
+        Las imágenes se subirán al archivo colectivo de GDN.<br>
+        La galería se actualizará automáticamente en unos minutos.
+      </p>
+
+      <div class="btn-row">
+        <button class="xp-btn" type="button" id="btn-cancel">Cancelar</button>
+        <button class="xp-btn xp-btn-primary" type="button" id="btn-upload" disabled>Subir</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Password gate ─────────────────────────────────────────────────────────
+    // SHA-256 hash of the password. To change it:
+    // node -e "const c=require('crypto');console.log(c.createHash('sha256').update('NEW_PW').digest('hex'));"
+    const PW_HASH = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
+    const SESSION_KEY = 'archivo_auth';
+
+    // Private auth flag — lives only in this closure, unreachable from DevTools console
+    let _authed = false;
+    let _password = ''; // kept in memory for Worker requests; never persisted
+
+    // Brute-force protection (resets on page reload — intentional)
+    let _attempts = 0;
+    let _lockedUntil = 0;
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_MS   = 60000; // 60 s
+    let _lockTimer = null;
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+    }
+
+    const pwOverlay = document.getElementById('pw-overlay');
+    const pwInput   = document.getElementById('pw-input');
+    const pwSubmit  = document.getElementById('pw-submit');
+    const pwError   = document.getElementById('pw-error');
+
+    // Restore session only in non-Worker mode; Worker mode always needs the plaintext
+    // password in memory. WORKER_URL is declared below — forward-ref resolved at runtime.
+    function maybeRestoreSession() {
+      if (!WORKER_URL && sessionStorage.getItem(SESSION_KEY) === PW_HASH) {
+        _authed = true;
+        pwOverlay.classList.add('hidden');
+      }
+    }
+
+    function startLockoutTimer() {
+      if (_lockTimer) clearInterval(_lockTimer);
+      _lockTimer = setInterval(function() {
+        var remaining = Math.ceil((_lockedUntil - Date.now()) / 1000);
+        if (remaining <= 0) {
+          clearInterval(_lockTimer);
+          _lockTimer = null;
+          pwSubmit.disabled = false;
+          pwInput.disabled  = false;
+          pwError.textContent = '';
+          _attempts = 0;
+        } else {
+          pwError.textContent = 'Demasiados intentos. Espera ' + remaining + 's.';
+        }
+      }, 500);
+    }
+
+    async function checkPassword() {
+      if (Date.now() < _lockedUntil) return;
+      var typed = pwInput.value;
+      var hash  = await sha256(typed);
+      if (hash === PW_HASH) {
+        _authed = true;
+        _password = typed;
+        sessionStorage.setItem(SESSION_KEY, PW_HASH);
+        pwOverlay.classList.add('hidden');
+        pwInput.value = '';
+        _attempts = 0;
+      } else {
+        _attempts++;
+        pwInput.value = '';
+        if (_attempts >= MAX_ATTEMPTS) {
+          _lockedUntil = Date.now() + LOCKOUT_MS;
+          pwSubmit.disabled = true;
+          pwInput.disabled  = true;
+          startLockoutTimer();
+        } else {
+          var left = MAX_ATTEMPTS - _attempts;
+          pwError.textContent = 'Contraseña incorrecta. (' + left + ' intento' + (left === 1 ? '' : 's') + ' restante' + (left === 1 ? '' : 's') + ')';
+          pwInput.focus();
+        }
+      }
+    }
+
+    pwSubmit.addEventListener('click', checkPassword);
+    pwInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkPassword();
+    });
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Config ────────────────────────────────────────────────────────────────
+    const CLOUD_NAME    = 'duog120j4';
+    const UPLOAD_PRESET = 'archivo_unsigned';  // disable this preset once WORKER_URL is set
+    const FOLDER        = 'archivo';
+
+    // Phase 2 — set this to your deployed Worker URL to enable server-side auth.
+    // e.g. 'https://archivo-upload.YOUR-SUBDOMAIN.workers.dev'
+    // When set: Worker verifies password + returns signed Cloudinary params.
+    // When empty: direct unsigned upload (Phase 1 mode).
+    const WORKER_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+
+    const MAX_SIZE_MB = 10;
+
+    // Run session restore after WORKER_URL is defined
+    maybeRestoreSession();
+    if (!_authed) pwInput.focus();
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const zone        = document.getElementById('upload-zone');
+    const fileInput   = document.getElementById('file-input');
+    const fileList    = document.getElementById('file-list');
+    const btnUpload   = document.getElementById('btn-upload');
+    const btnCancel   = document.getElementById('btn-cancel');
+    const statusBox   = document.getElementById('status-box');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressFill = document.getElementById('progress-fill');
+    const inputArtista = document.getElementById('input-artista');
+    const inputDesc    = document.getElementById('input-descripcion');
+    const inputFecha   = document.getElementById('input-fecha');
+
+    let selectedFiles = [];
+
+    // ── File selection ────────────────────────────────────────────────────────
+    zone.addEventListener('click', function() { fileInput.click(); });
+    zone.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
+
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', function() {
+      addFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    function addFiles(files) {
+      for (const f of files) {
+        if (!f.type.startsWith('image/')) {
+          showStatus('Solo se permiten imágenes: ' + f.name, 'error');
+          continue;
+        }
+        if (f.size > MAX_SIZE_MB * 1024 * 1024) {
+          showStatus(f.name + ' supera los ' + MAX_SIZE_MB + ' MB.', 'error');
+          continue;
+        }
+        if (selectedFiles.find(function(x) { return x.name === f.name; })) continue;
+        selectedFiles.push(f);
+      }
+      renderFileList();
+      syncUploadBtn();
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      selectedFiles.forEach(function(f, i) {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML =
+          '<span class="file-item-icon">🖼</span>' +
+          '<span class="file-item-name" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</span>' +
+          '<button class="file-item-remove" type="button" aria-label="Quitar ' + escHtml(f.name) + '">×</button>';
+        item.querySelector('.file-item-remove').addEventListener('click', function() {
+          selectedFiles.splice(i, 1);
+          renderFileList();
+          syncUploadBtn();
+        });
+        fileList.appendChild(item);
+      });
+    }
+
+    function syncUploadBtn() {
+      btnUpload.disabled = selectedFiles.length === 0;
+    }
+
+    // ── Upload ────────────────────────────────────────────────────────────────
+    btnUpload.addEventListener('click', function() { startUpload(); });
+
+    async function startUpload() {
+      // Closed-over auth flag — cannot be set from DevTools console
+      if (!_authed) return;
+
+      // In Worker mode: password must be in memory (not just session flag)
+      if (WORKER_URL && !_password) {
+        _authed = false;
+        sessionStorage.removeItem(SESSION_KEY);
+        pwError.textContent = 'Sesión expirada. Ingresa la contraseña de nuevo.';
+        pwOverlay.classList.remove('hidden');
+        pwInput.focus();
+        return;
+      }
+
+      if (!selectedFiles.length) return;
+
+      const artista     = inputArtista.value.trim();
+      const descripcion = inputDesc.value.trim();
+      const fecha       = inputFecha.value.trim();
+
+      btnUpload.disabled = true;
+      btnCancel.disabled = true;
+      progressWrap.classList.add('visible');
+
+      // ── Phase 2: get signed params from Worker ──────────────────────────────
+      let signedParams = null;
+      if (WORKER_URL) {
+        showStatus('Autenticando...', '');
+        try {
+          var signRes = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: _password, artista: artista, descripcion: descripcion, fecha: fecha }),
+          });
+          if (!signRes.ok) {
+            showStatus('Error de autenticación (' + signRes.status + '). Contacta al admin.', 'error');
+            btnUpload.disabled = false;
+            btnCancel.disabled = false;
+            syncUploadBtn();
+            return;
+          }
+          signedParams = await signRes.json();
+        } catch (err) {
+          showStatus('Error de red al contactar el servidor.', 'error');
+          btnUpload.disabled = false;
+          btnCancel.disabled = false;
+          syncUploadBtn();
+          return;
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────────
+
+      showStatus('Subiendo...', '');
+
+      let uploaded = 0;
+      let failed   = 0;
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setProgress(Math.round((i / selectedFiles.length) * 100));
+
+        try {
+          await uploadFile(file, artista, descripcion, fecha, signedParams);
+          uploaded++;
+        } catch (err) {
+          failed++;
+          console.error('Upload failed:', file.name, err);
+        }
+      }
+
+      setProgress(100);
+
+      if (failed === 0) {
+        selectedFiles = [];
+        renderFileList();
+        showStatus(
+          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
+          ' correctamente.\nLa galería se actualizará en unos minutos.',
+          'success'
+        );
+      } else {
+        showStatus(
+          uploaded + ' subida(s) correctamente, ' + failed + ' fallida(s).\n' +
+          'Intenta de nuevo con los archivos que fallaron.',
+          'error'
+        );
+      }
+
+      btnCancel.disabled = false;
+      syncUploadBtn();
+    }
+
+    function uploadFile(file, artista, descripcion, fecha, signedParams) {
+      return new Promise(function(resolve, reject) {
+        var cloudName = signedParams ? signedParams.cloud_name : CLOUD_NAME;
+        const url = 'https://api.cloudinary.com/v1_1/' + cloudName + '/image/upload';
+        const fd  = new FormData();
+        fd.append('file', file);
+
+        if (signedParams) {
+          // Signed upload via Worker (Phase 2)
+          fd.append('upload_preset', signedParams.upload_preset);
+          fd.append('folder',        signedParams.folder);
+          fd.append('timestamp',     signedParams.timestamp);
+          fd.append('api_key',       signedParams.api_key);
+          fd.append('signature',     signedParams.signature);
+          if (signedParams.context) fd.append('context', signedParams.context);
+        } else {
+          // Unsigned direct upload (Phase 1)
+          fd.append('upload_preset', UPLOAD_PRESET);
+          fd.append('folder', FOLDER);
+          const contextParts = [];
+          if (artista)     contextParts.push('artista=' + artista.replace(/[|=]/g, ' '));
+          if (descripcion) contextParts.push('descripcion=' + descripcion.replace(/[|=]/g, ' '));
+          if (fecha)       contextParts.push('fecha=' + fecha.replace(/[|=]/g, '-'));
+          if (contextParts.length) fd.append('context', contextParts.join('|'));
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error('HTTP ' + xhr.status));
+          }
+        };
+        xhr.onerror = function() { reject(new Error('Network error')); };
+        xhr.send(fd);
+      });
+    }
+
+    // ── Cancel ────────────────────────────────────────────────────────────────
+    btnCancel.addEventListener('click', function() {
+      if (parent !== window) {
+        try { parent.postMessage({ type: 'close-upload-window' }, location.origin); return; } catch(e) {}
+      }
+      window.history.length > 1 ? window.history.back() : window.close();
+    });
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function showStatus(msg, type) {
+      statusBox.textContent = msg;
+      statusBox.className = 'visible' + (type ? ' ' + type : '');
+    }
+
+    function setProgress(pct) {
+      progressFill.style.width = pct + '%';
+    }
+
+    function escHtml(str) {
+      return str.replace(/[&<>"']/g, function(c) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

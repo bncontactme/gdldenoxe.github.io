@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Archivo virtual - memoria colectiva">
+  <title>Archivo</title>
+  <link rel="preload" href="images.json" as="fetch" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Windows XP Disclaimer Popup -->
+  <div id="xp-popup-overlay">
+    <div id="xp-popup-window">
+      <div id="xp-popup-titlebar">
+        <span id="xp-popup-title">Mensaje</span>
+        <button id="xp-popup-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="xp-popup-content">
+        <div id="xp-popup-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="#316AC5" stroke="#000" stroke-width="1"/>
+            <text x="16" y="22" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+          </svg>
+        </div>
+        <div id="xp-popup-body">
+          <p id="xp-popup-message">
+            Este es nuestro archivo virtual: imágenes compartidas de trayectos, encuentros y fragmentos nocturnos, como memoria colectiva.<br><br>
+            Gracias por compartir este momento con nosotros.
+          </p>
+          <div id="xp-popup-buttons">
+            <button id="xp-popup-ok" type="button">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Collage Gallery -->
+  <div id="live-collage-container" aria-label="Galería de imágenes"></div>
+
+  <!-- Image Details Popup (mobile / standalone) -->
+  <div id="img-details-overlay">
+    <div id="img-details-window">
+      <div id="img-details-titlebar">
+        <span>Detalles</span>
+        <button id="img-details-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="img-details-body">
+        <img id="img-details-preview" src="" alt="Vista previa">
+        <dl id="img-details-info">
+          <dt>Galería</dt>
+          <dd id="detail-filename">—</dd>
+          <dt>Tipo</dt>
+          <dd id="detail-type">—</dd>
+          <dt>Dimensiones</dt>
+          <dd id="detail-dimensions">—</dd>
+          <div id="detail-artista-row">
+            <dt>Artista</dt>
+            <dd id="detail-artista"></dd>
+          </div>
+          <div id="detail-descripcion-row">
+            <dt>Descripción</dt>
+            <dd id="detail-descripcion"></dd>
+          </div>
+          <div id="detail-fecha-row">
+            <dt>Fecha</dt>
+            <dd id="detail-fecha"></dd>
+          </div>
+        </dl>
+        <div id="img-details-buttons">
+          <button id="img-details-explore" type="button"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:2px"><path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/><path d="M1 5h14v8H1z" fill="#FEE88A" stroke="#808080" stroke-width=".3"/></svg> Explorar</button>
+          <button id="img-details-ok" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Explorer Overlay -->
+  <div id="file-explorer-overlay">
+    <div id="file-explorer-window">
+      <div id="file-explorer-titlebar">
+        <span id="file-explorer-title">Archivo GDN</span>
+        <button id="file-explorer-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="file-explorer-toolbar">
+        <button id="file-explorer-back" type="button" disabled>← Atrás</button>
+        <span id="file-explorer-path">Archivo GDN</span>
+      </div>
+      <div id="file-explorer-body">
+        <!-- Folders and images rendered by JS -->
+      </div>
+      <div id="file-explorer-statusbar">
+        <span id="file-explorer-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Popup (iframed upload.html) -->
+  <div id="upload-popup-overlay">
+    <div id="upload-popup-window">
+      <div id="upload-popup-titlebar">
+        <span>Subir fotos al archivo</span>
+        <button id="upload-popup-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <iframe id="upload-popup-frame" src="" title="Subir fotos" frameborder="0"></iframe>
+    </div>
+  </div>
+
+  <!-- Upload button (fixed, bottom-right) -->
+  <a href="upload.html" id="upload-btn" title="Subir fotos al archivo"
+     style="display:none; position:fixed; bottom:18px; right:18px; z-index:9000;
+       background:linear-gradient(#F2F0E8,#DAD7C9);
+       border:2px outset #F2F0E8;
+       font-family:Tahoma,'MS Sans Serif',sans-serif; font-size:11px;
+       padding:4px 14px; text-decoration:none; color:#000;
+       box-shadow:2px 2px 4px rgba(0,0,0,.3);
+       align-items:center; gap:5px;"
+     onmouseover="this.style.background='linear-gradient(#ECF1FB,#C5CBDC)'"
+     onmouseout="this.style.background='linear-gradient(#F2F0E8,#DAD7C9)'">  
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/>
+      <path d="M8 12V7M5.5 9.5 8 7l2.5 2.5" stroke="#316AC5" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Subir fotos
+  </a>
+
+  <script src="liveCollage.js" defer></script>
+</body>
+</html>

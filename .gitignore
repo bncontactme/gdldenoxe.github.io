@@ -1,0 +1,10 @@
+# Wrangler / Cloudflare Workers
+workers/**/.wrangler/
+workers/**/node_modules/
+workers/**/.dev.vars
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/

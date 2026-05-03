@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#008080">
+    <meta name="description" content="Tienda GDLDENOXE - Guadalajara de Noche">
+    <title>GDLDENOXE - Tienda</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="assets/webAssets/pages/page1.webp" fetchpriority="high">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style id="dynamic-flipbook-css">/* Generated dynamically by catalog engine */</style>
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div id="marquee-bar">
+        <div class="marquee-content">
+            <span class="marquee-text">*** BIENVENIDO A LA TIENDA GDLDENOXE ***</span>
+        </div>
+    </div>
+
+    <main>
+        <!-- Checkboxes + #flip_book are generated dynamically from catalog.json -->
+        <div id="catalog-root" role="region" aria-label="Catálogo de productos"></div>
+
+        <noscript>
+            <p style="color:#fff;background:#990000;padding:2rem;text-align:center;font-size:1rem;margin:2rem;">
+                Este catálogo requiere JavaScript para funcionar. Por favor, actívalo en tu navegador.
+            </p>
+        </noscript>
+
+        <!-- Windows 95 Flipbook Navigation — sits below flipbook, right-aligned -->
+        <div id="flipbook-nav" role="navigation" aria-label="Navegación del catálogo">
+            <div class="fnav-titlebar">
+                <span class="fnav-titlebar-icon">&#128196;</span>
+                <span class="fnav-titlebar-text">navegar.exe</span>
+            </div>
+            <div class="fnav-body">
+                <button id="fnav-back" class="fnav-btn" aria-label="Página anterior" disabled>&#9668; Atrás</button>
+                <span id="fnav-counter" class="fnav-counter">1 / 1</span>
+                <button id="fnav-next" class="fnav-btn" aria-label="Página siguiente">Siguiente &#9658;</button>
+            </div>
+        </div>
+
+        <!-- Screen reader announcements -->
+        <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+        <audio id="background-music" loop preload="none">
+            <source src="assets/BACKGROUND WEB TIENDA MUSIC.mp3" type="audio/mpeg">
+        </audio>
+
+        <audio id="ad-audio" preload="none">
+            <source src="assets/Anuncio1.mp3" type="audio/mpeg">
+        </audio>
+    </main>
+
+    <!-- Product Detail Modal — Windows 95 Style -->
+    <div id="product-modal" class="modal-hidden" role="dialog" aria-modal="true" aria-label="Detalle de producto">
+        <div class="modal-overlay"></div>
+        <div class="modal-card win95-window">
+            <!-- Title bar -->
+            <div class="win95-titlebar">
+                <span class="win95-titlebar-icon">&#128230;</span>
+                <span class="win95-titlebar-text">producto.exe</span>
+                <div class="win95-titlebar-buttons">
+                    <button class="win95-btn-minimize" aria-hidden="true" tabindex="-1" disabled>_</button>
+                    <button class="win95-btn-maximize" aria-hidden="true" tabindex="-1" disabled>&#9633;</button>
+                    <button class="modal-close win95-btn-close" aria-label="Cerrar">&times;</button>
+                </div>
+            </div>
+            <!-- Menu bar -->
+            <div class="win95-menubar" role="presentation" aria-hidden="true">
+                <span class="win95-menu-item"><u>A</u>rchivo</span>
+                <span class="win95-menu-item"><u>E</u>dición</span>
+                <span class="win95-menu-item"><u>V</u>er</span>
+                <span class="win95-menu-item">A<u>y</u>uda</span>
+            </div>
+            <!-- Body — sunken content area -->
+            <div class="modal-body win95-body">
+                <div class="modal-image-container win95-image-frame win95-sunken">
+                    <div class="modal-badge"></div>
+                    <img class="modal-product-image" src="" alt="">
+                </div>
+                <div class="modal-info win95-info win95-etched">
+                    <h2 class="modal-product-name"></h2>
+                    <div class="win95-price-box win95-sunken">
+                        <span class="modal-price-text"></span>
+                    </div>
+                    <p class="modal-product-description"></p>
+                    <a class="modal-buy-btn win95-buy-btn" href="#" target="_blank" rel="noopener noreferrer">
+                        &#161;COMPRAR AHORA!
+                    </a>
+                </div>
+            </div>
+            <!-- Status bar -->
+            <div class="win95-statusbar">
+                <span class="win95-status-section win95-etched">Listo</span>
+                <span class="win95-status-section win95-etched">GDLDENOXE.COM</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

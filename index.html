@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDLDENOXE</title>
+    <meta name="description" content="La verdadera movida tapatia, Top restaurantes Guadalajara, Top 10 movidas tapatias, Mejores antros de Guadalajara, Junior H, TE QUIERO MUCHO, Top mejores momentos Guadalajara, Duende caminando en San Juan De Dios (Real)">
+    <meta name="theme-color" content="#008080">
+    <link rel="icon" href="indexPage/indexImages/cursorgdnv2.png" type="image/x-icon">
+    <link rel="stylesheet" href="indexPage/styles.css">
+</head>
+<body>
+    <div class="desktop">
+        
+        <!-- Iconos del escritorio -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" data-folder="galeria">
+                <div class="icon-image"><img src="indexPage/indexImages/icons/kodak_imaging-0.png" alt="Galería"></div>
+                <div class="icon-label">Galería</div>
+            </div>
+            
+            <div class="desktop-icon" data-folder="tienda">
+                <div class="icon-image"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="Tienda"></div>
+                <div class="icon-label">Tienda</div>
+            </div>
+            
+            <div class="desktop-icon" data-folder="articulos">
+                <div class="icon-image"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="Artículos"></div>
+                <div class="icon-label">Artículos</div>
+            </div>
+            
+            <div class="desktop-icon" data-link="https://linktr.ee/guadalajaradenoche">
+                <div class="icon-image"><img src="indexPage/indexImages/icons/msie1-0.png" alt="Links"></div>
+                <div class="icon-label">Links</div>
+            </div>
+        </div>
+        
+        <!-- Artículos (generados dinámicamente desde articulos.json) -->
+        <div id="articles-container"></div>
+
+        <!-- Ventana de imagen random -->
+        <div class="win95-window" data-window-id="random" style="left: 200px; top: 150px;">
+            <div class="title-bar">
+                <div class="title-bar-text">GDL DE NOCHE</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="random-image-container">
+                    <img id="randomWindowImage" src="indexPage/indexImages/2 Intro.jpeg" alt="Imagen aleatoria" loading="lazy">
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget de artículo random (mobile) -->
+        <div class="win95-window hidden" data-window-id="articulo-widget" style="left: 200px; top: 350px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Artículo</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="articulo-widget-content">
+                    <img id="articuloWidgetImg" src="" alt="">
+                    <div class="articulo-widget-text">
+                        <div class="articulo-widget-title" id="articuloWidgetTitle"></div>
+                        <div class="articulo-widget-desc" id="articuloWidgetDesc"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Poemas -->
+        <div class="win95-window" data-window-id="poema1" style="left: 250px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Poema.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window hidden" data-window-id="poema2" style="left: 400px; top: 200px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Versos.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="win95-window hidden" data-window-id="poema3" style="left: 300px; top: 300px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Rimas.txt</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="poem-content">
+                    <p class="poem-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de carpeta Artículos -->
+        <div class="win95-window hidden" data-window-id="folder-articulos" style="left: 150px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="" class="titlebar-icon"> Artículos</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="folder-content" id="folder-articulos-content">
+                    <!-- Populated dynamically from articulos.json -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de Galería -->
+        <div class="win95-window hidden" data-window-id="galeria" style="left: 200px; top: 100px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/kodak_imaging-0.png" alt="" class="titlebar-icon"> Galería</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe data-src="archivoPage/archivoPage.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana independiente: Propiedades de imagen -->
+        <div id="win95-details-panel" aria-hidden="true" style="display:none">
+            <div id="win95-details-titlebar">
+                <span id="win95-details-title">Propiedades de imagen</span>
+                <button id="win95-details-close" aria-label="Cerrar">×</button>
+            </div>
+            <div id="win95-details-body">
+                <div id="win95-details-preview">
+                    <img id="win95-details-image" alt="Vista previa" />
+                </div>
+                <div id="win95-details-info">
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Archivo:</span>
+                        <span id="win95-details-filename"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Tipo:</span>
+                        <span id="win95-details-type"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Dimensiones:</span>
+                        <span id="win95-details-dimensions"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-details-artista-row">
+                        <span class="win95-detail-label">Artista:</span>
+                        <span id="win95-details-artista"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-details-descripcion-row">
+                        <span class="win95-detail-label">Descripción:</span>
+                        <span id="win95-details-descripcion"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="win95-details-actions">
+                <button id="win95-details-explore"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:2px"><path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/><path d="M1 5h14v8H1z" fill="#FEE88A" stroke="#808080" stroke-width=".3"/></svg> Explorar</button>
+                <button id="win95-details-ok">Aceptar</button>
+            </div>
+        </div>
+
+        <!-- Ventana: Subir fotos al archivo -->
+        <div class="win95-window hidden" data-window-id="upload" style="left:300px;top:80px;width:520px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/camera3_plus-0.png" alt="" class="titlebar-icon"> Subir fotos al archivo</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body" style="height:520px;padding:0;">
+                <div class="iframe-container">
+                    <iframe id="upload-overlay-iframe" src="" frameborder="0" title="Subir fotos"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana independiente: Visor de imágenes -->
+        <div id="win95-player-panel" aria-hidden="true" style="display:none">
+            <div id="win95-player-titlebar">
+                <span id="win95-player-title">Visor de imágenes</span>
+                <button id="win95-player-close" aria-label="Cerrar">×</button>
+            </div>
+            <div id="win95-player-body">
+                <div id="win95-player-canvas">
+                    <img id="win95-player-image" alt="Imagen" />
+                </div>
+                <div id="win95-player-info">
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Archivo:</span>
+                        <span id="win95-player-filename"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Tipo:</span>
+                        <span id="win95-player-type"></span>
+                    </div>
+                    <div class="win95-detail-row">
+                        <span class="win95-detail-label">Dimensiones:</span>
+                        <span id="win95-player-dimensions"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-player-artista-row">
+                        <span class="win95-detail-label">Artista:</span>
+                        <span id="win95-player-artista"></span>
+                    </div>
+                    <div class="win95-detail-row" id="win95-player-descripcion-row">
+                        <span class="win95-detail-label">Descripción:</span>
+                        <span id="win95-player-descripcion"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="win95-player-controls">
+                <button id="win95-player-prev">◀ Anterior</button>
+                <button id="win95-player-next">Siguiente ▶</button>
+            </div>
+        </div>
+
+        <!-- Ventana de Tienda -->
+        <div class="win95-window hidden" data-window-id="tienda" style="left: 250px; top: 120px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="" class="titlebar-icon"> Tienda</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div id="tienda-placeholder">
+                    <img src="tiendaPage/assets/webAssets/logo/path206.png" alt="GDN">
+                </div>
+                <div class="iframe-container" id="tienda-iframe-container" style="display:none;">
+                    <iframe id="tienda-iframe" data-src="tiendaPage/index.html" frameborder="0" allow="autoplay"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana de Buscaminas -->
+        <div class="win95-window hidden" data-window-id="minesweeper" style="left: 280px; top: 140px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/minesweeper-0.png" alt="" class="titlebar-icon"> Buscaminas</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body ms-body">
+                <div class="ms-status">
+                    <div class="ms-counter" id="msMineCount">010</div>
+                    <button class="ms-face" id="msResetBtn"></button>
+                    <div class="ms-counter" id="msTimer">000</div>
+                </div>
+                <div class="ms-board" id="msBoard"></div>
+                <div class="ms-footer">
+                    <select id="msLevel" class="ms-select">
+                        <option value="beginner" selected>Principiante</option>
+                        <option value="intermediate">Intermedio</option>
+                        <option value="expert">Experto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reproductor de música estilo Windows 95 -->
+        <div class="music-player hidden" id="musicPlayer">
+            <div class="player-title-bar title-bar">
+                <div class="player-title-text"><img src="indexPage/indexImages/icons/media_player-0.png" alt="" class="titlebar-icon"> Media Player</div>
+                <div class="player-controls-top title-bar-controls">
+                    <button class="player-minimize-btn" id="playerMinimizeBtn">_</button>
+                    <button class="player-close-btn" id="playerCloseBtn">✕</button>
+                </div>
+            </div>
+            <div class="player-body">
+                <div class="player-display">
+                    <div class="track-info" id="trackInfo"><span class="live-dot hidden" id="liveDot"></span> No Track Loaded</div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                </div>
+                <div class="player-controls">
+                    <button class="control-btn" id="prevBtn" title="Anterior"><svg viewBox="0 0 24 24" width="14" height="14" fill="#000"><rect x="2" y="4" width="3" height="16"/><polygon points="7,12 22,4 22,20"/></svg></button>
+                    <button class="control-btn play-btn" id="playBtn" title="Play/Pause"><svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg></button>
+                    <button class="control-btn" id="nextBtn" title="Siguiente"><svg viewBox="0 0 24 24" width="14" height="14" fill="#000"><polygon points="2,4 17,12 2,20"/><rect x="19" y="4" width="3" height="16"/></svg></button>
+                    <button class="control-btn" id="stopBtn" title="Detener"><svg viewBox="0 0 24 24" width="14" height="14" fill="#000"><rect x="3" y="3" width="18" height="18"/></svg></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana hyperlink Roblox -->
+        <div class="win95-window hidden" data-window-id="roblox-popup" style="left: 0; top: 0; width: 320px; z-index: 10;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/msie1-0.png" alt="" class="titlebar-icon"> ¡Visita nuestro servidor!</div>
+                <div class="title-bar-controls">
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body" style="padding: 7px 10px 9px;">
+                <p style="margin: 0 0 6px; font-size: 11px; font-family: 'MS Sans Serif', sans-serif; line-height: 1.4;">
+                    🚨 <strong>ROBLOX BIPBIP RADIO X GDN</strong> — Un tapatío con un secreto.<br>
+                    <span style="color: red; font-weight: bold; font-size: 10px;">¡HAGA CLIC ANTES DE QUE LO BORREN!</span>
+                </p>
+                <a href="https://www.roblox.com/games/72650187585773/gdldnoxxe-x-bipbipradio"
+                   target="_blank"
+                   style="color: #0000EE; font-size: 11px; font-family: 'MS Sans Serif', sans-serif; text-decoration: underline; font-weight: bold;">
+                    &gt;&gt; ENTRAR AL SERVIDOR AHORA &lt;&lt;
+                </a>
+                <div style="margin-top: 8px; text-align: right;">
+                    <a href="https://www.roblox.com/games/72650187585773/gdldnoxxe-x-bipbipradio"
+                       target="_blank"
+                       style="display:inline-block; background:#c0c0c0; border-top:2px solid #fff; border-left:2px solid #fff; border-right:2px solid #000; border-bottom:2px solid #000; padding:2px 10px; font-size:11px; font-family:'MS Sans Serif',sans-serif; color:#000; text-decoration:none;">
+                        Ir al juego
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana YouTube popup -->
+        <div class="win95-window hidden" data-window-id="yt-popup" style="left: 0; top: 0; width: 492px; z-index: 10;">
+            <div class="title-bar">
+                <div class="title-bar-text">📻 BIP BIP RADIO X GDN</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="maximize-btn">□</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <iframe
+                    id="yt-popup-iframe"
+                    data-src="https://player.twitch.tv/?channel=bipbipradio&parent=guadalajaradenoxe.com&parent=www.guadalajaradenoxe.com&parent=127.0.0.1&parent=localhost"
+                    frameborder="0"
+                    allowfullscreen="true"
+                    scrolling="no"
+                    width="480"
+                    height="270"
+                    style="display:block;"
+                ></iframe>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Barra de tareas estilo Windows 95 -->
+    <div class="taskbar">
+        <button class="start-button"><img src="indexPage/indexImages/icons/computer_explorer-0.png" alt="" style="width: 16px; height: 16px;">Inicio</button>
+        <div class="taskbar-items" id="taskbar-items"></div>
+        <div class="system-tray">
+            <span class="clock" id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- Menú de inicio -->
+    <div class="start-menu" id="start-menu">
+        <div class="start-menu-header">LaMovida95</div>
+        <div class="start-menu-items">
+            <div class="menu-item" data-shortcut="galeria"><img src="indexPage/indexImages/icons/kodak_imaging-0.png" alt="" class="menu-icon"> Galería</div>
+            <div class="menu-item" data-shortcut="tienda"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="" class="menu-icon"> Tienda</div>
+            <div class="menu-item" data-shortcut="articulos"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="" class="menu-icon"> Artículos</div>
+            <div class="menu-item" data-shortcut="minesweeper"><img src="indexPage/indexImages/icons/minesweeper-0.png" alt="" class="menu-icon"> Buscaminas</div>
+            <div class="menu-item" data-shortcut="links"><img src="indexPage/indexImages/icons/msie1-0.png" alt="" class="menu-icon"> Links</div>
+            <div class="menu-item" data-shortcut="palestina"><img src="indexPage/indexImages/icons/world-0.png" alt="" class="menu-icon"> Palestina Libre</div>
+            <div class="menu-item" data-shortcut="email"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="menu-icon"> Email</div>
+            <div class="menu-separator"></div>
+            <div class="menu-item" data-shortcut="radio"><img src="indexPage/indexImages/icons/media_player-0.png" alt="" class="menu-icon"> LaMovida95 Radio</div>
+        </div>
+    </div>
+
+    <!-- Matar paneles en móvil antes de que cualquier CSS/JS los toque -->
+    <script>
+    if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
+    </script>
+    <script src="indexPage/script.js" defer></script>
+</body>
+</html>
