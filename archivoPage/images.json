@@ -1,16 +1,1 @@
-[
-  {
-    "url": "https://res.cloudinary.com/duog120j4/image/upload/v1777798130/archivo/test/bwudylo3tnitx3sefksh.jpg",
-    "thumbUrl": "https://res.cloudinary.com/duog120j4/image/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/v1777798130/archivo/test/bwudylo3tnitx3sefksh.jpg",
-    "artista": "TEST",
-    "descripcion": "TEST",
-    "fecha": ""
-  },
-  {
-    "url": "https://res.cloudinary.com/duog120j4/image/upload/v1777798131/archivo/test/fl44stdsjemnzcp1fuvx.jpg",
-    "thumbUrl": "https://res.cloudinary.com/duog120j4/image/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/v1777798131/archivo/test/fl44stdsjemnzcp1fuvx.jpg",
-    "artista": "TEST",
-    "descripcion": "TEST",
-    "fecha": ""
-  }
-]
+[]
