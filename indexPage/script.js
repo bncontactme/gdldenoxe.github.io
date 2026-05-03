@@ -1377,7 +1377,8 @@ juntxs y brillando.`
 
       function renderBoard() {
         msBoard.innerHTML = '';
-        msBoard.style.gridTemplateColumns = `repeat(${st.cols}, 20px)`;
+                const cellSize = getComputedStyle(msBoard).getPropertyValue('--ms-cell-size').trim() || '20px';
+                msBoard.style.gridTemplateColumns = `repeat(${st.cols}, ${cellSize})`;
         cellGrid = Array.from({ length: st.rows }, () => new Array(st.cols));
         const frag = document.createDocumentFragment();
         for (let r = 0; r < st.rows; r++) {

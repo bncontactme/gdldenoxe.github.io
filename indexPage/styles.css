@@ -1014,6 +1014,7 @@ body {
 }
 
 .ms-board {
+    --ms-cell-size: 20px;
     display: grid;
     gap: 0;
     border-top: 3px solid var(--win95-dark-gray);
@@ -1023,8 +1024,8 @@ body {
 }
 
 .ms-cell {
-    width: 20px;
-    height: 20px;
+    width: var(--ms-cell-size);
+    height: var(--ms-cell-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1429,6 +1430,11 @@ body {
         width: 380px;
     }
 
+    .win95-window[data-window-id="minesweeper"] {
+        width: auto;
+        max-width: calc(100vw - 24px);
+    }
+
     [data-window-id="galeria"] {
         width: 480px;
     }
@@ -1447,6 +1453,12 @@ body {
 
     .music-player {
         width: 260px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .win95-window[data-window-id="minesweeper"] .ms-board {
+        --ms-cell-size: 22px;
     }
 }
 
