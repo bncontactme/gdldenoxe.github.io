@@ -1181,13 +1181,18 @@ juntxs y brillando.`
         if (e.data?.type === 'galeria-open-details') openDetailsPanel(e.data.data);
         if (e.data?.type === 'galeria-open-player') openPlayerPanel(e.data.list, e.data.index);
         if (e.data?.type === 'open-upload-popup') openUploadOverlay();
+        if (e.data?.type === 'upload-resize') {
+            const uploadWin = $('[data-window-id="upload"]');
+            const body = uploadWin?.querySelector('.window-body');
+            if (body) body.style.height = e.data.height + 'px';
+        }
     });
 
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {
         const uploadIframe = $('#upload-overlay-iframe');
-        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html') {
-            uploadIframe.src = 'archivoPage/upload.html';
+        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html?embed=1') {
+            uploadIframe.src = 'archivoPage/upload.html?embed=1';
         }
         const uploadWin = $('[data-window-id="upload"]');
         if (!uploadWin) return;

@@ -83,6 +83,26 @@
         <span id="file-explorer-title">Archivo GDN</span>
         <button id="file-explorer-close" type="button" aria-label="Cerrar">×</button>
       </div>
+      <!-- Win95 menu bar -->
+      <div id="fe-menubar">
+        <div class="fe-menu-item" id="fe-menu-archivo" tabindex="0">Archivo</div>
+        <div class="fe-menu-item" id="fe-menu-editar" tabindex="0">Editar</div>
+        <div class="fe-menu-item" id="fe-menu-ver" tabindex="0">Ver</div>
+        <!-- Dropdowns -->
+        <ul class="fe-dropdown" id="fe-dropdown-archivo">
+          <li class="fe-dd-item" data-action="upload"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/><path d="M8 12V7M5.5 9.5 8 7l2.5 2.5" stroke="#316AC5" stroke-width="1.2" stroke-linecap="round"/></svg> Subir fotos...</li>
+          <li class="fe-dd-sep"></li>
+          <li class="fe-dd-item" data-action="close">Cerrar</li>
+        </ul>
+        <ul class="fe-dropdown" id="fe-dropdown-editar">
+          <li class="fe-dd-item" data-action="select-all">Seleccionar todo</li>
+          <li class="fe-dd-item" data-action="delete-mode"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="5" width="12" height="9" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/><path d="M1 5h14M6 2h4" stroke="#808080" stroke-width="1" stroke-linecap="round"/><path d="M6 8v4M10 8v4" stroke="#900" stroke-width="1" stroke-linecap="round"/></svg> Eliminar fotos...</li>
+        </ul>
+        <ul class="fe-dropdown" id="fe-dropdown-ver">
+          <li class="fe-dd-item" data-action="view-icons">Íconos</li>
+          <li class="fe-dd-item" data-action="view-list">Lista</li>
+        </ul>
+      </div>
       <div id="file-explorer-toolbar">
         <button id="file-explorer-back" type="button" disabled>← Atrás</button>
         <span id="file-explorer-path">Archivo GDN</span>
@@ -90,8 +110,48 @@
       <div id="file-explorer-body">
         <!-- Folders and images rendered by JS -->
       </div>
+      <!-- Delete action bar (inside window, visible only in delete mode) -->
+      <div id="delete-actionbar" class="hidden">
+        <span class="delete-actionbar-warn">&#9888;</span>
+        <span id="delete-selected-count">0 seleccionadas</span>
+        <button type="button" class="fe-btn" id="delete-cancel-mode">Cancelar</button>
+        <button type="button" class="fe-btn fe-btn-danger" id="delete-confirm-btn" disabled>Eliminar</button>
+      </div>
       <div id="file-explorer-statusbar">
         <span id="file-explorer-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete password dialog (Win95 style) -->
+  <div id="delete-pw-overlay" class="hidden">
+    <div id="delete-pw-window">
+      <div id="delete-pw-titlebar">
+        <span class="delete-pw-title-text">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#fff" stroke-width=".5"/><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#fff" stroke-width="1.2" fill="none"/><circle cx="8" cy="11" r="1.2" fill="#FFD700"/></svg>
+          Confirmar acceso
+        </span>
+        <button class="win95-titlebar-close" id="delete-pw-close" type="button" aria-label="Cerrar">&#x2715;</button>
+      </div>
+      <div id="delete-pw-body">
+        <div class="delete-pw-icon-row">
+          <svg class="delete-pw-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect x="6" y="14" width="20" height="14" rx="2" fill="#ECE9D8" stroke="#808080" stroke-width="1.5"/>
+            <path d="M10 14V10a6 6 0 0 1 12 0v4" stroke="#808080" stroke-width="1.5" fill="none"/>
+            <circle cx="16" cy="21" r="2.5" fill="#316AC5"/>
+            <rect x="15" y="23" width="2" height="3" rx="1" fill="#316AC5"/>
+          </svg>
+          <p class="delete-pw-msg">Ingresa la contraseña de administrador para habilitar el modo de eliminación de fotos.</p>
+        </div>
+        <div class="delete-pw-field-row">
+          <label for="delete-pw-input" class="delete-pw-label">Contraseña:</label>
+          <input type="password" id="delete-pw-input" class="fe-input delete-pw-field" maxlength="80" autocomplete="current-password">
+        </div>
+        <div id="delete-pw-error"></div>
+        <div class="delete-pw-btns">
+          <button type="button" class="fe-btn fe-btn-primary" id="delete-pw-submit">Aceptar</button>
+          <button type="button" class="fe-btn" id="delete-pw-cancel">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
