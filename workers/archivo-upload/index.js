@@ -58,6 +58,11 @@ export default {
       return jsonResponse({ error: 'Invalid JSON' }, 400, allowedOrigin);
     }
 
+    // ── Public actions (no password needed) ───────────────────────────────────
+    if (body.action === 'list') {
+      return handleList(env, allowedOrigin);
+    }
+
     // ── Verify password ───────────────────────────────────────────────────────
     const submittedHash = await sha256hex(String(body.password || ''));
     if (submittedHash !== env.PW_HASH) {
@@ -142,6 +147,49 @@ async function handleDelete(body, env, origin) {
   }
 
   return jsonResponse(data, res.ok ? res.status : 502, origin);
+}
+
+// ── List handler (fetch live image list from Cloudinary) ────────────────────────
+async function handleList(env, origin) {
+  const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+  const resources = [];
+  let nextCursor = null;
+
+  do {
+    const params = new URLSearchParams({
+      type: 'upload',
+      prefix: FOLDER + '/',
+      context: 'true',
+      max_results: '500',
+    });
+    if (nextCursor) params.set('next_cursor', nextCursor);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image?${params}`,
+      { headers: { Authorization: `Basic ${basicAuth}` } }
+    );
+    if (!res.ok) {
+      return jsonResponse({ error: 'Cloudinary list failed: ' + res.status }, 502, origin);
+    }
+    const data = await res.json();
+    resources.push(...(data.resources || []));
+    nextCursor = data.next_cursor || null;
+  } while (nextCursor);
+
+  const entries = resources.map(function(r) {
+    const url = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/v${r.version}/${r.public_id}.${r.format}`;
+    const thumbUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/v${r.version}/${r.public_id}.${r.format}`;
+    const ctx = r.context && r.context.custom ? r.context.custom : {};
+    return {
+      url,
+      thumbUrl,
+      artista:     ctx.artista     || '',
+      descripcion: ctx.descripcion || '',
+      fecha:       ctx.fecha       || '',
+    };
+  });
+
+  return jsonResponse({ entries }, 200, origin);
 }
 
 // ── Register handler (append new entries to images.json) ──────────────────────

@@ -645,20 +645,22 @@
     }
   }
 
-  const MANIFEST_URL = 'images.json';
+  const WORKER_LIST_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
 
   async function discoverImages() {
     let files = null;
     try {
-      const res = await fetch(MANIFEST_URL);
+      const res = await fetch(WORKER_LIST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list' }),
+      });
       if (res.ok) {
-        const entries = await res.json();
+        const data = await res.json();
+        const entries = data.entries || [];
         files = [];
         for (const entry of entries) {
-          if (typeof entry === 'string') {
-            files.push('archiveImages/' + entry);
-          } else if (entry && entry.url) {
-            // Cloudinary entry: full delivery URL
+          if (entry && entry.url) {
             const path = entry.url;
             files.push(path);
             imageMetadata[path] = {
@@ -667,13 +669,6 @@
               fecha:       entry.fecha       || '',
               thumbUrl:    entry.thumbUrl    || ''
             };
-          } else if (entry && entry.filename) {
-            // Legacy local entry
-            const path = 'archiveImages/' + entry.filename;
-            files.push(path);
-            if (entry.artista || entry.descripcion) {
-              imageMetadata[path] = { artista: entry.artista || '', descripcion: entry.descripcion || '' };
-            }
           }
         }
       }
