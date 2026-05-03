@@ -31,6 +31,13 @@
     }
   }
 
+  // Returns a resized Cloudinary URL for collage display, or the original if not Cloudinary
+  function collageSrc(url) {
+    if (url.indexOf('res.cloudinary.com') === -1) return url;
+    // Serve max 600px wide, auto quality, auto format (webp where supported)
+    return url.replace('/upload/', '/upload/w_600,q_auto,f_auto/');
+  }
+
   function placeImage(src) {
     const cH = collageContainer.offsetHeight || window.innerHeight;
     const cW = collageContainer.offsetWidth || window.innerWidth;
@@ -64,7 +71,7 @@
 
     // Preload image off-DOM so it appears fully loaded (no progressive/choppy render)
     const preload = new Image();
-    preload.src = src;
+    preload.src = collageSrc(src);
     pendingPreloads.push(preload);
 
     function insert() {
@@ -90,8 +97,7 @@
       img.dataset.height = preload.naturalHeight;
       img.onclick = function(e) { e.stopPropagation(); openDetails(this); };
 
-      img.src = src;
-      collageContainer.appendChild(img);
+      img.src = collageSrc(src);
     }
 
     // Use decode() for jank-free insertion when available, fallback to onload
