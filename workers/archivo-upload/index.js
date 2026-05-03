@@ -64,7 +64,12 @@ export default {
     if (body.action === 'delete') {
       return handleDelete(body, env, allowedOrigin);
     }
-    return handleUpload(body, env, allowedOrigin);
+
+    // ── Route by action ───────────────────────────────────────────────────────
+    if (body.action === 'delete') {
+      return handleDelete(body, env, corsOK ? origin : ALLOWED_ORIGIN);
+    }
+    return handleUpload(body, env, corsOK ? origin : ALLOWED_ORIGIN);
   },
 };
 
