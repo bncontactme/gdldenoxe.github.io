@@ -14,22 +14,28 @@
 //   Dashboard > Settings > Upload > create a SIGNED preset named archivo_signed
 //     with folder = archivo, then DISABLE the old archivo_unsigned preset.
 
-const ALLOWED_ORIGIN = 'https://gdldenoxe.github.io';
+const ALLOWED_ORIGINS = new Set([
+  'https://gdldenoxe.github.io',
+  'https://www.guadalajaradenoxe.com',
+  'https://guadalajaradenoxe.com',
+]);
 const FOLDER = 'archivo';
 
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
     const corsOK =
-      origin === ALLOWED_ORIGIN ||
+      ALLOWED_ORIGINS.has(origin) ||
       origin.startsWith('http://localhost') ||
       origin.startsWith('http://127.0.0.1');
+
+    const allowedOrigin = corsOK ? origin : 'https://www.guadalajaradenoxe.com';
 
     // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
-        headers: corsHeaders(corsOK ? origin : ALLOWED_ORIGIN),
+        headers: corsHeaders(allowedOrigin),
       });
     }
 
@@ -45,20 +51,20 @@ export default {
     try {
       body = await request.json();
     } catch {
-      return jsonResponse({ error: 'Invalid JSON' }, 400, corsOK ? origin : ALLOWED_ORIGIN);
+      return jsonResponse({ error: 'Invalid JSON' }, 400, allowedOrigin);
     }
 
     // ── Verify password ───────────────────────────────────────────────────────
     const submittedHash = await sha256hex(String(body.password || ''));
     if (submittedHash !== env.PW_HASH) {
-      return jsonResponse({ error: 'Unauthorized' }, 401, corsOK ? origin : ALLOWED_ORIGIN);
+      return jsonResponse({ error: 'Unauthorized' }, 401, allowedOrigin);
     }
 
     // ── Route by action ───────────────────────────────────────────────────────
     if (body.action === 'delete') {
-      return handleDelete(body, env, corsOK ? origin : ALLOWED_ORIGIN);
+      return handleDelete(body, env, allowedOrigin);
     }
-    return handleUpload(body, env, corsOK ? origin : ALLOWED_ORIGIN);
+    return handleUpload(body, env, allowedOrigin);
   },
 };
 
