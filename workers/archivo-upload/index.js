@@ -80,13 +80,28 @@ export default {
   },
 };
 
+// ── Subfolder slug from artist name ──────────────────────────────────────────
+function artistSlug(artista) {
+  if (!artista) return 'general';
+  const handle = String(artista).match(/@(\w+)/);
+  if (handle) return handle[1].toLowerCase();
+  return String(artista).trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+    .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+    .slice(0, 40) || 'general';
+}
+
 // ── Upload handler ────────────────────────────────────────────────────────────
 async function handleUpload(body, env, origin) {
     const timestamp    = String(Math.floor(Date.now() / 1000));
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
+    // Place image in archivo/<artist-slug>/ subfolder
+    const slug   = artistSlug(body.artista);
+    const folder = FOLDER + '/' + slug;
+
     const signingParams = {
-      folder:        FOLDER,
+      folder,
       timestamp,
       upload_preset: uploadPreset,
     };
@@ -104,7 +119,7 @@ async function handleUpload(body, env, origin) {
     const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
 
     return jsonResponse(
-      { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder: FOLDER, context: signingParams.context || null },
+      { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, context: signingParams.context || null },
       200, origin,
     );
 }
