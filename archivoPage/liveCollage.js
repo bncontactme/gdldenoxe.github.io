@@ -550,10 +550,9 @@
 
   deleteCancelMode?.addEventListener('click', exitDeleteMode);
 
-  function setDeleteStatus(msg, isError) {
+  function setDeleteStatus(msg) {
     if (!deleteStatusMsg) return;
     deleteStatusMsg.textContent = msg;
-    deleteStatusMsg.style.color = isError ? '#c00' : '#006600';
   }
 
   deleteConfirmBtn?.addEventListener('click', async function() {
@@ -562,7 +561,7 @@
     deleteConfirmBtn.disabled = true;
     deleteCancelMode.disabled = true;
     deleteConfirmBtn.textContent = 'Eliminando...';
-    setDeleteStatus('', false);
+    setDeleteStatus('');
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -576,17 +575,17 @@
           document.querySelectorAll('[data-public-id="' + pid + '"]').forEach(function(el) { el.remove(); });
         });
         const n = ids.length;
-        setDeleteStatus(n + (n === 1 ? ' imagen eliminada' : ' imágenes eliminadas'), false);
+        setDeleteStatus(n + (n === 1 ? ' imagen eliminada.' : ' imágenes eliminadas.'));
         setTimeout(function() { exitDeleteMode(); }, 1500);
         deleteCancelMode.disabled = false;
         deleteConfirmBtn.disabled = false;
         deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
         return;
       } else {
-        setDeleteStatus('Error: ' + (data.error || res.status), true);
+        setDeleteStatus('Error: ' + (data.error || res.status));
       }
     } catch (err) {
-      setDeleteStatus('Error de red al contactar el servidor.', true);
+      setDeleteStatus('Error de red al contactar el servidor.');
     }
     deleteCancelMode.disabled = false;
     deleteConfirmBtn.disabled = false;
