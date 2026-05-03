@@ -475,11 +475,13 @@
 
   deletePwSubmit?.addEventListener('click', submitDeletePassword);
   deletePwInput?.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitDeletePassword(); });
-  deletePwCancel?.addEventListener('click', function() {
+  function closePwDialog() {
     if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
     if (deletePwInput) deletePwInput.value = '';
     if (deletePwError) deletePwError.textContent = '';
-  });
+  }
+  deletePwCancel?.addEventListener('click', closePwDialog);
+  document.getElementById('delete-pw-close')?.addEventListener('click', closePwDialog);
 
   function enterDeleteMode() {
     _deleteMode = true;

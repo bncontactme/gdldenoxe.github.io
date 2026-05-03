@@ -110,6 +110,13 @@
       <div id="file-explorer-body">
         <!-- Folders and images rendered by JS -->
       </div>
+      <!-- Delete action bar (inside window, visible only in delete mode) -->
+      <div id="delete-actionbar" class="hidden">
+        <span class="delete-actionbar-warn">&#9888;</span>
+        <span id="delete-selected-count">0 seleccionadas</span>
+        <button type="button" class="fe-btn" id="delete-cancel-mode">Cancelar</button>
+        <button type="button" class="fe-btn fe-btn-danger" id="delete-confirm-btn" disabled>Eliminar</button>
+      </div>
       <div id="file-explorer-statusbar">
         <span id="file-explorer-status"></span>
       </div>
@@ -120,26 +127,33 @@
   <div id="delete-pw-overlay" class="hidden">
     <div id="delete-pw-window">
       <div id="delete-pw-titlebar">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/><circle cx="8" cy="11" r="1.2" fill="#316AC5"/></svg>
-        Confirmar acceso
+        <span class="delete-pw-title-text">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#fff" stroke-width=".5"/><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#fff" stroke-width="1.2" fill="none"/><circle cx="8" cy="11" r="1.2" fill="#FFD700"/></svg>
+          Confirmar acceso
+        </span>
+        <button class="win95-titlebar-close" id="delete-pw-close" type="button" aria-label="Cerrar">&#x2715;</button>
       </div>
       <div id="delete-pw-body">
-        <p style="font-size:11px;margin-bottom:8px;">Ingresa la contraseña para activar el modo de eliminación.</p>
-        <input type="password" id="delete-pw-input" class="fe-input" maxlength="80" autocomplete="current-password" placeholder="Contraseña">
-        <div id="delete-pw-error" style="color:#900;font-size:10px;min-height:14px;margin-top:4px;"></div>
-        <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px;">
+        <div class="delete-pw-icon-row">
+          <svg class="delete-pw-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect x="6" y="14" width="20" height="14" rx="2" fill="#ECE9D8" stroke="#808080" stroke-width="1.5"/>
+            <path d="M10 14V10a6 6 0 0 1 12 0v4" stroke="#808080" stroke-width="1.5" fill="none"/>
+            <circle cx="16" cy="21" r="2.5" fill="#316AC5"/>
+            <rect x="15" y="23" width="2" height="3" rx="1" fill="#316AC5"/>
+          </svg>
+          <p class="delete-pw-msg">Ingresa la contraseña de administrador para habilitar el modo de eliminación de fotos.</p>
+        </div>
+        <div class="delete-pw-field-row">
+          <label for="delete-pw-input" class="delete-pw-label">Contraseña:</label>
+          <input type="password" id="delete-pw-input" class="fe-input delete-pw-field" maxlength="80" autocomplete="current-password">
+        </div>
+        <div id="delete-pw-error"></div>
+        <div class="delete-pw-btns">
+          <button type="button" class="fe-btn fe-btn-primary" id="delete-pw-submit">Aceptar</button>
           <button type="button" class="fe-btn" id="delete-pw-cancel">Cancelar</button>
-          <button type="button" class="fe-btn fe-btn-primary" id="delete-pw-submit">Entrar</button>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Delete action bar (shown when in delete mode) -->
-  <div id="delete-actionbar" class="hidden">
-    <span id="delete-selected-count">0 seleccionadas</span>
-    <button type="button" class="fe-btn" id="delete-cancel-mode">Cancelar</button>
-    <button type="button" class="fe-btn fe-btn-danger" id="delete-confirm-btn" disabled>Eliminar seleccionadas</button>
   </div>
 
   <!-- Upload Popup (iframed upload.html) -->
