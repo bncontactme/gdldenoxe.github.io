@@ -21,7 +21,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 const FOLDER = 'archivo';
 
-const GITHUB_OWNER      = 'gdldenoxe';
+const GITHUB_OWNER      = 'bncontactme';
 const GITHUB_REPO       = 'gdldenoxe.github.io';
 const IMAGES_JSON_PATH  = 'archivoPage/images.json';
 
