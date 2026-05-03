@@ -103,27 +103,21 @@ async function handleDelete(body, env, origin) {
   if (!publicIds.length) {
     return jsonResponse({ error: 'No public_ids provided' }, 400, origin);
   }
-  // Limit to 100 per request (Cloudinary API limit)
+  // Limit to 100 per request (Cloudinary Admin API limit)
   const ids = publicIds.slice(0, 100).map(id => String(id));
 
-  const timestamp = String(Math.floor(Date.now() / 1000));
-  // Sign: public_ids[]=...&timestamp=...  (sorted, joined)
-  const idsParam = ids.sort().join(',');
-  const paramString = 'public_ids[]=' + idsParam + '&timestamp=' + timestamp;
-  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+  // Cloudinary Admin API — DELETE /resources/image/upload with Basic auth
+  const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+  const qs = ids.map(id => 'public_ids[]=' + encodeURIComponent(id)).join('&');
+  const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/upload?${qs}`;
 
-  const form = new FormData();
-  ids.forEach(id => form.append('public_ids[]', id));
-  form.append('timestamp', timestamp);
-  form.append('api_key',   env.CLOUDINARY_API_KEY);
-  form.append('signature', signature);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/destroy`,
-    { method: 'POST', body: form },
-  );
-  const data = await res.json();
-  return jsonResponse(data, res.status, origin);
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: { Authorization: `Basic ${basicAuth}` },
+  });
+  let data;
+  try { data = await res.json(); } catch { data = { error: 'Cloudinary returned non-JSON (status ' + res.status + ')' }; }
+  return jsonResponse(data, res.ok ? res.status : 502, origin);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
