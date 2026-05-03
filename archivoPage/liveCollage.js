@@ -457,6 +457,7 @@
   const deletePwError    = document.getElementById('delete-pw-error');
   const deleteActionbar  = document.getElementById('delete-actionbar');
   const deleteCount      = document.getElementById('delete-selected-count');
+  const deleteStatusMsg  = document.getElementById('delete-status-msg');
   const deleteCancelMode = document.getElementById('delete-cancel-mode');
   const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
 
@@ -549,11 +550,19 @@
 
   deleteCancelMode?.addEventListener('click', exitDeleteMode);
 
+  function setDeleteStatus(msg, isError) {
+    if (!deleteStatusMsg) return;
+    deleteStatusMsg.textContent = msg;
+    deleteStatusMsg.style.color = isError ? '#c00' : '#006600';
+  }
+
   deleteConfirmBtn?.addEventListener('click', async function() {
     const ids = Array.from(_selectedPublicIds);
     if (!ids.length) return;
     deleteConfirmBtn.disabled = true;
+    deleteCancelMode.disabled = true;
     deleteConfirmBtn.textContent = 'Eliminando...';
+    setDeleteStatus('', false);
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -562,13 +571,24 @@
       });
       const data = await res.json();
       if (res.ok) {
-        exitDeleteMode();
+        // Remove deleted images from the DOM immediately
+        ids.forEach(function(pid) {
+          document.querySelectorAll('[data-public-id="' + pid + '"]').forEach(function(el) { el.remove(); });
+        });
+        const n = ids.length;
+        setDeleteStatus(n + (n === 1 ? ' imagen eliminada' : ' imágenes eliminadas'), false);
+        setTimeout(function() { exitDeleteMode(); }, 1500);
+        deleteCancelMode.disabled = false;
+        deleteConfirmBtn.disabled = false;
+        deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
+        return;
       } else {
-        alert('Error: ' + (data.error || res.status));
+        setDeleteStatus('Error: ' + (data.error || res.status), true);
       }
     } catch (err) {
-      alert('Error de red al contactar el servidor.');
+      setDeleteStatus('Error de red al contactar el servidor.', true);
     }
+    deleteCancelMode.disabled = false;
     deleteConfirmBtn.disabled = false;
     deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
   });

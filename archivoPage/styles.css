@@ -804,6 +804,7 @@ body {
 }
 #delete-actionbar.hidden { display: none; }
 #delete-selected-count { flex: 1; color: #333; }
+#delete-status-msg { font-size: 11px; font-weight: 600; transition: color 0.2s; }
 .delete-actionbar-warn { color: #B85C00; font-size: 13px; line-height: 1; }
 
 /* ===== Delete selection overlay on images ===== */
