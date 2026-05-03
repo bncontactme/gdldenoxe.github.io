@@ -602,14 +602,11 @@ body {
     height: 650px;
 }
 
-/* Upload: no inset border, allow internal scroll */
+/* Upload: no inset border, window auto-sizes via postMessage */
 [data-window-id="upload"] .iframe-container {
     border: none;
     height: 100%;
     overflow: hidden;
-}
-[data-window-id="upload"] .iframe-container iframe {
-    overflow-y: auto;
 }
 
 /* Upload status bar */

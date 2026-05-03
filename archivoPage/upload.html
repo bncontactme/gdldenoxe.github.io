@@ -206,16 +206,12 @@
       padding: 0;
       margin: 0;
       width: 100%;
-      min-height: 100%;
       height: auto;
       display: block;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: visible;
     }
     html.embedded .xp-window {
       width: 100%;
-      min-height: 100%;
-      height: auto;
       border: none;
       box-shadow: none;
       background: #ECE9D8;
@@ -224,9 +220,7 @@
     html.embedded .xp-body {
       padding: 14px 18px 14px;
       gap: 10px;
-      height: 100%;
     }
-    html.embedded #upload-zone { min-height: 80px; }
 
     /* Password gate */
     #pw-overlay {
@@ -359,9 +353,15 @@
   (function() {
     'use strict';
 
-    // Embed mode: strip redundant chrome when loaded inside win95-window iframe
+    // Embed mode: strip redundant chrome + report height to parent
     if (new URLSearchParams(location.search).get('embed') === '1') {
       document.documentElement.classList.add('embedded');
+      // Tell parent our content height whenever it changes
+      var _ro = new ResizeObserver(function() {
+        var h = document.documentElement.scrollHeight;
+        parent.postMessage({ type: 'upload-resize', height: h }, location.origin);
+      });
+      _ro.observe(document.documentElement);
     }
 
     // ── Load existing artists for datalist ───────────────────────────────────
