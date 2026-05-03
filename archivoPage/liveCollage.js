@@ -242,7 +242,10 @@
 
       // Use pre-generated 96px thumbnail (all stored as .jpg in thumbs/)
       const baseName = fileName.replace(/\.[^.]+$/, '');
-      const thumbPath = 'archiveImages/thumbs/' + baseName + '.jpg';
+      // Use Cloudinary-derived thumb URL if available, else fall back to local thumbs
+      const thumbPath = (imageMetadata[path] && imageMetadata[path].thumbUrl)
+        ? imageMetadata[path].thumbUrl
+        : 'archiveImages/thumbs/' + baseName + '.jpg';
 
       const img = document.createElement('img');
       img.className = 'fe-image-thumb';
@@ -380,7 +383,17 @@
         for (const entry of entries) {
           if (typeof entry === 'string') {
             files.push('archiveImages/' + entry);
+          } else if (entry && entry.url) {
+            // Cloudinary entry: full delivery URL
+            const path = entry.url;
+            files.push(path);
+            imageMetadata[path] = {
+              artista:     entry.artista     || '',
+              descripcion: entry.descripcion || '',
+              thumbUrl:    entry.thumbUrl    || ''
+            };
           } else if (entry && entry.filename) {
+            // Legacy local entry
             const path = 'archiveImages/' + entry.filename;
             files.push(path);
             if (entry.artista || entry.descripcion) {

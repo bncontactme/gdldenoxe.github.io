@@ -92,6 +92,26 @@
     </div>
   </div>
 
+  <!-- Upload button (fixed, bottom-right) -->
+  <a href="upload.html" id="upload-btn" title="Subir fotos al archivo"
+     style="
+       position:fixed; bottom:18px; right:18px; z-index:9000;
+       background:linear-gradient(#F2F0E8,#DAD7C9);
+       border:2px outset #F2F0E8;
+       font-family:Tahoma,'MS Sans Serif',sans-serif; font-size:11px;
+       padding:4px 14px; text-decoration:none; color:#000;
+       box-shadow:2px 2px 4px rgba(0,0,0,.3);
+       display:flex; align-items:center; gap:5px;
+     "
+     onmouseover="this.style.background='linear-gradient(#ECF1FB,#C5CBDC)'"
+     onmouseout="this.style.background='linear-gradient(#F2F0E8,#DAD7C9)'">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M1 3v10h14V5H7L6 3z" fill="#FED84F" stroke="#808080" stroke-width=".7"/>
+      <path d="M8 12V7M5.5 9.5 8 7l2.5 2.5" stroke="#316AC5" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Subir fotos
+  </a>
+
   <script src="liveCollage.js" defer></script>
 </body>
 </html>
