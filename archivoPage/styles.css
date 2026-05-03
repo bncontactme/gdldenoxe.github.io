@@ -525,6 +525,7 @@ body {
   border: none;
   display: block;
   flex-shrink: 0;
+  transition: height 0.15s ease;
 }
 
 /* Upload folder item in explorer */

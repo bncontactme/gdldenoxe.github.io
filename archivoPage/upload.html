@@ -357,11 +357,14 @@
     if (new URLSearchParams(location.search).get('embed') === '1') {
       document.documentElement.classList.add('embedded');
       // Tell parent our content height whenever it changes
-      var _ro = new ResizeObserver(function() {
-        var h = document.documentElement.scrollHeight;
+      // Use body.offsetHeight (not scrollHeight) so the iframe shrinks when thumbnails are removed
+      function reportHeight() {
+        document.documentElement.style.height = 'auto';
+        var h = document.body.offsetHeight;
         parent.postMessage({ type: 'upload-resize', height: h }, location.origin);
-      });
-      _ro.observe(document.documentElement);
+      }
+      var _ro = new ResizeObserver(reportHeight);
+      _ro.observe(document.body);
     }
 
     // ── Load existing artists for datalist ───────────────────────────────────
