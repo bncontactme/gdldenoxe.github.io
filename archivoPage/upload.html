@@ -190,9 +190,62 @@
       color: #666;
       line-height: 1.5;
     }
+
+    /* Password gate */
+    #pw-overlay {
+      position: fixed; inset: 0;
+      background: #008080;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 99999;
+    }
+    #pw-overlay.hidden { display: none; }
+    #pw-window {
+      width: 340px; max-width: 90vw;
+      background: #ECE9D8;
+      border: 2px outset #ECE9D8;
+      box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+    }
+    #pw-titlebar {
+      background: linear-gradient(#0054E3, #0042B3);
+      color: #fff; padding: 4px 8px; height: 26px;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: bold; user-select: none;
+    }
+    #pw-body {
+      padding: 20px 24px 20px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    #pw-error {
+      color: #900; font-size: 11px; min-height: 14px;
+    }
   </style>
 </head>
 <body>
+  <!-- Password gate -->
+  <div id="pw-overlay">
+    <div id="pw-window">
+      <div id="pw-titlebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+          <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+          <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+        </svg>
+        Acceso restringido
+      </div>
+      <div id="pw-body">
+        <div class="xp-field">
+          <label class="xp-label" for="pw-input">Contraseña</label>
+          <input class="xp-input" type="password" id="pw-input"
+                 autocomplete="current-password" maxlength="80">
+        </div>
+        <div id="pw-error"></div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="xp-btn xp-btn-primary" type="button" id="pw-submit">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="xp-window">
     <div class="xp-titlebar">
       <div class="xp-titlebar-left">
@@ -261,6 +314,50 @@
   <script>
   (function() {
     'use strict';
+
+    // ── Password gate ─────────────────────────────────────────────────────────
+    // SHA-256 hash of the upload password. To change the password:
+    // 1. Run: node -e "const c=require('crypto');console.log(c.createHash('sha256').update('NEW_PASSWORD').digest('hex'));"
+    // 2. Replace the hash string below.
+    const PW_HASH = '4909ffa94d31d9bdbdad66377454e4dcc297c58ba04a43ec325d4090a72e50dd';
+    const SESSION_KEY = 'archivo_auth';
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+    }
+
+    const pwOverlay = document.getElementById('pw-overlay');
+    const pwInput   = document.getElementById('pw-input');
+    const pwSubmit  = document.getElementById('pw-submit');
+    const pwError   = document.getElementById('pw-error');
+
+    // Already authenticated this session?
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      pwOverlay.classList.add('hidden');
+    }
+
+    async function checkPassword() {
+      const hash = await sha256(pwInput.value);
+      if (hash === PW_HASH) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        pwOverlay.classList.add('hidden');
+        pwInput.value = '';
+      } else {
+        pwError.textContent = 'Contraseña incorrecta.';
+        pwInput.value = '';
+        pwInput.focus();
+      }
+    }
+
+    pwSubmit.addEventListener('click', checkPassword);
+    pwInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    // Focus password field on load
+    pwInput.focus();
+    // ─────────────────────────────────────────────────────────────────────────
 
     // ── Config ────────────────────────────────────────────────────────────────
     // Set these after creating your Cloudinary account:
