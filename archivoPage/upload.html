@@ -536,7 +536,10 @@
     zone.addEventListener('dragover', function(e) {
       e.preventDefault(); zone.classList.add('drag-over');
     });
-    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+    zone.addEventListener('dragleave', function(e) {
+      // Only remove if the cursor actually left the zone (not just moved to a child element)
+      if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+    });
     zone.addEventListener('drop', function(e) {
       e.preventDefault(); zone.classList.remove('drag-over');
       addFiles(Array.from(e.dataTransfer.files));
