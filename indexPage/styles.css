@@ -608,6 +608,26 @@ body {
     height: 100%;
 }
 
+/* Upload status bar */
+.upload-statusbar {
+    background: #C0C0C0;
+    border-top: 1px solid #808080;
+    padding: 3px 8px;
+    font-family: var(--font-system);
+    font-size: 10px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+.upload-statusbar span {
+    border: 1px solid #808080;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+    padding: 1px 6px;
+}
+
 /* Tienda debug placeholder */
 #tienda-placeholder {
     width: 100%;
