@@ -1186,8 +1186,8 @@ juntxs y brillando.`
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {
         const uploadIframe = $('#upload-overlay-iframe');
-        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html') {
-            uploadIframe.src = 'archivoPage/upload.html';
+        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html?embed=1') {
+            uploadIframe.src = 'archivoPage/upload.html?embed=1';
         }
         const uploadWin = $('[data-window-id="upload"]');
         if (!uploadWin) return;

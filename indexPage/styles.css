@@ -602,6 +602,12 @@ body {
     height: 650px;
 }
 
+/* Upload: no inset border (content provides its own styling) */
+[data-window-id="upload"] .iframe-container {
+    border: none;
+    height: 100%;
+}
+
 /* Tienda debug placeholder */
 #tienda-placeholder {
     width: 100%;
