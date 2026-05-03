@@ -673,14 +673,26 @@
 
       let uploaded = 0;
       let failed   = 0;
+      const uploadedEntries = [];
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         setProgress(Math.round((i / selectedFiles.length) * 100));
 
         try {
-          await uploadFile(file, artista, descripcion, fecha, signedParams);
+          const cloudRes = await uploadFile(file, artista, descripcion, fecha, signedParams);
           uploaded++;
+          // Build the entry for images.json
+          if (cloudRes && cloudRes.secure_url) {
+            const thumbUrl = cloudRes.secure_url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/');
+            uploadedEntries.push({
+              url:         cloudRes.secure_url,
+              thumbUrl:    thumbUrl,
+              artista:     artista,
+              descripcion: descripcion,
+              fecha:       fecha,
+            });
+          }
         } catch (err) {
           failed++;
           console.error('Upload failed:', file.name, err);
@@ -699,7 +711,24 @@
         renderThumbs();
         showStatus(
           uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
-          ' correctamente.\nLa galería se actualizará en unos minutos.',
+          ' correctamente. Actualizando galería...',
+          'success'
+        );
+        // Register new entries in images.json via the Worker
+        if (WORKER_URL && uploadedEntries.length) {
+          try {
+            await fetch(WORKER_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'register', password: _password, entries: uploadedEntries }),
+            });
+          } catch (e) {
+            console.error('Register failed:', e);
+          }
+        }
+        showStatus(
+          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
+          ' correctamente. La galería ya fue actualizada.',
           'success'
         );
       } else {

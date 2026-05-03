@@ -21,6 +21,10 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 const FOLDER = 'archivo';
 
+const GITHUB_OWNER      = 'gdldenoxe';
+const GITHUB_REPO       = 'gdldenoxe.github.io';
+const IMAGES_JSON_PATH  = 'archivoPage/images.json';
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -63,6 +67,9 @@ export default {
     // ── Route by action ───────────────────────────────────────────────────────
     if (body.action === 'delete') {
       return handleDelete(body, env, allowedOrigin);
+    }
+    if (body.action === 'register') {
+      return handleRegister(body, env, allowedOrigin);
     }
     return handleUpload(body, env, allowedOrigin);
   },
@@ -117,7 +124,89 @@ async function handleDelete(body, env, origin) {
   });
   let data;
   try { data = await res.json(); } catch { data = { error: 'Cloudinary returned non-JSON (status ' + res.status + ')' }; }
+
+  if (res.ok) {
+    // Update images.json on GitHub — remove entries whose URL contains any deleted public_id
+    try {
+      await githubUpdateImagesJson(env, function(entries) {
+        return entries.filter(function(e) {
+          return !ids.some(function(id) {
+            return e.url && e.url.includes('/' + id + '.');
+          });
+        });
+      });
+    } catch (e) {
+      console.error('GitHub images.json update failed after delete:', e);
+      // Don't fail the response — Cloudinary delete already succeeded
+    }
+  }
+
   return jsonResponse(data, res.ok ? res.status : 502, origin);
+}
+
+// ── Register handler (append new entries to images.json) ──────────────────────
+async function handleRegister(body, env, origin) {
+  const entries = Array.isArray(body.entries) ? body.entries : (body.entry ? [body.entry] : []);
+  if (!entries.length) {
+    return jsonResponse({ error: 'No entries provided' }, 400, origin);
+  }
+  const sanitizedEntries = entries.map(function(e) {
+    return {
+      url:         String(e.url         || ''),
+      thumbUrl:    String(e.thumbUrl    || ''),
+      artista:     String(e.artista     || ''),
+      descripcion: String(e.descripcion || ''),
+      fecha:       String(e.fecha       || ''),
+    };
+  }).filter(function(e) { return e.url; });
+
+  try {
+    await githubUpdateImagesJson(env, function(current) {
+      return current.concat(sanitizedEntries);
+    });
+    return jsonResponse({ ok: true }, 200, origin);
+  } catch (e) {
+    return jsonResponse({ error: String(e) }, 502, origin);
+  }
+}
+
+// ── GitHub images.json updater ────────────────────────────────────────────────
+async function githubUpdateImagesJson(env, updateFn) {
+  const ghHeaders = {
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'archivo-upload-worker',
+  };
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${IMAGES_JSON_PATH}`;
+
+  const getRes = await fetch(apiUrl, { headers: ghHeaders });
+  if (!getRes.ok) throw new Error('GitHub GET failed: ' + getRes.status);
+  const fileData = await getRes.json();
+
+  // GitHub returns base64 content (with newlines) — decode it
+  const currentJson = JSON.parse(atob(fileData.content.replace(/\n/g, '')));
+  const updatedJson = updateFn(currentJson);
+  const updatedStr  = JSON.stringify(updatedJson, null, 2) + '\n';
+
+  // Re-encode to base64 (TextEncoder handles non-ASCII)
+  const bytes = new TextEncoder().encode(updatedStr);
+  let binary  = '';
+  bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+  const updatedB64 = btoa(binary);
+
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { ...ghHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'chore: update archive manifest [skip ci]',
+      content: updatedB64,
+      sha:     fileData.sha,
+    }),
+  });
+  if (!putRes.ok) {
+    const errData = await putRes.json().catch(() => ({}));
+    throw new Error('GitHub PUT failed: ' + putRes.status + ' ' + JSON.stringify(errData));
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
