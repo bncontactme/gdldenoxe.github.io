@@ -8,3 +8,6 @@ workers/**/.dev.vars
 
 # Editor
 .vscode/
+# macOS
+.DS_Store
+**/.DS_Store
