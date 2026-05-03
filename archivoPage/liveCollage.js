@@ -562,9 +562,7 @@
       });
       const data = await res.json();
       if (res.ok) {
-        const deleted = Object.values(data.deleted || {}).filter(v => v === 'deleted').length;
         exitDeleteMode();
-        alert(deleted + ' foto' + (deleted !== 1 ? 's' : '') + ' eliminada' + (deleted !== 1 ? 's' : '') + '.\nActualiza images.json para reflejar los cambios.');
       } else {
         alert('Error: ' + (data.error || res.status));
       }
