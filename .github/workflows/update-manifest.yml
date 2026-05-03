@@ -2,8 +2,8 @@ name: Update Archive Manifest
 
 on:
   schedule:
-    # Runs every 15 minutes
-    - cron: '*/15 * * * *'
+    # Runs every minute (testing — change back to */15 for production)
+    - cron: '*/1 * * * *'
   push:
     branches: [main, master]
   workflow_dispatch:
