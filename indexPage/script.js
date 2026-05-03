@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const FEATURES = {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
+        TIENDA:        false,   // Tienda / store (desktop icon + easter egg unlock)
     };
     // ─────────────────────────────────────────
 
@@ -1601,6 +1602,7 @@ juntxs y brillando.`
 
     // ── Tienda debug unlock: 12 taps on the placeholder reveals the store ──
     (function () {
+        if (!FEATURES.TIENDA) return; // disabled by feature flag
         const placeholder = document.getElementById('tienda-placeholder');
         const container   = document.getElementById('tienda-iframe-container');
         if (!placeholder || !container) return;
