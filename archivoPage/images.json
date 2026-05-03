@@ -1468,5 +1468,12 @@
     "artista": "Test",
     "descripcion": "test",
     "fecha": "2026-05-04"
+  },
+  {
+    "url": "https://res.cloudinary.com/duog120j4/image/upload/v1777792851/archivo/byuomysgyaqrlchtt9j3.jpg",
+    "thumbUrl": "https://res.cloudinary.com/duog120j4/image/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/v1777792851/archivo/byuomysgyaqrlchtt9j3.jpg",
+    "artista": "Test",
+    "descripcion": "",
+    "fecha": ""
   }
 ]
