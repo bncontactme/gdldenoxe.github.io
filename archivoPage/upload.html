@@ -371,11 +371,14 @@
         var dl = document.getElementById('artistas-list');
         imgs.forEach(function(img) {
           var a = (img.artista || '').trim();
-          if (a && !seen.has(a)) {
-            seen.add(a);
-            var opt = document.createElement('option');
-            opt.value = a;
-            dl.appendChild(opt);
+          if (a) {
+            _artistCounts[a] = (_artistCounts[a] || 0) + 1;
+            if (!seen.has(a)) {
+              seen.add(a);
+              var opt = document.createElement('option');
+              opt.value = a;
+              dl.appendChild(opt);
+            }
           }
         });
       } catch(e) { /* silently ignore */ }
@@ -481,8 +484,7 @@
 
     const MAX_SIZE_MB   = 10;
     const MAX_PER_UPLOAD = 5;
-    const MAX_PER_SESSION = 50;
-    const SESSION_UPLOAD_COUNT_KEY = 'archivo_upload_count';
+    const MAX_PER_ARTIST = 50;
 
     // Run session restore after WORKER_URL is defined
     maybeRestoreSession();
@@ -503,12 +505,22 @@
     const inputFecha   = document.getElementById('input-fecha');
 
     let selectedFiles = [];
+    // artistCounts populated from images.json by the datalist loader
+    var _artistCounts = {};
 
-    function getSessionCount() {
-      return parseInt(sessionStorage.getItem(SESSION_UPLOAD_COUNT_KEY) || '0', 10);
+    function getArtistCount(name) {
+      var key = (name || '').trim().toLowerCase();
+      if (!key) return 0;
+      // exact match first, then case-insensitive
+      for (var k in _artistCounts) {
+        if (k.toLowerCase() === key) return _artistCounts[k];
+      }
+      return 0;
     }
-    function addSessionCount(n) {
-      sessionStorage.setItem(SESSION_UPLOAD_COUNT_KEY, String(getSessionCount() + n));
+    function getArtistRemaining() {
+      var name = inputArtista.value.trim();
+      if (!name) return MAX_PER_ARTIST; // no artist typed = no limit yet
+      return Math.max(0, MAX_PER_ARTIST - getArtistCount(name));
     }
 
     // ── File selection ────────────────────────────────────────────────────────
@@ -528,9 +540,11 @@
       addFiles(Array.from(fileInput.files));
       fileInput.value = '';
     });
+    // Update counter when artist name changes
+    inputArtista.addEventListener('input', function() { renderThumbs(); syncUploadBtn(); });
 
     function addFiles(files) {
-      var sessionCount = getSessionCount();
+      var remaining = getArtistRemaining();
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
         if (!f.type.startsWith('image/')) {
@@ -543,8 +557,9 @@
         if (selectedFiles.length >= MAX_PER_UPLOAD) {
           showStatus('Máximo ' + MAX_PER_UPLOAD + ' imágenes por subida.', 'error'); break;
         }
-        if (sessionCount + selectedFiles.length >= MAX_PER_SESSION) {
-          showStatus('Llegaste al límite de ' + MAX_PER_SESSION + ' imágenes por sesión.', 'error'); break;
+        if (selectedFiles.length >= remaining) {
+          var name = inputArtista.value.trim();
+          showStatus((name ? name : 'Este artista') + ' ya llegó al límite de ' + MAX_PER_ARTIST + ' fotos en el archivo.', 'error'); break;
         }
         selectedFiles.push(f);
       }
@@ -576,11 +591,14 @@
         wrap.appendChild(btn);
         fileList.appendChild(wrap);
       });
-      var sessionUsed = getSessionCount();
-      var remaining = MAX_PER_SESSION - sessionUsed;
+      var remaining = getArtistRemaining();
+      var name = inputArtista.value.trim();
       uploadCounter.textContent = selectedFiles.length > 0
-        ? selectedFiles.length + '/' + MAX_PER_UPLOAD + ' en esta subida · ' + remaining + ' restantes en la sesión'
-        : '';
+        ? selectedFiles.length + '/' + MAX_PER_UPLOAD + ' en esta subida'
+          + (name ? ' · ' + remaining + ' restantes para ' + name : '')
+        : (name && remaining < MAX_PER_ARTIST
+          ? name + ' tiene ' + (MAX_PER_ARTIST - remaining) + '/' + MAX_PER_ARTIST + ' fotos en el archivo'
+          : '');
     }
 
     function syncUploadBtn() {
@@ -663,7 +681,11 @@
       setProgress(100);
 
       if (failed === 0) {
-        addSessionCount(uploaded);
+        // bump artist count locally so the counter stays accurate this session
+        var artistName = inputArtista.value.trim();
+        if (artistName) {
+          _artistCounts[artistName] = (_artistCounts[artistName] || 0) + uploaded;
+        }
         selectedFiles = [];
         renderThumbs();
         showStatus(
