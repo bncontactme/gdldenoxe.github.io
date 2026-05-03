@@ -73,6 +73,7 @@ jobs:
                   'thumbUrl':    thumb,
                   'artista':     ctx.get('artista', ''),
                   'descripcion': ctx.get('descripcion', ''),
+                  'fecha':       ctx.get('fecha', ''),
               })
 
           # Sort by upload date (newest last) so collage order is stable

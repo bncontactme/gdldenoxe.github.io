@@ -83,6 +83,7 @@
       if (meta) {
         if (meta.artista) img.dataset.artista = meta.artista;
         if (meta.descripcion) img.dataset.descripcion = meta.descripcion;
+        if (meta.fecha) img.dataset.fecha = meta.fecha;
       }
 
       img.dataset.width = preload.naturalWidth;
@@ -118,6 +119,8 @@
   const detailsArtistaRow = document.getElementById('detail-artista-row');
   const detailsDescripcion = document.getElementById('detail-descripcion');
   const detailsDescripcionRow = document.getElementById('detail-descripcion-row');
+  const detailsFecha = document.getElementById('detail-fecha');
+  const detailsFechaRow = document.getElementById('detail-fecha-row');
   const detailsCloseBtn = document.getElementById('img-details-close');
   const detailsOkBtn = document.getElementById('img-details-ok');
 
@@ -276,6 +279,7 @@
           if (meta) {
             if (meta.artista) fakeImg.dataset.artista = meta.artista;
             if (meta.descripcion) fakeImg.dataset.descripcion = meta.descripcion;
+            if (meta.fecha) fakeImg.dataset.fecha = meta.fecha;
           }
           closeExplorer();
           fakeImg.onload = function() {
@@ -340,7 +344,8 @@
     const fileType = getExtension(fileName);
     const artista = img.dataset.artista || '';
     const descripcion = img.dataset.descripcion || '';
-    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src, artista, descripcion };
+    const fecha = img.dataset.fecha || '';
+    const data = { src: fullSrc, fileName, fileType, dimensions: dims, path: src, artista, descripcion, fecha };
 
     // On desktop, the parent index.html has the details panel — send message there
     // On mobile (frame.html), parent won't have the handler, so show built-in popup
@@ -366,6 +371,8 @@
       if (detailsArtista) detailsArtista.textContent = artista;
       if (detailsDescripcionRow) detailsDescripcionRow.style.display = descripcion ? '' : 'none';
       if (detailsDescripcion) detailsDescripcion.textContent = descripcion;
+      if (detailsFechaRow) detailsFechaRow.style.display = fecha ? '' : 'none';
+      if (detailsFecha) detailsFecha.textContent = fecha;
 
       if (detailsOverlay) detailsOverlay.classList.add('open');
     }
@@ -390,6 +397,7 @@
             imageMetadata[path] = {
               artista:     entry.artista     || '',
               descripcion: entry.descripcion || '',
+              fecha:       entry.fecha       || '',
               thumbUrl:    entry.thumbUrl    || ''
             };
           } else if (entry && entry.filename) {

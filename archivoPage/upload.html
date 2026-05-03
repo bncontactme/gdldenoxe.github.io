@@ -273,6 +273,11 @@
                   style="resize:vertical"></textarea>
       </div>
 
+      <div class="xp-field">
+        <label class="xp-label" for="input-fecha">Fecha <span style="font-weight:normal;color:#666">(opcional)</span></label>
+        <input class="xp-input" type="date" id="input-fecha">
+      </div>
+
       <hr class="xp-divider">
 
       <div class="xp-field">
@@ -378,6 +383,7 @@
     const progressFill = document.getElementById('progress-fill');
     const inputArtista = document.getElementById('input-artista');
     const inputDesc    = document.getElementById('input-descripcion');
+    const inputFecha   = document.getElementById('input-fecha');
 
     let selectedFiles = [];
 
@@ -450,6 +456,7 @@
 
       const artista    = inputArtista.value.trim();
       const descripcion = inputDesc.value.trim();
+      const fecha       = inputFecha.value.trim();
 
       btnUpload.disabled = true;
       btnCancel.disabled = true;
@@ -464,7 +471,7 @@
         setProgress(Math.round((i / selectedFiles.length) * 100));
 
         try {
-          await uploadFile(file, artista, descripcion);
+          await uploadFile(file, artista, descripcion, fecha);
           uploaded++;
         } catch (err) {
           failed++;
@@ -494,7 +501,7 @@
       syncUploadBtn();
     }
 
-    function uploadFile(file, artista, descripcion) {
+    function uploadFile(file, artista, descripcion, fecha) {
       return new Promise(function(resolve, reject) {
         const url = 'https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload';
         const fd  = new FormData();
@@ -506,6 +513,7 @@
         const contextParts = [];
         if (artista)     contextParts.push('artista=' + artista.replace(/[|=]/g, ' '));
         if (descripcion) contextParts.push('descripcion=' + descripcion.replace(/[|=]/g, ' '));
+        if (fecha)       contextParts.push('fecha=' + fecha.replace(/[|=]/g, '-'));
         if (contextParts.length) fd.append('context', contextParts.join('|'));
 
         const xhr = new XMLHttpRequest();
