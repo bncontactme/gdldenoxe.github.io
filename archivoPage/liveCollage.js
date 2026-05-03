@@ -285,6 +285,11 @@
       item.appendChild(label);
       item.title = fileName;
 
+      // Store Cloudinary public_id for delete mode
+      // URL pattern: .../upload/vTIMESTAMP/archivo/NAME.ext → public_id = archivo/NAME
+      const pubIdMatch = path.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+      if (pubIdMatch) item.dataset.publicId = pubIdMatch[1];
+
       item.onclick = function() {
         if (parentHandled) {
           parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, '*');
@@ -319,6 +324,12 @@
 
     explorerBody.appendChild(frag);
     if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
+    // Re-apply delete mode if active
+    if (_deleteMode) {
+      _selectedPublicIds = new Set();
+      explorerBody?.querySelectorAll('.fe-image').forEach(addDeleteableToImage);
+      updateDeleteCount();
+    }
   }
 
   function escapeHtml(str) {
@@ -370,11 +381,206 @@
   // ========================
 
   if (explorerClose) explorerClose.onclick = closeExplorer;
+
+  // ===== Win95 Menu Bar =====
+  const WORKER_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+  const PW_HASH_DELETE = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // Menu open/close
+  const menubar = document.getElementById('fe-menubar');
+  let openMenu = null;
+
+  function openDropdown(menuItem, dropdownId) {
+    closeAllMenus();
+    menuItem.classList.add('open');
+    const dd = document.getElementById(dropdownId);
+    if (dd) { dd.classList.add('open'); dd.style.left = menuItem.offsetLeft + 'px'; }
+    openMenu = { item: menuItem, dd };
+  }
+
+  function closeAllMenus() {
+    if (openMenu) {
+      openMenu.item.classList.remove('open');
+      if (openMenu.dd) openMenu.dd.classList.remove('open');
+      openMenu = null;
+    }
+  }
+
+  document.getElementById('fe-menu-archivo')?.addEventListener('click', function(e) {
+    e.stopPropagation(); openDropdown(this, 'fe-dropdown-archivo');
+  });
+  document.getElementById('fe-menu-editar')?.addEventListener('click', function(e) {
+    e.stopPropagation(); openDropdown(this, 'fe-dropdown-editar');
+  });
+  document.getElementById('fe-menu-ver')?.addEventListener('click', function(e) {
+    e.stopPropagation(); openDropdown(this, 'fe-dropdown-ver');
+  });
+  document.addEventListener('click', closeAllMenus);
+
+  // Menu item actions (delegation)
+  menubar?.addEventListener('click', function(e) {
+    const item = e.target.closest('.fe-dd-item');
+    if (!item) return;
+    closeAllMenus();
+    const action = item.dataset.action;
+    if (action === 'upload')      { closeExplorer(); openUploadPopup(); }
+    if (action === 'close')       { closeExplorer(); }
+    if (action === 'select-all')  { selectAllImages(); }
+    if (action === 'delete-mode') { openDeletePasswordDialog(); }
+    if (action === 'view-icons')  { /* already icon view */ }
+    if (action === 'view-list')   { /* future */ }
+  });
+
+  // ===== Delete mode =====
+  let _deleteAuthed = false;
+  let _deletePassword = '';
+  let _deleteMode = false;
+  let _selectedPublicIds = new Set();
+
+  const deletePwOverlay  = document.getElementById('delete-pw-overlay');
+  const deletePwInput    = document.getElementById('delete-pw-input');
+  const deletePwSubmit   = document.getElementById('delete-pw-submit');
+  const deletePwCancel   = document.getElementById('delete-pw-cancel');
+  const deletePwError    = document.getElementById('delete-pw-error');
+  const deleteActionbar  = document.getElementById('delete-actionbar');
+  const deleteCount      = document.getElementById('delete-selected-count');
+  const deleteCancelMode = document.getElementById('delete-cancel-mode');
+  const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+
+  function openDeletePasswordDialog() {
+    if (_deleteAuthed) { enterDeleteMode(); return; }
+    if (deletePwOverlay) { deletePwOverlay.classList.remove('hidden'); deletePwInput?.focus(); }
+  }
+
+  async function submitDeletePassword() {
+    const typed = deletePwInput?.value || '';
+    const hash = await sha256(typed);
+    if (hash === PW_HASH_DELETE) {
+      _deleteAuthed = true;
+      _deletePassword = typed;
+      if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
+      if (deletePwInput) deletePwInput.value = '';
+      if (deletePwError) deletePwError.textContent = '';
+      enterDeleteMode();
+    } else {
+      if (deletePwError) deletePwError.textContent = 'Contraseña incorrecta.';
+      if (deletePwInput) { deletePwInput.value = ''; deletePwInput.focus(); }
+    }
+  }
+
+  deletePwSubmit?.addEventListener('click', submitDeletePassword);
+  deletePwInput?.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitDeletePassword(); });
+  deletePwCancel?.addEventListener('click', function() {
+    if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
+    if (deletePwInput) deletePwInput.value = '';
+    if (deletePwError) deletePwError.textContent = '';
+  });
+
+  function enterDeleteMode() {
+    _deleteMode = true;
+    _selectedPublicIds = new Set();
+    if (deleteActionbar) deleteActionbar.classList.remove('hidden');
+    updateDeleteCount();
+    // Make all images in current folder selectable
+    explorerBody?.querySelectorAll('.fe-image').forEach(addDeleteableToImage);
+  }
+
+  function exitDeleteMode() {
+    _deleteMode = false;
+    _selectedPublicIds = new Set();
+    if (deleteActionbar) deleteActionbar.classList.add('hidden');
+    explorerBody?.querySelectorAll('.fe-image').forEach(function(el) {
+      el.classList.remove('deletable', 'selected');
+      el.querySelector('.fe-delete-check')?.remove();
+    });
+  }
+
+  function addDeleteableToImage(el) {
+    el.classList.add('deletable');
+    if (!el.querySelector('.fe-delete-check')) {
+      const chk = document.createElement('span');
+      chk.className = 'fe-delete-check';
+      el.prepend(chk);
+    }
+    const publicId = el.dataset.publicId;
+    el.onclick = function(e) {
+      e.stopPropagation();
+      if (!publicId) return;
+      if (_selectedPublicIds.has(publicId)) {
+        _selectedPublicIds.delete(publicId);
+        el.classList.remove('selected');
+      } else {
+        _selectedPublicIds.add(publicId);
+        el.classList.add('selected');
+      }
+      updateDeleteCount();
+    };
+  }
+
+  function selectAllImages() {
+    if (!_deleteMode) return;
+    explorerBody?.querySelectorAll('.fe-image.deletable').forEach(function(el) {
+      const pid = el.dataset.publicId;
+      if (pid) { _selectedPublicIds.add(pid); el.classList.add('selected'); }
+    });
+    updateDeleteCount();
+  }
+
+  function updateDeleteCount() {
+    const n = _selectedPublicIds.size;
+    if (deleteCount) deleteCount.textContent = n + (n === 1 ? ' seleccionada' : ' seleccionadas');
+    if (deleteConfirmBtn) deleteConfirmBtn.disabled = n === 0;
+  }
+
+  deleteCancelMode?.addEventListener('click', exitDeleteMode);
+
+  deleteConfirmBtn?.addEventListener('click', async function() {
+    const ids = Array.from(_selectedPublicIds);
+    if (!ids.length) return;
+    deleteConfirmBtn.disabled = true;
+    deleteConfirmBtn.textContent = 'Eliminando...';
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', password: _deletePassword, public_ids: ids }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const deleted = Object.values(data.deleted || {}).filter(v => v === 'deleted').length;
+        exitDeleteMode();
+        alert(deleted + ' foto' + (deleted !== 1 ? 's' : '') + ' eliminada' + (deleted !== 1 ? 's' : '') + '.\nActualiza images.json para reflejar los cambios.');
+      } else {
+        alert('Error: ' + (data.error || res.status));
+      }
+    } catch (err) {
+      alert('Error de red al contactar el servidor.');
+    }
+    deleteConfirmBtn.disabled = false;
+    deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
+  });
+
+  // Patch renderFolder to store public_id on each image element
+  const _origRenderFolder = renderFolder;
+  // Note: renderFolder is already defined above and closes over archiveImages/imageMetadata
+  // We patch it here by overriding the image onclick to not interfere with delete mode,
+  // and by adding data-public-id to each .fe-image item.
+  // The actual patching happens inside renderFolder via a post-render hook below.
+
+  // After renderFolderList/renderFolder, re-apply delete mode if active
+  const _origOpenExplorer = openExplorer;
+
+  // ========================
   if (explorerBack) explorerBack.onclick = function() {
-    if (explorerCurrentFolder !== null) renderFolderList();
+    if (explorerCurrentFolder !== null) { exitDeleteMode(); renderFolderList(); }
   };
   if (explorerOverlay) explorerOverlay.onclick = function(e) {
-    if (e.target === explorerOverlay) closeExplorer();
+    if (e.target === explorerOverlay) { exitDeleteMode(); closeExplorer(); }
   };
   if (exploreBtn) exploreBtn.onclick = function(e) {
     e.stopPropagation();

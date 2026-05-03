@@ -20,7 +20,6 @@ const FOLDER = 'archivo';
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
-    // Allow the production domain and localhost for local testing
     const corsOK =
       origin === ALLOWED_ORIGIN ||
       origin.startsWith('http://localhost') ||
@@ -42,7 +41,6 @@ export default {
       return new Response('Forbidden', { status: 403 });
     }
 
-    // Parse body
     let body;
     try {
       body = await request.json();
@@ -50,14 +48,22 @@ export default {
       return jsonResponse({ error: 'Invalid JSON' }, 400, corsOK ? origin : ALLOWED_ORIGIN);
     }
 
-    // ── Verify password server-side ───────────────────────────────────────────
+    // ── Verify password ───────────────────────────────────────────────────────
     const submittedHash = await sha256hex(String(body.password || ''));
     if (submittedHash !== env.PW_HASH) {
       return jsonResponse({ error: 'Unauthorized' }, 401, corsOK ? origin : ALLOWED_ORIGIN);
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
-    // Build Cloudinary signing params
+    // ── Route by action ───────────────────────────────────────────────────────
+    if (body.action === 'delete') {
+      return handleDelete(body, env, corsOK ? origin : ALLOWED_ORIGIN);
+    }
+    return handleUpload(body, env, corsOK ? origin : ALLOWED_ORIGIN);
+  },
+};
+
+// ── Upload handler ────────────────────────────────────────────────────────────
+async function handleUpload(body, env, origin) {
     const timestamp    = String(Math.floor(Date.now() / 1000));
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
@@ -67,15 +73,12 @@ export default {
       upload_preset: uploadPreset,
     };
 
-    // Include context metadata (sanitised — no pipe/equals injection)
     const contextParts = [];
     if (body.artista)     contextParts.push('artista='     + sanitize(body.artista));
     if (body.descripcion) contextParts.push('descripcion=' + sanitize(body.descripcion));
     if (body.fecha)       contextParts.push('fecha='       + String(body.fecha || '').replace(/[^0-9\-]/g, ''));
     if (contextParts.length) signingParams.context = contextParts.join('|');
 
-    // Sign: SHA-256( alphabetically_sorted_params + api_secret )
-    // Requires "SHA-256 signature algorithm" enabled in Cloudinary Settings > Security.
     const paramString = Object.keys(signingParams)
       .sort()
       .map(k => k + '=' + signingParams[k])
@@ -83,20 +86,39 @@ export default {
     const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
 
     return jsonResponse(
-      {
-        signature,
-        timestamp,
-        api_key:       env.CLOUDINARY_API_KEY,
-        cloud_name:    env.CLOUDINARY_CLOUD_NAME,
-        upload_preset: uploadPreset,
-        folder:        FOLDER,
-        context:       signingParams.context || null,
-      },
-      200,
-      corsOK ? origin : ALLOWED_ORIGIN,
+      { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder: FOLDER, context: signingParams.context || null },
+      200, origin,
     );
-  },
-};
+}
+
+// ── Delete handler ────────────────────────────────────────────────────────────
+async function handleDelete(body, env, origin) {
+  const publicIds = Array.isArray(body.public_ids) ? body.public_ids : [];
+  if (!publicIds.length) {
+    return jsonResponse({ error: 'No public_ids provided' }, 400, origin);
+  }
+  // Limit to 100 per request (Cloudinary API limit)
+  const ids = publicIds.slice(0, 100).map(id => String(id));
+
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  // Sign: public_ids[]=...&timestamp=...  (sorted, joined)
+  const idsParam = ids.sort().join(',');
+  const paramString = 'public_ids[]=' + idsParam + '&timestamp=' + timestamp;
+  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  const form = new FormData();
+  ids.forEach(id => form.append('public_ids[]', id));
+  form.append('timestamp', timestamp);
+  form.append('api_key',   env.CLOUDINARY_API_KEY);
+  form.append('signature', signature);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/destroy`,
+    { method: 'POST', body: form },
+  );
+  const data = await res.json();
+  return jsonResponse(data, res.status, origin);
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

@@ -600,3 +600,169 @@ body {
     background: #fff;
   }
 }
+
+/* ===== Win95 Menu Bar ===== */
+#fe-menubar {
+  background: #ECE9D8;
+  border-bottom: 1px solid #ACA899;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  font-size: 11px;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+}
+.fe-menu-item {
+  padding: 3px 8px;
+  cursor: default;
+  white-space: nowrap;
+  position: relative;
+}
+.fe-menu-item:hover,
+.fe-menu-item.open {
+  background: #316AC5;
+  color: #fff;
+}
+.fe-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ECE9D8;
+  border: 1px solid #808080;
+  box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+  list-style: none;
+  min-width: 180px;
+  z-index: 9999;
+  padding: 2px 0;
+}
+.fe-dropdown.open { display: block; }
+.fe-dd-item {
+  padding: 4px 20px 4px 24px;
+  cursor: default;
+  font-size: 11px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fe-dd-item:hover { background: #316AC5; color: #fff; }
+.fe-dd-item:hover svg path, .fe-dd-item:hover svg rect { stroke: #fff; fill: #fff; }
+.fe-dd-sep {
+  height: 1px;
+  background: #ACA899;
+  margin: 3px 4px;
+}
+
+/* ===== Delete password dialog ===== */
+#delete-pw-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 99999;
+}
+#delete-pw-overlay.hidden { display: none; }
+#delete-pw-window {
+  width: 300px;
+  background: #ECE9D8;
+  border: 2px outset #ECE9D8;
+  box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+}
+#delete-pw-titlebar {
+  background: linear-gradient(#0054E3, #0042B3);
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#delete-pw-body {
+  padding: 14px 16px 14px;
+}
+
+/* ===== Shared form controls ===== */
+.fe-input {
+  width: 100%;
+  border: 2px inset #fff;
+  padding: 3px 5px;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  background: #fff;
+  outline: none;
+}
+.fe-btn {
+  background: linear-gradient(#F2F0E8, #DAD7C9);
+  border: 2px outset #F2F0E8;
+  padding: 3px 14px;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  min-width: 70px;
+}
+.fe-btn:hover { background: linear-gradient(#ECF1FB, #C5CBDC); }
+.fe-btn:active { border-style: inset; }
+.fe-btn:disabled { opacity: .5; cursor: default; }
+.fe-btn-primary {
+  background: linear-gradient(#316AC5, #1A52A0);
+  color: #fff; border-color: #316AC5;
+}
+.fe-btn-primary:hover { background: linear-gradient(#4479CE, #2460B0); }
+.fe-btn-danger {
+  background: linear-gradient(#C75050, #8B0000);
+  color: #fff; border-color: #8B0000;
+}
+.fe-btn-danger:hover { background: linear-gradient(#D46060, #9B1010); }
+
+/* ===== Delete action bar ===== */
+#delete-actionbar {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  background: #ECE9D8;
+  border: 2px outset #ECE9D8;
+  border-bottom: none;
+  box-shadow: -2px -2px 6px rgba(0,0,0,.2);
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  z-index: 9000;
+}
+#delete-actionbar.hidden { display: none; }
+#delete-selected-count { flex: 1; color: #333; }
+
+/* ===== Delete selection overlay on images ===== */
+.fe-image.deletable {
+  position: relative;
+  cursor: pointer;
+}
+.fe-image.deletable::after {
+  content: '';
+  position: absolute; inset: 0;
+  border: 2px solid transparent;
+  pointer-events: none;
+}
+.fe-image.deletable.selected::after {
+  border-color: #316AC5;
+  background: rgba(49,106,197,.18);
+}
+.fe-image.deletable .fe-delete-check {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #fff;
+  border: 1px solid #808080;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; line-height: 1;
+  pointer-events: none;
+}
+.fe-image.deletable.selected .fe-delete-check::after {
+  content: '✓';
+  color: #316AC5;
+  font-weight: bold;
+}
