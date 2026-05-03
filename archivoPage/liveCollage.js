@@ -436,7 +436,7 @@
     if (!item) return;
     closeAllMenus();
     const action = item.dataset.action;
-    if (action === 'upload')      { closeExplorer(); openUploadPopup(); }
+    if (action === 'upload')      { openUploadPopup(); }
     if (action === 'close')       { closeExplorer(); }
     if (action === 'select-all')  { selectAllImages(); }
     if (action === 'delete-mode') { openDeletePasswordDialog(); }
