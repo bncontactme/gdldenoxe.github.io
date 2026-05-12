@@ -892,7 +892,8 @@ juntxs y brillando.`
                 minesweeper: () => {
                     const msWin = $('[data-window-id="minesweeper"]');
                     if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
-                }
+                },
+                lonche: () => window.openTortaModal?.()
             };
             
             if (mobileActions[shortcut]) {
