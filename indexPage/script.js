@@ -16,13 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1 = below GDL DE NOCHE, left of poema (bottom-aligned with poema)
     // 2 = below poema, right column
     // ─────────────────────────────────────────
-    const LONCHE_LAYOUT = 2;
+    const LONCHE_LAYOUT = 3;
     // ─────────────────────────────────────────
 
     // Set lonche iframe src based on layout
     const loncheIframe = document.getElementById('lonche-iframe');
     if (loncheIframe) {
-        loncheIframe.src = LONCHE_LAYOUT === 2
+        loncheIframe.src = (LONCHE_LAYOUT === 2 || LONCHE_LAYOUT === 3)
             ? 'lonchedonation/layout2.html'
             : 'lonchedonation/index.html';
     }
@@ -634,10 +634,11 @@ juntxs y brillando.`
                 } else if (LONCHE_LAYOUT === 3 && imgWin) {
                     // Place below GDL DE NOCHE (random) window
                     const imgBottom = parseInt(imgWin.style.top) + (imgWin.offsetHeight || 200);
-                    const loncheW = imgWin.offsetWidth || 280;
+                    const imgW = imgWin.offsetWidth || 380;
                     loncheWin.style.left = imgWin.style.left;
                     loncheWin.style.top = (imgBottom + gap) + 'px';
-                    loncheWin.style.width = loncheW + 'px';
+                    loncheWin.style.width = imgW + 'px';
+                    if (iframe) iframe.style.height = '130px';
                 }
             }
         } else {
