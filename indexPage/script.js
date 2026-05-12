@@ -10,7 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        false,   // Tienda / store (desktop icon + easter egg unlock)
     };
+
     // ─────────────────────────────────────────
+    // LONCHE LAYOUT
+    // 1 = below GDL DE NOCHE, left of poema (bottom-aligned with poema)
+    // 2 = below poema, right column
+    // ─────────────────────────────────────────
+    const LONCHE_LAYOUT = 2;
+    // ─────────────────────────────────────────
+
+    // Set lonche iframe src based on layout
+    const loncheIframe = document.getElementById('lonche-iframe');
+    if (loncheIframe) {
+        loncheIframe.src = LONCHE_LAYOUT === 2
+            ? 'lonchedonation/layout2.html'
+            : 'lonchedonation/index.html';
+    }
 
     // Cache DOM elements
     const $ = (sel) => document.querySelector(sel);
@@ -168,6 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
             openWindow('galeria');
         } else if (folder === 'tienda') {
             openWindow('tienda', true);
+        } else if (folder === 'lonche') {
+            if (window.innerWidth <= 768) {
+                startMenu?.classList.remove('active');
+                startButton?.classList.remove('active');
+                window.openTortaModal?.();
+            } else {
+                openWindow('lonche');
+            }
         }
     });
 
@@ -522,12 +545,13 @@ juntxs y brillando.`
         const availW = screenW - iconAreaW; // usable width
         
         // Separate windows by type
-        let imgWin = null, artWin = null;
+        let imgWin = null, artWin = null, loncheWin = null;
         const others = [];
         windows.forEach(win => {
             const id = win.dataset.windowId || '';
             if (id === 'random') imgWin = win;
             else if (id.startsWith('art-')) artWin = win;
+            else if (id === 'lonche') loncheWin = win;
             else if (id === 'minesweeper') {
                 // Always keep minesweeper centered, do not move
                 const width = win.offsetWidth || 340;
@@ -566,6 +590,13 @@ juntxs y brillando.`
                     topY += imgH + gap;
                     artWin.style.top = topY + 'px';
                 }
+
+                // LAYOUT 1: lonche below imgWin, same left edge
+                if (LONCHE_LAYOUT === 1 && loncheWin) {
+                    const imgH = imgWin.offsetHeight || 200;
+                    loncheWin.style.left = imgWin.style.left;
+                    loncheWin.style.top = (parseInt(imgWin.style.top) + imgH + gap) + 'px';
+                }
             }
             
             // Others (poem etc) below articulo, clamped to screen
@@ -577,6 +608,38 @@ juntxs y brillando.`
                 win.style.top = belowY + 'px';
                 belowY += (win.offsetHeight || 200) + gap;
             });
+
+            if (loncheWin) {
+                const poemaWin = others[0];
+                const iframe = loncheWin.querySelector('.iframe-container');
+
+                if (LONCHE_LAYOUT === 1 && poemaWin) {
+                    // Bottom-align with poema
+                    const poemaBottom = parseInt(poemaWin.style.top) + (poemaWin.offsetHeight || 200);
+                    const loncheTop = parseInt(loncheWin.style.top);
+                    const chromeH = loncheWin.offsetHeight - (iframe ? iframe.offsetHeight : 0);
+                    const targetH = poemaBottom - loncheTop - chromeH;
+                    if (iframe && targetH > 80) iframe.style.height = targetH + 'px';
+
+                } else if (LONCHE_LAYOUT === 2 && poemaWin) {
+                    // Place below poema, same right column
+                    const poemaBottom = parseInt(poemaWin.style.top) + (poemaWin.offsetHeight || 200);
+                    const loncheW = poemaWin.offsetWidth || 280;
+                    loncheWin.style.left = poemaWin.style.left;
+                    loncheWin.style.top = (poemaBottom + gap) + 'px';
+                    loncheWin.style.width = loncheW + 'px';
+                    const chromeH = loncheWin.offsetHeight - (iframe ? iframe.offsetHeight : 0);
+                    const remaining = screenH - poemaBottom - gap - chromeH - gap;
+                    if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
+                } else if (LONCHE_LAYOUT === 3 && imgWin) {
+                    // Place below GDL DE NOCHE (random) window
+                    const imgBottom = parseInt(imgWin.style.top) + (imgWin.offsetHeight || 200);
+                    const loncheW = imgWin.offsetWidth || 280;
+                    loncheWin.style.left = imgWin.style.left;
+                    loncheWin.style.top = (imgBottom + gap) + 'px';
+                    loncheWin.style.width = loncheW + 'px';
+                }
+            }
         } else {
             // Fallback: stack all on right
             let ry = gap;
@@ -757,12 +820,23 @@ juntxs y brillando.`
         
         const frag = document.createDocumentFragment();
         $$('.win95-window:not(.hidden)').forEach(win => {
-            const title = win.querySelector('.title-bar-text')?.textContent || '';
+            const titleEl = win.querySelector('.title-bar-text');
+            const iconEl  = titleEl?.querySelector('img.titlebar-icon');
+            const title   = titleEl?.textContent?.trim() || '';
             const isActive = win.classList.contains('active');
             
             const item = document.createElement('button');
             item.className = 'taskbar-item' + (isActive ? ' active' : '');
-            item.textContent = title;
+            if (iconEl) {
+                const ic = document.createElement('img');
+                ic.src = iconEl.src;
+                ic.alt = '';
+                ic.style.cssText = 'width:16px;height:16px;margin-right:4px;vertical-align:middle;object-fit:contain;';
+                item.appendChild(ic);
+                item.appendChild(document.createTextNode(title));
+            } else {
+                item.textContent = title;
+            }
             item.addEventListener('click', () => {
                 if (win.classList.contains('minimized')) {
                     win.classList.remove('minimized');
@@ -848,7 +922,8 @@ juntxs y brillando.`
                 } else {
                     console.error('[Radio] Music player element not found');
                 }
-            }
+            },
+            lonche: () => openWindow('lonche')
         };
         
         desktopActions[shortcut]?.();

@@ -602,6 +602,22 @@ body {
     height: 650px;
 }
 
+/* Lonche */
+[data-window-id="lonche"] {
+    width: 380px;
+}
+
+[data-window-id="lonche"] .iframe-container {
+    height: 130px;
+    border: none;
+    overflow: hidden;
+}
+
+/* Mobile-only torta taskbar icon */
+#lonche-mobile-btn {
+    display: none;
+}
+
 /* Upload: no inset border, window auto-sizes via postMessage */
 [data-window-id="upload"] .iframe-container {
     border: none;
@@ -1854,6 +1870,17 @@ body {
         display: none;
     }
 
+    #lonche-mobile-btn {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        max-width: 160px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: 11px;
+    }
+
     .system-tray {
         margin-left: auto;
     }
@@ -2160,3 +2187,5 @@ body {
     display: block;
     max-width: 100%;
 }
+
+

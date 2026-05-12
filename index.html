@@ -355,6 +355,22 @@
             </div>
         </div>
 
+        <!-- Ventana: Cómprame Una Torta -->
+        <div class="win95-window" data-window-id="lonche" style="left: 320px; top: 160px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/lonche-icon.png" alt="" class="titlebar-icon"> Cómprame Una Torta</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn">_</button>
+                    <button class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe id="lonche-iframe" frameborder="0" title="Cómprame Una Torta"></iframe>
+                </div>
+            </div>
+        </div>
+
         <!-- Ventana YouTube popup -->
         <div class="win95-window hidden" data-window-id="yt-popup" style="left: 0; top: 0; width: 492px; z-index: 10;">
             <div class="title-bar">
@@ -385,6 +401,9 @@
     <div class="taskbar">
         <button class="start-button"><img src="indexPage/indexImages/icons/computer_explorer-0.png" alt="" style="width: 16px; height: 16px;">Inicio</button>
         <div class="taskbar-items" id="taskbar-items"></div>
+        <button id="lonche-mobile-btn" class="taskbar-item">
+            <img src="indexPage/indexImages/icons/lonche-icon.png" alt="" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;object-fit:contain;">Cómprame Una Torta
+        </button>
         <div class="system-tray">
             <span class="clock" id="clock">12:00 PM</span>
         </div>
@@ -402,6 +421,7 @@
             <div class="menu-item" data-shortcut="palestina"><img src="indexPage/indexImages/icons/world-0.png" alt="" class="menu-icon"> Palestina Libre</div>
             <div class="menu-item" data-shortcut="email"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="menu-icon"> Email</div>
             <div class="menu-separator"></div>
+            <div class="menu-item" data-shortcut="lonche"><img src="indexPage/indexImages/icons/lonche-icon.png" alt="" class="menu-icon"> Cómprame Una Torta</div>
             <div class="menu-item" data-shortcut="radio"><img src="indexPage/indexImages/icons/media_player-0.png" alt="" class="menu-icon"> LaMovida95 Radio</div>
         </div>
     </div>
@@ -410,6 +430,32 @@
     <script>
     if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
     </script>
+
+    <!-- Modal torta -->
+    <div id="torta-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:12px;">
+        <div style="background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #000;border-bottom:2px solid #000;width:100%;max-width:360px;font-family:'MS Sans Serif','Microsoft Sans Serif',Arial,sans-serif;">
+            <div style="background:linear-gradient(to right,#000080,#1084d0);color:#fff;font-size:12px;font-weight:bold;padding:3px 5px;display:flex;align-items:center;justify-content:space-between;">
+                <span>🌮 Cómprame Una Torta</span>
+                <button id="torta-modal-close" style="background:#c0c0c0;border-top:1px solid #fff;border-left:1px solid #fff;border-right:1px solid #000;border-bottom:1px solid #000;width:18px;height:18px;font-size:11px;cursor:pointer;color:#000;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+            <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
+                <img src="indexPage/indexImages/lonche-spin.gif" alt="Torta" style="width:100%;height:140px;object-fit:contain;display:block;">
+                <div style="border-top:1px solid #808080;border-bottom:1px solid #fff;"></div>
+                <div style="font-size:13px;font-weight:bold;">CÓMPRAME UNA TORTA</div>
+                <div style="font-size:11px;color:#222;line-height:1.5;">Cada pesito hace la diferencia. Tu donación ayuda a mantener las operaciones de Guadalajara De Noche.<br><br>Este dinero va directo para el chesco y la torta.</div>
+                <a id="torta-pay-btn" href="https://www.paypal.com/ncp/payment/8QT696H5AN2MU" target="_blank" rel="noopener noreferrer" style="display:block;background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #000;border-bottom:2px solid #000;padding:5px 0;font-size:12px;font-family:'MS Sans Serif',Arial,sans-serif;font-weight:bold;color:#000;text-align:center;text-decoration:none;">🌮 Donativos Por PayPal</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        var tortaOverlay = document.getElementById('torta-modal-overlay');
+        window.openTortaModal = function() { tortaOverlay.style.display = 'flex'; };
+        document.getElementById('torta-modal-close').addEventListener('click', function() { tortaOverlay.style.display = 'none'; });
+        tortaOverlay.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+        window.addEventListener('message', function(e) { if (e.data === 'open-torta-modal') { tortaOverlay.style.display = 'flex'; } });
+        document.getElementById('lonche-mobile-btn').addEventListener('click', window.openTortaModal);
+    </script>
+
     <script src="indexPage/script.js" defer></script>
 </body>
 </html>
