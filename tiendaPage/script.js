@@ -1021,14 +1021,15 @@ const tienda = (() => {
     const modal = document.getElementById('product-modal');
     if (!modal) return;
 
-    const overlay  = modal.querySelector('.modal-overlay');
-    const closeBtn = modal.querySelector('.modal-close');
-    const imgEl    = modal.querySelector('.modal-product-image');
-    const nameEl   = modal.querySelector('.modal-product-name');
-    const priceEl  = modal.querySelector('.modal-price-text');
-    const descEl   = modal.querySelector('.modal-product-description');
-    const badgeEl  = modal.querySelector('.modal-badge');
-    const buyBtn   = modal.querySelector('.modal-buy-btn');
+    const overlay   = modal.querySelector('.modal-overlay');
+    const closeBtn  = modal.querySelector('.modal-close');
+    const imgEl     = modal.querySelector('.modal-product-image');
+    const nameEl    = modal.querySelector('.modal-product-name');
+    const priceEl   = modal.querySelector('.modal-price-text');
+    const descEl    = modal.querySelector('.modal-product-description');
+    const badgeEl   = modal.querySelector('.modal-badge');
+    const buyBtn    = modal.querySelector('.modal-buy-btn');
+    const variantsEl = modal.querySelector('.modal-variants');
 
     let previousFocus = null;
 
@@ -1071,6 +1072,43 @@ const tienda = (() => {
         }
 
         buyBtn.href = product.link || '#';
+
+        // Render color variants if present
+        if (variantsEl) {
+            variantsEl.innerHTML = '';
+            if (product.variants && product.variants.length > 0) {
+                variantsEl.style.display = 'flex';
+                const label = document.createElement('span');
+                label.className = 'modal-variants-label';
+                label.textContent = 'Color:';
+                variantsEl.appendChild(label);
+
+                product.variants.forEach((v, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'modal-variant-swatch' + (i === 0 ? ' active' : '');
+                    btn.type = 'button';
+
+                    const dot = document.createElement('span');
+                    dot.className = 'modal-variant-dot';
+                    dot.style.background = v.color || '#ccc';
+
+                    btn.appendChild(dot);
+                    btn.appendChild(document.createTextNode(v.label));
+
+                    btn.addEventListener('click', () => {
+                        variantsEl.querySelectorAll('.modal-variant-swatch').forEach(s => s.classList.remove('active'));
+                        btn.classList.add('active');
+                        if (v.image) { imgEl.src = v.image; imgEl.alt = v.label; }
+                        if (v.link)  buyBtn.href = v.link;
+                    });
+
+                    variantsEl.appendChild(btn);
+                });
+            } else {
+                variantsEl.style.display = 'none';
+            }
+        }
+
         show();
         srAnnounce('Detalle de producto: ' + (product.name || 'Producto'));
     });

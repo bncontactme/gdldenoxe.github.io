@@ -141,7 +141,7 @@
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 3.jpg",
             "description": "Estampado GDN. Talla única.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "2 u"
         },
@@ -161,7 +161,7 @@
             "noCornerEffect": true,
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
             "description": "Collab con @yeyo. Pieza única.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "01 u"
         },
@@ -178,7 +178,7 @@
             "price": 777, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/2.jpg",
             "description": "Collab con @notchinese.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "4 u",
             "subtitle": "$888 / Objeto Gdl"
@@ -209,7 +209,7 @@
             "price": 299, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/marcelo_borbolla x GDN.jpg",
             "description": "Collab con Marcelo Borbolla.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "5 u",
             "badge": "NUEVO",
@@ -222,7 +222,7 @@
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 2.jpg",
             "description": "Estampado GDN. Talla única.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "4 u",
             "subtitle": "$220 / Guardaropa"
@@ -251,7 +251,7 @@
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/boxers/boxer 4.jpg",
             "description": "Estampado GDN. Talla única.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "4 u",
             "splashRight": -5,
@@ -273,7 +273,7 @@
             "cornerPosition": "tr",
             "image": "assets/products/boxers_model/DSC01043.jpg",
             "description": "Collab con @notchinese.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
             "stock": "3 u"
         },
@@ -281,12 +281,16 @@
             "id": "boxer-13",
             "name": "Totebag GDN",
             "price": 250, "cents": "00", "currency": "MXN",
-            "image": "assets/products/101/WhatsApp_Image_2025-12-12_at_10.44.10_AM-removebg-preview.png",
+            "image": "assets/products/gdn/image_3.jpeg",
             "imageBg": "#ffffff",
             "description": "Serigrafía GDN. Talla única.",
-            "link": "#",
+            "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G",
             "info": "Talla Única",
-            "stock": "3 u"
+            "stock": "3 u",
+            "variants": [
+                { "label": "Gris",       "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
+                { "label": "Mezclilla",  "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
+            ]
         },
         {
             "id": "boxer-11",
