@@ -44,7 +44,7 @@
             "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
-            "products": ["boxer-9", "boxer-10", "boxer-11"]
+            "products": ["boxer-9", "boxer-10", "boxer-3"]
         },
         {
             "template": "2-split",
@@ -56,7 +56,7 @@
             "template": "2-split",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-3", "boxer-3b"]
+            "products": ["boxer-11", "boxer-3b"]
         },
         {
             "template": "2S-1L",
