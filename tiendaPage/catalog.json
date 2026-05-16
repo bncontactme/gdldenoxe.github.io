@@ -143,7 +143,7 @@
             "description": "Estampado GDN. Talla única.",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
-            "stock": "2 u"
+            "stock": "7 u"
         },
         {
             "id": "boxer-5",
@@ -155,15 +155,16 @@
         },
         {
             "id": "boxer-3",
-            "name": "TE QUIERO DE NOCHE",
+            "name": "Camisa: Te quiero de noche",
             "price": 500, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/rosa 1.jpg",
             "imageContain": true,
             "noCornerEffect": true,
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
             "description": "Camisa formal en tono rosa/morado claro, con parche Guadalajara De Noche con impresión textil blanco",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/AZ4RJRL4HC3ZS",
             "info": "Talla Única",
+            "stock": "1 u",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/rosa 1.jpg",
@@ -180,13 +181,14 @@
         },
         {
             "id": "boxer-4",
-            "name": "CAMISA \"A PUÑO Y LETRA\"",
+            "name": "Camisa: A puño y letra",
             "price": 500, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/negra.jpg",
             "imageContain": true,
             "description": "Camisa formal de algodón negra, con parche Guadalajara De Noche e impresión textil en mangas en tono amarillo",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/XURYPEJMJCDF8",
             "info": "Talla Única",
+            "stock": "1 u",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/negra.jpg",
@@ -215,24 +217,25 @@
         },
         {
             "id": "boxer-1",
-            "name": "Guadalajara De Noche",
+            "name": "Camisa: Guadalajara De Noche",
             "price": 500, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/azul (1).jpg",
             "imageContain": true,
             "description": "Camisa de botones color azul con rayas, con impresión textil y parche \"Guadalajara De Noche\"",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/EZWFBQZRT4EZE",
             "info": "Talla Única",
+            "stock": "1 u",
             "badge": "NUEVO"
         },
         {
             "id": "boxer-2",
-            "name": "ALMOHADA \"Mi noche dorada\"",
+            "name": "Almohada: Mi noche dorada",
             "price": 650, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/cojin dorado.jpg",
             "description": "Almohada de tela de rayas negra con dorado brillosa, con parche \"Guadalajara De Noche\" bordado",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/MHMGRSN3EGK92",
             "info": "Talla Única",
-            "badge": "NUEVO",
+            "stock": "1 u",
             "images": [
                 "assets/products/gdn/cojin dorado.jpg",
                 "assets/products/gdn/etiqueta.jpg"
@@ -257,13 +260,13 @@
         },
         {
             "id": "boxer-10",
-            "name": "UN LIMÓN ROSITA BEBÉ",
+            "name": "Almohada: Un limón rosita bebé",
             "price": 600, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/verde.jpg",
             "description": "Almohada uniforma en colaboración con Limón Rosita Bebé, con parche Guadalajara De Noche y Pedrería \"LRB\"",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/7WH2S44JZGE4Y",
             "info": "Talla Única",
-            "badge": "NUEVO",
+            "stock": "1 u",
             "images": [
                 "assets/products/gdn/verde.jpg",
                 "assets/products/gdn/etiqueta 2.jpg",
@@ -280,13 +283,13 @@
         },
         {
             "id": "boxer-12b",
-            "name": "Almohada \"Te bajo la Luna & las estrellas\"",
+            "name": "Almohada: Te bajo la Luna & las estrellas",
             "price": 600, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/cojin luna.jpg",
             "description": "Almohadas duo de Lycra con Glitter, tecnología de imán para unir luna & estrella o separarlas a su gusto, con parche Guadalajara De Noche e incrustación de pedrería en colaboración con Limón Rosita Bebé",
-            "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "link": "https://www.paypal.com/ncp/payment/Q5QKTACG72J6U",
             "info": "Talla Única",
-            "badge": "NUEVO",
+            "stock": "1 u",
             "images": [
                 "assets/products/gdn/cojin luna.jpg",
                 "assets/products/gdn/IMG_9716.jpg",
@@ -296,13 +299,13 @@
         {
             "id": "boxer-13",
             "name": "Totebag GDN",
-            "price": 250, "cents": "00", "currency": "MXN",
+            "price": 300, "cents": "00", "currency": "MXN",
             "image": "assets/products/gdn/image_3.jpeg",
             "imageBg": "#ffffff",
             "description": "Serigrafía GDN. Talla única.",
             "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G",
             "info": "Talla Única",
-            "stock": "3 u",
+            "stock": "2 u",
             "variants": [
                 { "label": "Gris",       "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
                 { "label": "Mezclilla",  "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
@@ -312,18 +315,17 @@
             "id": "boxer-11",
             "name": "Bufanda GDN",
             "noSplash": true,
-            "badge": "AGOTADO",
-            "price": 549, "cents": "00", "currency": "MXN",
+            "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/ambas bufas.jpg",
-            "description": "Edición limitada GDN. Agotada.",
+            "description": "Edición limitada GDN.",
             "link": "#",
             "info": "Talla Única",
-            "stock": "Agotado"
+            "stock": "1 u"
         },
         {
             "id": "boxer-14",
             "name": "Bolsa GDN",
-            "price": 350, "cents": "00", "currency": "MXN",
+            "price": 300, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/bolsa completa.jpg",
             "imageBg": "#ffffff",
             "description": "Bolsa GDN.",
