@@ -316,6 +316,8 @@ const tienda = (() => {
             nameEl.className = 'catalog-product-name';
             if (slot.textSide) nameEl.classList.add('catalog-text-' + slot.textSide);
             nameEl.textContent = product.name;
+            if (product.nameMarginTop != null) nameEl.style.marginTop = product.nameMarginTop + '%';
+            if (product.name && product.name.startsWith('@')) nameEl.style.textTransform = 'none';
             wrapper.appendChild(nameEl);
         }
 
@@ -349,7 +351,7 @@ const tienda = (() => {
         }
 
         // Accessibility
-        if (product.noModal) {
+        if (product.noModal || product.soldOut) {
             wrapper.setAttribute('role', 'img');
             wrapper.removeAttribute('tabindex');
             wrapper.style.cursor = 'default';
@@ -361,7 +363,7 @@ const tienda = (() => {
         wrapper.setAttribute('aria-label', (product.name || 'Producto') + (product.price != null ? ' — $' + product.price : ''));
 
         // Click & keyboard → modal
-        if (!product.noModal) {
+        if (!product.noModal && !product.soldOut) {
             const openModal = (e) => {
                 e.stopPropagation();
                 if (document.body.classList.contains('debug-active')) return;
@@ -1047,6 +1049,7 @@ const tienda = (() => {
     const imgEl     = modal.querySelector('.modal-product-image');
     const nameEl    = modal.querySelector('.modal-product-name');
     const priceEl   = modal.querySelector('.modal-price-text');
+    const priceBox  = modal.querySelector('.win95-price-box');
     const descEl    = modal.querySelector('.modal-product-description');
     const badgeEl   = modal.querySelector('.modal-badge');
     const buyBtn    = modal.querySelector('.modal-buy-btn');
@@ -1117,6 +1120,7 @@ const tienda = (() => {
 
         imgEl.alt  = product.name  || '';
         nameEl.textContent  = product.name || '';
+        nameEl.style.textTransform = (product.name && product.name.startsWith('@')) ? 'none' : '';
         priceEl.textContent = (product.price != null)
             ? ('$' + product.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN'))
             : '';
@@ -1130,6 +1134,8 @@ const tienda = (() => {
         }
 
         buyBtn.href = product.link || '#';
+        if (priceBox) priceBox.style.display = (product.price != null) ? '' : 'none';
+        buyBtn.style.display = (product.price != null) ? '' : 'none';
 
         // Render color variants if present (non-carousel products)
         if (variantsEl) {

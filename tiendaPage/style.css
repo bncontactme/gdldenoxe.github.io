@@ -508,7 +508,9 @@ input[type="checkbox"] { display: none; }
 }
 
 .catalog-product--no-modal .catalog-product-name {
-    margin-top: -5%;
+    margin-top: -6%;
+    text-transform: none;
+    font-size: 0.44rem;
 }
 
 /* --- Badge ribbon (OFERTA / NUEVO / 2x1) — inside image area --- */
