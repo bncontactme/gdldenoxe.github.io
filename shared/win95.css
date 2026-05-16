@@ -1,0 +1,138 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Shared Win95 design tokens + canonical chrome classes
+   ───────────────────────────────────────────────────────────────────────────
+   Linked first on every page so each page-local stylesheet can `var(--win95-*)`
+   instead of duplicating literal color hexes. Sub-pages keep their existing
+   class names; only the values are consolidated here.
+   --------------------------------------------------------------------------- */
+
+:root {
+    /* Win95 color palette */
+    --win95-gray:       #c0c0c0;
+    --win95-dark-gray:  #808080;
+    --win95-darker:     #404040;
+    --win95-light-gray: #dfdfdf;
+    --win95-white:      #fff;
+    --win95-black:      #000;
+    --win95-blue:       #000080;
+    --win95-blue-light: #1084d0;
+    --win95-teal:       #008080;
+    --win95-red:        #ff0000;
+    --win95-green:      #00ff00;
+
+    /* Border shorthand — raised (light NW, dark SE) and sunken (inverse) */
+    --border-raised:  2px solid var(--win95-white);
+    --border-sunken:  2px solid var(--win95-black);
+    --inset-light:    2px solid var(--win95-dark-gray);
+    --inset-dark:     2px solid var(--win95-light-gray);
+
+    /* Fonts */
+    --font-system: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, sans-serif;
+    --font-mono:   'Fixedsys', 'Courier New', monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Canonical Win95 window chrome — used by indexPage. Sub-pages that build
+   their own window shells can either adopt these classes or keep their own
+   (just referencing var(--win95-*) for color consistency).
+   ───────────────────────────────────────────────────────────────────────── */
+.win95-window {
+    background: var(--win95-gray);
+    border-top:    var(--border-raised);
+    border-left:   var(--border-raised);
+    border-right:  var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: inset 1px 1px 0 var(--win95-light-gray),
+                inset -1px -1px 0 var(--win95-dark-gray),
+                2px 2px 0 rgba(0, 0, 0, 0.2);
+    position: absolute;
+    width: 280px;
+    z-index: 1;
+}
+
+.win95-window.hidden,
+.win95-window.minimized {
+    display: none;
+}
+
+.title-bar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: move;
+    user-select: none;
+}
+
+.win95-window:not(.active) .title-bar {
+    background: linear-gradient(to right, var(--win95-dark-gray), #a0a0a0);
+}
+
+.title-bar-text {
+    flex-grow: 1;
+    padding-left: 3px;
+}
+
+.title-bar-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.title-bar-controls button {
+    width: 18px;
+    height: 18px;
+    background: var(--win95-gray);
+    border-top:    var(--border-raised);
+    border-left:   var(--border-raised);
+    border-right:  var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+}
+
+.title-bar-controls button:active {
+    border-top:    var(--border-sunken);
+    border-left:   var(--border-sunken);
+    border-right:  var(--border-raised);
+    border-bottom: var(--border-raised);
+    padding-top: 1px;
+}
+
+.title-bar-controls button:hover {
+    background: #d0d0d0;
+}
+
+/* Reusable raised/pressed Win95 button — used across pages */
+.w95-btn {
+    background: var(--win95-gray);
+    border-top:    var(--border-raised);
+    border-left:   var(--border-raised);
+    border-right:  var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 4px 14px;
+    font-family: var(--font-system);
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--win95-black);
+}
+
+.w95-btn:active {
+    border-top:    var(--border-sunken);
+    border-left:   var(--border-sunken);
+    border-right:  var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.w95-btn:disabled {
+    color: var(--win95-dark-gray);
+    cursor: default;
+}

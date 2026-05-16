@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2 = below poema, right column
     // ─────────────────────────────────────────
     const LONCHE_LAYOUT = 3;
+
+    // Shared mobile breakpoint — must match @media query in indexPage/styles.css
+    const MOBILE_BP = 768;
     // ─────────────────────────────────────────
 
     // Set lonche iframe src based on layout
@@ -51,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const galeriaWin = $('[data-window-id="galeria"]');
             const galeriaIframe = galeriaWin?.querySelector('iframe');
             if (galeriaIframe?.contentWindow) {
-                galeriaIframe.contentWindow.postMessage({ type: 'galeria-pause' }, '*');
+                galeriaIframe.contentWindow.postMessage({ type: 'galeria-pause' }, location.origin);
             }
         } catch (e) { /* Cross-origin error */ }
     }
@@ -61,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const galeriaWin = $('[data-window-id="galeria"]');
             const galeriaIframe = galeriaWin?.querySelector('iframe');
             if (galeriaIframe?.contentWindow) {
-                galeriaIframe.contentWindow.postMessage({ type: 'galeria-resume' }, '*');
+                galeriaIframe.contentWindow.postMessage({ type: 'galeria-resume' }, location.origin);
             }
         } catch (e) { /* Cross-origin error */ }
     }
@@ -97,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = Date.now();
         if (cachedIsMobile !== null && now - lastMobileCheck < 500) return cachedIsMobile;
         lastMobileCheck = now;
-        cachedIsMobile = window.innerWidth <= 768;
+        cachedIsMobile = window.innerWidth <= MOBILE_BP;
         return cachedIsMobile;
     }
 
@@ -196,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (folder === 'tienda') {
             openWindow('tienda', true);
         } else if (folder === 'lonche') {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= MOBILE_BP) {
                 startMenu?.classList.remove('active');
                 startButton?.classList.remove('active');
                 window.openTortaModal?.();
@@ -274,9 +277,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="title-bar">
                 <div class="title-bar-text">${art.titulo}</div>
                 <div class="title-bar-controls">
-                    <button class="minimize-btn">_</button>
-                    <button class="maximize-btn">□</button>
-                    <button class="close-btn">✕</button>
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="maximize-btn" aria-label="Maximizar">□</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
                 </div>
             </div>
             <div class="window-body art-full-body">
@@ -312,9 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="title-bar">
                 <div class="title-bar-text">Artículo #${art.id}</div>
                 <div class="title-bar-controls">
-                    <button class="minimize-btn">_</button>
-                    <button class="maximize-btn">□</button>
-                    <button class="close-btn">✕</button>
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="maximize-btn" aria-label="Maximizar">□</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
                 </div>
             </div>
             <div class="window-body">
@@ -407,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Dynamically position poema widget below articulo-widget on mobile
-            if (isMobile()) {
+            if (isMobile() && !window.__poemaResizeBound) {
                 function positionPoemaWidget() {
                     const aw = $('[data-window-id="articulo-widget"]');
                     const pw = $('[data-window-id="poema1"]');
@@ -424,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
                 }
                 window.addEventListener('resize', positionPoemaWidget);
+                window.__poemaResizeBound = true;
             }
 
             updateTaskbar();
@@ -644,11 +648,9 @@ juntxs y brillando.`
                     const remaining = screenH - poemaBottom - gap - chromeH - gap;
                     if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
                 } else if (LONCHE_LAYOUT === 3) {
-                    // Place after all other windows — last frame in the right column
-                    const loncheW = Math.min(loncheWin.offsetWidth || 380, availW - gap * 2);
-                    loncheWin.style.left = (screenW - loncheW - gap) + 'px';
+                    loncheWin.style.left = artLeft + 'px';
                     loncheWin.style.top = belowY + 'px';
-                    loncheWin.style.width = loncheW + 'px';
+                    loncheWin.style.width = artW + 'px';
                     if (iframe) iframe.style.height = '130px';
                 }
             }
@@ -1238,32 +1240,19 @@ juntxs y brillando.`
         detailsPanel.addEventListener('touchstart', () => { detailsPanel.style.zIndex = ++highestZIndex; }, { passive: true });
     }
 
-    // Shared utility for making panels draggable by their titlebar
+    // Panel drag — delegates to shared/win95.js so other pages can reuse.
+    // Falls back to a no-op if the shared script failed to load (defensive).
     function makePanelDraggable(panel, titlebar, closeBtn) {
         if (!titlebar || !panel) return;
-        let isDragging = false;
-        let offX = 0, offY = 0;
-
-        titlebar.addEventListener('mousedown', (e) => {
-            if (e.target === closeBtn) return;
-            isDragging = true;
-            offX = e.clientX - panel.offsetLeft;
-            offY = e.clientY - panel.offsetTop;
-            panel.style.zIndex = ++highestZIndex;
-            e.preventDefault();
+        if (!window.win95?.makeDraggable) {
+            console.warn('[panel-drag] shared/win95.js not loaded');
+            return;
+        }
+        window.win95.makeDraggable(panel, {
+            handle: titlebar,
+            ignore: closeBtn,
+            onStart: (el) => { el.style.zIndex = ++highestZIndex; },
         });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const x = e.clientX - offX;
-            const y = e.clientY - offY;
-            const maxX = window.innerWidth - panel.offsetWidth;
-            const maxY = window.innerHeight - panel.offsetHeight - 40;
-            panel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            panel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-        });
-
-        document.addEventListener('mouseup', () => { isDragging = false; });
     }
 
     // Make the details panel draggable by its titlebar

@@ -370,7 +370,10 @@
                 if (e.target === tortaModal) tortaModal.style.display = 'none';
             });
             window.addEventListener('message', function(e) {
-                if (e.data === 'open-torta-modal') tortaModal.style.display = 'flex';
+                if (e.origin !== location.origin) return;
+                if (e.data === 'open-torta-modal' || e.data?.type === 'open-torta-modal') {
+                    tortaModal.style.display = 'flex';
+                }
             });
         })();
         // =====================================================================
