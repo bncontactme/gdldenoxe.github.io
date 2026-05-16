@@ -265,6 +265,13 @@ const tienda = (() => {
             imageArea.appendChild(badge);
         }
 
+        // Sold-out overlay
+        if (product.soldOut) {
+            const soldOutEl = document.createElement('div');
+            soldOutEl.className = 'catalog-sold-out';
+            imageArea.appendChild(soldOutEl);
+        }
+
         // Subtitle
         if (product.subtitle) {
             const sub = document.createElement('span');

@@ -533,6 +533,32 @@ input[type="checkbox"] { display: none; }
     will-change: transform;
 }
 
+/* --- Sold-out diagonal overlay --- */
+.catalog-sold-out {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.catalog-sold-out::after {
+    content: 'AGOTADO';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    background: rgba(160, 0, 0, 0.88);
+    color: #fff;
+    font: 900 0.62rem/1 var(--font-impact);
+    padding: 5px 0;
+    letter-spacing: 2px;
+    width: 200%;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
 /* --- Title text layer --- */
 .catalog-title {
     position: absolute;

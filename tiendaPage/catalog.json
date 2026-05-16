@@ -160,6 +160,7 @@
             "image": "assets/products/gdn/rosa 1.jpg",
             "imageContain": true,
             "noCornerEffect": true,
+            "splashY": 55,
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
             "description": "Camisa formal en tono rosa/morado claro, con parche Guadalajara De Noche con impresión textil blanco",
             "link": "https://www.paypal.com/ncp/payment/AZ4RJRL4HC3ZS",
@@ -317,6 +318,9 @@
             "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G",
             "info": "Talla Única",
             "stock": "2 u",
+            "splashRight": -8,
+            "splashBottom": true,
+            "splashY": -8,
             "variants": [
                 { "label": "Gris",       "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
                 { "label": "Mezclilla",  "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
@@ -326,6 +330,7 @@
             "id": "boxer-11",
             "name": "Bufanda GDN",
             "noSplash": true,
+            "soldOut": true,
             "price": 250, "cents": "00", "currency": "MXN",
             "image": "assets/products/101/ambas bufas.jpg",
             "description": "Edición limitada GDN.",
