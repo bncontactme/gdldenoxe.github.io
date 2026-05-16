@@ -5,9 +5,7 @@ workers/**/.dev.vars
 
 # macOS
 .DS_Store
+**/.DS_Store
 
 # Editor
 .vscode/
-# macOS
-.DS_Store
-**/.DS_Store

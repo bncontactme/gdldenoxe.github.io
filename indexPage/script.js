@@ -961,6 +961,10 @@ juntxs y brillando.`
     const playerMinimizeBtn = musicPlayer?.querySelector('.player-minimize-btn');
     const playerCloseBtn = musicPlayer?.querySelector('.player-close-btn');
     const progressBar = $('.progress-bar');
+
+    // SVG icon constants — used by play/pause/stop handlers
+    const ICON_PLAY  = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
+    const ICON_PAUSE = '<svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="#000"><rect x="4" y="2" width="6" height="20"/><rect x="14" y="2" width="6" height="20"/></svg>';
     
     // Playlist: Radio en vivo
     const playlist = [
@@ -1004,12 +1008,12 @@ juntxs y brillando.`
     playBtn?.addEventListener('click', () => {
         if (isPlaying) {
             audioPlayer.pause();
-            playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
+            playBtn.innerHTML = ICON_PLAY;
             isPlaying = false;
             if (liveDot) liveDot.classList.add('paused');
         } else {
             audioPlayer.play();
-            playBtn.innerHTML = '<svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="#000"><rect x="4" y="2" width="6" height="20"/><rect x="14" y="2" width="6" height="20"/></svg>';
+            playBtn.innerHTML = ICON_PAUSE;
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
         }
@@ -1019,7 +1023,7 @@ juntxs y brillando.`
     stopBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
+        if (playBtn) playBtn.innerHTML = ICON_PLAY;
         isPlaying = false;
         if (progressFill) progressFill.style.width = '0%';
         updateTimeDisplay();
@@ -1081,7 +1085,7 @@ juntxs y brillando.`
     playerCloseBtn?.addEventListener('click', () => {
         audioPlayer.pause();
         isPlaying = false;
-        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
+        if (playBtn) playBtn.innerHTML = ICON_PLAY;
         musicPlayer?.classList.add('hidden');
         $('#taskbar-radio')?.remove();
     });
@@ -1105,13 +1109,11 @@ juntxs y brillando.`
 
     function checkIcecastStatus() {
         return fetch(statusUrl)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                var sources = (data && data.icestats && data.icestats.source) || [];
+            .then(r => r.json())
+            .then(data => {
+                let sources = data?.icestats?.source || [];
                 if (!Array.isArray(sources)) sources = [sources];
-                var live = sources.some(function(s) {
-                    return s.listenurl && s.listenurl.indexOf('/stream.mp3') !== -1;
-                });
+                const live = sources.some(s => s.listenurl?.includes('/stream.mp3'));
                 console.log('[Radio] Icecast check:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
                 
@@ -1135,11 +1137,11 @@ juntxs y brillando.`
                     if (isPlaying && playlist[currentTrackIndex].isLive) {
                         audioPlayer.pause();
                         isPlaying = false;
-                        if (playBtn) playBtn.innerHTML = '<svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="#000"><polygon points="4,2 22,12 4,22"/></svg>';
+                        if (playBtn) playBtn.innerHTML = ICON_PLAY;
                     }
                 }
             })
-            .catch(function(err) {
+            .catch(err => {
                 console.warn('[Radio] Icecast check failed:', err);
                 radioAvailable = false;
                 // Keep menu item visible even on error
@@ -1225,33 +1227,36 @@ juntxs y brillando.`
         detailsPanel.addEventListener('touchstart', () => { detailsPanel.style.zIndex = ++highestZIndex; }, { passive: true });
     }
 
-    // Make the details panel draggable by its titlebar
-    if (detailsTitlebar && detailsPanel) {
-        let isDraggingDetails = false;
-        let detailsOffX = 0;
-        let detailsOffY = 0;
+    // Shared utility for making panels draggable by their titlebar
+    function makePanelDraggable(panel, titlebar, closeBtn) {
+        if (!titlebar || !panel) return;
+        let isDragging = false;
+        let offX = 0, offY = 0;
 
-        detailsTitlebar.addEventListener('mousedown', (e) => {
-            if (e.target === detailsClose) return;
-            isDraggingDetails = true;
-            detailsOffX = e.clientX - detailsPanel.offsetLeft;
-            detailsOffY = e.clientY - detailsPanel.offsetTop;
-            detailsPanel.style.zIndex = ++highestZIndex;
+        titlebar.addEventListener('mousedown', (e) => {
+            if (e.target === closeBtn) return;
+            isDragging = true;
+            offX = e.clientX - panel.offsetLeft;
+            offY = e.clientY - panel.offsetTop;
+            panel.style.zIndex = ++highestZIndex;
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (!isDraggingDetails) return;
-            const x = e.clientX - detailsOffX;
-            const y = e.clientY - detailsOffY;
-            const maxX = window.innerWidth - detailsPanel.offsetWidth;
-            const maxY = window.innerHeight - detailsPanel.offsetHeight - 40;
-            detailsPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            detailsPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+            if (!isDragging) return;
+            const x = e.clientX - offX;
+            const y = e.clientY - offY;
+            const maxX = window.innerWidth - panel.offsetWidth;
+            const maxY = window.innerHeight - panel.offsetHeight - 40;
+            panel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            panel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
         });
 
-        document.addEventListener('mouseup', () => { isDraggingDetails = false; });
+        document.addEventListener('mouseup', () => { isDragging = false; });
     }
+
+    // Make the details panel draggable by its titlebar
+    makePanelDraggable(detailsPanel, detailsTitlebar, detailsClose);
 
     // Listen for messages from the gallery iframe (origin-validated)
     window.addEventListener('message', (e) => {
@@ -1434,32 +1439,7 @@ juntxs y brillando.`
     }
 
     // Make the player panel draggable by its titlebar
-    if (playerTitlebar && playerPanel) {
-        let isDraggingPlayer = false;
-        let playerOffX = 0;
-        let playerOffY = 0;
-
-        playerTitlebar.addEventListener('mousedown', (e) => {
-            if (e.target === playerClose) return;
-            isDraggingPlayer = true;
-            playerOffX = e.clientX - playerPanel.offsetLeft;
-            playerOffY = e.clientY - playerPanel.offsetTop;
-            playerPanel.style.zIndex = ++highestZIndex;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDraggingPlayer) return;
-            const x = e.clientX - playerOffX;
-            const y = e.clientY - playerOffY;
-            const maxX = window.innerWidth - playerPanel.offsetWidth;
-            const maxY = window.innerHeight - playerPanel.offsetHeight - 40;
-            playerPanel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            playerPanel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-        });
-
-        document.addEventListener('mouseup', () => { isDraggingPlayer = false; });
-    }
+    makePanelDraggable(playerPanel, playerTitlebar, playerClose);
 
     // ─── Buscaminas (embedded) ───
     (function() {
