@@ -1071,6 +1071,58 @@ input[type="checkbox"] { display: none; }
     outline-offset: -4px;
 }
 
+/* ── Carousel nav row (below image) ── */
+.modal-carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 220px;
+    padding: 3px 0 1px;
+}
+.modal-carousel-prev,
+.modal-carousel-next {
+    background: var(--w95-bg);
+    color: var(--w95-text);
+    font-family: var(--w95-font);
+    font-size: 10px;
+    padding: 1px 6px;
+    cursor: pointer;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light), inset -1px -1px 0 var(--w95-dark);
+    user-select: none;
+    flex-shrink: 0;
+}
+.modal-carousel-prev:active,
+.modal-carousel-next:active {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-light);
+}
+.modal-carousel-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.modal-carousel-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--w95-dark);
+    border: 1px solid var(--w95-darker);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.modal-carousel-dot.active {
+    background: var(--w95-blue);
+    border-color: var(--w95-blue);
+}
+
 /* ── Color variant swatches ── */
 .modal-variants {
     display: flex;

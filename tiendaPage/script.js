@@ -1030,6 +1030,24 @@ const tienda = (() => {
     const badgeEl   = modal.querySelector('.modal-badge');
     const buyBtn    = modal.querySelector('.modal-buy-btn');
     const variantsEl = modal.querySelector('.modal-variants');
+    const carouselNav = modal.querySelector('.modal-carousel-nav');
+    const prevBtn    = modal.querySelector('.modal-carousel-prev');
+    const nextBtn    = modal.querySelector('.modal-carousel-next');
+    const dotsEl     = modal.querySelector('.modal-carousel-dots');
+
+    let carouselImages = [];
+    let carouselIndex  = 0;
+
+    const setCarouselSlide = (i) => {
+        carouselIndex = (i + carouselImages.length) % carouselImages.length;
+        imgEl.src = carouselImages[carouselIndex];
+        dotsEl.querySelectorAll('.modal-carousel-dot').forEach((d, idx) => {
+            d.classList.toggle('active', idx === carouselIndex);
+        });
+    };
+
+    if (prevBtn) prevBtn.addEventListener('click', () => setCarouselSlide(carouselIndex - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => setCarouselSlide(carouselIndex + 1));
 
     let previousFocus = null;
 
@@ -1056,7 +1074,26 @@ const tienda = (() => {
     };
 
     tienda.on('openModal', (product) => {
-        imgEl.src  = product.image || '';
+        // Carousel setup
+        carouselImages = (product.images && product.images.length > 1) ? product.images : [];
+        carouselIndex  = 0;
+
+        if (carouselImages.length > 1) {
+            // Populate dots
+            dotsEl.innerHTML = '';
+            carouselImages.forEach((_, i) => {
+                const dot = document.createElement('span');
+                dot.className = 'modal-carousel-dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', () => setCarouselSlide(i));
+                dotsEl.appendChild(dot);
+            });
+            if (carouselNav) carouselNav.style.display = 'flex';
+            imgEl.src = carouselImages[0];
+        } else {
+            if (carouselNav) carouselNav.style.display = 'none';
+            imgEl.src = product.image || '';
+        }
+
         imgEl.alt  = product.name  || '';
         nameEl.textContent  = product.name || '';
         priceEl.textContent = (product.price != null)
@@ -1073,10 +1110,10 @@ const tienda = (() => {
 
         buyBtn.href = product.link || '#';
 
-        // Render color variants if present
+        // Render color variants if present (non-carousel products)
         if (variantsEl) {
             variantsEl.innerHTML = '';
-            if (product.variants && product.variants.length > 0) {
+            if (!carouselImages.length && product.variants && product.variants.length > 0) {
                 variantsEl.style.display = 'flex';
                 const label = document.createElement('span');
                 label.className = 'modal-variants-label';
