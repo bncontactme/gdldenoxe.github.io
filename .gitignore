@@ -9,3 +9,6 @@ workers/**/.dev.vars
 
 # Editor
 .vscode/
+
+# Claude
+.claude/
