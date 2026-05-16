@@ -145,10 +145,21 @@ const tienda = (() => {
 
     /* ── DOM helpers ── */
 
-    const posEl = (tag, className, x, y, w, h) => {
+    /** Create an element with optional class and text content */
+    const mk = (tag, className, text) => {
         const el = document.createElement(tag);
         if (className) el.className = className;
-        el.style.cssText = 'position:absolute;left:' + x + '%;top:' + y + '%;width:' + w + '%;height:' + h + '%;';
+        if (text != null) el.textContent = text;
+        return el;
+    };
+
+    const posEl = (tag, className, x, y, w, h) => {
+        const el = mk(tag, className);
+        Object.assign(el.style, {
+            position: 'absolute',
+            left: x + '%', top: y + '%',
+            width: w + '%', height: h + '%'
+        });
         return el;
     };
 
@@ -156,33 +167,44 @@ const tienda = (() => {
 
     /** Build $XX.CC price element with the given wrapper class */
     const buildPriceEl = (price, cents, className) => {
-        const wrap = document.createElement('div');
-        wrap.className = className;
-        const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-        const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(price);
-        const c = document.createElement('span'); c.className = 'catalog-price-cents';  c.textContent = cents || '00';
-        wrap.appendChild(d); wrap.appendChild(a); wrap.appendChild(c);
+        const wrap = mk('div', className);
+        wrap.append(
+            mk('span', 'catalog-price-dollar', '$'),
+            mk('span', 'catalog-price-amount', String(price)),
+            mk('span', 'catalog-price-cents', cents || '00')
+        );
         return wrap;
+    };
+
+    /** Apply splash position — product overrides take priority over slot defaults */
+    const applySplashPosition = (el, product, slot) => {
+        const px = (v) => v + '%';
+        const sx = product.splashX ?? slot.splashX;
+        const sy = product.splashY ?? slot.splashY;
+        const sw = product.splashW ?? slot.splashW;
+        const sh = product.splashH ?? slot.splashH;
+
+        if (sx != null) el.style.left = px(sx);
+        if (product.splashRight != null) { el.style.right = px(product.splashRight); el.style.left = 'auto'; }
+
+        if (product.splashBottom) {
+            if (sy != null) el.style.bottom = px(sy);
+            el.style.top = 'auto';
+        } else if (sy != null) {
+            el.style.top = px(sy);
+            el.style.bottom = 'auto';
+        }
+
+        if (sw != null) el.style.width  = px(sw);
+        if (sh != null) el.style.height = px(sh);
     };
 
     /** Build splash-with-price (image + price overlay) */
     const buildSplashEl = (product, slot, splashSrc, assets) => {
-        const splashWrap = document.createElement('div');
-        splashWrap.className = 'catalog-splash';
-        // Product-level overrides take priority over slot defaults
-        const sx = product.splashX != null ? product.splashX : slot.splashX;
-        const sy = product.splashY != null ? product.splashY : slot.splashY;
-        const sw = product.splashW != null ? product.splashW : slot.splashW;
-        const sh = product.splashH != null ? product.splashH : slot.splashH;
-        if (sx != null) splashWrap.style.left = sx + '%';
-        if (product.splashRight != null) { splashWrap.style.right = product.splashRight + '%'; splashWrap.style.left = 'auto'; }
-        if (product.splashBottom) { if (product.splashY != null) { splashWrap.style.bottom = product.splashY + '%'; } splashWrap.style.top = 'auto'; }
-        else if (sy != null) { splashWrap.style.top = sy + '%'; splashWrap.style.bottom = 'auto'; }
-        if (sw != null) splashWrap.style.width  = sw + '%';
-        if (sh != null) splashWrap.style.height = sh + '%';
+        const splashWrap = mk('div', 'catalog-splash');
+        applySplashPosition(splashWrap, product, slot);
 
-        const splashImg = document.createElement('img');
-        splashImg.className = 'catalog-splash-img';
+        const splashImg = mk('img', 'catalog-splash-img');
         splashImg.src = splashSrc;
         splashImg.alt = '';
         splashImg.loading = 'lazy';
@@ -192,8 +214,7 @@ const tienda = (() => {
         const scales = assets.splashScales || {};
         for (const [fragment, scale] of Object.entries(scales)) {
             if (splashSrc.includes(fragment)) {
-                splashImg.style.transform = 'scale(' + scale + ')';
-                splashImg.style.transformOrigin = 'center';
+                Object.assign(splashImg.style, { transform: `scale(${scale})`, transformOrigin: 'center' });
                 break;
             }
         }
@@ -217,13 +238,11 @@ const tienda = (() => {
 
         wrapper.dataset.frame = frame;
 
-        const imageArea = document.createElement('div');
-        imageArea.className = 'catalog-image-area';
+        const imageArea = mk('div', 'catalog-image-area');
 
         // Frame image
         if (assets.frames[frame]) {
-            const frameImg = document.createElement('img');
-            frameImg.className = 'catalog-frame';
+            const frameImg = mk('img', 'catalog-frame');
             frameImg.src = assets.frames[frame];
             frameImg.alt = '';
             frameImg.loading = 'lazy';
@@ -232,12 +251,10 @@ const tienda = (() => {
 
         // Product photo clipped inside frame
         if (product.image) {
-            const clipDiv = document.createElement('div');
-            clipDiv.className = 'catalog-image-clip';
+            const clipDiv = mk('div', 'catalog-image-clip');
             if (product.imageBg) clipDiv.style.backgroundColor = product.imageBg;
             if (product.imageContain) clipDiv.classList.add('image-contain');
-            const prodImg = document.createElement('img');
-            prodImg.className = 'catalog-product-image';
+            const prodImg = mk('img', 'catalog-product-image');
             prodImg.src = product.image;
             prodImg.alt = product.name || '';
             prodImg.loading = 'lazy';
@@ -251,33 +268,24 @@ const tienda = (() => {
             imageArea.appendChild(buildSplashEl(product, slot, splashSrc, assets));
         } else if (product.price != null && !product.noSplash) {
             // Standalone price (no splash image available)
-            const priceWrap = document.createElement('div');
-            priceWrap.className = 'catalog-price-standalone';
+            const priceWrap = mk('div', 'catalog-price-standalone');
             priceWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
             imageArea.appendChild(priceWrap);
         }
 
         // Badge
         if (product.badge) {
-            const badge = document.createElement('span');
-            badge.className = 'catalog-badge';
-            badge.textContent = product.badge;
-            imageArea.appendChild(badge);
+            imageArea.appendChild(mk('span', 'catalog-badge', product.badge));
         }
 
         // Sold-out overlay
         if (product.soldOut) {
-            const soldOutEl = document.createElement('div');
-            soldOutEl.className = 'catalog-sold-out';
-            imageArea.appendChild(soldOutEl);
+            imageArea.appendChild(mk('div', 'catalog-sold-out'));
         }
 
         // Subtitle
         if (product.subtitle) {
-            const sub = document.createElement('span');
-            sub.className = 'catalog-subtitle';
-            sub.textContent = product.subtitle;
-            imageArea.appendChild(sub);
+            imageArea.appendChild(mk('span', 'catalog-subtitle', product.subtitle));
         }
 
         // Corner effects: per-product noCornerEffect takes priority, then per-product cornerEffect forces it, then per-page override, then pool default
@@ -312,34 +320,27 @@ const tienda = (() => {
 
         // Product name
         if (product.name) {
-            const nameEl = document.createElement('span');
-            nameEl.className = 'catalog-product-name';
+            const nameEl = mk('span', 'catalog-product-name', product.name);
             if (slot.textSide) nameEl.classList.add('catalog-text-' + slot.textSide);
-            nameEl.textContent = product.name;
             if (product.nameMarginTop != null) nameEl.style.marginTop = product.nameMarginTop + '%';
-            if (product.name && product.name.startsWith('@')) nameEl.style.textTransform = 'none';
+            if (product.name.startsWith('@')) nameEl.style.textTransform = 'none';
             wrapper.appendChild(nameEl);
         }
 
         // Info
         if (product.stock || product.info) {
-            const infoEl = document.createElement('div');
-            infoEl.className = 'catalog-product-info';
+            const infoEl = mk('div', 'catalog-product-info');
             if (slot.textSide) infoEl.classList.add('catalog-text-' + slot.textSide);
             const lines = [];
             if (product.info) lines.push(product.info);
             if (product.stock) lines.push('Stock: ' + product.stock);
-            lines.forEach((line, i) => {
-                if (i > 0) infoEl.appendChild(document.createElement('br'));
-                infoEl.appendChild(document.createTextNode(line));
-            });
+            infoEl.innerHTML = lines.join('<br>');
             wrapper.appendChild(infoEl);
         }
 
         // If textLayout is 'left-of-image' or 'right-of-image', move name+info to an absolute container
         if (slot.textLayout === 'left-of-image' || slot.textLayout === 'right-of-image') {
-            const textBlock = document.createElement('div');
-            textBlock.className = 'catalog-text-' + slot.textLayout;
+            const textBlock = mk('div', 'catalog-text-' + slot.textLayout);
 
             // Add red price above name
             if (product.price != null) {
@@ -390,8 +391,7 @@ const tienda = (() => {
         const logoSrc = src || assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
-        const img = document.createElement('img');
-        img.className = 'catalog-logo-img' + (noShadow ? ' no-shadow' : '');
+        const img = mk('img', 'catalog-logo-img' + (noShadow ? ' no-shadow' : ''));
         img.src = logoSrc;
         img.alt = 'GDLDENOXE';
         img.loading = 'lazy';
@@ -416,31 +416,16 @@ const tienda = (() => {
 
     const buildQuote = (x, y, w, h) => {
         const wrap = posEl('div', 'catalog-quote', x, y, w, h);
-        const inner = document.createElement('div');
-        inner.className = 'catalog-quote-inner';
-        const bg = document.createElement('div');
-        bg.className = 'catalog-quote-bg';
-        inner.appendChild(bg);
-        const text = document.createElement('div');
-        text.className = 'catalog-quote-text';
+        const inner = mk('div', 'catalog-quote-inner');
+        inner.appendChild(mk('div', 'catalog-quote-bg'));
 
-        const esGratis = document.createElement('strong');
-        esGratis.className = 'quote-line-highlight';
-        esGratis.textContent = 'ES GRATIS';
-        const middle = document.createElement('span');
-        middle.className = 'quote-line-sub';
-        middle.textContent = 'disfrutar de las cosas que';
-        const deNoche = document.createElement('strong');
-        deNoche.className = 'quote-line-main';
-        deNoche.textContent = 'DE NOCHE';
-        const noTienen = document.createElement('span');
-        noTienen.className = 'quote-line-highlight quote-line-sub';
-        noTienen.textContent = 'NO TIENEN PRECIO..';
-
-        text.appendChild(esGratis);
-        text.appendChild(middle);
-        text.appendChild(deNoche);
-        text.appendChild(noTienen);
+        const text = mk('div', 'catalog-quote-text');
+        text.append(
+            mk('strong', 'quote-line-highlight', 'ES GRATIS'),
+            mk('span', 'quote-line-sub', 'disfrutar de las cosas que'),
+            mk('strong', 'quote-line-main', 'DE NOCHE'),
+            mk('span', 'quote-line-highlight quote-line-sub', 'NO TIENEN PRECIO..')
+        );
         inner.appendChild(text);
         wrap.appendChild(inner);
         return wrap;
@@ -500,12 +485,13 @@ const tienda = (() => {
         const offsetY = (typeof entry === 'object' && entry.offsetY != null) ? entry.offsetY : 0;
         const offsetW = (typeof entry === 'object' && entry.offsetW != null) ? entry.offsetW : 0;
 
-        const wrap = document.createElement('div');
-        wrap.className = 'catalog-big-splash';
-        wrap.style.left = (pos.left + offsetX) + '%';
-        wrap.style.top = (pos.top + offsetY) + '%';
-        wrap.style.width = (pos.cssW + offsetW) + '%';
-        const img = document.createElement('img');
+        const wrap = mk('div', 'catalog-big-splash');
+        Object.assign(wrap.style, {
+            left: (pos.left + offsetX) + '%',
+            top: (pos.top + offsetY) + '%',
+            width: (pos.cssW + offsetW) + '%'
+        });
+        const img = mk('img');
         img.src = src;
         img.alt = '';
         img.loading = 'lazy';
@@ -537,9 +523,8 @@ const tienda = (() => {
             } while (conflicts.has(pos) && attempts < cornerPositions.length);
         }
 
-        const wrap = document.createElement('div');
-        wrap.className = 'catalog-corner-effect corner-' + pos;
-        const img = document.createElement('img');
+        const wrap = mk('div', 'catalog-corner-effect corner-' + pos);
+        const img = mk('img');
         img.src = cornerEffectRotator();
         img.alt = '';
         img.loading = 'lazy';
@@ -550,18 +535,15 @@ const tienda = (() => {
     /* ── Build a single page face (shell: bg + shadow + shading + label) ── */
 
     const buildFaceShell = (faceClass, shadingSrc, bgSrc, checkboxId, assets) => {
-        const face = document.createElement('div');
-        face.className = faceClass;
+        const face = mk('div', faceClass);
 
         // Background
-        const bgImg = document.createElement('div');
-        bgImg.className = 'catalog-bg';
-        bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
+        const bgImg = mk('div', 'catalog-bg');
+        bgImg.style.backgroundImage = `url("${bgSrc}")`;
         face.appendChild(bgImg);
 
         // Edge shading
-        const shade = document.createElement('img');
-        shade.className = 'edge_shading';
+        const shade = mk('img', 'edge_shading');
         shade.src = shadingSrc;
         shade.alt = '';
         shade.loading = 'lazy';
@@ -569,7 +551,7 @@ const tienda = (() => {
 
         // Flip label (only if checkboxId exists — last page has none so it can't flip)
         if (checkboxId) {
-            const label = document.createElement('label');
+            const label = mk('label');
             label.setAttribute('for', checkboxId);
             face.appendChild(label);
         }
@@ -1449,10 +1431,10 @@ const tienda = (() => {
 
 (() => {
     /* ── Start on first user interaction ── */
-    let _audioStarted = false;
+    let _audioActivated = false;
     const _startAudio = () => {
-        if (_audioStarted) return;
-        _audioStarted = true;
+        if (_audioActivated) return;
+        _audioActivated = true;
         tienda.emit('startMusic');
         tienda.emit('startAds');
     };
@@ -1469,7 +1451,8 @@ const tienda = (() => {
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             _stopAudio();
-        } else {
+        } else if (_audioActivated) {
+            // Only resume if user previously activated audio via gesture
             tienda.emit('startMusic');
             tienda.emit('startAds');
         }

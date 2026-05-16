@@ -49,6 +49,38 @@
     --w95-mono:   'Fixedsys', 'Courier New', monospace;
 }
 
+/* WIN95 BORDER UTILITIES — Reusable raised/pressed border pattern
+   Eliminates duplicate border declarations throughout the file */
+.w95-raised {
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+}
+
+.w95-pressed {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+}
+
+/* Shared price text shadow — used by dollar, amount, cents */
+.catalog-price-container span {
+    color: var(--price-red);
+    font-style: italic;
+    font-weight: 900;
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+}
 /* GENERAL */
 body {
     min-height: 100dvh;
@@ -267,7 +299,9 @@ input[type="checkbox"] { display: none; }
     filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
 }
 
-/* Text positioned to the right of the image (Template D slot 1) */
+/* Text positioned to the right of the image (Template D slot 1)
+   NOTE: Template D ('1-left-featured') is defined in script.js but currently
+   unused in catalog.json pages[]. Keeping for future catalog layouts. */
 .catalog-text-right-of-image {
     position: absolute;
     left: 100%;
@@ -445,35 +479,19 @@ input[type="checkbox"] { display: none; }
 
 .catalog-price-dollar {
     font: italic 900 0.75em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 1px var(--price-stroke);
-    paint-order: stroke fill;
-    text-shadow:
-        2px 2px 0 rgba(0,0,0,0.85),
-        -1px -1px 0 rgba(0,0,0,0.6),
-        1px -1px 0 rgba(0,0,0,0.6),
-        -1px 1px 0 rgba(0,0,0,0.6);
     margin-right: 0px;
     align-self: flex-start;
 }
 
 .catalog-price-amount {
     font: italic 900 1em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 1.5px var(--price-stroke);
-    paint-order: stroke fill;
-    text-shadow:
-        2px 2px 0 rgba(0,0,0,0.85),
-        -1px -1px 0 rgba(0,0,0,0.6),
-        1px -1px 0 rgba(0,0,0,0.6),
-        -1px 1px 0 rgba(0,0,0,0.6);
 }
 
 .catalog-price-cents {
     font: italic 900 0.42em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 0.8px var(--price-stroke);
-    paint-order: stroke fill;
     text-shadow:
         1px 1px 0 rgba(0,0,0,0.85),
         -1px -1px 0 rgba(0,0,0,0.5);

@@ -20,56 +20,56 @@
             "template": "1-featured",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
-            "products": ["boxer-4"]
+            "products": ["camisa-negra"]
         },
         {
             "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
-            "products": ["boxer-6", "boxer-7", "boxer-8"]
+            "products": ["model-drugleaf", "gorra-oficina", "boxer-gdn"]
         },
         {
             "template": "1-featured",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
-            "products": ["boxer-1"]
+            "products": ["camisa-azul"]
         },
         {
             "template": "2-split",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-14", "boxer-2b"]
+            "products": ["bolsa-gdn", "model-alejavn"]
         },
         {
             "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
-            "products": ["boxer-9", "boxer-10", "boxer-3"]
+            "products": ["model-pplease", "almohada-limon", "camisa-rosa"]
         },
         {
             "template": "2-split",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-12", "boxer-12b"]
+            "products": ["model-depresso", "almohada-luna"]
         },
         {
             "template": "2-split",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
-            "products": ["boxer-11", "boxer-3b"]
+            "products": ["bufanda-gdn", "model-qhice"]
         },
         {
             "template": "2S-1L",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
             "logo": { "variant": "dark", "x": 52, "y": 5, "w": 42, "h": 10, "src": "assets/webAssets/logo/path1517.png" },
             "bigSplash": false,
-            "products": ["boxer-5", "boxer-13", "boxer-2"]
+            "products": ["model-anaconda", "totebag-gdn", "almohada-dorada"]
         },
         {
             "template": "1-featured",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
             "logo": { "variant": "light", "x": 10, "y": 2, "w": 80, "h": 14 },
-            "products": ["boxer-15"]
+            "products": ["model-harley"]
         },
         {
             "_blank": true,
@@ -137,7 +137,7 @@
 
     "products": [
         {
-            "id": "boxer-8",
+            "id": "boxer-gdn",
             "name": "Boxer GDN",
             "price": 250,
             "image": "assets/products/boxers/boxer 3.jpg",
@@ -147,7 +147,7 @@
             "stock": "7 u"
         },
         {
-            "id": "boxer-5",
+            "id": "model-anaconda",
             "name": "@anacondasangrante",
             "noSplash": true,
             "nameMarginTop": -5,
@@ -160,7 +160,7 @@
             ]
         },
         {
-            "id": "boxer-3",
+            "id": "camisa-rosa",
             "name": "Camisa: Te quiero de noche",
             "price": 500,
             "image": "assets/products/gdn/rosa 1.jpg",
@@ -180,7 +180,7 @@
             ]
         },
         {
-            "id": "boxer-3b",
+            "id": "model-qhice",
             "name": "@q.hice",
             "noSplash": true,
             "cornerEffect": true,
@@ -193,7 +193,7 @@
             ]
         },
         {
-            "id": "boxer-4",
+            "id": "camisa-negra",
             "name": "Camisa: A puño y letra",
             "price": 500,
             "image": "assets/products/gdn/negra.jpg",
@@ -209,7 +209,7 @@
             ]
         },
         {
-            "id": "boxer-6",
+            "id": "model-drugleaf",
             "name": "@drugleaf",
             "noSplash": true,
             "nameMarginTop": -5,
@@ -223,7 +223,7 @@
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetY": 20, "offsetW": -5.5 }
         },
         {
-            "id": "boxer-7",
+            "id": "gorra-oficina",
             "name": "Gorra GDN X OFICINA 101",
             "price": 500,
             "image": "assets/products/101/gorra oficina gdn .jpg",
@@ -236,7 +236,7 @@
             "splashY": -8
         },
         {
-            "id": "boxer-1",
+            "id": "camisa-azul",
             "name": "Camisa: Guadalajara De Noche",
             "price": 500,
             "image": "assets/products/gdn/azul (1).jpg",
@@ -248,7 +248,7 @@
             "badge": "NUEVO"
         },
         {
-            "id": "boxer-2",
+            "id": "almohada-dorada",
             "name": "Almohada: Mi noche dorada",
             "price": 650,
             "image": "assets/products/gdn/cojin dorado.jpg",
@@ -263,7 +263,7 @@
             ]
         },
         {
-            "id": "boxer-2b",
+            "id": "model-alejavn",
             "name": "@alejavn_",
             "noSplash": true,
             "noCornerEffect": true,
@@ -276,7 +276,7 @@
             ]
         },
         {
-            "id": "boxer-9",
+            "id": "model-pplease",
             "name": "@pplease.help.me",
             "noSplash": true,
             "nameMarginTop": -5,
@@ -288,7 +288,7 @@
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" }
         },
         {
-            "id": "boxer-10",
+            "id": "almohada-limon",
             "name": "Almohada: Un limón rosita bebé",
             "price": 600,
             "image": "assets/products/gdn/verde.jpg",
@@ -306,7 +306,7 @@
             ]
         },
         {
-            "id": "boxer-12",
+            "id": "model-depresso",
             "name": "@depressobsses",
             "noSplash": true,
             "nameMarginTop": -5,
@@ -320,7 +320,7 @@
             ]
         },
         {
-            "id": "boxer-12b",
+            "id": "almohada-luna",
             "name": "Almohada: Te bajo la Luna & las estrellas",
             "price": 600,
             "image": "assets/products/gdn/cojin luna.jpg",
@@ -339,7 +339,7 @@
             ]
         },
         {
-            "id": "boxer-13",
+            "id": "totebag-gdn",
             "name": "Totebag GDN",
             "price": 300,
             "image": "assets/products/gdn/image_3.jpeg",
@@ -354,7 +354,7 @@
             ]
         },
         {
-            "id": "boxer-11",
+            "id": "bufanda-gdn",
             "name": "Bufanda GDN",
             "noSplash": true,
             "noCornerEffect": true,
@@ -367,7 +367,7 @@
             "stock": "1 u"
         },
         {
-            "id": "boxer-14",
+            "id": "bolsa-gdn",
             "name": "Bolsa GDN",
             "price": 300,
             "image": "assets/products/101/bolsa completa.jpg",
@@ -380,7 +380,7 @@
             "cornerPosition": "br"
         },
         {
-            "id": "boxer-15",
+            "id": "model-harley",
             "name": "@harleyeltinto",
             "noSplash": true,
             "mobileHide": true,
