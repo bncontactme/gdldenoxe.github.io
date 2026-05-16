@@ -73,7 +73,8 @@
         },
         {
             "_blank": true,
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png"
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "logo2": { "src": "assets/webAssets/logo/gdn-text-black.jpg", "x": 28, "y": 40, "w": 44, "h": 12 }
         }
     ],
 

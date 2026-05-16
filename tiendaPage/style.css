@@ -749,6 +749,9 @@ input[type="checkbox"] { display: none; }
     object-fit: contain;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
 }
+.catalog-logo-img.no-shadow {
+    filter: none;
+}
 
 /* ============================================================
    PRODUCT MODAL — 2000s Supermarket Pop-Up

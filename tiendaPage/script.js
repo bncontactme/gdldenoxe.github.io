@@ -383,12 +383,12 @@ const tienda = (() => {
 
     /* ── Build decorative elements ── */
 
-    const buildLogo = (assets, variant, x, y, w, h, src) => {
+    const buildLogo = (assets, variant, x, y, w, h, src, noShadow) => {
         const logoSrc = src || assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
         const img = document.createElement('img');
-        img.className = 'catalog-logo-img';
+        img.className = 'catalog-logo-img' + (noShadow ? ' no-shadow' : '');
         img.src = logoSrc;
         img.alt = 'GDLDENOXE';
         img.loading = 'lazy';
@@ -613,6 +613,7 @@ const tienda = (() => {
                 splashRotators: splashRot,
                 noLogo: !!page.noLogo,
                 logoConfig: page.logo || null,
+                logo2Config: page.logo2 || null,
                 // Optional per-page overrides (undefined = use defaults)
                 cornerEffects: page.cornerEffects,
                 bigSplash: page.bigSplash,
@@ -670,6 +671,11 @@ const tienda = (() => {
         // Blank page: just background, no products or decorations
         if (faceData.products.length === 1 && faceData.products[0]._blank) {
             const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
+            if (faceData.logo2Config) {
+                const l2 = faceData.logo2Config;
+                const logo2 = buildLogo(assets, l2.variant || null, l2.x, l2.y, l2.w, l2.h, l2.src || null, true);
+                if (logo2) face.appendChild(logo2);
+            }
             return face;
         }
 
@@ -694,6 +700,13 @@ const tienda = (() => {
             logo = buildLogo(assets, 'dark', 10, 2, 80, 14);
         }
         if (logo) face.appendChild(logo);
+
+        // Secondary logo (logo2)
+        if (faceData.logo2Config) {
+            const l2 = faceData.logo2Config;
+            const logo2 = buildLogo(assets, l2.variant || null, l2.x, l2.y, l2.w, l2.h, l2.src || null, true);
+            if (logo2) face.appendChild(logo2);
+        }
 
         // Border color: always red for Template D, alternates for others
         const borderClass = (faceData.template === TEMPLATE_D) ? 'catalog-border-red' : (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
