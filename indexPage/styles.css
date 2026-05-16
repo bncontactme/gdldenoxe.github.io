@@ -2167,4 +2167,162 @@ body {
     max-width: 100%;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Torta donation modal — migrated from inline styles in index.html
+   ───────────────────────────────────────────────────────────────────────── */
+.torta-modal-overlay {
+    display: none; /* JS toggles to flex when opened */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
 
+.torta-modal-window {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    width: 100%;
+    max-width: 360px;
+    font-family: var(--font-system);
+}
+
+.torta-modal-titlebar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.torta-modal-close {
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--win95-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.torta-modal-body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.torta-modal-image {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    display: block;
+}
+
+.torta-modal-separator {
+    border-top: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+.torta-modal-heading {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.torta-modal-text {
+    font-size: 11px;
+    color: #222;
+    line-height: 1.5;
+}
+
+.torta-pay-btn {
+    display: block;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 5px 0;
+    font-size: 12px;
+    font-family: var(--font-system);
+    font-weight: bold;
+    color: var(--win95-black);
+    text-align: center;
+    text-decoration: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Roblox popup body — migrated from inline styles in index.html
+   ───────────────────────────────────────────────────────────────────────── */
+.roblox-popup-body {
+    padding: 7px 10px 9px;
+}
+
+.roblox-popup-text {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-family: var(--font-system);
+    line-height: 1.4;
+}
+
+.roblox-popup-warn {
+    color: red;
+    font-weight: bold;
+    font-size: 10px;
+}
+
+.roblox-popup-link {
+    color: #0000EE;
+    font-size: 11px;
+    font-family: var(--font-system);
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.roblox-popup-button-row {
+    margin-top: 8px;
+    text-align: right;
+}
+
+.roblox-popup-button {
+    display: inline-block;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 2px 10px;
+    font-size: 11px;
+    font-family: var(--font-system);
+    color: var(--win95-black);
+    text-decoration: none;
+}
+
+/* Start-button + mobile lonche taskbar icon sizing — migrated from inline */
+.start-button-icon {
+    width: 16px;
+    height: 16px;
+}
+
+#lonche-mobile-btn .taskbar-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+    object-fit: contain;
+}

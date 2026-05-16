@@ -28,7 +28,7 @@
     </div>
     <script>
         document.getElementById('open-modal').addEventListener('click', function() {
-            window.parent.postMessage('open-torta-modal', '*');
+            window.parent.postMessage({ type: 'open-torta-modal' }, location.origin);
         });
     </script>
 </body>

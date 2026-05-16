@@ -14,6 +14,8 @@
 //   Dashboard > Settings > Upload > create a SIGNED preset named archivo_signed
 //     with folder = archivo, then DISABLE the old archivo_unsigned preset.
 
+import { artistSlug } from './lib/artistSlug.js';
+
 const ALLOWED_ORIGINS = new Set([
   'https://gdldenoxe.github.io',
   'https://www.guadalajaradenoxe.com',
@@ -80,19 +82,25 @@ export default {
   },
 };
 
-// ── Subfolder slug from artist name ──────────────────────────────────────────
-function artistSlug(artista) {
-  if (!artista) return 'general';
-  const handle = String(artista).match(/@(\w+)/);
-  if (handle) return handle[1].toLowerCase();
-  return String(artista).trim().toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
-    .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
-    .slice(0, 40) || 'general';
-}
+// artistSlug() is imported from ./lib/artistSlug.js (shared with migrate.mjs).
+
+// Allowed MIME types for upload signing — Cloudinary will also reject non-images,
+// but signing only image-shaped MIMEs prevents the worker from being used as a
+// generic signing oracle.
+const ALLOWED_UPLOAD_MIME = new Set([
+  'image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif',
+]);
 
 // ── Upload handler ────────────────────────────────────────────────────────────
 async function handleUpload(body, env, origin) {
+    // If the client declares a content type, enforce the image allowlist.
+    // Missing content_type is tolerated for backward compatibility — Cloudinary
+    // will still reject non-images at upload time.
+    const declaredMime = String(body.content_type || body.resource_type || '').toLowerCase();
+    if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
+      return jsonResponse({ error: 'Unsupported content type' }, 400, origin);
+    }
+
     const timestamp    = String(Math.floor(Date.now() / 1000));
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
@@ -133,6 +141,17 @@ async function handleDelete(body, env, origin) {
   }
   // Limit to 100 per request (Cloudinary Admin API limit)
   const ids = publicIds.slice(0, 100).map(id => String(id));
+
+  // Reject any id outside the managed FOLDER. Without this, an admin password
+  // could be abused to delete unrelated Cloudinary assets on the same account.
+  const folderPrefix = FOLDER + '/';
+  const outOfScope = ids.filter(id => !id.startsWith(folderPrefix));
+  if (outOfScope.length) {
+    return jsonResponse(
+      { error: 'public_ids must be inside the ' + FOLDER + ' folder', invalid: outOfScope },
+      400, origin,
+    );
+  }
 
   // Cloudinary Admin API — DELETE /resources/image/upload with Basic auth
   const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);

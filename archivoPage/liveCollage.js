@@ -2,8 +2,9 @@
 (function() {
   'use strict';
 
+  const MOBILE_BP = 768; // shared breakpoint with indexPage/script.js + styles.css
   const collageContainer = document.getElementById('live-collage-container');
-  const _mobile = window.innerWidth <= 768;
+  const _mobile = window.innerWidth <= MOBILE_BP;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
   const MAX_IMAGES = _mobile ? 30 : 50;
 
@@ -18,12 +19,12 @@
   let recent = [];
 
   // Lightweight position tracking (avoids getBoundingClientRect / layout thrashing)
-  var placedPositions = [];
+  let placedPositions = [];
   // Track in-flight preloads so we can cancel them on pause/reset
-  var pendingPreloads = [];
+  let pendingPreloads = [];
 
   function evictOldest() {
-    var imgs = collageContainer.querySelectorAll('img');
+    let imgs = collageContainer.querySelectorAll('img');
     while (imgs.length >= MAX_IMAGES) {
       imgs[0].remove();
       placedPositions.shift();
@@ -45,15 +46,15 @@
     const size = _mobile ? Math.random() * 130 + 90 : Math.random() * 180 + 120;
 
     // Find best spot with least overlap using stored positions (no layout queries)
-    var bestTop = 0, bestLeft = 0, minOverlap = 1e9;
-    for (var tries = 0; tries < 6; tries++) {
-      var top = Math.random() * Math.max(0, cH - size);
-      var left = Math.random() * Math.max(0, cW - size);
-      var overlap = 0;
-      for (var i = 0; i < placedPositions.length; i++) {
-        var p = placedPositions[i];
-        var ox = Math.max(0, Math.min(left + size, p.l + p.s) - Math.max(left, p.l));
-        var oy = Math.max(0, Math.min(top + size, p.t + p.s) - Math.max(top, p.t));
+    let bestTop = 0, bestLeft = 0, minOverlap = 1e9;
+    for (let tries = 0; tries < 6; tries++) {
+      let top = Math.random() * Math.max(0, cH - size);
+      let left = Math.random() * Math.max(0, cW - size);
+      let overlap = 0;
+      for (let i = 0; i < placedPositions.length; i++) {
+        let p = placedPositions[i];
+        let ox = Math.max(0, Math.min(left + size, p.l + p.s) - Math.max(left, p.l));
+        let oy = Math.max(0, Math.min(top + size, p.t + p.s) - Math.max(top, p.t));
         overlap += ox * oy;
       }
       if (overlap < minOverlap) {
@@ -77,7 +78,7 @@
 
     function insert() {
       // Remove from pending list
-      var idx = pendingPreloads.indexOf(preload);
+      let idx = pendingPreloads.indexOf(preload);
       if (idx !== -1) pendingPreloads.splice(idx, 1);
       if (paused) return; // Don't insert if gallery was closed/paused while loading
       const img = document.createElement('img');
@@ -292,7 +293,7 @@
 
       item.onclick = function() {
         if (parentHandled) {
-          parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, '*');
+          parent.postMessage({ type: 'galeria-open-player', list: getListData(), index: idx }, location.origin);
         } else {
           // Mobile / standalone — open built-in details popup
           // Load full image to get real dimensions before opening details
@@ -641,7 +642,7 @@
         parentHandled = !!parent.document.getElementById('win95-details-panel');
       } catch (e) { /* cross-origin */ }
       if (parentHandled) {
-        parent.postMessage({ type: 'galeria-open-details', data }, '*');
+        parent.postMessage({ type: 'galeria-open-details', data }, location.origin);
       }
     }
 
@@ -756,9 +757,9 @@
       }
       // Walk through shuffled list, skip if in recent 10
       // Guard: if all images are in recent (e.g. only 1 image), just use the next one
-      var src = displayImages[imgIndex % displayImages.length];
+      let src = displayImages[imgIndex % displayImages.length];
       imgIndex++;
-      var attempts = 0;
+      let attempts = 0;
       while (recent.indexOf(src) !== -1 && attempts < displayImages.length) {
         src = displayImages[imgIndex % displayImages.length];
         imgIndex++;
@@ -777,8 +778,8 @@
     clearTimeout(imageTimeout);
     imageTimeout = null;
     // Remove all collage images
-    var imgs = collageContainer.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) imgs[i].remove();
+    let imgs = collageContainer.querySelectorAll('img');
+    for (let i = 0; i < imgs.length; i++) imgs[i].remove();
     zIndex = 1;
     imgIndex = 0;
     lastTop = -1;
@@ -789,9 +790,9 @@
     pendingPreloads.forEach(function(p) { p.src = ''; });
     pendingPreloads = [];
     // Reshuffle
-    for (var i = displayImages.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = displayImages[i];
+    for (let i = displayImages.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      let tmp = displayImages[i];
       displayImages[i] = displayImages[j];
       displayImages[j] = tmp;
     }
@@ -807,6 +808,7 @@
     discoverImages();
   }
 
+  let resetIntervalId = null;
   function setupPopup() {
     const overlay = document.getElementById('xp-popup-overlay');
     const okBtn = document.getElementById('xp-popup-ok');
@@ -814,7 +816,9 @@
     init();
     function dismiss() {
       overlay.style.display = 'none';
-      setInterval(reset, 300000); // clean & restart every 5 min
+      // Guard against stacking intervals if dismiss is called multiple times.
+      if (resetIntervalId) clearInterval(resetIntervalId);
+      resetIntervalId = setInterval(reset, 300000); // clean & restart every 5 min
     }
     okBtn.onclick = dismiss;
     closeBtn.onclick = dismiss;
