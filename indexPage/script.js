@@ -148,10 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
         win.style.top = Math.floor(Math.max(30, Math.min(y, screenH - height - taskbarHeight - 20))) + 'px';
     }
 
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     desktopIconsContainer?.addEventListener('click', (e) => {
         const icon = e.target.closest('.desktop-icon');
         if (!icon) return;
-        
+
         e.stopPropagation();
         const link = icon.dataset.link;
         const folder = icon.dataset.folder;
@@ -159,6 +161,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isMobile()) {
             if (link) window.open(link, '_blank');
             else if (folder) window.location.href = 'indexPage/frame.html?p=' + folder;
+            return;
+        }
+
+        // On touch devices (iPad/tablet), single tap opens the window directly
+        if (isTouchDevice()) {
+            if (link) { window.location.href = link; return; }
+            if (folder === 'articulos') { openWindow('folder-articulos'); return; }
+            if (folder === 'galeria') { openWindow('galeria'); return; }
+            if (folder === 'tienda') { openWindow('tienda', true); return; }
+            if (folder === 'lonche') { openWindow('lonche'); return; }
             return;
         }
 
@@ -631,13 +643,12 @@ juntxs y brillando.`
                     const chromeH = loncheWin.offsetHeight - (iframe ? iframe.offsetHeight : 0);
                     const remaining = screenH - poemaBottom - gap - chromeH - gap;
                     if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
-                } else if (LONCHE_LAYOUT === 3 && imgWin) {
-                    // Place below GDL DE NOCHE (random) window
-                    const imgBottom = parseInt(imgWin.style.top) + (imgWin.offsetHeight || 200);
-                    const imgW = imgWin.offsetWidth || 380;
-                    loncheWin.style.left = imgWin.style.left;
-                    loncheWin.style.top = (imgBottom + gap) + 'px';
-                    loncheWin.style.width = imgW + 'px';
+                } else if (LONCHE_LAYOUT === 3) {
+                    // Place after all other windows — last frame in the right column
+                    const loncheW = Math.min(loncheWin.offsetWidth || 380, availW - gap * 2);
+                    loncheWin.style.left = (screenW - loncheW - gap) + 'px';
+                    loncheWin.style.top = belowY + 'px';
+                    loncheWin.style.width = loncheW + 'px';
                     if (iframe) iframe.style.height = '130px';
                 }
             }
