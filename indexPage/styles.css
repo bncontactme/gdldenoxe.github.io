@@ -681,11 +681,10 @@ body {
     width: 550px;
 }
 
-/* Panel de detalles de imagen - ventana independiente estilo Win95 */
-#win95-details-panel {
+/* ===== Shared panel styles (details + player) ===== */
+.w95-panel {
     display: none;
     position: absolute;
-    width: 280px;
     background: var(--win95-gray);
     border-top: var(--border-raised);
     border-left: var(--border-raised);
@@ -697,11 +696,11 @@ body {
     flex-direction: column;
 }
 
-#win95-details-panel.open {
+.w95-panel.open {
     display: flex;
 }
 
-#win95-details-titlebar {
+.w95-panel-titlebar {
     background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
     color: var(--win95-white);
     padding: 3px 5px;
@@ -715,7 +714,7 @@ body {
     user-select: none;
 }
 
-#win95-details-close {
+.w95-panel-close {
     width: 18px;
     height: 18px;
     background: var(--win95-gray);
@@ -733,11 +732,52 @@ body {
     justify-content: center;
 }
 
-#win95-details-close:active {
+.w95-panel-close:active {
     border-top: 1px solid var(--win95-black);
     border-left: 1px solid var(--win95-black);
     border-right: 1px solid var(--win95-white);
     border-bottom: 1px solid var(--win95-white);
+}
+
+/* Win95 button — reusable across panels */
+.w95-btn {
+    min-width: 75px;
+    height: 23px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-system);
+}
+
+.w95-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.w95-btn:disabled {
+    color: #808080;
+    cursor: default;
+}
+
+/* Panel de detalles de imagen - ventana independiente estilo Win95 */
+#win95-details-panel {
+    width: 280px;
+}
+
+#win95-details-titlebar,
+#win95-player-titlebar {
+    /* Inherits from .w95-panel-titlebar */
+}
+
+#win95-details-close,
+#win95-player-close {
+    /* Inherits from .w95-panel-close */
 }
 
 #win95-details-body {
@@ -841,61 +881,7 @@ body {
 
 /* ===== Visor de imágenes (Image Player) ===== */
 #win95-player-panel {
-    display: none;
-    position: absolute;
     width: 420px;
-    background: var(--win95-gray);
-    border-top: var(--border-raised);
-    border-left: var(--border-raised);
-    border-right: var(--border-sunken);
-    border-bottom: var(--border-sunken);
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-    z-index: 200;
-    font-family: var(--font-system);
-    flex-direction: column;
-}
-
-#win95-player-panel.open {
-    display: flex;
-}
-
-#win95-player-titlebar {
-    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
-    color: var(--win95-white);
-    padding: 3px 5px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12px;
-    font-weight: bold;
-    flex-shrink: 0;
-    cursor: move;
-    user-select: none;
-}
-
-#win95-player-close {
-    width: 18px;
-    height: 18px;
-    background: var(--win95-gray);
-    border-top: 1px solid var(--win95-white);
-    border-left: 1px solid var(--win95-white);
-    border-right: 1px solid var(--win95-black);
-    border-bottom: 1px solid var(--win95-black);
-    padding: 0;
-    line-height: 14px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#win95-player-close:active {
-    border-top: 1px solid var(--win95-black);
-    border-left: 1px solid var(--win95-black);
-    border-right: 1px solid var(--win95-white);
-    border-bottom: 1px solid var(--win95-white);
 }
 
 #win95-player-body {
