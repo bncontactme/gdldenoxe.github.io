@@ -348,8 +348,8 @@
             "info": "Talla Única",
             "stock": "2 u",
             "variants": [
-                { "label": "Gris",       "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
-                { "label": "Mezclilla",  "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
+                { "label": "Gris",       "price": 300, "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
+                { "label": "Mezclilla",  "price": 250, "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
             ]
         },
         {

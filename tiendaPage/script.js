@@ -1164,6 +1164,7 @@ const tienda = (() => {
                         btn.classList.add('active');
                         if (v.image) { imgEl.src = v.image; imgEl.alt = v.label; }
                         if (v.link)  buyBtn.href = v.link;
+                        if (v.price != null) priceEl.textContent = '$' + v.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN');
                     });
 
                     variantsEl.appendChild(btn);
