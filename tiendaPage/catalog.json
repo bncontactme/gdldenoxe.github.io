@@ -163,6 +163,7 @@
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
             "description": "Camisa formal en tono rosa/morado claro, con parche Guadalajara De Noche con impresión textil blanco",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/rosa 1.jpg",
@@ -185,6 +186,7 @@
             "imageContain": true,
             "description": "Camisa formal de algodón negra, con parche Guadalajara De Noche e impresión textil en mangas en tono amarillo",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/negra.jpg",
@@ -219,6 +221,7 @@
             "imageContain": true,
             "description": "Camisa de botones color azul con rayas, con impresión textil y parche \"Guadalajara De Noche\"",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO"
         },
         {
@@ -228,6 +231,7 @@
             "image": "assets/products/gdn/cojin dorado.jpg",
             "description": "Almohada de tela de rayas negra con dorado brillosa, con parche \"Guadalajara De Noche\" bordado",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/cojin dorado.jpg",
@@ -258,6 +262,7 @@
             "image": "assets/products/gdn/verde.jpg",
             "description": "Almohada uniforma en colaboración con Limón Rosita Bebé, con parche Guadalajara De Noche y Pedrería \"LRB\"",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/verde.jpg",
@@ -280,6 +285,7 @@
             "image": "assets/products/gdn/cojin luna.jpg",
             "description": "Almohadas duo de Lycra con Glitter, tecnología de imán para unir luna & estrella o separarlas a su gusto, con parche Guadalajara De Noche e incrustación de pedrería en colaboración con Limón Rosita Bebé",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
+            "info": "Talla Única",
             "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/cojin luna.jpg",
