@@ -176,7 +176,8 @@ const tienda = (() => {
         const sh = product.splashH != null ? product.splashH : slot.splashH;
         if (sx != null) splashWrap.style.left = sx + '%';
         if (product.splashRight != null) { splashWrap.style.right = product.splashRight + '%'; splashWrap.style.left = 'auto'; }
-        if (!product.splashBottom && sy != null) { splashWrap.style.top = sy + '%'; splashWrap.style.bottom = 'auto'; }
+        if (product.splashBottom) { if (product.splashY != null) { splashWrap.style.bottom = product.splashY + '%'; } splashWrap.style.top = 'auto'; }
+        else if (sy != null) { splashWrap.style.top = sy + '%'; splashWrap.style.bottom = 'auto'; }
         if (sw != null) splashWrap.style.width  = sw + '%';
         if (sh != null) splashWrap.style.height = sh + '%';
 
@@ -281,7 +282,10 @@ const tienda = (() => {
                     ? pageCornerEffects
                     : (poolKey === 'small' || poolKey === 'medium');
         if (showCorners) {
-            addFrameCornerEffects(imageArea, assets, product.cornerPosition || null);
+            const cornerConflicts = new Set();
+            if (product.badge) cornerConflicts.add('tl');           // badge is top-left
+            if (product.price != null && !product.noSplash) cornerConflicts.add('bl'); // price splash is bottom-left
+            addFrameCornerEffects(imageArea, assets, product.cornerPosition || null, cornerConflicts);
         }
 
         // Per-product big splash override (takes priority over everything)
@@ -503,14 +507,23 @@ const tienda = (() => {
     const cornerPositions = ['tl', 'tr', 'bl', 'br'];
     let cornerPosIdx = 0;
 
-    const addFrameCornerEffects = (imageArea, assets, forcedPos) => {
+    const addFrameCornerEffects = (imageArea, assets, forcedPos, conflicts = new Set()) => {
         const corners = assets.cornerEffects;
         if (!corners || !corners.length) return;
         if (!cornerEffectRotator) cornerEffectRotator = rotator(corners);
 
-        // Pick one corner per product, cycling through positions
-        const pos = forcedPos || cornerPositions[cornerPosIdx % cornerPositions.length];
-        cornerPosIdx++;
+        // Pick one corner per product, cycling through positions and skipping conflicts
+        let pos;
+        if (forcedPos) {
+            pos = forcedPos;
+        } else {
+            let attempts = 0;
+            do {
+                pos = cornerPositions[cornerPosIdx % cornerPositions.length];
+                cornerPosIdx++;
+                attempts++;
+            } while (conflicts.has(pos) && attempts < cornerPositions.length);
+        }
 
         const wrap = document.createElement('div');
         wrap.className = 'catalog-corner-effect corner-' + pos;

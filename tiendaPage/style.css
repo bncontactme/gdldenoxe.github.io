@@ -407,7 +407,7 @@ input[type="checkbox"] { display: none; }
     left: 2%;
     width: 48%;
     height: 42%;
-    z-index: 6;
+    z-index: 9;
     display: grid;
     place-items: center;
     pointer-events: none;

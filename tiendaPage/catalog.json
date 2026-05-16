@@ -213,7 +213,10 @@
             "description": "Cap 5 panel. Collab Oficina 101.",
             "link": "https://www.paypal.com/ncp/payment/9EHPTJ7E8PY6L",
             "info": "Talla Única",
-            "stock": "3 u"
+            "stock": "3 u",
+            "splashRight": -8,
+            "splashBottom": true,
+            "splashY": -8
         },
         {
             "id": "boxer-1",
@@ -236,6 +239,7 @@
             "link": "https://www.paypal.com/ncp/payment/MHMGRSN3EGK92",
             "info": "Talla Única",
             "stock": "1 u",
+            "badge": "NUEVO",
             "images": [
                 "assets/products/gdn/cojin dorado.jpg",
                 "assets/products/gdn/etiqueta.jpg"
@@ -267,6 +271,9 @@
             "link": "https://www.paypal.com/ncp/payment/7WH2S44JZGE4Y",
             "info": "Talla Única",
             "stock": "1 u",
+            "splashRight": -8,
+            "splashBottom": true,
+            "splashY": -8,
             "images": [
                 "assets/products/gdn/verde.jpg",
                 "assets/products/gdn/etiqueta 2.jpg",
@@ -290,6 +297,10 @@
             "link": "https://www.paypal.com/ncp/payment/Q5QKTACG72J6U",
             "info": "Talla Única",
             "stock": "1 u",
+            "badge": "NUEVO",
+            "splashX": -8,
+            "splashBottom": true,
+            "splashY": -8,
             "images": [
                 "assets/products/gdn/cojin luna.jpg",
                 "assets/products/gdn/IMG_9716.jpg",
