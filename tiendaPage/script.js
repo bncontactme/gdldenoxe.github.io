@@ -329,7 +329,10 @@ const tienda = (() => {
             const lines = [];
             if (product.info) lines.push(product.info);
             if (product.stock) lines.push('Stock: ' + product.stock);
-            infoEl.innerHTML = lines.join('<br>');
+            lines.forEach((line, i) => {
+                if (i > 0) infoEl.appendChild(document.createElement('br'));
+                infoEl.appendChild(document.createTextNode(line));
+            });
             wrapper.appendChild(infoEl);
         }
 
@@ -687,8 +690,6 @@ const tienda = (() => {
             if (shading) shading.remove();
         }
 
-        // Template D: no shadow overlay — uses dedicated background image
-
         // Logo — position comes from FACE_CONFIG (bundled with template)
         let logo;
         if (faceData.noLogo) {
@@ -708,8 +709,8 @@ const tienda = (() => {
             if (logo2) face.appendChild(logo2);
         }
 
-        // Border color: always red for Template D, alternates for others
-        const borderClass = (faceData.template === TEMPLATE_D) ? 'catalog-border-red' : (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
+        // Border color: red unless odd-indexed non-D page
+        const borderClass = (faceIndex % 2 !== 0 && faceData.template !== TEMPLATE_D) ? 'catalog-border-black' : 'catalog-border-red';
 
         // Products in their template slots
         faceData.products.forEach((product, i) => {
@@ -919,8 +920,6 @@ const tienda = (() => {
             setTimeout(resizeFlipbook, 600);
         }
     });
-
-    tienda.on('resize', resizeFlipbook);
 
     /* ── Mobile detection ── */
     /* If innerWidth is 0 the page is likely inside a hidden iframe
@@ -1135,7 +1134,7 @@ const tienda = (() => {
         nameEl.textContent  = product.name || '';
         nameEl.style.textTransform = (product.name && product.name.startsWith('@')) ? 'none' : '';
         priceEl.textContent = (product.price != null)
-            ? ('$' + product.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN'))
+            ? ('$' + product.price + '.' + (product.cents ?? '00') + ' ' + (product.currency || 'MXN'))
             : '';
         descEl.textContent = product.description || '';
 
@@ -1177,7 +1176,7 @@ const tienda = (() => {
                         btn.classList.add('active');
                         if (v.image) { imgEl.src = v.image; imgEl.alt = v.label; }
                         if (v.link)  buyBtn.href = v.link;
-                        if (v.price != null) priceEl.textContent = '$' + v.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN');
+                        if (v.price != null) priceEl.textContent = '$' + v.price + '.' + (product.cents ?? '00') + ' ' + (product.currency || 'MXN');
                     });
 
                     variantsEl.appendChild(btn);
@@ -1450,38 +1449,40 @@ const tienda = (() => {
  * (tab switch, minimise, iframe hidden, page unload).
  ************************/
 
-/* ── Start on first user interaction ── */
-let _audioStarted = false;
-const _startAudio = () => {
-    if (_audioStarted) return;
-    _audioStarted = true;
-    tienda.emit('startMusic');
-    tienda.emit('startAds');
-};
-['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
-    document.addEventListener(ev, _startAudio, { once: true, passive: true })
-);
-
-/* ── Stop when page/tab becomes invisible ── */
-const _stopAudio = () => {
-    tienda.emit('stopMusic');
-    tienda.emit('stopAds');
-};
-
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        _stopAudio();
-    } else {
+(() => {
+    /* ── Start on first user interaction ── */
+    let _audioStarted = false;
+    const _startAudio = () => {
+        if (_audioStarted) return;
+        _audioStarted = true;
         tienda.emit('startMusic');
         tienda.emit('startAds');
-    }
-}, { passive: true });
+    };
+    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
+        document.addEventListener(ev, _startAudio, { once: true, passive: true })
+    );
 
-/* pagehide fires when navigating away or the iframe src changes */
-window.addEventListener('pagehide', _stopAudio, { passive: true });
+    /* ── Stop when page/tab becomes invisible ── */
+    const _stopAudio = () => {
+        tienda.emit('stopMusic');
+        tienda.emit('stopAds');
+    };
 
-/* freeze fires in bfcache-freezing browsers */
-window.addEventListener('freeze', _stopAudio, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            _stopAudio();
+        } else {
+            tienda.emit('startMusic');
+            tienda.emit('startAds');
+        }
+    }, { passive: true });
+
+    /* pagehide fires when navigating away or the iframe src changes */
+    window.addEventListener('pagehide', _stopAudio, { passive: true });
+
+    /* freeze fires in bfcache-freezing browsers */
+    window.addEventListener('freeze', _stopAudio, { passive: true });
+})();
 
 
 /*************************************

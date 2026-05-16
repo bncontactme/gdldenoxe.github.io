@@ -139,7 +139,7 @@
         {
             "id": "boxer-8",
             "name": "Boxer GDN",
-            "price": 250, "cents": "00", "currency": "MXN",
+            "price": 250,
             "image": "assets/products/boxers/boxer 3.jpg",
             "description": "Estampado GDN. Talla única.",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
@@ -162,7 +162,7 @@
         {
             "id": "boxer-3",
             "name": "Camisa: Te quiero de noche",
-            "price": 500, "cents": "00", "currency": "MXN",
+            "price": 500,
             "image": "assets/products/gdn/rosa 1.jpg",
             "imageContain": true,
             "noCornerEffect": true,
@@ -195,7 +195,7 @@
         {
             "id": "boxer-4",
             "name": "Camisa: A puño y letra",
-            "price": 500, "cents": "00", "currency": "MXN",
+            "price": 500,
             "image": "assets/products/gdn/negra.jpg",
             "imageContain": true,
             "description": "Camisa formal de algodón negra, con parche Guadalajara De Noche e impresión textil en mangas en tono amarillo",
@@ -225,7 +225,7 @@
         {
             "id": "boxer-7",
             "name": "Gorra GDN X OFICINA 101",
-            "price": 500, "cents": "00", "currency": "MXN",
+            "price": 500,
             "image": "assets/products/101/gorra oficina gdn .jpg",
             "description": "Cap 5 panel. Collab Oficina 101.",
             "link": "https://www.paypal.com/ncp/payment/9EHPTJ7E8PY6L",
@@ -238,7 +238,7 @@
         {
             "id": "boxer-1",
             "name": "Camisa: Guadalajara De Noche",
-            "price": 500, "cents": "00", "currency": "MXN",
+            "price": 500,
             "image": "assets/products/gdn/azul (1).jpg",
             "imageContain": true,
             "description": "Camisa de botones color azul con rayas, con impresión textil y parche \"Guadalajara De Noche\"",
@@ -250,7 +250,7 @@
         {
             "id": "boxer-2",
             "name": "Almohada: Mi noche dorada",
-            "price": 650, "cents": "00", "currency": "MXN",
+            "price": 650,
             "image": "assets/products/gdn/cojin dorado.jpg",
             "description": "Almohada de tela de rayas negra con dorado brillosa, con parche \"Guadalajara De Noche\" bordado",
             "link": "https://www.paypal.com/ncp/payment/MHMGRSN3EGK92",
@@ -290,7 +290,7 @@
         {
             "id": "boxer-10",
             "name": "Almohada: Un limón rosita bebé",
-            "price": 600, "cents": "00", "currency": "MXN",
+            "price": 600,
             "image": "assets/products/gdn/verde.jpg",
             "description": "Almohada uniforma en colaboración con Limón Rosita Bebé, con parche Guadalajara De Noche y Pedrería \"LRB\"",
             "link": "https://www.paypal.com/ncp/payment/7WH2S44JZGE4Y",
@@ -322,7 +322,7 @@
         {
             "id": "boxer-12b",
             "name": "Almohada: Te bajo la Luna & las estrellas",
-            "price": 600, "cents": "00", "currency": "MXN",
+            "price": 600,
             "image": "assets/products/gdn/cojin luna.jpg",
             "description": "Almohadas duo de Lycra con Glitter, tecnología de imán para unir luna & estrella o separarlas a su gusto, con parche Guadalajara De Noche e incrustación de pedrería en colaboración con Limón Rosita Bebé",
             "link": "https://www.paypal.com/ncp/payment/Q5QKTACG72J6U",
@@ -341,7 +341,7 @@
         {
             "id": "boxer-13",
             "name": "Totebag GDN",
-            "price": 300, "cents": "00", "currency": "MXN",
+            "price": 300,
             "image": "assets/products/gdn/image_3.jpeg",
             "imageBg": "#ffffff",
             "description": "Serigrafía GDN. Talla única.",
@@ -359,7 +359,7 @@
             "noSplash": true,
             "noCornerEffect": true,
             "soldOut": true,
-            "price": 250, "cents": "00", "currency": "MXN",
+            "price": 250,
             "image": "assets/products/101/ambas bufas.jpg",
             "description": "Edición limitada GDN.",
             "link": "#",
@@ -369,7 +369,7 @@
         {
             "id": "boxer-14",
             "name": "Bolsa GDN",
-            "price": 300, "cents": "00", "currency": "MXN",
+            "price": 300,
             "image": "assets/products/101/bolsa completa.jpg",
             "imageBg": "#ffffff",
             "description": "Bolsa GDN.",

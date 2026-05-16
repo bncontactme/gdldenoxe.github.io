@@ -36,6 +36,17 @@
     --font-price: Impact, 'Arial Black', sans-serif;
     --price-red: #CC0000;
     --price-stroke: #000000;
+
+    /* Windows 95 chrome */
+    --w95-bg:     #c0c0c0;
+    --w95-dark:   #808080;
+    --w95-darker: #404040;
+    --w95-light:  #dfdfdf;
+    --w95-white:  #ffffff;
+    --w95-blue:   #000080;
+    --w95-text:   #000000;
+    --w95-font:   'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+    --w95-mono:   'Fixedsys', 'Courier New', monospace;
 }
 
 /* GENERAL */
@@ -49,7 +60,6 @@ body {
     font-size: 0.5rem;
     padding-top: 3rem;
     padding-bottom: 1rem;
-    transition: background-color 0.3s ease-out;
     overflow-x: hidden;
     overflow-y: auto;
     color: var(--dark-color);
@@ -799,18 +809,6 @@ input[type="checkbox"] { display: none; }
    WINDOWS 95 MODAL
    ============================================================ */
 
-.win95-window {
-    --w95-bg: #c0c0c0;
-    --w95-dark: #808080;
-    --w95-darker: #404040;
-    --w95-light: #dfdfdf;
-    --w95-white: #ffffff;
-    --w95-blue: #000080;
-    --w95-text: #000000;
-    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-    --w95-mono: 'Fixedsys', 'Courier New', monospace;
-}
-
 /* Win95 reusable border utilities */
 .win95-sunken {
     border-top: 2px solid var(--w95-darker);
@@ -1277,6 +1275,28 @@ input[type="checkbox"] { display: none; }
     white-space: nowrap;
 }
 
+/* --- Prevent overflow — contained inside Win95 iframe --- */
+main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#catalog-root {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Mobile store is hidden by default (desktop shows flipbook) */
+.mobile-store { display: none; }
+
 /* ============================================================
    RESPONSIVE — Media Queries
    The flipbook is scaled via JS transform in .flipbook-scale-wrapper.
@@ -1442,28 +1462,6 @@ input[type="checkbox"] { display: none; }
     }
 }
 
-/* --- Prevent overflow — contained inside Win95 iframe --- */
-main {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-#catalog-root {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-/* Mobile store is hidden by default (desktop shows flipbook) */
-.mobile-store { display: none; }
-
 /* ============================================================
    MICRO-ANIMATIONS — Subtle ambient motion for decorative assets
    All animations use transform / opacity / filter only (GPU-composited).
@@ -1553,15 +1551,6 @@ main {
    ============================================================ */
 
 #flipbook-nav {
-    --w95-bg:     #c0c0c0;
-    --w95-dark:   #808080;
-    --w95-darker: #404040;
-    --w95-light:  #dfdfdf;
-    --w95-white:  #ffffff;
-    --w95-blue:   #000080;
-    --w95-text:   #000000;
-    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-
     position: fixed;
     bottom: 0;
     right: 0;
