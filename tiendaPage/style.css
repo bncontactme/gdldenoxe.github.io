@@ -394,6 +394,12 @@ input[type="checkbox"] { display: none; }
     display: block;
 }
 
+.image-contain .catalog-product-image {
+    object-fit: contain;
+    background: #fff;
+    transform: scale(1.85);
+}
+
 /* --- Price splash (starburst + price) — inside image area --- */
 .catalog-splash {
     position: absolute;

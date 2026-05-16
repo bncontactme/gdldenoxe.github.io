@@ -234,6 +234,7 @@ const tienda = (() => {
             const clipDiv = document.createElement('div');
             clipDiv.className = 'catalog-image-clip';
             if (product.imageBg) clipDiv.style.backgroundColor = product.imageBg;
+            if (product.imageContain) clipDiv.classList.add('image-contain');
             const prodImg = document.createElement('img');
             prodImg.className = 'catalog-product-image';
             prodImg.src = product.image;
