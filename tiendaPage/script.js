@@ -1015,10 +1015,6 @@ const tienda = (() => {
 
         store.appendChild(grid);
         catalogRoot.appendChild(store);
-
-        // Let body scroll
-        document.querySelector('main').style.overflow = 'visible';
-        catalogRoot.style.overflow = 'visible';
     };
 
     /* ── Fetch & init ── */
@@ -1125,6 +1121,8 @@ const tienda = (() => {
             });
             if (carouselNav) carouselNav.style.display = 'flex';
             imgEl.src = carouselImages[0];
+            // Preload remaining slides for instant next/prev
+            carouselImages.slice(1).forEach(src => { const pi = new Image(); pi.src = src; });
         } else {
             if (carouselNav) carouselNav.style.display = 'none';
             imgEl.src = product.image || '';
@@ -1499,16 +1497,20 @@ const tienda = (() => {
     const ANIM_MS = 620; // slightly longer than CSS transition (0.5s + buffer)
     let animating = false;
 
-    /* Return ordered array of page checkboxes */
+    /* Return ordered array of page checkboxes — cached after first successful build */
+    let _cbCache = null;
     const getCheckboxes = () => {
+        if (_cbCache) return _cbCache;
         const root = document.getElementById('catalog-root');
         if (!root) return [];
-        return Array.from(root.querySelectorAll('input[type="checkbox"][id$="_checkbox"]'))
+        const boxes = Array.from(root.querySelectorAll('input[type="checkbox"][id$="_checkbox"]'))
             .sort((a, b) => {
                 const numA = parseInt(a.id.replace(/\D+/g, ''), 10);
                 const numB = parseInt(b.id.replace(/\D+/g, ''), 10);
                 return numA - numB;
             });
+        if (boxes.length) _cbCache = boxes;
+        return boxes;
     };
 
     const updateNav = () => {
