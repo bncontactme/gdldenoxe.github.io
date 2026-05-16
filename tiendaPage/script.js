@@ -145,10 +145,21 @@ const tienda = (() => {
 
     /* ── DOM helpers ── */
 
-    const posEl = (tag, className, x, y, w, h) => {
+    /** Create an element with optional class and text content */
+    const mk = (tag, className, text) => {
         const el = document.createElement(tag);
         if (className) el.className = className;
-        el.style.cssText = 'position:absolute;left:' + x + '%;top:' + y + '%;width:' + w + '%;height:' + h + '%;';
+        if (text != null) el.textContent = text;
+        return el;
+    };
+
+    const posEl = (tag, className, x, y, w, h) => {
+        const el = mk(tag, className);
+        Object.assign(el.style, {
+            position: 'absolute',
+            left: x + '%', top: y + '%',
+            width: w + '%', height: h + '%'
+        });
         return el;
     };
 
@@ -156,32 +167,44 @@ const tienda = (() => {
 
     /** Build $XX.CC price element with the given wrapper class */
     const buildPriceEl = (price, cents, className) => {
-        const wrap = document.createElement('div');
-        wrap.className = className;
-        const d = document.createElement('span'); d.className = 'catalog-price-dollar'; d.textContent = '$';
-        const a = document.createElement('span'); a.className = 'catalog-price-amount'; a.textContent = String(price);
-        const c = document.createElement('span'); c.className = 'catalog-price-cents';  c.textContent = cents || '00';
-        wrap.appendChild(d); wrap.appendChild(a); wrap.appendChild(c);
+        const wrap = mk('div', className);
+        wrap.append(
+            mk('span', 'catalog-price-dollar', '$'),
+            mk('span', 'catalog-price-amount', String(price)),
+            mk('span', 'catalog-price-cents', cents || '00')
+        );
         return wrap;
+    };
+
+    /** Apply splash position — product overrides take priority over slot defaults */
+    const applySplashPosition = (el, product, slot) => {
+        const px = (v) => v + '%';
+        const sx = product.splashX ?? slot.splashX;
+        const sy = product.splashY ?? slot.splashY;
+        const sw = product.splashW ?? slot.splashW;
+        const sh = product.splashH ?? slot.splashH;
+
+        if (sx != null) el.style.left = px(sx);
+        if (product.splashRight != null) { el.style.right = px(product.splashRight); el.style.left = 'auto'; }
+
+        if (product.splashBottom) {
+            if (sy != null) el.style.bottom = px(sy);
+            el.style.top = 'auto';
+        } else if (sy != null) {
+            el.style.top = px(sy);
+            el.style.bottom = 'auto';
+        }
+
+        if (sw != null) el.style.width  = px(sw);
+        if (sh != null) el.style.height = px(sh);
     };
 
     /** Build splash-with-price (image + price overlay) */
     const buildSplashEl = (product, slot, splashSrc, assets) => {
-        const splashWrap = document.createElement('div');
-        splashWrap.className = 'catalog-splash';
-        // Product-level overrides take priority over slot defaults
-        const sx = product.splashX != null ? product.splashX : slot.splashX;
-        const sy = product.splashY != null ? product.splashY : slot.splashY;
-        const sw = product.splashW != null ? product.splashW : slot.splashW;
-        const sh = product.splashH != null ? product.splashH : slot.splashH;
-        if (sx != null) splashWrap.style.left = sx + '%';
-        if (product.splashRight != null) { splashWrap.style.right = product.splashRight + '%'; splashWrap.style.left = 'auto'; }
-        if (!product.splashBottom && sy != null) { splashWrap.style.top = sy + '%'; splashWrap.style.bottom = 'auto'; }
-        if (sw != null) splashWrap.style.width  = sw + '%';
-        if (sh != null) splashWrap.style.height = sh + '%';
+        const splashWrap = mk('div', 'catalog-splash');
+        applySplashPosition(splashWrap, product, slot);
 
-        const splashImg = document.createElement('img');
-        splashImg.className = 'catalog-splash-img';
+        const splashImg = mk('img', 'catalog-splash-img');
         splashImg.src = splashSrc;
         splashImg.alt = '';
         splashImg.loading = 'lazy';
@@ -191,8 +214,7 @@ const tienda = (() => {
         const scales = assets.splashScales || {};
         for (const [fragment, scale] of Object.entries(scales)) {
             if (splashSrc.includes(fragment)) {
-                splashImg.style.transform = 'scale(' + scale + ')';
-                splashImg.style.transformOrigin = 'center';
+                Object.assign(splashImg.style, { transform: `scale(${scale})`, transformOrigin: 'center' });
                 break;
             }
         }
@@ -216,13 +238,11 @@ const tienda = (() => {
 
         wrapper.dataset.frame = frame;
 
-        const imageArea = document.createElement('div');
-        imageArea.className = 'catalog-image-area';
+        const imageArea = mk('div', 'catalog-image-area');
 
         // Frame image
         if (assets.frames[frame]) {
-            const frameImg = document.createElement('img');
-            frameImg.className = 'catalog-frame';
+            const frameImg = mk('img', 'catalog-frame');
             frameImg.src = assets.frames[frame];
             frameImg.alt = '';
             frameImg.loading = 'lazy';
@@ -231,11 +251,10 @@ const tienda = (() => {
 
         // Product photo clipped inside frame
         if (product.image) {
-            const clipDiv = document.createElement('div');
-            clipDiv.className = 'catalog-image-clip';
+            const clipDiv = mk('div', 'catalog-image-clip');
             if (product.imageBg) clipDiv.style.backgroundColor = product.imageBg;
-            const prodImg = document.createElement('img');
-            prodImg.className = 'catalog-product-image';
+            if (product.imageContain) clipDiv.classList.add('image-contain');
+            const prodImg = mk('img', 'catalog-product-image');
             prodImg.src = product.image;
             prodImg.alt = product.name || '';
             prodImg.loading = 'lazy';
@@ -249,26 +268,24 @@ const tienda = (() => {
             imageArea.appendChild(buildSplashEl(product, slot, splashSrc, assets));
         } else if (product.price != null && !product.noSplash) {
             // Standalone price (no splash image available)
-            const priceWrap = document.createElement('div');
-            priceWrap.className = 'catalog-price-standalone';
+            const priceWrap = mk('div', 'catalog-price-standalone');
             priceWrap.appendChild(buildPriceEl(product.price, product.cents, 'catalog-price-container'));
             imageArea.appendChild(priceWrap);
         }
 
         // Badge
         if (product.badge) {
-            const badge = document.createElement('span');
-            badge.className = 'catalog-badge';
-            badge.textContent = product.badge;
-            imageArea.appendChild(badge);
+            imageArea.appendChild(mk('span', 'catalog-badge', product.badge));
+        }
+
+        // Sold-out overlay
+        if (product.soldOut) {
+            imageArea.appendChild(mk('div', 'catalog-sold-out'));
         }
 
         // Subtitle
         if (product.subtitle) {
-            const sub = document.createElement('span');
-            sub.className = 'catalog-subtitle';
-            sub.textContent = product.subtitle;
-            imageArea.appendChild(sub);
+            imageArea.appendChild(mk('span', 'catalog-subtitle', product.subtitle));
         }
 
         // Corner effects: per-product noCornerEffect takes priority, then per-product cornerEffect forces it, then per-page override, then pool default
@@ -280,7 +297,10 @@ const tienda = (() => {
                     ? pageCornerEffects
                     : (poolKey === 'small' || poolKey === 'medium');
         if (showCorners) {
-            addFrameCornerEffects(imageArea, assets, product.cornerPosition || null);
+            const cornerConflicts = new Set();
+            if (product.badge) cornerConflicts.add('tl');           // badge is top-left
+            if (product.price != null && !product.noSplash) cornerConflicts.add('bl'); // price splash is bottom-left
+            addFrameCornerEffects(imageArea, assets, product.cornerPosition || null, cornerConflicts);
         }
 
         // Per-product big splash override (takes priority over everything)
@@ -300,17 +320,16 @@ const tienda = (() => {
 
         // Product name
         if (product.name) {
-            const nameEl = document.createElement('span');
-            nameEl.className = 'catalog-product-name';
+            const nameEl = mk('span', 'catalog-product-name', product.name);
             if (slot.textSide) nameEl.classList.add('catalog-text-' + slot.textSide);
-            nameEl.textContent = product.name;
+            if (product.nameMarginTop != null) nameEl.style.marginTop = product.nameMarginTop + '%';
+            if (product.name.startsWith('@')) nameEl.style.textTransform = 'none';
             wrapper.appendChild(nameEl);
         }
 
         // Info
         if (product.stock || product.info) {
-            const infoEl = document.createElement('div');
-            infoEl.className = 'catalog-product-info';
+            const infoEl = mk('div', 'catalog-product-info');
             if (slot.textSide) infoEl.classList.add('catalog-text-' + slot.textSide);
             const lines = [];
             if (product.info) lines.push(product.info);
@@ -321,8 +340,7 @@ const tienda = (() => {
 
         // If textLayout is 'left-of-image' or 'right-of-image', move name+info to an absolute container
         if (slot.textLayout === 'left-of-image' || slot.textLayout === 'right-of-image') {
-            const textBlock = document.createElement('div');
-            textBlock.className = 'catalog-text-' + slot.textLayout;
+            const textBlock = mk('div', 'catalog-text-' + slot.textLayout);
 
             // Add red price above name
             if (product.price != null) {
@@ -337,7 +355,7 @@ const tienda = (() => {
         }
 
         // Accessibility
-        if (product.noModal) {
+        if (product.noModal || product.soldOut) {
             wrapper.setAttribute('role', 'img');
             wrapper.removeAttribute('tabindex');
             wrapper.style.cursor = 'default';
@@ -349,7 +367,7 @@ const tienda = (() => {
         wrapper.setAttribute('aria-label', (product.name || 'Producto') + (product.price != null ? ' — $' + product.price : ''));
 
         // Click & keyboard → modal
-        if (!product.noModal) {
+        if (!product.noModal && !product.soldOut) {
             const openModal = (e) => {
                 e.stopPropagation();
                 if (document.body.classList.contains('debug-active')) return;
@@ -369,12 +387,11 @@ const tienda = (() => {
 
     /* ── Build decorative elements ── */
 
-    const buildLogo = (assets, variant, x, y, w, h, src) => {
+    const buildLogo = (assets, variant, x, y, w, h, src, noShadow) => {
         const logoSrc = src || assets.logos[variant || 'dark'];
         if (!logoSrc) return null;
         const wrap = posEl('div', 'catalog-logo', x, y, w, h);
-        const img = document.createElement('img');
-        img.className = 'catalog-logo-img';
+        const img = mk('img', 'catalog-logo-img' + (noShadow ? ' no-shadow' : ''));
         img.src = logoSrc;
         img.alt = 'GDLDENOXE';
         img.loading = 'lazy';
@@ -399,31 +416,16 @@ const tienda = (() => {
 
     const buildQuote = (x, y, w, h) => {
         const wrap = posEl('div', 'catalog-quote', x, y, w, h);
-        const inner = document.createElement('div');
-        inner.className = 'catalog-quote-inner';
-        const bg = document.createElement('div');
-        bg.className = 'catalog-quote-bg';
-        inner.appendChild(bg);
-        const text = document.createElement('div');
-        text.className = 'catalog-quote-text';
+        const inner = mk('div', 'catalog-quote-inner');
+        inner.appendChild(mk('div', 'catalog-quote-bg'));
 
-        const esGratis = document.createElement('strong');
-        esGratis.className = 'quote-line-highlight';
-        esGratis.textContent = 'ES GRATIS';
-        const middle = document.createElement('span');
-        middle.className = 'quote-line-sub';
-        middle.textContent = 'disfrutar de las cosas que';
-        const deNoche = document.createElement('strong');
-        deNoche.className = 'quote-line-main';
-        deNoche.textContent = 'DE NOCHE';
-        const noTienen = document.createElement('span');
-        noTienen.className = 'quote-line-highlight quote-line-sub';
-        noTienen.textContent = 'NO TIENEN PRECIO..';
-
-        text.appendChild(esGratis);
-        text.appendChild(middle);
-        text.appendChild(deNoche);
-        text.appendChild(noTienen);
+        const text = mk('div', 'catalog-quote-text');
+        text.append(
+            mk('strong', 'quote-line-highlight', 'ES GRATIS'),
+            mk('span', 'quote-line-sub', 'disfrutar de las cosas que'),
+            mk('strong', 'quote-line-main', 'DE NOCHE'),
+            mk('span', 'quote-line-highlight quote-line-sub', 'NO TIENEN PRECIO..')
+        );
         inner.appendChild(text);
         wrap.appendChild(inner);
         return wrap;
@@ -483,12 +485,13 @@ const tienda = (() => {
         const offsetY = (typeof entry === 'object' && entry.offsetY != null) ? entry.offsetY : 0;
         const offsetW = (typeof entry === 'object' && entry.offsetW != null) ? entry.offsetW : 0;
 
-        const wrap = document.createElement('div');
-        wrap.className = 'catalog-big-splash';
-        wrap.style.left = (pos.left + offsetX) + '%';
-        wrap.style.top = (pos.top + offsetY) + '%';
-        wrap.style.width = (pos.cssW + offsetW) + '%';
-        const img = document.createElement('img');
+        const wrap = mk('div', 'catalog-big-splash');
+        Object.assign(wrap.style, {
+            left: (pos.left + offsetX) + '%',
+            top: (pos.top + offsetY) + '%',
+            width: (pos.cssW + offsetW) + '%'
+        });
+        const img = mk('img');
         img.src = src;
         img.alt = '';
         img.loading = 'lazy';
@@ -502,18 +505,26 @@ const tienda = (() => {
     const cornerPositions = ['tl', 'tr', 'bl', 'br'];
     let cornerPosIdx = 0;
 
-    const addFrameCornerEffects = (imageArea, assets, forcedPos) => {
+    const addFrameCornerEffects = (imageArea, assets, forcedPos, conflicts = new Set()) => {
         const corners = assets.cornerEffects;
         if (!corners || !corners.length) return;
         if (!cornerEffectRotator) cornerEffectRotator = rotator(corners);
 
-        // Pick one corner per product, cycling through positions
-        const pos = forcedPos || cornerPositions[cornerPosIdx % cornerPositions.length];
-        cornerPosIdx++;
+        // Pick one corner per product, cycling through positions and skipping conflicts
+        let pos;
+        if (forcedPos) {
+            pos = forcedPos;
+        } else {
+            let attempts = 0;
+            do {
+                pos = cornerPositions[cornerPosIdx % cornerPositions.length];
+                cornerPosIdx++;
+                attempts++;
+            } while (conflicts.has(pos) && attempts < cornerPositions.length);
+        }
 
-        const wrap = document.createElement('div');
-        wrap.className = 'catalog-corner-effect corner-' + pos;
-        const img = document.createElement('img');
+        const wrap = mk('div', 'catalog-corner-effect corner-' + pos);
+        const img = mk('img');
         img.src = cornerEffectRotator();
         img.alt = '';
         img.loading = 'lazy';
@@ -524,18 +535,15 @@ const tienda = (() => {
     /* ── Build a single page face (shell: bg + shadow + shading + label) ── */
 
     const buildFaceShell = (faceClass, shadingSrc, bgSrc, checkboxId, assets) => {
-        const face = document.createElement('div');
-        face.className = faceClass;
+        const face = mk('div', faceClass);
 
         // Background
-        const bgImg = document.createElement('div');
-        bgImg.className = 'catalog-bg';
-        bgImg.style.backgroundImage = 'url("' + bgSrc + '")';
+        const bgImg = mk('div', 'catalog-bg');
+        bgImg.style.backgroundImage = `url("${bgSrc}")`;
         face.appendChild(bgImg);
 
         // Edge shading
-        const shade = document.createElement('img');
-        shade.className = 'edge_shading';
+        const shade = mk('img', 'edge_shading');
         shade.src = shadingSrc;
         shade.alt = '';
         shade.loading = 'lazy';
@@ -543,7 +551,7 @@ const tienda = (() => {
 
         // Flip label (only if checkboxId exists — last page has none so it can't flip)
         if (checkboxId) {
-            const label = document.createElement('label');
+            const label = mk('label');
             label.setAttribute('for', checkboxId);
             face.appendChild(label);
         }
@@ -590,6 +598,7 @@ const tienda = (() => {
                 splashRotators: splashRot,
                 noLogo: !!page.noLogo,
                 logoConfig: page.logo || null,
+                logo2Config: page.logo2 || null,
                 // Optional per-page overrides (undefined = use defaults)
                 cornerEffects: page.cornerEffects,
                 bigSplash: page.bigSplash,
@@ -647,6 +656,11 @@ const tienda = (() => {
         // Blank page: just background, no products or decorations
         if (faceData.products.length === 1 && faceData.products[0]._blank) {
             const face = buildFaceShell(faceClass, shadingSrc, faceData.bgSrc, checkboxId, assets);
+            if (faceData.logo2Config) {
+                const l2 = faceData.logo2Config;
+                const logo2 = buildLogo(assets, l2.variant || null, l2.x, l2.y, l2.w, l2.h, l2.src || null, true);
+                if (logo2) face.appendChild(logo2);
+            }
             return face;
         }
 
@@ -657,8 +671,6 @@ const tienda = (() => {
             const shading = face.querySelector('.edge_shading');
             if (shading) shading.remove();
         }
-
-        // Template D: no shadow overlay — uses dedicated background image
 
         // Logo — position comes from FACE_CONFIG (bundled with template)
         let logo;
@@ -672,8 +684,15 @@ const tienda = (() => {
         }
         if (logo) face.appendChild(logo);
 
-        // Border color: always red for Template D, alternates for others
-        const borderClass = (faceData.template === TEMPLATE_D) ? 'catalog-border-red' : (faceIndex % 2 === 0) ? 'catalog-border-red' : 'catalog-border-black';
+        // Secondary logo (logo2)
+        if (faceData.logo2Config) {
+            const l2 = faceData.logo2Config;
+            const logo2 = buildLogo(assets, l2.variant || null, l2.x, l2.y, l2.w, l2.h, l2.src || null, true);
+            if (logo2) face.appendChild(logo2);
+        }
+
+        // Border color: red unless odd-indexed non-D page
+        const borderClass = (faceIndex % 2 !== 0 && faceData.template !== TEMPLATE_D) ? 'catalog-border-black' : 'catalog-border-red';
 
         // Products in their template slots
         faceData.products.forEach((product, i) => {
@@ -884,8 +903,6 @@ const tienda = (() => {
         }
     });
 
-    tienda.on('resize', resizeFlipbook);
-
     /* ── Mobile detection ── */
     /* If innerWidth is 0 the page is likely inside a hidden iframe
        (e.g. the Win95 desktop loads the tienda in a display:none window).
@@ -980,10 +997,6 @@ const tienda = (() => {
 
         store.appendChild(grid);
         catalogRoot.appendChild(store);
-
-        // Let body scroll
-        document.querySelector('main').style.overflow = 'visible';
-        catalogRoot.style.overflow = 'visible';
     };
 
     /* ── Fetch & init ── */
@@ -1021,14 +1034,34 @@ const tienda = (() => {
     const modal = document.getElementById('product-modal');
     if (!modal) return;
 
-    const overlay  = modal.querySelector('.modal-overlay');
-    const closeBtn = modal.querySelector('.modal-close');
-    const imgEl    = modal.querySelector('.modal-product-image');
-    const nameEl   = modal.querySelector('.modal-product-name');
-    const priceEl  = modal.querySelector('.modal-price-text');
-    const descEl   = modal.querySelector('.modal-product-description');
-    const badgeEl  = modal.querySelector('.modal-badge');
-    const buyBtn   = modal.querySelector('.modal-buy-btn');
+    const overlay   = modal.querySelector('.modal-overlay');
+    const closeBtn  = modal.querySelector('.modal-close');
+    const imgEl     = modal.querySelector('.modal-product-image');
+    const nameEl    = modal.querySelector('.modal-product-name');
+    const priceEl   = modal.querySelector('.modal-price-text');
+    const priceBox  = modal.querySelector('.win95-price-box');
+    const descEl    = modal.querySelector('.modal-product-description');
+    const badgeEl   = modal.querySelector('.modal-badge');
+    const buyBtn    = modal.querySelector('.modal-buy-btn');
+    const variantsEl = modal.querySelector('.modal-variants');
+    const carouselNav = modal.querySelector('.modal-carousel-nav');
+    const prevBtn    = modal.querySelector('.modal-carousel-prev');
+    const nextBtn    = modal.querySelector('.modal-carousel-next');
+    const dotsEl     = modal.querySelector('.modal-carousel-dots');
+
+    let carouselImages = [];
+    let carouselIndex  = 0;
+
+    const setCarouselSlide = (i) => {
+        carouselIndex = (i + carouselImages.length) % carouselImages.length;
+        imgEl.src = carouselImages[carouselIndex];
+        dotsEl.querySelectorAll('.modal-carousel-dot').forEach((d, idx) => {
+            d.classList.toggle('active', idx === carouselIndex);
+        });
+    };
+
+    if (prevBtn) prevBtn.addEventListener('click', () => setCarouselSlide(carouselIndex - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => setCarouselSlide(carouselIndex + 1));
 
     let previousFocus = null;
 
@@ -1055,11 +1088,33 @@ const tienda = (() => {
     };
 
     tienda.on('openModal', (product) => {
-        imgEl.src  = product.image || '';
+        // Carousel setup
+        carouselImages = (product.images && product.images.length > 1) ? product.images : [];
+        carouselIndex  = 0;
+
+        if (carouselImages.length > 1) {
+            // Populate dots
+            dotsEl.innerHTML = '';
+            carouselImages.forEach((_, i) => {
+                const dot = document.createElement('span');
+                dot.className = 'modal-carousel-dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', () => setCarouselSlide(i));
+                dotsEl.appendChild(dot);
+            });
+            if (carouselNav) carouselNav.style.display = 'flex';
+            imgEl.src = carouselImages[0];
+            // Preload remaining slides for instant next/prev
+            carouselImages.slice(1).forEach(src => { const pi = new Image(); pi.src = src; });
+        } else {
+            if (carouselNav) carouselNav.style.display = 'none';
+            imgEl.src = product.image || '';
+        }
+
         imgEl.alt  = product.name  || '';
         nameEl.textContent  = product.name || '';
+        nameEl.style.textTransform = (product.name && product.name.startsWith('@')) ? 'none' : '';
         priceEl.textContent = (product.price != null)
-            ? ('$' + product.price + (product.cents != null ? '.' + product.cents : '') + ' ' + (product.currency || 'MXN'))
+            ? ('$' + product.price + '.' + (product.cents ?? '00') + ' ' + (product.currency || 'MXN'))
             : '';
         descEl.textContent = product.description || '';
 
@@ -1071,6 +1126,46 @@ const tienda = (() => {
         }
 
         buyBtn.href = product.link || '#';
+        if (priceBox) priceBox.style.display = (product.price != null) ? '' : 'none';
+        buyBtn.style.display = (product.price != null) ? '' : 'none';
+
+        // Render color variants if present (non-carousel products)
+        if (variantsEl) {
+            variantsEl.innerHTML = '';
+            if (!carouselImages.length && product.variants && product.variants.length > 0) {
+                variantsEl.style.display = 'flex';
+                const label = document.createElement('span');
+                label.className = 'modal-variants-label';
+                label.textContent = 'Color:';
+                variantsEl.appendChild(label);
+
+                product.variants.forEach((v, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'modal-variant-swatch' + (i === 0 ? ' active' : '');
+                    btn.type = 'button';
+
+                    const dot = document.createElement('span');
+                    dot.className = 'modal-variant-dot';
+                    dot.style.background = v.color || '#ccc';
+
+                    btn.appendChild(dot);
+                    btn.appendChild(document.createTextNode(v.label));
+
+                    btn.addEventListener('click', () => {
+                        variantsEl.querySelectorAll('.modal-variant-swatch').forEach(s => s.classList.remove('active'));
+                        btn.classList.add('active');
+                        if (v.image) { imgEl.src = v.image; imgEl.alt = v.label; }
+                        if (v.link)  buyBtn.href = v.link;
+                        if (v.price != null) priceEl.textContent = '$' + v.price + '.' + (product.cents ?? '00') + ' ' + (product.currency || 'MXN');
+                    });
+
+                    variantsEl.appendChild(btn);
+                });
+            } else {
+                variantsEl.style.display = 'none';
+            }
+        }
+
         show();
         srAnnounce('Detalle de producto: ' + (product.name || 'Producto'));
     });
@@ -1334,38 +1429,41 @@ const tienda = (() => {
  * (tab switch, minimise, iframe hidden, page unload).
  ************************/
 
-/* ── Start on first user interaction ── */
-let _audioStarted = false;
-const _startAudio = () => {
-    if (_audioStarted) return;
-    _audioStarted = true;
-    tienda.emit('startMusic');
-    tienda.emit('startAds');
-};
-['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
-    document.addEventListener(ev, _startAudio, { once: true, passive: true })
-);
-
-/* ── Stop when page/tab becomes invisible ── */
-const _stopAudio = () => {
-    tienda.emit('stopMusic');
-    tienda.emit('stopAds');
-};
-
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        _stopAudio();
-    } else {
+(() => {
+    /* ── Start on first user interaction ── */
+    let _audioActivated = false;
+    const _startAudio = () => {
+        if (_audioActivated) return;
+        _audioActivated = true;
         tienda.emit('startMusic');
         tienda.emit('startAds');
-    }
-}, { passive: true });
+    };
+    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(ev =>
+        document.addEventListener(ev, _startAudio, { once: true, passive: true })
+    );
 
-/* pagehide fires when navigating away or the iframe src changes */
-window.addEventListener('pagehide', _stopAudio, { passive: true });
+    /* ── Stop when page/tab becomes invisible ── */
+    const _stopAudio = () => {
+        tienda.emit('stopMusic');
+        tienda.emit('stopAds');
+    };
 
-/* freeze fires in bfcache-freezing browsers */
-window.addEventListener('freeze', _stopAudio, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            _stopAudio();
+        } else if (_audioActivated) {
+            // Only resume if user previously activated audio via gesture
+            tienda.emit('startMusic');
+            tienda.emit('startAds');
+        }
+    }, { passive: true });
+
+    /* pagehide fires when navigating away or the iframe src changes */
+    window.addEventListener('pagehide', _stopAudio, { passive: true });
+
+    /* freeze fires in bfcache-freezing browsers */
+    window.addEventListener('freeze', _stopAudio, { passive: true });
+})();
 
 
 /*************************************
@@ -1382,16 +1480,20 @@ window.addEventListener('freeze', _stopAudio, { passive: true });
     const ANIM_MS = 620; // slightly longer than CSS transition (0.5s + buffer)
     let animating = false;
 
-    /* Return ordered array of page checkboxes */
+    /* Return ordered array of page checkboxes — cached after first successful build */
+    let _cbCache = null;
     const getCheckboxes = () => {
+        if (_cbCache) return _cbCache;
         const root = document.getElementById('catalog-root');
         if (!root) return [];
-        return Array.from(root.querySelectorAll('input[type="checkbox"][id$="_checkbox"]'))
+        const boxes = Array.from(root.querySelectorAll('input[type="checkbox"][id$="_checkbox"]'))
             .sort((a, b) => {
                 const numA = parseInt(a.id.replace(/\D+/g, ''), 10);
                 const numB = parseInt(b.id.replace(/\D+/g, ''), 10);
                 return numA - numB;
             });
+        if (boxes.length) _cbCache = boxes;
+        return boxes;
     };
 
     const updateNav = () => {

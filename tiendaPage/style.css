@@ -36,8 +36,51 @@
     --font-price: Impact, 'Arial Black', sans-serif;
     --price-red: #CC0000;
     --price-stroke: #000000;
+
+    /* Windows 95 chrome */
+    --w95-bg:     #c0c0c0;
+    --w95-dark:   #808080;
+    --w95-darker: #404040;
+    --w95-light:  #dfdfdf;
+    --w95-white:  #ffffff;
+    --w95-blue:   #000080;
+    --w95-text:   #000000;
+    --w95-font:   'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+    --w95-mono:   'Fixedsys', 'Courier New', monospace;
 }
 
+/* WIN95 BORDER UTILITIES — Reusable raised/pressed border pattern
+   Eliminates duplicate border declarations throughout the file */
+.w95-raised {
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light),
+                inset -1px -1px 0 var(--w95-dark);
+}
+
+.w95-pressed {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark),
+                inset -1px -1px 0 var(--w95-light);
+}
+
+/* Shared price text shadow — used by dollar, amount, cents */
+.catalog-price-container span {
+    color: var(--price-red);
+    font-style: italic;
+    font-weight: 900;
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 rgba(0,0,0,0.85),
+        -1px -1px 0 rgba(0,0,0,0.6),
+        1px -1px 0 rgba(0,0,0,0.6),
+        -1px 1px 0 rgba(0,0,0,0.6);
+}
 /* GENERAL */
 body {
     min-height: 100dvh;
@@ -49,7 +92,6 @@ body {
     font-size: 0.5rem;
     padding-top: 3rem;
     padding-bottom: 1rem;
-    transition: background-color 0.3s ease-out;
     overflow-x: hidden;
     overflow-y: auto;
     color: var(--dark-color);
@@ -257,7 +299,9 @@ input[type="checkbox"] { display: none; }
     filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.4));
 }
 
-/* Text positioned to the right of the image (Template D slot 1) */
+/* Text positioned to the right of the image (Template D slot 1)
+   NOTE: Template D ('1-left-featured') is defined in script.js but currently
+   unused in catalog.json pages[]. Keeping for future catalog layouts. */
 .catalog-text-right-of-image {
     position: absolute;
     left: 100%;
@@ -394,6 +438,12 @@ input[type="checkbox"] { display: none; }
     display: block;
 }
 
+.image-contain .catalog-product-image {
+    object-fit: contain;
+    background: #fff;
+    transform: scale(1.85);
+}
+
 /* --- Price splash (starburst + price) — inside image area --- */
 .catalog-splash {
     position: absolute;
@@ -401,7 +451,7 @@ input[type="checkbox"] { display: none; }
     left: 2%;
     width: 48%;
     height: 42%;
-    z-index: 6;
+    z-index: 9;
     display: grid;
     place-items: center;
     pointer-events: none;
@@ -429,35 +479,19 @@ input[type="checkbox"] { display: none; }
 
 .catalog-price-dollar {
     font: italic 900 0.75em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 1px var(--price-stroke);
-    paint-order: stroke fill;
-    text-shadow:
-        2px 2px 0 rgba(0,0,0,0.85),
-        -1px -1px 0 rgba(0,0,0,0.6),
-        1px -1px 0 rgba(0,0,0,0.6),
-        -1px 1px 0 rgba(0,0,0,0.6);
     margin-right: 0px;
     align-self: flex-start;
 }
 
 .catalog-price-amount {
     font: italic 900 1em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 1.5px var(--price-stroke);
-    paint-order: stroke fill;
-    text-shadow:
-        2px 2px 0 rgba(0,0,0,0.85),
-        -1px -1px 0 rgba(0,0,0,0.6),
-        1px -1px 0 rgba(0,0,0,0.6),
-        -1px 1px 0 rgba(0,0,0,0.6);
 }
 
 .catalog-price-cents {
     font: italic 900 0.42em/1 var(--font-price);
-    color: var(--price-red);
     -webkit-text-stroke: 0.8px var(--price-stroke);
-    paint-order: stroke fill;
     text-shadow:
         1px 1px 0 rgba(0,0,0,0.85),
         -1px -1px 0 rgba(0,0,0,0.5);
@@ -502,7 +536,9 @@ input[type="checkbox"] { display: none; }
 }
 
 .catalog-product--no-modal .catalog-product-name {
-    margin-top: -5%;
+    margin-top: -6%;
+    text-transform: none;
+    font-size: 0.44rem;
 }
 
 /* --- Badge ribbon (OFERTA / NUEVO / 2x1) — inside image area --- */
@@ -525,6 +561,32 @@ input[type="checkbox"] { display: none; }
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
     animation: badge-swing 2s ease-in-out infinite;
     will-change: transform;
+}
+
+/* --- Sold-out diagonal overlay --- */
+.catalog-sold-out {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.catalog-sold-out::after {
+    content: 'AGOTADO';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    background: rgba(160, 0, 0, 0.88);
+    color: #fff;
+    font: 900 0.62rem/1 var(--font-impact);
+    padding: 5px 0;
+    letter-spacing: 2px;
+    width: 200%;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 /* --- Title text layer --- */
@@ -715,6 +777,9 @@ input[type="checkbox"] { display: none; }
     object-fit: contain;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
 }
+.catalog-logo-img.no-shadow {
+    filter: none;
+}
 
 /* ============================================================
    PRODUCT MODAL — 2000s Supermarket Pop-Up
@@ -761,18 +826,6 @@ input[type="checkbox"] { display: none; }
 /* ============================================================
    WINDOWS 95 MODAL
    ============================================================ */
-
-.win95-window {
-    --w95-bg: #c0c0c0;
-    --w95-dark: #808080;
-    --w95-darker: #404040;
-    --w95-light: #dfdfdf;
-    --w95-white: #ffffff;
-    --w95-blue: #000080;
-    --w95-text: #000000;
-    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-    --w95-mono: 'Fixedsys', 'Courier New', monospace;
-}
 
 /* Win95 reusable border utilities */
 .win95-sunken {
@@ -1071,6 +1124,109 @@ input[type="checkbox"] { display: none; }
     outline-offset: -4px;
 }
 
+/* ── Carousel nav row (below image) ── */
+.modal-carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 220px;
+    padding: 3px 0 1px;
+}
+.modal-carousel-prev,
+.modal-carousel-next {
+    background: var(--w95-bg);
+    color: var(--w95-text);
+    font-family: var(--w95-font);
+    font-size: 10px;
+    padding: 1px 6px;
+    cursor: pointer;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light), inset -1px -1px 0 var(--w95-dark);
+    user-select: none;
+    flex-shrink: 0;
+}
+.modal-carousel-prev:active,
+.modal-carousel-next:active {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-light);
+}
+.modal-carousel-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.modal-carousel-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--w95-dark);
+    border: 1px solid var(--w95-darker);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.modal-carousel-dot.active {
+    background: var(--w95-blue);
+    border-color: var(--w95-blue);
+}
+
+/* ── Color variant swatches ── */
+.modal-variants {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.modal-variants-label {
+    font-family: var(--w95-font);
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--w95-text);
+    white-space: nowrap;
+}
+
+.modal-variant-swatch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px 2px 4px;
+    font-family: var(--w95-font);
+    font-size: 11px;
+    cursor: pointer;
+    background: var(--w95-bg);
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-light), inset -1px -1px 0 var(--w95-dark);
+    user-select: none;
+}
+
+.modal-variant-swatch.active {
+    border-top: 2px solid var(--w95-darker);
+    border-left: 2px solid var(--w95-darker);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-light);
+}
+
+.modal-variant-dot {
+    width: 12px;
+    height: 12px;
+    border-top: 1px solid var(--w95-darker);
+    border-left: 1px solid var(--w95-darker);
+    border-right: 1px solid var(--w95-white);
+    border-bottom: 1px solid var(--w95-white);
+    flex-shrink: 0;
+}
+
 /* Status bar */
 .win95-statusbar {
     background: var(--w95-bg);
@@ -1136,6 +1292,28 @@ input[type="checkbox"] { display: none; }
     z-index: 9999;
     white-space: nowrap;
 }
+
+/* --- Prevent overflow — contained inside Win95 iframe --- */
+main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#catalog-root {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Mobile store is hidden by default (desktop shows flipbook) */
+.mobile-store { display: none; }
 
 /* ============================================================
    RESPONSIVE — Media Queries
@@ -1302,28 +1480,6 @@ input[type="checkbox"] { display: none; }
     }
 }
 
-/* --- Prevent overflow — contained inside Win95 iframe --- */
-main {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-#catalog-root {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-/* Mobile store is hidden by default (desktop shows flipbook) */
-.mobile-store { display: none; }
-
 /* ============================================================
    MICRO-ANIMATIONS — Subtle ambient motion for decorative assets
    All animations use transform / opacity / filter only (GPU-composited).
@@ -1413,15 +1569,6 @@ main {
    ============================================================ */
 
 #flipbook-nav {
-    --w95-bg:     #c0c0c0;
-    --w95-dark:   #808080;
-    --w95-darker: #404040;
-    --w95-light:  #dfdfdf;
-    --w95-white:  #ffffff;
-    --w95-blue:   #000080;
-    --w95-text:   #000000;
-    --w95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-
     position: fixed;
     bottom: 0;
     right: 0;

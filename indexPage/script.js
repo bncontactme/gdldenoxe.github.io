@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const FEATURES = {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
-        TIENDA:        false,   // Tienda / store (desktop icon + easter egg unlock)
+        TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
     };
 
     // ─────────────────────────────────────────
