@@ -25,7 +25,7 @@ const FOLDER = 'archivo';
 
 const GITHUB_OWNER      = 'bncontactme';
 const GITHUB_REPO       = 'gdldenoxe.github.io';
-const IMAGES_JSON_PATH  = 'archivoPage/images.json';
+const IMAGES_JSON_PATH  = 'data/images.json';
 
 export default {
   async fetch(request, env) {

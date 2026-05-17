@@ -40,9 +40,9 @@ const tienda = (() => {
  ****************************/
 
 (() => {
-    const CATALOG_URL = 'catalog.json';
-    const FRONT_SHADE = 'assets/front_page_edge_shading.webp';
-    const BACK_SHADE  = 'assets/back_page_edge_shading.webp';
+    const CATALOG_URL = '../data/catalog.json';
+    const FRONT_SHADE = '../assets/img/tienda/front_page_edge_shading.webp';
+    const BACK_SHADE  = '../assets/img/tienda/back_page_edge_shading.webp';
 
     const catalogRoot = document.getElementById('catalog-root');
     const dynamicCSS  = document.getElementById('dynamic-flipbook-css');
@@ -610,7 +610,7 @@ const tienda = (() => {
 
     const buildCoverFace = (catalog, checkboxId, assets) => {
         const cover = catalog.cover || {};
-        const bgSrc = 'assets/webAssets/pages/page1.webp';
+        const bgSrc = '../assets/img/tienda/web/pages/page1.webp';
 
         // Build cover WITHOUT shadows or edge shading
         const face = document.createElement('div');

@@ -2,7 +2,7 @@
 (function() {
   'use strict';
 
-  const MOBILE_BP = 768; // shared breakpoint with indexPage/script.js + styles.css
+  const MOBILE_BP = 768; // shared breakpoint with scripts/desktop.js + styles.css
   const collageContainer = document.getElementById('live-collage-container');
   const _mobile = window.innerWidth <= MOBILE_BP;
   const IMAGE_INTERVAL = _mobile ? 3000 : 2000;
@@ -209,7 +209,7 @@
     const uploadFolder = document.createElement('div');
     uploadFolder.className = 'fe-folder fe-folder-upload';
     uploadFolder.title = 'Subir fotos al archivo';
-    uploadFolder.innerHTML = '<img src="../indexPage/indexImages/icons/camera3_plus-0.png" class="fe-folder-icon fe-folder-icon-upload" alt="" width="32" height="32">'
+    uploadFolder.innerHTML = '<img src="../assets/icons/camera3_plus-0.png" class="fe-folder-icon fe-folder-icon-upload" alt="" width="32" height="32">'
       + '<span class="fe-label">Subir fotos</span>';
     uploadFolder.onclick = function() {
       closeExplorer();
@@ -365,8 +365,8 @@
     }
     if (!uploadPopupOverlay) return;
     // Lazy-load the iframe only on first open (use getAttribute to avoid resolved-URL false positive)
-    if (uploadPopupFrame && uploadPopupFrame.getAttribute('src') !== 'upload.html?embed=1') {
-      uploadPopupFrame.src = 'upload.html?embed=1';
+    if (uploadPopupFrame && uploadPopupFrame.getAttribute('src') !== 'archivo-upload.html?embed=1') {
+      uploadPopupFrame.src = 'archivo-upload.html?embed=1';
     }
     uploadPopupOverlay.classList.add('open');
   }

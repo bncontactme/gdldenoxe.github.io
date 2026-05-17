@@ -6,13 +6,8 @@
     <meta name="theme-color" content="#008080">
     <meta name="description" content="Artículos y crónicas de la movida tapatía — Guadalajara De Noche.">
     <title>Artículos - GDLDENOXE</title>
+    <link rel="stylesheet" href="../styles/tokens.css">
     <style>
-        :root {
-            --win95-gray: #c0c0c0;
-            --win95-dark-gray: #808080;
-            --win95-light-gray: #dfdfdf;
-            --win95-blue: #000080;
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
@@ -97,16 +92,16 @@
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
         
-        fetch('articulos.json')
+        fetch('../data/articulos.json')
             .then(r => r.json())
             .then(articulos => {
                 const fragment = document.createDocumentFragment();
                 articulos.forEach(art => {
                     const item = document.createElement('a');
                     item.className = 'folder-item';
-                    item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
+                    item.href = 'frame.html?p=articulo&id=' + art.id;
                     item.target = '_top';
-                    item.innerHTML = `<img src="../indexPage/indexImages/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
+                    item.innerHTML = `<img src="../assets/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
                     fragment.appendChild(item);
                 });
                 grid.appendChild(fragment);

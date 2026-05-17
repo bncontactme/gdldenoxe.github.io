@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─────────────────────────────────────────
     const LONCHE_LAYOUT = 3;
 
-    // Shared mobile breakpoint — must match @media query in indexPage/styles.css
+    // Shared mobile breakpoint — must match @media query in styles/desktop.css
     const MOBILE_BP = 768;
     // ─────────────────────────────────────────
 
@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loncheIframe = document.getElementById('lonche-iframe');
     if (loncheIframe) {
         loncheIframe.src = (LONCHE_LAYOUT === 2 || LONCHE_LAYOUT === 3)
-            ? 'lonchedonation/layout2.html'
-            : 'lonchedonation/index.html';
+            ? 'pages/lonche.html'
+            : 'pages/lonche-spinner.html';
     }
 
     // Cache DOM elements
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isMobile()) {
             if (link) window.open(link, '_blank');
-            else if (folder) window.location.href = 'indexPage/frame.html?p=' + folder;
+            else if (folder) window.location.href = 'pages/frame.html?p=' + folder;
             return;
         }
 
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.className = 'folder-item';
         item.dataset.openArticle = 'art-' + art.id;
         item.innerHTML = `
-            <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
+            <span class="folder-icon"><img src="assets/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
             <span class="folder-name">${art.titulo}.txt</span>`;
 
         item.addEventListener('click', (e) => {
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch y render
-    fetch('articulosPage/articulos.json')
+    fetch('data/articulos.json')
         .then(r => r.json())
         .then(articulos => {
             const container = $('#articles-container');
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const artWidget = $('[data-window-id="articulo-widget"]');
             artWidget?.addEventListener('click', () => {
                 if (isMobile()) {
-                    window.location.href = 'indexPage/frame.html?p=articulo&id=' + randomArt.id;
+                    window.location.href = 'pages/frame.html?p=articulo&id=' + randomArt.id;
                 }
             });
 
@@ -459,11 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funcionalidad de imagen random
     const imagePaths = [
-        "indexPage/indexImages/2 Intro.jpeg",
-        "indexPage/indexImages/3 Intro.jpeg",
-        "indexPage/indexImages/4 Intro.jpeg",
-        "indexPage/indexImages/6 Intro.jpeg",
-        "indexPage/indexImages/7 Intro.JPG"
+        "assets/img/intro/2 Intro.jpeg",
+        "assets/img/intro/3 Intro.jpeg",
+        "assets/img/intro/4 Intro.jpeg",
+        "assets/img/intro/6 Intro.jpeg",
+        "assets/img/intro/7 Intro.JPG"
     ];
 
     const randomImgEl = $('#randomWindowImage');
@@ -912,7 +912,7 @@ juntxs y brillando.`
             if (mobileActions[shortcut]) {
                 mobileActions[shortcut]();
             } else {
-                window.location.href = 'indexPage/frame.html?p=' + shortcut;
+                window.location.href = 'pages/frame.html?p=' + shortcut;
             }
             return;
         }
@@ -1081,7 +1081,7 @@ juntxs y brillando.`
             const radioBtn = document.createElement('button');
             radioBtn.id = 'taskbar-radio';
             radioBtn.className = 'taskbar-item';
-            radioBtn.innerHTML = '<img src="indexPage/indexImages/icons/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
+            radioBtn.innerHTML = '<img src="assets/icons/media_player-0.png" alt="" class="taskbar-icon"> LaMovida95';
             radioBtn.addEventListener('click', () => {
                 if (musicPlayer) {
                     musicPlayer.classList.remove('hidden');
@@ -1240,12 +1240,12 @@ juntxs y brillando.`
         detailsPanel.addEventListener('touchstart', () => { detailsPanel.style.zIndex = ++highestZIndex; }, { passive: true });
     }
 
-    // Panel drag — delegates to shared/win95.js so other pages can reuse.
+    // Panel drag — delegates to scripts/win95.js so other pages can reuse.
     // Falls back to a no-op if the shared script failed to load (defensive).
     function makePanelDraggable(panel, titlebar, closeBtn) {
         if (!titlebar || !panel) return;
         if (!window.win95?.makeDraggable) {
-            console.warn('[panel-drag] shared/win95.js not loaded');
+            console.warn('[panel-drag] scripts/win95.js not loaded');
             return;
         }
         window.win95.makeDraggable(panel, {
@@ -1274,8 +1274,8 @@ juntxs y brillando.`
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {
         const uploadIframe = $('#upload-overlay-iframe');
-        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html?embed=1') {
-            uploadIframe.src = 'archivoPage/upload.html?embed=1';
+        if (uploadIframe && uploadIframe.getAttribute('src') !== 'pages/archivo-upload.html?embed=1') {
+            uploadIframe.src = 'pages/archivo-upload.html?embed=1';
         }
         const uploadWin = $('[data-window-id="upload"]');
         if (!uploadWin) return;

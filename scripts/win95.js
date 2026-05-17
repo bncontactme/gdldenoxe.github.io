@@ -1,6 +1,6 @@
 // Shared Win95-style helpers.
 // Currently exposes: makeDraggable() for panel-style dialogs (Properties /
-// Image Viewer panels). The window-mode draggable in indexPage/script.js is
+// Image Viewer panels). The window-mode draggable in scripts/desktop.js is
 // specialized (rAF batching, CSS-var mode for !important overrides on mobile,
 // shared global state across many windows) and is kept inline there.
 //

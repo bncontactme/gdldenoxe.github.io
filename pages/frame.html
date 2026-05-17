@@ -231,7 +231,7 @@
       </div>
     </div>
 
-    <!-- Torta modal — opened via postMessage from lonchedonation/layout2.html -->
+    <!-- Torta modal — opened via postMessage from lonche.html -->
     <div id="torta-frame-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;align-items:center;justify-content:center;padding:12px;">
         <div style="background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #000;border-bottom:2px solid #000;width:100%;max-width:360px;font-family:'MS Sans Serif','Microsoft Sans Serif',Arial,sans-serif;">
             <div style="background:linear-gradient(to right,#000080,#1084d0);color:#fff;font-size:12px;font-weight:bold;padding:3px 5px;display:flex;align-items:center;justify-content:space-between;">
@@ -239,7 +239,7 @@
                 <button id="torta-frame-close" style="background:#c0c0c0;border-top:1px solid #fff;border-left:1px solid #fff;border-right:1px solid #000;border-bottom:1px solid #000;width:18px;height:18px;font-size:11px;cursor:pointer;color:#000;display:flex;align-items:center;justify-content:center;">✕</button>
             </div>
             <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
-                <img src="../indexPage/indexImages/lonche-spin.gif" alt="Torta" style="width:100%;height:140px;object-fit:contain;display:block;">
+                <img src="../assets/img/intro/lonche-spin.gif" alt="Torta" style="width:100%;height:140px;object-fit:contain;display:block;">
                 <div style="border-top:1px solid #808080;border-bottom:1px solid #fff;"></div>
                 <div style="font-size:13px;font-weight:bold;">CÓMPRAME UNA TORTA</div>
                 <div style="font-size:11px;color:#222;line-height:1.5;">Cada pesito hace la diferencia. Tu donación ayuda a mantener las operaciones de Guadalajara De Noche.<br><br>Este dinero va directo para el chesco y la torta.</div>
@@ -256,33 +256,33 @@
         const pages = {
             'galeria': {
                 title: 'Galería',
-                icon: 'indexImages/icons/kodak_imaging-0.png',
-                src: '../archivoPage/archivoPage.html'
+                icon: '../assets/icons/kodak_imaging-0.png',
+                src: 'archivo.html'
             },
             'tienda': {
                 title: 'Tienda',
-                icon: 'indexImages/icons/directory_e-0.png',
-                src: '../tiendaPage/index.html'
+                icon: '../assets/icons/directory_e-0.png',
+                src: 'tienda.html'
             },
             'articulos': {
                 title: 'Artículos',
-                icon: 'indexImages/icons/directory_closed-0.png',
-                src: '../articulosPage/index.html'
+                icon: '../assets/icons/directory_closed-0.png',
+                src: 'articulos.html'
             },
             'articulo': {
                 title: 'Artículo',
-                icon: 'indexImages/icons/notepad_file-0.png',
-                src: '../articulosPage/articulo.html?id=' + (artId || '1')
+                icon: '../assets/icons/notepad_file-0.png',
+                src: 'articulo.html?id=' + (artId || '1')
             },
             'minesweeper': {
                 title: 'Buscaminas',
-                icon: 'indexImages/icons/minesweeper-0.png',
-                src: '../buscaminasPage/index.html'
+                icon: '../assets/icons/minesweeper-0.png',
+                src: 'buscaminas.html'
             },
             'lonche': {
                 title: 'Cómprame Una Torta',
-                icon: 'indexImages/icons/lonche-icon.png',
-                src: '../lonchedonation/layout2.html'
+                icon: '../assets/icons/lonche-icon.png',
+                src: 'lonche.html'
             }
         };
 
@@ -300,7 +300,7 @@
                 const ph = document.createElement('div');
                 ph.id = 'tienda-placeholder';
                 const logo = document.createElement('img');
-                logo.src = '../tiendaPage/assets/webAssets/logo/path206.png';
+                logo.src = '../assets/img/tienda/web/logo/path206.png';
                 logo.alt = 'GDN';
                 ph.appendChild(logo);
                 frameContent.insertBefore(ph, iframe);
@@ -338,8 +338,8 @@
             const closeBtn    = document.getElementById('upload-frame-close');
 
             function openUpload() {
-                if (popupIframe.getAttribute('src') !== '../archivoPage/upload.html') {
-                    popupIframe.src = '../archivoPage/upload.html';
+                if (popupIframe.getAttribute('src') !== 'archivo-upload.html') {
+                    popupIframe.src = 'archivo-upload.html';
                 }
                 popup.style.display = 'flex';
             }
@@ -359,7 +359,7 @@
         })();
         // =====================================================================
 
-        // ===== Torta modal (triggered by postMessage from lonchedonation/layout2.html) =====
+        // ===== Torta modal (triggered by postMessage from lonche.html) =====
         (function() {
             var tortaModal = document.getElementById('torta-frame-modal');
             if (!tortaModal) return;

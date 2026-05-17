@@ -370,7 +370,7 @@
     // ── Load existing artists for datalist ───────────────────────────────────
     (async function() {
       try {
-        var res = await fetch('images.json');
+        var res = await fetch('../data/images.json');
         var imgs = await res.json();
         var seen = new Set();
         var dl = document.getElementById('artistas-list');

@@ -32,7 +32,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Canonical Win95 window chrome — used by indexPage. Sub-pages that build
+   Canonical Win95 window chrome — used by the root desktop. Sub-pages that build
    their own window shells can either adopt these classes or keep their own
    (just referencing var(--win95-*) for color consistency).
    ───────────────────────────────────────────────────────────────────────── */

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#008080">
     <title>Artículo - GDLDENOXE</title>
-    <link rel="stylesheet" href="../shared/win95.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles/tokens.css">
+    <link rel="stylesheet" href="../styles/articulos.css">
 </head>
 <body>
     <div class="article-container" id="article-container">
@@ -28,7 +28,7 @@
     <script>
     const goBack = () => {
         if (window.top !== window.self) {
-            window.top.location.href = '../indexPage/frame.html?p=articulos';
+            window.top.location.href = 'frame.html?p=articulos';
             return false;
         }
         return true;
@@ -49,7 +49,7 @@
         const hero = document.getElementById('art-hero');
         const body = document.getElementById('art-body');
 
-        fetch('articulos.json')
+        fetch('../data/articulos.json')
             .then(r => r.json())
             .then(articulos => {
                 const art = articulos.find(a => String(a.id) === id);
