@@ -7,107 +7,27 @@
     <meta name="description" content="Artículos y crónicas de la movida tapatía — Guadalajara De Noche.">
     <title>Artículos - GDLDENOXE</title>
     <link rel="stylesheet" href="../styles/tokens.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            background: #fff;
-            color: #000;
-            height: 100%;
-        }
-
-        /* Folder items grid */
-        .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 2px;
-            padding: 10px;
-            padding-bottom: 30px;
-        }
-
-        .folder-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 8px 4px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            text-decoration: none;
-            color: #000;
-        }
-
-        .folder-item:hover {
-            background: rgba(0, 0, 128, 0.1);
-        }
-
-        .folder-item:active {
-            background: var(--win95-blue);
-            color: #fff;
-            border: 2px dotted #fff;
-        }
-
-        .folder-item img {
-            width: 32px;
-            height: 32px;
-            margin-bottom: 4px;
-            image-rendering: pixelated;
-        }
-
-        .folder-item-label {
-            font-size: 11px;
-            word-break: break-word;
-            line-height: 1.3;
-        }
-
-        .status-bar {
-            background: var(--win95-gray);
-            border-top: 2px solid var(--win95-light-gray);
-            padding: 2px 6px;
-            font-size: 11px;
-            color: #000;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-        }
-
-        .status-bar span {
-            border-top: 1px solid var(--win95-dark-gray);
-            border-left: 1px solid var(--win95-dark-gray);
-            border-right: 1px solid var(--win95-light-gray);
-            border-bottom: 1px solid var(--win95-light-gray);
-            padding: 1px 8px;
-            display: inline-block;
-        }
-    </style>
+    <link rel="stylesheet" href="../styles/articulos.css">
 </head>
 <body>
+    <!-- List view (default, hidden when body[data-mode='detail']) -->
     <div class="folder-grid" id="folder-grid"></div>
-    <div class="status-bar">
-        <span id="status-text">Cargando...</span>
+    <div class="status-bar"><span id="status-text">Cargando...</span></div>
+
+    <!-- Detail view (hidden when body[data-mode='list']) -->
+    <div class="article-container">
+        <header class="article-header">
+            <a href="../index.html" class="back-link" onclick="return articulosBack()">← Regresar</a>
+            <h1 id="art-title">Cargando...</h1>
+            <p class="article-meta" id="art-meta"></p>
+        </header>
+        <img id="art-hero" src="" alt="" class="article-hero" style="display:none;">
+        <article class="article-content" id="art-body"></article>
+        <footer class="article-footer">
+            <a href="../index.html" class="back-link" onclick="return articulosHome()">← Regresar al inicio</a>
+        </footer>
     </div>
 
-    <script>
-        const grid = document.getElementById('folder-grid');
-        const status = document.getElementById('status-text');
-        
-        fetch('../data/articulos.json')
-            .then(r => r.json())
-            .then(articulos => {
-                const fragment = document.createDocumentFragment();
-                articulos.forEach(art => {
-                    const item = document.createElement('a');
-                    item.className = 'folder-item';
-                    item.href = 'frame.html?p=articulo&id=' + art.id;
-                    item.target = '_top';
-                    item.innerHTML = `<img src="../assets/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
-                    fragment.appendChild(item);
-                });
-                grid.appendChild(fragment);
-                status.textContent = articulos.length + ' objeto(s)';
-            })
-            .catch(() => status.textContent = 'Error al cargar');
-    </script>
+    <script src="../scripts/articulos.js" defer></script>
 </body>
 </html>

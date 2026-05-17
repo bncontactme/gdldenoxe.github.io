@@ -12,23 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ─────────────────────────────────────────
-    // LONCHE LAYOUT
-    // 1 = below GDL DE NOCHE, left of poema (bottom-aligned with poema)
-    // 2 = below poema, right column
-    // ─────────────────────────────────────────
-    const LONCHE_LAYOUT = 3;
-
     // Shared mobile breakpoint — must match @media query in styles/desktop.css
     const MOBILE_BP = 768;
     // ─────────────────────────────────────────
 
-    // Set lonche iframe src based on layout
     const loncheIframe = document.getElementById('lonche-iframe');
-    if (loncheIframe) {
-        loncheIframe.src = (LONCHE_LAYOUT === 2 || LONCHE_LAYOUT === 3)
-            ? 'pages/lonche.html'
-            : 'pages/lonche-spinner.html';
-    }
+    if (loncheIframe) loncheIframe.src = 'pages/lonche.html';
 
     // Cache DOM elements
     const $ = (sel) => document.querySelector(sel);
@@ -606,13 +595,6 @@ juntxs y brillando.`
                     topY += imgH + gap;
                     artWin.style.top = topY + 'px';
                 }
-
-                // LAYOUT 1: lonche below imgWin, same left edge
-                if (LONCHE_LAYOUT === 1 && loncheWin) {
-                    const imgH = imgWin.offsetHeight || 200;
-                    loncheWin.style.left = imgWin.style.left;
-                    loncheWin.style.top = (parseInt(imgWin.style.top) + imgH + gap) + 'px';
-                }
             }
             
             // Others (poem etc) below articulo, clamped to screen
@@ -626,33 +608,11 @@ juntxs y brillando.`
             });
 
             if (loncheWin) {
-                const poemaWin = others[0];
                 const iframe = loncheWin.querySelector('.iframe-container');
-
-                if (LONCHE_LAYOUT === 1 && poemaWin) {
-                    // Bottom-align with poema
-                    const poemaBottom = parseInt(poemaWin.style.top) + (poemaWin.offsetHeight || 200);
-                    const loncheTop = parseInt(loncheWin.style.top);
-                    const chromeH = loncheWin.offsetHeight - (iframe ? iframe.offsetHeight : 0);
-                    const targetH = poemaBottom - loncheTop - chromeH;
-                    if (iframe && targetH > 80) iframe.style.height = targetH + 'px';
-
-                } else if (LONCHE_LAYOUT === 2 && poemaWin) {
-                    // Place below poema, same right column
-                    const poemaBottom = parseInt(poemaWin.style.top) + (poemaWin.offsetHeight || 200);
-                    const loncheW = poemaWin.offsetWidth || 280;
-                    loncheWin.style.left = poemaWin.style.left;
-                    loncheWin.style.top = (poemaBottom + gap) + 'px';
-                    loncheWin.style.width = loncheW + 'px';
-                    const chromeH = loncheWin.offsetHeight - (iframe ? iframe.offsetHeight : 0);
-                    const remaining = screenH - poemaBottom - gap - chromeH - gap;
-                    if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
-                } else if (LONCHE_LAYOUT === 3) {
-                    loncheWin.style.left = artLeft + 'px';
-                    loncheWin.style.top = belowY + 'px';
-                    loncheWin.style.width = artW + 'px';
-                    if (iframe) iframe.style.height = '130px';
-                }
+                loncheWin.style.left = artLeft + 'px';
+                loncheWin.style.top = belowY + 'px';
+                loncheWin.style.width = artW + 'px';
+                if (iframe) iframe.style.height = '130px';
             }
         } else {
             // Fallback: stack all on right

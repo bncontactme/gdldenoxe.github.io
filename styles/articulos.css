@@ -1,36 +1,88 @@
-/* ============================
-   Windows 95 Article Viewer
-   ============================ */
+/* Articulos page — list view (folder grid) and detail view (article reader).
+   Tokens come from styles/tokens.css. The HTML hosts both layouts; JS sets
+   body[data-mode] to 'list' or 'detail' to toggle visibility. */
 
-:root {
-    --win95-bg: #c0c0c0;
-    --win95-dark: #808080;
-    --win95-darker: #404040;
-    --win95-light: #dfdfdf;
-    --win95-white: #ffffff;
-    --win95-blue: #000080;
-    --win95-title-blue: #000080;
-    --win95-text: #000000;
-    --win95-font: 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-    --win95-mono: 'Fixedsys', 'Courier New', monospace;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: var(--win95-font);
+    font-family: var(--font-system);
     background: #008080;
-    color: var(--win95-text);
+    color: var(--win95-black);
     line-height: 1.4;
     font-size: 13px;
+    min-height: 100vh;
+}
+
+/* Mode toggling — both views live in the DOM; hide the inactive one. */
+body[data-mode='list']   .article-container,
+body[data-mode='detail'] .folder-grid,
+body[data-mode='detail'] .status-bar { display: none; }
+
+body[data-mode='detail'] {
     display: flex;
     justify-content: center;
     padding: 8px;
-    min-height: 100vh;
+}
+
+body[data-mode='list'] {
+    background: #fff;
+}
+
+/* === List view: folder grid + status bar === */
+.folder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 2px;
+    padding: 10px 10px 30px;
+}
+
+.folder-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 8px 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-decoration: none;
+    color: #000;
+}
+
+.folder-item:hover  { background: rgba(0, 0, 128, 0.1); }
+.folder-item:active { background: var(--win95-blue); color: #fff; border: 2px dotted #fff; }
+
+.folder-item img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+    image-rendering: pixelated;
+}
+
+.folder-item-label {
+    font-size: 11px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.status-bar {
+    background: var(--win95-gray);
+    border-top: 2px solid var(--win95-light-gray);
+    padding: 2px 6px;
+    font-size: 11px;
+    color: #000;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.status-bar span {
+    border-top: 1px solid var(--win95-dark-gray);
+    border-left: 1px solid var(--win95-dark-gray);
+    border-right: 1px solid var(--win95-light-gray);
+    border-bottom: 1px solid var(--win95-light-gray);
+    padding: 1px 8px;
+    display: inline-block;
 }
 
 /* === Window container === */
@@ -38,14 +90,14 @@ body {
     max-width: 720px;
     width: 100%;
     margin: 0 auto;
-    background: var(--win95-bg);
+    background: var(--win95-gray);
     min-height: auto;
     border-top: 2px solid var(--win95-white);
     border-left: 2px solid var(--win95-white);
     border-right: 2px solid var(--win95-darker);
     border-bottom: 2px solid var(--win95-darker);
-    box-shadow: inset 1px 1px 0 var(--win95-light),
-                inset -1px -1px 0 var(--win95-dark),
+    box-shadow: inset 1px 1px 0 var(--win95-light-gray),
+                inset -1px -1px 0 var(--win95-dark-gray),
                 1px 1px 0 #000;
     display: flex;
     flex-direction: column;
@@ -53,7 +105,7 @@ body {
 
 /* === Title bar === */
 .article-header {
-    background: linear-gradient(90deg, var(--win95-title-blue), #1084d0);
+    background: linear-gradient(90deg, var(--win95-blue), #1084d0);
     padding: 3px 4px;
     border-bottom: none;
     display: flex;
@@ -65,15 +117,15 @@ body {
 
 .back-link {
     display: inline-block;
-    font-family: var(--win95-font);
+    font-family: var(--font-system);
     font-size: 11px;
-    color: var(--win95-text);
+    color: var(--win95-black);
     text-decoration: none;
-    background: var(--win95-bg);
+    background: var(--win95-gray);
     border-top: 1px solid var(--win95-white);
     border-left: 1px solid var(--win95-white);
-    border-right: 1px solid var(--win95-dark);
-    border-bottom: 1px solid var(--win95-dark);
+    border-right: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-dark-gray);
     padding: 1px 6px;
     cursor: pointer;
     margin: 0;
@@ -81,12 +133,12 @@ body {
 }
 
 .back-link:hover {
-    color: var(--win95-text);
+    color: var(--win95-black);
 }
 
 .back-link:active {
-    border-top: 1px solid var(--win95-dark);
-    border-left: 1px solid var(--win95-dark);
+    border-top: 1px solid var(--win95-dark-gray);
+    border-left: 1px solid var(--win95-dark-gray);
     border-right: 1px solid var(--win95-white);
     border-bottom: 1px solid var(--win95-white);
     padding: 2px 5px 0px 7px;
@@ -110,7 +162,7 @@ body {
     font-size: 11px;
     text-transform: none;
     letter-spacing: 0;
-    font-family: var(--win95-font);
+    font-family: var(--font-system);
     width: 100%;
     opacity: 0.85;
 }
@@ -131,8 +183,8 @@ body {
     object-fit: cover;
     display: block;
     margin: 8px auto 0;
-    border-top: 2px solid var(--win95-dark);
-    border-left: 2px solid var(--win95-dark);
+    border-top: 2px solid var(--win95-dark-gray);
+    border-left: 2px solid var(--win95-dark-gray);
     border-right: 2px solid var(--win95-white);
     border-bottom: 2px solid var(--win95-white);
     image-rendering: auto;
@@ -143,14 +195,14 @@ body {
     margin: 8px;
     padding: 12px;
     background: var(--win95-white);
-    border-top: 2px solid var(--win95-dark);
-    border-left: 2px solid var(--win95-dark);
+    border-top: 2px solid var(--win95-dark-gray);
+    border-left: 2px solid var(--win95-dark-gray);
     border-right: 2px solid var(--win95-white);
     border-bottom: 2px solid var(--win95-white);
-    font-family: var(--win95-mono);
+    font-family: var(--font-mono);
     font-size: 14px;
     line-height: 1.5;
-    color: var(--win95-text);
+    color: var(--win95-black);
     overflow-y: auto;
 }
 
@@ -158,10 +210,10 @@ body {
     font-size: 14px;
     line-height: 1.5;
     margin-bottom: 16px;
-    color: var(--win95-text);
+    color: var(--win95-black);
     font-weight: 700;
-    font-family: var(--win95-mono);
-    border-bottom: 1px solid var(--win95-bg);
+    font-family: var(--font-mono);
+    border-bottom: 1px solid var(--win95-gray);
     padding-bottom: 10px;
 }
 
@@ -170,35 +222,35 @@ body {
     font-weight: 700;
     margin: 20px 0 8px;
     text-decoration: underline;
-    font-family: var(--win95-font);
+    font-family: var(--font-system);
     color: var(--win95-blue);
 }
 
 .article-content p {
     font-size: 13px;
     margin-bottom: 12px;
-    color: var(--win95-text);
-    font-family: var(--win95-mono);
+    color: var(--win95-black);
+    font-family: var(--font-mono);
 }
 
 .article-content blockquote {
-    border-left: 3px solid var(--win95-dark);
+    border-left: 3px solid var(--win95-dark-gray);
     padding: 6px 12px;
     margin: 16px 0;
     font-size: 13px;
     font-style: italic;
     color: var(--win95-darker);
-    background: var(--win95-light);
-    font-family: var(--win95-mono);
+    background: var(--win95-light-gray);
+    font-family: var(--font-mono);
     border-top: 1px solid var(--win95-white);
-    border-bottom: 1px solid var(--win95-dark);
+    border-bottom: 1px solid var(--win95-dark-gray);
 }
 
 /* === Footer — status bar style === */
 .article-footer {
-    background: var(--win95-bg);
+    background: var(--win95-gray);
     padding: 3px 6px;
-    border-top: 2px solid var(--win95-light);
+    border-top: 2px solid var(--win95-light-gray);
     display: flex;
     align-items: center;
 }
@@ -212,15 +264,15 @@ body {
     width: 16px;
 }
 .article-content::-webkit-scrollbar-track {
-    background: var(--win95-light);
-    border: 1px solid var(--win95-dark);
+    background: var(--win95-light-gray);
+    border: 1px solid var(--win95-dark-gray);
 }
 .article-content::-webkit-scrollbar-thumb {
-    background: var(--win95-bg);
+    background: var(--win95-gray);
     border-top: 2px solid var(--win95-white);
     border-left: 2px solid var(--win95-white);
-    border-right: 2px solid var(--win95-dark);
-    border-bottom: 2px solid var(--win95-dark);
+    border-right: 2px solid var(--win95-dark-gray);
+    border-bottom: 2px solid var(--win95-dark-gray);
 }
 
 /* === Responsive === */

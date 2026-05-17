@@ -1,0 +1,244 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%;
+  min-height: 100%;
+  background: #008080;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px 40px;
+}
+
+.xp-window {
+  width: 480px;
+  max-width: 100%;
+  background: #ECE9D8;
+  border: 2px outset #ECE9D8;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}
+
+.xp-titlebar {
+  background: linear-gradient(#0054E3, #0042B3);
+  color: #fff;
+  padding: 4px 8px;
+  height: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: bold;
+  user-select: none;
+}
+.xp-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.xp-titlebar-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.xp-body {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.xp-label {
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: block;
+}
+.xp-input {
+  width: 100%;
+  border: 2px inset #fff;
+  padding: 3px 5px;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  background: #fff;
+}
+.xp-input:focus {
+  outline: none;
+  border-color: #316AC5;
+}
+
+.xp-field { display: flex; flex-direction: column; }
+
+.xp-divider {
+  border: none;
+  border-top: 1px solid #ACA899;
+  border-bottom: 1px solid #fff;
+  margin: 4px 0;
+}
+
+#upload-zone {
+  border: 2px dashed #ACA899;
+  background: #fff;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #555;
+  padding: 20px;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+#upload-zone:hover, #upload-zone.drag-over {
+  border-color: #316AC5;
+  background: #EEF3FB;
+}
+#upload-zone svg { opacity: 0.5; }
+#upload-zone p { font-size: 12px; }
+#upload-zone small { font-size: 10px; color: #888; }
+
+.xp-btn {
+  background: linear-gradient(#F2F0E8, #DAD7C9);
+  border: 2px outset #F2F0E8;
+  padding: 4px 18px;
+  font-family: Tahoma, 'MS Sans Serif', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  min-width: 75px;
+}
+.xp-btn:hover { background: linear-gradient(#ECF1FB, #C5CBDC); }
+.xp-btn:active { border-style: inset; }
+.xp-btn:disabled { opacity: 0.5; cursor: default; }
+.xp-btn-primary {
+  background: linear-gradient(#316AC5, #1A52A0);
+  color: #fff;
+  border-color: #316AC5;
+}
+.xp-btn-primary:hover { background: linear-gradient(#4479CE, #2460B0); }
+
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+#status-box {
+  display: none;
+  background: #fff;
+  border: 2px inset #fff;
+  padding: 8px 10px;
+  min-height: 40px;
+  font-size: 11px;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#status-box.visible { display: block; }
+#status-box.success { color: #1A6600; }
+#status-box.error   { color: #900; }
+
+#file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.file-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border: 2px outset #D3D0C4;
+  background: #F5F4EF;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.file-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.file-thumb-remove {
+  position: absolute; top: 1px; right: 1px;
+  background: rgba(0,0,0,0.55);
+  color: #fff; border: none; cursor: pointer;
+  font-size: 11px; line-height: 1;
+  padding: 1px 3px;
+  font-family: Tahoma, sans-serif;
+}
+.file-thumb-remove:hover { background: rgba(150,0,0,0.8); }
+#upload-counter {
+  font-size: 10px; color: #666; margin-top: 2px;
+}
+
+.progress-bar-wrap {
+  display: none;
+  width: 100%;
+  height: 14px;
+  background: #fff;
+  border: 2px inset #fff;
+}
+.progress-bar-wrap.visible { display: block; }
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(#316AC5, #1A52A0);
+  width: 0%;
+  transition: width 0.2s;
+}
+
+.note {
+  font-size: 10px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ── Embedded mode (iframe inside win95-window, ?embed=1) ──────────── */
+html.embedded,
+html.embedded body {
+  background: #008080;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+html.embedded .xp-window {
+  width: 100%;
+  border: none;
+  box-shadow: none;
+  background: #ECE9D8;
+}
+html.embedded .xp-titlebar { display: none; }
+html.embedded .xp-body {
+  padding: 14px 18px 14px;
+  gap: 10px;
+}
+
+/* Password gate */
+#pw-overlay {
+  position: fixed; inset: 0;
+  background: #008080;
+  display: flex; justify-content: center; align-items: center;
+  z-index: 99999;
+}
+#pw-overlay.hidden { display: none; }
+#pw-window {
+  width: 340px; max-width: 90vw;
+  background: #ECE9D8;
+  border: 2px outset #ECE9D8;
+  box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+}
+#pw-titlebar {
+  background: linear-gradient(#0054E3, #0042B3);
+  color: #fff; padding: 4px 8px; height: 26px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: bold; user-select: none;
+}
+#pw-body {
+  padding: 20px 24px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+#pw-error {
+  color: #900; font-size: 11px; min-height: 14px;
+}

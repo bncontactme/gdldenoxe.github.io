@@ -1,0 +1,97 @@
+/* Torta donation modal — used by root index.html and pages/frame.html.
+   Markup is injected by scripts/torta-modal.js. */
+.torta-modal-overlay {
+    display: none; /* JS toggles to flex when opened */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+.torta-modal-window {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    width: 100%;
+    max-width: 360px;
+    font-family: var(--font-system);
+}
+
+.torta-modal-titlebar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.torta-modal-close {
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--win95-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.torta-modal-body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.torta-modal-image {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    display: block;
+}
+
+.torta-modal-separator {
+    border-top: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+.torta-modal-heading {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.torta-modal-text {
+    font-size: 11px;
+    color: #222;
+    line-height: 1.5;
+}
+
+.torta-pay-btn {
+    display: block;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 5px 0;
+    font-size: 12px;
+    font-family: var(--font-system);
+    font-weight: bold;
+    color: var(--win95-black);
+    text-align: center;
+    text-decoration: none;
+}

@@ -1,0 +1,779 @@
+/* ====================================================
+   RESPONSIVE DESIGN
+   Desktop: > 1024px (default styles above)
+   Tablet:  769px - 1024px
+   Mobile:  <= 768px
+   Small:   <= 400px
+   ==================================================== */
+
+/* ===== TABLET (769px - 1024px) ===== */
+@media (max-width: 1024px) {
+    .win95-window {
+        width: 380px;
+    }
+
+    .win95-window[data-window-id="minesweeper"] {
+        width: auto;
+        max-width: calc(100vw - 24px);
+    }
+
+    [data-window-id="galeria"] {
+        width: 480px;
+    }
+
+    [data-window-id="tienda"] {
+        width: 600px;
+    }
+
+    .art-full-window {
+        width: 500px !important;
+    }
+
+    .desktop-icons {
+        gap: 20px;
+    }
+
+    .music-player {
+        width: 260px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .win95-window[data-window-id="minesweeper"] .ms-board {
+        --ms-cell-size: 22px;
+    }
+}
+
+/* ===== MOBILE (<= 768px) ===== */
+@media (max-width: 768px) {
+
+    /* --- Reset / General --- */
+    body {
+        overflow: hidden;
+    }
+
+    .desktop {
+        overflow: hidden;
+        height: calc(100vh - 44px);
+        background-size: 100px auto;
+    }
+
+    /* --- Hide all desktop windows --- */
+    .win95-window,
+    #win95-details-panel,
+    #win95-details-panel.open,
+    #win95-player-panel,
+    #win95-player-panel.open,
+    #articles-container {
+        display: none !important;
+    }
+
+    /* --- Minesweeper Window (mobile) --- */
+    .win95-window[data-window-id="minesweeper"] {
+        display: none;
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%);
+        width: auto !important;
+        z-index: 15000;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                    3px 3px 0 rgba(0,0,0,0.3);
+    }
+
+    .win95-window[data-window-id="minesweeper"]:not(.hidden) {
+        display: block !important;
+    }
+
+    .win95-window[data-window-id="minesweeper"] .minimize-btn,
+    .win95-window[data-window-id="minesweeper"] .maximize-btn {
+        display: none;
+    }
+
+    /* --- Random Image Widget --- */
+    .win95-window[data-window-id="random"] {
+        display: block !important;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(50% - 24px) !important;
+        max-width: 200px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="random"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+        touch-action: auto;
+        -webkit-user-drag: none;
+    }
+
+    .win95-window[data-window-id="random"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="random"] .window-body {
+        padding: 3px;
+    }
+
+    .win95-window[data-window-id="random"] .random-image-container img {
+        height: 140px;
+    }
+
+    /* --- Articulo Widget (below random image widget) --- */
+    .win95-window[data-window-id="articulo-widget"] {
+        display: block !important;
+        position: absolute !important;
+        /* 12px (random top) + ~20px (title-bar) + 140px (random img) + 6px (padding) + 20px gap for spacing */
+        top: calc(12px + 20px + 140px + 6px + 20px) !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(50% - 24px) !important;
+        max-width: 200px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+        cursor: pointer;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: pointer;
+        touch-action: auto;
+        -webkit-user-drag: none;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .window-body {
+        padding: 3px;
+    }
+
+    .articulo-widget-content img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        display: block;
+        image-rendering: auto;
+    }
+
+    .articulo-widget-text {
+        padding: 4px 3px 2px;
+    }
+
+    .articulo-widget-title {
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1.2;
+        margin-bottom: 2px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .articulo-widget-desc {
+        font-size: 9px;
+        color: #444;
+        line-height: 1.2;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* --- YouTube Popup (centered, on top of everything) --- */
+    .win95-window[data-window-id="yt-popup"] {
+        display: block !important;
+        position: fixed !important;
+        bottom: 60px !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 360px !important;
+        z-index: 20000 !important;
+    }
+
+    .win95-window[data-window-id="yt-popup"].hidden {
+        display: none !important;
+    }
+
+    .win95-window[data-window-id="yt-popup"] iframe {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        display: block;
+    }
+
+    /* --- Roblox Popup (just above the Twitch popup) --- */
+    .win95-window[data-window-id="roblox-popup"] {
+        display: block !important;
+        position: fixed !important;
+        bottom: 320px !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 360px !important;
+        z-index: 19999 !important;
+    }
+
+    .win95-window[data-window-id="roblox-popup"].hidden {
+        display: none !important;
+    }
+
+    /* --- Poema Widget (below articulo widget, half width) --- */
+    .win95-window[data-window-id="poema1"] {        display: block !important;
+        position: absolute !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(25% - 12px) !important;
+        max-width: 100px !important;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+        touch-action: auto;
+        -webkit-user-drag: none;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        min-height: auto;
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 10px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.4;
+    }
+
+    /* --- Radio Player (floating frame, like the image widget) --- */
+    .music-player {
+        position: fixed !important;
+        bottom: 52px !important;
+        left: 50% !important;
+        right: auto !important;
+        top: auto !important;
+        transform: translateX(-50%);
+        width: calc(100% - 24px) !important;
+        max-width: 360px !important;
+        z-index: 20000;
+        border-top: 2px solid #fff;
+        border-left: 2px solid #fff;
+        border-right: 2px solid #000;
+        border-bottom: 2px solid #000;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080,
+                    2px 2px 0 rgba(0,0,0,0.25);
+        display: block;
+    }
+
+    .music-player.hidden {
+        display: none !important;
+    }
+
+    .music-player .player-title-bar {
+        padding: 2px 5px;
+    }
+
+    .music-player .player-body {
+        padding: 4px 8px 6px;
+    }
+
+    .music-player .player-display {
+        min-height: 32px;
+        padding: 4px 8px;
+        margin-bottom: 5px;
+    }
+
+    .music-player .player-controls {
+        gap: 3px;
+        margin-bottom: 0;
+    }
+
+    .music-player .control-btn {
+        width: 34px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .music-player .play-btn {
+        width: 42px;
+        font-size: 14px;
+    }
+
+    .music-player .progress-bar {
+        display: none;
+    }
+
+    /* --- Desktop Icons --- */
+    .desktop-icons {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 1;
+    }
+
+    .desktop-icon {
+        width: 75px;
+        padding: 8px;
+        border: 2px solid transparent;
+    }
+
+    .desktop-icon:hover {
+        background: transparent;
+    }
+
+    .desktop-icon.selected {
+        background: rgba(0, 0, 128, 0.3);
+        border: 2px dotted #fff;
+    }
+
+    .icon-image,
+    .icon-image img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .icon-image {
+        margin: 0 auto 5px;
+    }
+
+    .icon-label {
+        font-size: 11px;
+    }
+
+    /* --- Taskbar --- */
+    .taskbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 44px;
+        z-index: 10000;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .start-button {
+        padding: 6px 14px;
+        font-size: 12px;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .start-button img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .taskbar-items {
+        display: none;
+    }
+
+    #lonche-mobile-btn {
+        display: none;
+    }
+
+    .system-tray {
+        margin-left: auto;
+    }
+
+    .clock {
+        font-size: 12px;
+        padding: 0 10px;
+    }
+
+    /* --- Start Menu --- */
+    .start-menu {
+        width: 220px;
+        left: 2px !important;
+        bottom: 44px;
+    }
+
+    .start-menu-header {
+        font-size: 20px;
+        padding: 20px 8px;
+        letter-spacing: 1px;
+    }
+
+    .start-menu-items {
+        padding: 8px 0;
+    }
+
+    .menu-item {
+        padding: 14px 20px;
+        font-size: 14px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .menu-separator {
+        margin: 6px 15px;
+        height: 2px;
+        background: linear-gradient(to right, #808080, #dfdfdf);
+    }
+
+    /* --- Touch improvements --- */
+    button, .folder-item, .desktop-icon, .menu-item, .taskbar-item {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Music player buttons: keep Win95 look on mobile (fixes Xiaomi/Android Chrome orange accent) */
+    .music-player .control-btn,
+    .music-player .play-btn,
+    .player-minimize-btn,
+    .player-close-btn {
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        outline: none !important;
+        outline-color: transparent !important;
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
+        border-top: var(--border-raised);
+        border-left: var(--border-raised);
+        border-right: var(--border-sunken);
+        border-bottom: var(--border-sunken);
+        color: var(--win95-black) !important;
+        box-shadow: none;
+        border-radius: 0 !important;
+        /* Kill any Android accent overlay */
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
+    .music-player .control-btn:hover,
+    .music-player .play-btn:hover,
+    .player-minimize-btn:hover,
+    .player-close-btn:hover {
+        background-color: #d0d0d0 !important;
+        background-image: none !important;
+        outline: none !important;
+    }
+
+    .music-player .control-btn:focus,
+    .music-player .play-btn:focus,
+    .player-minimize-btn:focus,
+    .player-close-btn:focus,
+    .music-player .control-btn:focus-visible,
+    .music-player .play-btn:focus-visible,
+    .player-minimize-btn:focus-visible,
+    .player-close-btn:focus-visible {
+        outline: none !important;
+        outline-color: transparent !important;
+        box-shadow: none !important;
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
+        border-top: var(--border-raised);
+        border-left: var(--border-raised);
+        border-right: var(--border-sunken);
+        border-bottom: var(--border-sunken);
+    }
+
+    .music-player .control-btn:active,
+    .music-player .play-btn:active,
+    .player-minimize-btn:active,
+    .player-close-btn:active {
+        background-color: var(--win95-gray) !important;
+        background-image: none !important;
+        border-top: var(--border-sunken);
+        border-left: var(--border-sunken);
+        border-right: var(--border-raised);
+        border-bottom: var(--border-raised);
+        outline: none !important;
+    }
+
+    .music-player .control-btn svg,
+    .music-player .play-btn svg {
+        fill: #000 !important;
+        color: #000 !important;
+    }
+
+    * {
+        touch-action: manipulation;
+    }
+
+    .title-bar {
+        touch-action: none;
+    }
+
+    /* When dragging, override all !important positions */
+    .win95-window.dragging {
+        top: var(--drag-top) !important;
+        left: var(--drag-left) !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+    }
+
+
+}
+
+/* ===== SMALL PHONES (<= 400px) ===== */
+@media (max-width: 400px) {
+    .desktop-icons {
+        gap: 14px;
+        top: 10px;
+        left: 10px;
+    }
+
+    .desktop-icon {
+        width: 65px;
+        padding: 6px;
+    }
+
+    .icon-image,
+    .icon-image img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .icon-label {
+        font-size: 10px;
+    }
+
+    /* Random image widget smaller */
+    .win95-window[data-window-id="random"] {
+        width: calc(45% - 16px) !important;
+        max-width: 155px !important;
+        right: 8px !important;
+        top: 8px !important;
+    }
+
+    .win95-window[data-window-id="random"] .random-image-container img {
+        height: 100px;
+    }
+
+    .win95-window[data-window-id="random"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="random"] .window-body {
+        padding: 2px;
+    }
+
+    /* Articulo widget smaller */
+    .win95-window[data-window-id="articulo-widget"] {
+        width: calc(45% - 16px) !important;
+        max-width: 155px !important;
+        right: 8px !important;
+        left: auto !important;
+        /* 8px (random top) + ~18px (title-bar) + 100px (random img) + 4px (padding) + 16px gap for spacing */
+        top: calc(8px + 18px + 100px + 4px + 16px) !important;
+    }
+
+    .articulo-widget-content img {
+        height: 70px;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="articulo-widget"] .window-body {
+        padding: 2px;
+    }
+
+    .articulo-widget-title {
+        font-size: 9px !important;
+    }
+
+    .articulo-widget-desc {
+        display: none !important;
+    }
+
+    /* Poema widget smaller */
+    .win95-window[data-window-id="poema1"] {
+        width: calc(22% - 8px) !important;
+        max-width: 78px !important;
+        right: 8px !important;
+        left: auto !important;
+    }
+
+    .win95-window[data-window-id="poema1"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="poema1"] .window-body {
+        padding: 2px;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-content {
+        max-height: none;
+        padding: 2px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-text {
+        font-family: monospace;
+        font-size: 10px;
+        line-height: 1;
+        letter-spacing: -0.3px;
+        white-space: pre;
+        overflow: hidden;
+        text-align: center;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+        zoom: 0.3;
+    }
+
+    /* Start menu */
+    .start-menu {
+        width: 200px;
+    }
+
+    .menu-item {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-height: 42px;
+    }
+
+    .start-menu-header {
+        font-size: 18px;
+        padding: 16px 6px;
+    }
+
+    /* Radio player compact */
+    .music-player .control-btn {
+        width: 32px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .music-player .play-btn {
+        width: 40px;
+        font-size: 14px;
+    }
+
+    .music-player .player-display {
+        min-height: 32px;
+        padding: 4px 6px;
+    }
+
+    .music-player .track-info {
+        font-size: 9px;
+    }
+
+    .music-player .time-display {
+        font-size: 8px;
+    }
+}
+/* ── YouTube popup ── */
+[data-window-id="yt-popup"] .window-body {
+    padding: 4px;
+}
+[data-window-id="yt-popup"] iframe {
+    display: block;
+    max-width: 100%;
+}
+
+.roblox-popup-body {
+    padding: 7px 10px 9px;
+}
+
+.roblox-popup-text {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-family: var(--font-system);
+    line-height: 1.4;
+}
+
+.roblox-popup-warn {
+    color: red;
+    font-weight: bold;
+    font-size: 10px;
+}
+
+.roblox-popup-link {
+    color: #0000EE;
+    font-size: 11px;
+    font-family: var(--font-system);
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.roblox-popup-button-row {
+    margin-top: 8px;
+    text-align: right;
+}
+
+.roblox-popup-button {
+    display: inline-block;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 2px 10px;
+    font-size: 11px;
+    font-family: var(--font-system);
+    color: var(--win95-black);
+    text-decoration: none;
+}
+
+/* Start-button + mobile lonche taskbar icon sizing — migrated from inline */
+.start-button-icon {
+    width: 16px;
+    height: 16px;
+}
+
+#lonche-mobile-btn .taskbar-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+    object-fit: contain;
+}

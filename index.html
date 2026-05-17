@@ -19,6 +19,8 @@
 
     <link rel="stylesheet" href="styles/tokens.css">
     <link rel="stylesheet" href="styles/desktop.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link rel="stylesheet" href="styles/torta-modal.css">
 </head>
 <body>
     <div class="desktop">
@@ -438,37 +440,16 @@
     if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
     </script>
 
-    <!-- Modal torta -->
-    <div id="torta-modal-overlay" class="torta-modal-overlay">
-        <div class="torta-modal-window">
-            <div class="torta-modal-titlebar">
-                <span>🌮 Cómprame Una Torta</span>
-                <button id="torta-modal-close" class="torta-modal-close" aria-label="Cerrar">✕</button>
-            </div>
-            <div class="torta-modal-body">
-                <img src="assets/img/intro/lonche-spin.gif" alt="Torta" class="torta-modal-image" loading="lazy">
-                <div class="torta-modal-separator"></div>
-                <div class="torta-modal-heading">CÓMPRAME UNA TORTA</div>
-                <div class="torta-modal-text">Cada pesito hace la diferencia. Tu donación ayuda a mantener las operaciones de Guadalajara De Noche.<br><br>Este dinero va directo para el chesco y la torta.</div>
-                <a id="torta-pay-btn" class="torta-pay-btn" href="https://www.paypal.com/ncp/payment/8QT696H5AN2MU" target="_blank" rel="noopener noreferrer">🌮 Donativos Por PayPal</a>
-            </div>
-        </div>
-    </div>
-    <script>
-        var tortaOverlay = document.getElementById('torta-modal-overlay');
-        window.openTortaModal = function() { tortaOverlay.style.display = 'flex'; };
-        document.getElementById('torta-modal-close').addEventListener('click', function() { tortaOverlay.style.display = 'none'; });
-        tortaOverlay.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
-        window.addEventListener('message', function(e) {
-            if (e.origin !== location.origin) return;
-            if (e.data === 'open-torta-modal' || e.data?.type === 'open-torta-modal') {
-                tortaOverlay.style.display = 'flex';
-            }
-        });
-        document.getElementById('lonche-mobile-btn').addEventListener('click', window.openTortaModal);
-    </script>
-
+    <!-- Torta donation modal is injected by scripts/torta-modal.js -->
+    <script src="scripts/torta-modal.js" defer></script>
     <script src="scripts/win95.js" defer></script>
     <script src="scripts/desktop.js" defer></script>
+    <script>
+        // Mobile-only taskbar button — wired after torta-modal.js installs window.openTortaModal
+        addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('lonche-mobile-btn');
+            if (btn) btn.addEventListener('click', () => window.openTortaModal && window.openTortaModal());
+        });
+    </script>
 </body>
 </html>
