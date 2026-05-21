@@ -63,5 +63,50 @@
         "texto": "Al cierre de esta edición, Don Ramiro se encontraba afuera de la Catedral de Guadalajara repartiendo volantes escritos a mano donde detalla su versión de los hechos y solicita firmas para una petición dirigida al presidente. Hasta el momento lleva 4 firmas, tres de las cuales son de sus propios nietos."
       }
     ]
+  },
+  {
+    "id": 3,
+    "titulo": "Carillón de viento",
+    "meta": "Zoe Nuño • Poesía",
+    "descripcion": "Las rodillas raspadas y nuestras jóvenes caras. Recuerdo el día en que me contaste que salió tu primera cana, ese mismo año también salió la primera en mi cabello.",
+    "imagen": "articulosPage/articuloImages/WhatsApp Image 2026-05-20 at 14.15.17.jpeg",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Las rodillas raspadas y nuestras jóvenes caras. Recuerdo el día en que me contaste que salió tu primera cana, ese mismo año también salió la primera en mi cabello; hoy tengo muchas más. El tiempo pasó, los recuerdos se notan borrosos y sólo veo a unos niños corriendo por una ciudad desconocida."
+      },
+      {
+        "tipo": "p",
+        "texto": "No importaba nada, más que ese momento donde estábamos convencidos de que éramos inamovibles, al corazón, a la piel, al tiempo; por supuesto nos equivocamos, pero quién no se equivoca a los veinte. Aún así no hay error, es verdad que quedamos impresos en las paredes y los cristales de la noche, en el sonido de los caracoles y las huellas que dejamos sobre el cemento fresco."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "titulo": "El demonio que vive en mi casa",
+    "meta": "MMayorga • Poesía",
+    "descripcion": "Es sencillo para mí explicar que, aunque todos los de mi hogar lo han visto, parece que se inmutan ante él, parece que soy el único que lo ha confrontado.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Es sencillo para mí explicar que, aunque todos los de mi hogar lo han visto, parece que se inmutan ante él, parece que soy el único que lo ha confrontado, y que, una vez que lo he confrontado, ahora sí me apoyan. ¿Por qué no accionan ante él? Porque mis abuelos, desde que construyeron este hogar no controlaron a ese demonio, algún exorcismo, agua bendita por todo el terreno, aquí nació y aquí morirá, porque, además, es muy ermitaño."
+      },
+      {
+        "tipo": "p",
+        "texto": "Siempre se nos ha enseñado que el demonio tiene una pata de cabra y una de gallo, que vive en el infierno y se lleva con él a quienes hacen el mal. Pero yo toda mi vida he visto al demonio de manera distinta, de manera muy cercana, no me va a castigar por hacer mal, al contrario, se alegra cuando me equivoco y se molesta y castiga cuando hago las cosas bien. Creo que así es como verdaderamente luce el demonio. Está en y con nosotros, de una u otra manera, y creo que toca huir lo más lejos de él antes de que me convierta en él mismo."
+      },
+      {
+        "tipo": "p",
+        "texto": "¿Por qué tengo que amar al demonio que acecha a mi familia? ¿Sólo porque también es hijo de Dios? ¿Porque tenemos la misma sangre? Yo a ese demonio no le tengo cariño, ni respeto, te diría que ni siquiera le tengo alguna estima, es costumbre antes que alguna pizca de amor."
+      },
+      {
+        "tipo": "p",
+        "texto": "Y hasta remordimiento me da, de repente, decir eso y aceptarlo; pero también, al aceptarlo, reconozco y al reconocer perdono."
+      },
+      {
+        "tipo": "quote",
+        "texto": "SI DIOS CONMIGO, QUIÉN CONTRA MÍ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      }
+    ]
   }
 ]

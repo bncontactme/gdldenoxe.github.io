@@ -369,9 +369,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch y render
+    const DEFAULT_ARTICLE_IMAGE = 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
     fetch('articulosPage/articulos.json')
         .then(r => r.json())
         .then(articulos => {
+            articulos.forEach(art => { if (!art.imagen) art.imagen = DEFAULT_ARTICLE_IMAGE; });
             const container = $('#articles-container');
             const folderContent = $('#folder-articulos-content');
             const visibleIdx = Math.floor(Math.random() * articulos.length);
