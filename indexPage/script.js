@@ -126,9 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Lazy-load iframes on first open (prevents invisible resource waste)
-        // Tienda is unlocked separately via debug tap sequence — skip it here
         const iframe = win.querySelector('iframe[data-src]:not([src])');
-        if (iframe && win.dataset.windowId !== 'tienda') iframe.src = iframe.dataset.src;
+        if (iframe) iframe.src = iframe.dataset.src;
 
         win.classList.remove('hidden', 'minimized');
         bringToFront(win);
