@@ -292,41 +292,8 @@
             document.getElementById('frame-title').textContent = config.title;
             document.getElementById('frame-icon').src = config.icon;
 
-            if (page === 'tienda') {
-                // Show placeholder; unlock after 12 taps
-                const iframe      = document.getElementById('frame-iframe');
-                const frameContent = document.getElementById('frame-content');
-
-                const ph = document.createElement('div');
-                ph.id = 'tienda-placeholder';
-                const logo = document.createElement('img');
-                logo.src = '../tiendaPage/assets/webAssets/logo/path206.png';
-                logo.alt = 'GDN';
-                ph.appendChild(logo);
-                frameContent.insertBefore(ph, iframe);
-
-                let taps = 0;
-                let resetTimer = null;
-
-                ph.addEventListener('click',     onTap);
-                ph.addEventListener('touchstart', onTap, { passive: true });
-
-                function onTap() {
-                    clearTimeout(resetTimer);
-                    taps++;
-                    if (taps >= 12) {
-                        iframe.src = config.src;
-                        iframe.style.display = '';
-                        ph.style.display = 'none';
-                        taps = 0;
-                        return;
-                    }
-                    resetTimer = setTimeout(() => { taps = 0; }, 3000);
-                }
-            } else {
-                document.getElementById('frame-iframe').src = config.src;
-                document.getElementById('frame-iframe').style.display = '';
-            }
+            document.getElementById('frame-iframe').src = config.src;
+            document.getElementById('frame-iframe').style.display = '';
         } else {
             window.location.href = '../index.html';
         }

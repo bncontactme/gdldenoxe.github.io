@@ -72,9 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function pauseTiendaAudio() {
         try {
             const tiendaIframe = $('#tienda-iframe');
-            if (tiendaIframe?.contentWindow) {
-                tiendaIframe.contentWindow.stopMusic?.();
-                tiendaIframe.contentWindow.stopAds?.();
+            const cw = tiendaIframe?.contentWindow;
+            if (!cw) return;
+            // Prefer the gated setter so visibilitychange can't resurrect audio
+            // after the window has been closed. Fall back for older iframe builds.
+            if (cw.setTiendaAudioActive) {
+                cw.setTiendaAudioActive(false);
+            } else {
+                cw.stopMusic?.();
+                cw.stopAds?.();
             }
         } catch (e) { /* Cross-origin error */ }
     }
@@ -82,9 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function playTiendaAudio() {
         try {
             const tiendaIframe = $('#tienda-iframe');
-            if (tiendaIframe?.contentWindow) {
-                tiendaIframe.contentWindow.startMusic?.();
-                tiendaIframe.contentWindow.startAds?.();
+            const cw = tiendaIframe?.contentWindow;
+            if (!cw) return;
+            if (cw.setTiendaAudioActive) {
+                cw.setTiendaAudioActive(true);
+            } else {
+                cw.startMusic?.();
+                cw.startAds?.();
             }
         } catch (e) { /* Cross-origin error */ }
     }

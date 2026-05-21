@@ -1432,8 +1432,12 @@ const tienda = (() => {
 (() => {
     /* ── Start on first user interaction ── */
     let _audioActivated = false;
+    /* Parent can force-disable audio when the tienda window is closed,
+       so visibilitychange (tab refocus) does NOT resurrect playback. */
+    let _audioAllowed = true;
+
     const _startAudio = () => {
-        if (_audioActivated) return;
+        if (_audioActivated || !_audioAllowed) return;
         _audioActivated = true;
         tienda.emit('startMusic');
         tienda.emit('startAds');
@@ -1451,8 +1455,9 @@ const tienda = (() => {
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             _stopAudio();
-        } else if (_audioActivated) {
+        } else if (_audioActivated && _audioAllowed) {
             // Only resume if user previously activated audio via gesture
+            // AND the parent hasn't told us to stay quiet.
             tienda.emit('startMusic');
             tienda.emit('startAds');
         }
@@ -1463,6 +1468,20 @@ const tienda = (() => {
 
     /* freeze fires in bfcache-freezing browsers */
     window.addEventListener('freeze', _stopAudio, { passive: true });
+
+    /* Parent-controlled gate: the host page calls this when the tienda
+       window is opened/closed so audio cannot auto-restart while closed. */
+    window.setTiendaAudioActive = (active) => {
+        _audioAllowed = !!active;
+        if (active) {
+            _audioActivated = true;
+            tienda.emit('startMusic');
+            tienda.emit('startAds');
+        } else {
+            _audioActivated = false;
+            _stopAudio();
+        }
+    };
 })();
 
 
