@@ -1376,6 +1376,23 @@ main {
         border-bottom: 2px solid #fff;
         box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
     }
+    .ms-card--sold-out {
+        cursor: default;
+    }
+    .ms-card--sold-out:active {
+        border-top: 2px solid #fff;
+        border-left: 2px solid #fff;
+        border-right: 2px solid #404040;
+        border-bottom: 2px solid #404040;
+        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+    }
+    .ms-card--sold-out .ms-img { opacity: 0.55; }
+    .ms-card--sold-out .ms-price { color: #808080; text-decoration: line-through; }
+    .ms-img-wrap .catalog-sold-out::after {
+        font-size: 0.85rem;
+        letter-spacing: 3px;
+        padding: 6px 0;
+    }
 
     /* Image — sunken panel */
     .ms-img-wrap {

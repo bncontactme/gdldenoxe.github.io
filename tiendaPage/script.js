@@ -949,6 +949,7 @@ const tienda = (() => {
         purchasable.forEach(product => {
             const card = document.createElement('div');
             card.className = 'ms-card';
+            if (product.soldOut) card.classList.add('ms-card--sold-out');
 
             // Image
             const imgWrap = document.createElement('div');
@@ -961,6 +962,11 @@ const tienda = (() => {
                 img.alt = product.name || '';
                 img.loading = 'lazy';
                 imgWrap.appendChild(img);
+            }
+            if (product.soldOut) {
+                const soldOverlay = document.createElement('div');
+                soldOverlay.className = 'catalog-sold-out';
+                imgWrap.appendChild(soldOverlay);
             }
             card.appendChild(imgWrap);
 
@@ -991,7 +997,9 @@ const tienda = (() => {
 
             card.appendChild(info);
 
-            card.addEventListener('click', () => tienda.emit('openModal', product));
+            if (!product.soldOut) {
+                card.addEventListener('click', () => tienda.emit('openModal', product));
+            }
             grid.appendChild(card);
         });
 

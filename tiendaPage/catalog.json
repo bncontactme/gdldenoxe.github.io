@@ -169,10 +169,11 @@
             "splashY": 55,
             "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
             "description": "Camisa formal en tono rosa/morado claro, con parche Guadalajara De Noche con impresión textil blanco",
-            "link": "https://www.paypal.com/ncp/payment/AZ4RJRL4HC3ZS",
+            "link": "#",
             "info": "Talla Única",
             "stock": "1 u",
             "badge": "NUEVO",
+            "soldOut": true,
             "images": [
                 "assets/products/gdn/rosa 1.jpg",
                 "assets/products/gdn/rosa 2.jpg",
