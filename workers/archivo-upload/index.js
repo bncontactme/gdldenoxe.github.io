@@ -13,6 +13,17 @@
 //   Dashboard > Settings > Security > enable "SHA-256 signature algorithm"
 //   Dashboard > Settings > Upload > create a SIGNED preset named archivo_signed
 //     with folder = archivo, then DISABLE the old archivo_unsigned preset.
+//
+// Actions (POST JSON, routed by body.action):
+//   (none)/upload   sign a photo upload         (archivo/<slug>)      [auth]
+//   register        append photo to images.json                       [auth]
+//   delete          remove photo(s) from Cloudinary + images.json      [auth]
+//   list            live photo list from Cloudinary                    [public]
+//   articulo-sign   sign an article cover image (articulos/<slug>)     [auth]
+//   articulo-submit append a new article to articulos.json             [auth]
+//   articulo-delete remove an article (+ its Cloudinary cover)         [auth]
+// The articulo-* actions reuse the same PW_HASH, Cloudinary creds, GitHub
+// token and signed preset — no new secrets. Just redeploy: `wrangler deploy`.
 
 import { artistSlug } from './lib/artistSlug.js';
 
@@ -26,6 +37,10 @@ const FOLDER = 'archivo';
 const GITHUB_OWNER      = 'bncontactme';
 const GITHUB_REPO       = 'gdldenoxe.github.io';
 const IMAGES_JSON_PATH  = 'archivoPage/images.json';
+
+// Artículos / poemas — same Cloudinary account + GitHub token, different folder + manifest.
+const ARTICULOS_FOLDER    = 'articulos';
+const ARTICULOS_JSON_PATH = 'articulosPage/articulos.json';
 
 export default {
   async fetch(request, env) {
@@ -77,6 +92,16 @@ export default {
     }
     if (body.action === 'register') {
       return handleRegister(body, env, allowedOrigin);
+    }
+    // ── Artículos / poemas ────────────────────────────────────────────────────
+    if (body.action === 'articulo-sign') {
+      return handleArticuloSign(body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-submit') {
+      return handleArticuloSubmit(body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-delete') {
+      return handleArticuloDelete(body, env, allowedOrigin);
     }
     return handleUpload(body, env, allowedOrigin);
   },
@@ -154,21 +179,14 @@ async function handleDelete(body, env, origin) {
   }
 
   // Cloudinary Admin API — DELETE /resources/image/upload with Basic auth
-  const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
-  const qs = ids.map(id => 'public_ids[]=' + encodeURIComponent(id)).join('&');
-  const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/upload?${qs}`;
-
-  const res = await fetch(url, {
-    method: 'DELETE',
-    headers: { Authorization: `Basic ${basicAuth}` },
-  });
+  const res = await cloudinaryDeleteByPublicIds(env, ids);
   let data;
   try { data = await res.json(); } catch { data = { error: 'Cloudinary returned non-JSON (status ' + res.status + ')' }; }
 
   if (res.ok) {
     // Update images.json on GitHub — remove entries whose URL contains any deleted public_id
     try {
-      await githubUpdateImagesJson(env, function(entries) {
+      await githubUpdateJson(env, IMAGES_JSON_PATH, function(entries) {
         return entries.filter(function(e) {
           return !ids.some(function(id) {
             return e.url && e.url.includes('/' + id + '.');
@@ -244,7 +262,7 @@ async function handleRegister(body, env, origin) {
   }).filter(function(e) { return e.url; });
 
   try {
-    await githubUpdateImagesJson(env, function(current) {
+    await githubUpdateJson(env, IMAGES_JSON_PATH, function(current) {
       return current.concat(sanitizedEntries);
     });
     return jsonResponse({ ok: true }, 200, origin);
@@ -253,14 +271,140 @@ async function handleRegister(body, env, origin) {
   }
 }
 
-// ── GitHub images.json updater ────────────────────────────────────────────────
-async function githubUpdateImagesJson(env, updateFn) {
+// ── Artículo: sign Cloudinary upload for a cover image ────────────────────────
+async function handleArticuloSign(body, env, origin) {
+  const declaredMime = String(body.content_type || '').toLowerCase();
+  if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
+    return jsonResponse({ error: 'Unsupported content type' }, 400, origin);
+  }
+
+  const timestamp    = String(Math.floor(Date.now() / 1000));
+  const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
+
+  // Place cover image in articulos/<author-slug>/
+  const slug   = artistSlug(body.autor || body.titulo || 'general');
+  const folder = ARTICULOS_FOLDER + '/' + slug;
+
+  const signingParams = {
+    asset_folder:  folder,
+    folder,
+    timestamp,
+    upload_preset: uploadPreset,
+  };
+
+  const contextParts = [];
+  if (body.autor)  contextParts.push('artista=' + sanitize(body.autor));
+  if (body.titulo) contextParts.push('caption=' + sanitize(body.titulo));
+  if (contextParts.length) signingParams.context = contextParts.join('|');
+
+  const paramString = Object.keys(signingParams)
+    .sort()
+    .map(k => k + '=' + signingParams[k])
+    .join('&');
+  const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  return jsonResponse(
+    { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, asset_folder: folder, context: signingParams.context || null },
+    200, origin,
+  );
+}
+
+// ── Artículo: build + append a new article to articulos.json ──────────────────
+const ALLOWED_ARTICULO_TIPOS = new Set(['p', 'lead', 'h2', 'quote', 'hr']);
+
+async function handleArticuloSubmit(body, env, origin) {
+  const a = body.articulo || {};
+
+  const titulo = String(a.titulo || '').trim().replace(/\s+/g, ' ').slice(0, 200);
+  if (!titulo) return jsonResponse({ error: 'titulo required' }, 400, origin);
+
+  const contenido = (Array.isArray(a.contenido) ? a.contenido : [])
+    .map(function(b) {
+      const tipo = (b && ALLOWED_ARTICULO_TIPOS.has(b.tipo)) ? b.tipo : 'p';
+      if (tipo === 'hr') return { tipo: 'hr', texto: '' };
+      return { tipo, texto: String((b && b.texto) || '').slice(0, 8000) };
+    })
+    .filter(function(b) { return b.tipo === 'hr' || b.texto.trim(); });
+  if (!contenido.length) return jsonResponse({ error: 'contenido required' }, 400, origin);
+
+  const meta    = String(a.meta || '').trim().slice(0, 200);
+  const esPoema = a.clase === 'poema';
+
+  let descripcion = String(a.descripcion || '').trim().replace(/\s+/g, ' ').slice(0, 300);
+  if (!descripcion) {
+    const firstText = (contenido.find(function(b) { return b.texto; }) || {}).texto || '';
+    descripcion = firstText.replace(/\s+/g, ' ').trim().slice(0, 200);
+  }
+
+  // Only accept https Cloudinary URLs for the cover image; anything else is dropped.
+  let imagen = String(a.imagen || '').trim();
+  if (imagen && !/^https:\/\/res\.cloudinary\.com\//.test(imagen)) imagen = '';
+
+  let newId = null;
+  await githubUpdateJson(env, ARTICULOS_JSON_PATH, function(current) {
+    const list  = Array.isArray(current) ? current : [];
+    const maxId = list.reduce(function(m, x) { return Math.max(m, Number(x && x.id) || 0); }, 0);
+    newId = maxId + 1;
+
+    const obj = { id: newId, titulo, meta };
+    if (esPoema) obj.clase = 'poema';
+    if (imagen)  obj.imagen = imagen;
+    obj.descripcion = descripcion;
+    obj.contenido   = contenido;
+
+    return list.concat([obj]);
+  });
+
+  return jsonResponse({ ok: true, id: newId }, 200, origin);
+}
+
+// ── Artículo: delete by id (+ best-effort Cloudinary cleanup) ─────────────────
+async function handleArticuloDelete(body, env, origin) {
+  const id = Number(body.id);
+  if (!Number.isFinite(id)) return jsonResponse({ error: 'id required' }, 400, origin);
+
+  let removed = null;
+  await githubUpdateJson(env, ARTICULOS_JSON_PATH, function(current) {
+    const list = Array.isArray(current) ? current : [];
+    removed = list.find(function(x) { return Number(x && x.id) === id; }) || null;
+    return list.filter(function(x) { return Number(x && x.id) !== id; });
+  });
+
+  if (!removed) return jsonResponse({ ok: true, removed: false }, 200, origin);
+
+  // Best-effort: only delete Cloudinary assets that live under the articulos/ folder.
+  const pub = removed.imagen ? cloudinaryPublicId(removed.imagen) : null;
+  if (pub && pub.startsWith(ARTICULOS_FOLDER + '/')) {
+    try { await cloudinaryDeleteByPublicIds(env, [pub]); }
+    catch (e) { console.error('Cloudinary cleanup failed after articulo delete:', e); }
+  }
+
+  return jsonResponse({ ok: true, removed: true, id }, 200, origin);
+}
+
+// ── Cloudinary delete helper (shared by photo + articulo delete) ──────────────
+function cloudinaryDeleteByPublicIds(env, ids) {
+  const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+  const qs  = ids.map(id => 'public_ids[]=' + encodeURIComponent(id)).join('&');
+  const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/upload?${qs}`;
+  return fetch(url, { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
+}
+
+// Extract the Cloudinary public_id (incl. folder) from a secure_url.
+// e.g. https://res.cloudinary.com/x/image/upload/v123/articulos/slug/name.jpg → articulos/slug/name
+function cloudinaryPublicId(url) {
+  const m = String(url || '').match(/\/upload\/(?:v\d+\/)?(.+)\.[^.\/]+$/);
+  return m ? m[1] : null;
+}
+
+// ── GitHub JSON manifest updater (shared by images.json + articulos.json) ─────
+async function githubUpdateJson(env, path, updateFn) {
   const ghHeaders = {
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
     Accept: 'application/vnd.github+json',
     'User-Agent': 'archivo-upload-worker',
   };
-  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${IMAGES_JSON_PATH}`;
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
 
   const getRes = await fetch(apiUrl, { headers: ghHeaders });
   if (!getRes.ok) throw new Error('GitHub GET failed: ' + getRes.status);
@@ -281,7 +425,7 @@ async function githubUpdateImagesJson(env, updateFn) {
     method: 'PUT',
     headers: { ...ghHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      message: 'chore: update archive manifest [skip ci]',
+      message: 'chore: update ' + path.split('/').pop() + ' [skip ci]',
       content: updatedB64,
       sha:     fileData.sha,
     }),

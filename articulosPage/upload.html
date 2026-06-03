@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo artículo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: #008080;
+      font-family: Tahoma, 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px 40px;
+    }
+
+    .xp-window {
+      width: 560px;
+      max-width: 100%;
+      background: #ECE9D8;
+      border: 2px outset #ECE9D8;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .xp-titlebar {
+      background: linear-gradient(#0054E3, #0042B3);
+      color: #fff;
+      padding: 4px 8px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      user-select: none;
+    }
+    .xp-titlebar-icon { width: 16px; height: 16px; }
+
+    .xp-body {
+      padding: 18px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .xp-label { font-weight: bold; margin-bottom: 4px; display: block; }
+    .xp-label .opt { font-weight: normal; color: #666; }
+    .xp-input, .xp-textarea, .xp-select {
+      width: 100%;
+      border: 2px inset #fff;
+      padding: 4px 6px;
+      font-family: Tahoma, 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      background: #fff;
+    }
+    .xp-input:focus, .xp-textarea:focus, .xp-select:focus {
+      outline: none; border-color: #316AC5;
+    }
+    .xp-textarea {
+      font-family: 'Lucida Console', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      resize: vertical;
+      min-height: 170px;
+    }
+    .xp-field { display: flex; flex-direction: column; }
+    .xp-row { display: flex; gap: 12px; }
+    .xp-row > .xp-field { flex: 1; min-width: 0; }
+
+    .xp-divider {
+      border: none;
+      border-top: 1px solid #ACA899;
+      border-bottom: 1px solid #fff;
+      margin: 4px 0;
+    }
+
+    /* Tipo toggle (poema / prosa) */
+    .seg {
+      display: flex; border: 2px inset #fff; background: #fff; width: fit-content;
+    }
+    .seg button {
+      border: none; background: #ECE9D8; cursor: pointer;
+      font-family: Tahoma, sans-serif; font-size: 11px; padding: 4px 14px;
+      border-right: 1px solid #ACA899;
+    }
+    .seg button:last-child { border-right: none; }
+    .seg button.active { background: linear-gradient(#316AC5, #1A52A0); color: #fff; font-weight: bold; }
+
+    .toolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+    .tool-btn {
+      background: linear-gradient(#F2F0E8, #DAD7C9);
+      border: 2px outset #F2F0E8; padding: 2px 8px; cursor: pointer;
+      font-family: Tahoma, sans-serif; font-size: 10px;
+    }
+    .tool-btn:active { border-style: inset; }
+    .hint { font-size: 10px; color: #555; line-height: 1.5; }
+
+    /* Preview */
+    .preview-toggle {
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      font-weight: bold; user-select: none;
+    }
+    .art-preview {
+      background: #fff; border: 2px inset #fff; padding: 12px 14px;
+      font-family: 'Fixedsys', 'Courier New', monospace; font-size: 13px;
+      line-height: 1.5; color: #000; max-height: 320px; overflow-y: auto;
+    }
+    .art-preview .ap-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+    .art-preview .ap-meta  { color: #444; font-size: 11px; margin-bottom: 10px; }
+    .art-preview img.ap-hero {
+      width: 100%; max-height: 160px; object-fit: cover; display: block;
+      margin-bottom: 10px; border: 2px inset #fff;
+    }
+    .art-preview p { margin-bottom: 12px; }
+    .art-preview.poema p { text-align: center; white-space: pre-wrap; margin-bottom: 12px; }
+    .art-preview h2 {
+      font-size: 14px; font-weight: 700; margin: 16px 0 8px;
+      text-decoration: underline; color: #000080; font-family: Tahoma, sans-serif;
+    }
+    .art-preview blockquote {
+      border-left: 3px solid #808080; padding: 6px 12px; margin: 16px 0;
+      font-style: italic; color: #404040; background: #dfdfdf;
+    }
+    .art-preview hr {
+      border: none; border-top: 2px solid #808080; border-bottom: 1px solid #fff; margin: 16px 0;
+    }
+    .art-preview .ap-empty { color: #999; font-style: italic; }
+
+    /* Image drop */
+    #img-zone {
+      border: 2px dashed #ACA899; background: #fff; min-height: 92px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; color: #555; padding: 14px; text-align: center;
+      transition: border-color .15s, background .15s;
+    }
+    #img-zone:hover, #img-zone.drag-over { border-color: #316AC5; background: #EEF3FB; }
+    #img-zone small { font-size: 10px; color: #888; }
+    #img-preview-wrap { display: none; gap: 8px; align-items: center; }
+    #img-preview-wrap.visible { display: flex; }
+    #img-preview {
+      width: 80px; height: 80px; object-fit: cover;
+      border: 2px outset #D3D0C4; background: #F5F4EF; flex-shrink: 0;
+    }
+
+    .xp-btn {
+      background: linear-gradient(#F2F0E8, #DAD7C9);
+      border: 2px outset #F2F0E8; padding: 4px 18px; cursor: pointer;
+      font-family: Tahoma, sans-serif; font-size: 11px; min-width: 78px;
+    }
+    .xp-btn:hover { background: linear-gradient(#ECF1FB, #C5CBDC); }
+    .xp-btn:active { border-style: inset; }
+    .xp-btn:disabled { opacity: .5; cursor: default; }
+    .xp-btn-primary { background: linear-gradient(#316AC5, #1A52A0); color: #fff; border-color: #316AC5; }
+    .xp-btn-primary:hover { background: linear-gradient(#4479CE, #2460B0); }
+    .xp-btn-danger { color: #900; }
+
+    .btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+    #status-box {
+      display: none; background: #fff; border: 2px inset #fff; padding: 8px 10px;
+      min-height: 38px; font-size: 11px; color: #333; white-space: pre-wrap; word-break: break-word;
+    }
+    #status-box.visible { display: block; }
+    #status-box.success { color: #1A6600; }
+    #status-box.error   { color: #900; }
+    #status-box a { color: #0042B3; }
+
+    .progress-bar-wrap { display: none; width: 100%; height: 14px; background: #fff; border: 2px inset #fff; }
+    .progress-bar-wrap.visible { display: block; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(#316AC5, #1A52A0); width: 0%; transition: width .2s; }
+
+    /* Manage / delete */
+    details.manage { border: 1px solid #ACA899; background: #F5F4EF; }
+    details.manage > summary {
+      cursor: pointer; padding: 6px 10px; font-weight: bold; user-select: none;
+      background: #ECE9D8; list-style: none;
+    }
+    details.manage > summary::-webkit-details-marker { display: none; }
+    details.manage > summary::before { content: '▸ '; }
+    details.manage[open] > summary::before { content: '▾ '; }
+    #manage-list { padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .manage-row {
+      display: flex; align-items: center; gap: 8px; padding: 4px 6px;
+      background: #fff; border: 1px solid #D3D0C4;
+    }
+    .manage-row .mr-id { color: #888; font-size: 10px; width: 22px; flex-shrink: 0; }
+    .manage-row .mr-info { flex: 1; min-width: 0; }
+    .manage-row .mr-title { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .manage-row .mr-meta { color: #666; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .manage-row button {
+      background: linear-gradient(#F2F0E8, #DAD7C9); border: 2px outset #F2F0E8;
+      cursor: pointer; font-size: 10px; padding: 2px 8px; color: #900; flex-shrink: 0;
+    }
+    .manage-row button:active { border-style: inset; }
+    .manage-row.removing { opacity: .4; }
+
+    .note { font-size: 10px; color: #666; line-height: 1.5; }
+
+    /* Embedded mode (iframe inside a window, ?embed=1) */
+    html.embedded, html.embedded body {
+      background: #008080; padding: 0; margin: 0; width: 100%; height: auto;
+      display: block; overflow: visible;
+    }
+    html.embedded .xp-window { width: 100%; border: none; box-shadow: none; }
+    html.embedded .xp-titlebar { display: none; }
+    html.embedded .xp-body { padding: 14px 16px; gap: 10px; }
+
+    /* Password gate */
+    #pw-overlay {
+      position: fixed; inset: 0; background: #008080;
+      display: flex; justify-content: center; align-items: center; z-index: 99999;
+    }
+    #pw-overlay.hidden { display: none; }
+    #pw-window {
+      width: 340px; max-width: 90vw; background: #ECE9D8;
+      border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+    }
+    #pw-titlebar {
+      background: linear-gradient(#0054E3, #0042B3); color: #fff; padding: 4px 8px; height: 26px;
+      display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; user-select: none;
+    }
+    #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+    #pw-error { color: #900; font-size: 11px; min-height: 14px; }
+  </style>
+</head>
+<body>
+  <!-- Password gate -->
+  <div id="pw-overlay">
+    <div id="pw-window">
+      <div id="pw-titlebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+          <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+          <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+        </svg>
+        Acceso restringido
+      </div>
+      <div id="pw-body">
+        <div class="xp-field">
+          <label class="xp-label" for="pw-input">Contraseña</label>
+          <input class="xp-input" type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+        </div>
+        <div id="pw-error"></div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="xp-btn xp-btn-primary" type="button" id="pw-submit">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xp-window">
+    <div class="xp-titlebar">
+      <svg class="xp-titlebar-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M3 1h7l3 3v11H3z" fill="#fff" stroke="#808080" stroke-width=".8"/>
+        <path d="M5 5h6M5 7.5h6M5 10h4" stroke="#316AC5" stroke-width="1"/>
+      </svg>
+      Nuevo artículo · GDN
+    </div>
+    <div class="xp-body">
+
+      <div class="xp-row">
+        <div class="xp-field" style="flex:2">
+          <label class="xp-label" for="in-titulo">Título</label>
+          <input class="xp-input" type="text" id="in-titulo" maxlength="200" autocomplete="off"
+                 placeholder="Ej: Deformarnos y mantenernos de pie">
+        </div>
+      </div>
+
+      <div class="xp-row">
+        <div class="xp-field">
+          <label class="xp-label" for="in-autor">Autor</label>
+          <input class="xp-input" type="text" id="in-autor" maxlength="120" autocomplete="off"
+                 placeholder="Ej: QATZii" list="autores-list">
+          <datalist id="autores-list"></datalist>
+        </div>
+        <div class="xp-field">
+          <label class="xp-label" for="in-categoria">Categoría</label>
+          <input class="xp-input" type="text" id="in-categoria" maxlength="60" autocomplete="off"
+                 value="Poesía" list="categorias-list">
+          <datalist id="categorias-list">
+            <option value="Poesía"></option>
+            <option value="Crónica"></option>
+            <option value="Artículo"></option>
+            <option value="Ensayo"></option>
+            <option value="Entrevista"></option>
+            <option value="Cuento"></option>
+          </datalist>
+        </div>
+      </div>
+
+      <div class="xp-field">
+        <span class="xp-label">Formato</span>
+        <div class="seg" id="seg-tipo" role="group" aria-label="Formato del texto">
+          <button type="button" data-clase="poema" class="active">Poema (centrado)</button>
+          <button type="button" data-clase="">Prosa / Crónica</button>
+        </div>
+      </div>
+
+      <hr class="xp-divider">
+
+      <div class="xp-field">
+        <label class="xp-label" for="in-contenido">Contenido</label>
+        <div class="toolbar">
+          <button type="button" class="tool-btn" id="tool-sep">Insertar separador ───</button>
+          <span class="hint">Línea en blanco = nueva estrofa/párrafo · una línea con <b>---</b> = separador</span>
+        </div>
+        <textarea class="xp-textarea" id="in-contenido"
+                  placeholder="Pega aquí el poema o texto.&#10;Los saltos de línea se conservan tal cual."></textarea>
+      </div>
+
+      <div class="xp-field">
+        <label class="xp-label" for="in-descripcion">Descripción / extracto <span class="opt">(opcional — se genera de la primera estrofa)</span></label>
+        <textarea class="xp-input" id="in-descripcion" rows="2" maxlength="300"
+                  placeholder="Aparece en la tarjeta del inicio." style="resize:vertical"></textarea>
+      </div>
+
+      <div class="xp-field">
+        <span class="xp-label">Imagen de portada <span class="opt">(opcional)</span></span>
+        <div id="img-zone" role="button" tabindex="0" aria-label="Seleccionar o arrastrar imagen">
+          <svg width="32" height="32" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect x="3" y="9" width="30" height="22" rx="1" fill="#FED84F" stroke="#808080" stroke-width="1"/>
+            <rect x="3" y="9" width="30" height="3" fill="#3A6EA5" stroke="#808080" stroke-width="1"/>
+            <path d="M13 24 l5-7 l5 7" fill="#316AC5" opacity=".7"/>
+            <circle cx="22" cy="19" r="2" fill="#316AC5" opacity=".7"/>
+          </svg>
+          <p>Arrastra una imagen o haz clic</p>
+          <small>JPG, PNG, WEBP, GIF · máx 10 MB · se sube a Cloudinary</small>
+        </div>
+        <input id="img-input" type="file" accept="image/*" style="display:none" aria-hidden="true">
+        <div id="img-preview-wrap">
+          <img id="img-preview" alt="Portada">
+          <button class="xp-btn" type="button" id="img-remove">Quitar imagen</button>
+        </div>
+      </div>
+
+      <hr class="xp-divider">
+
+      <div class="xp-field">
+        <span class="preview-toggle"><span>Vista previa</span></span>
+        <div class="art-preview" id="preview"><span class="ap-empty">Escribe el contenido para ver la vista previa…</span></div>
+      </div>
+
+      <div class="progress-bar-wrap" id="progress-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div id="status-box" role="status" aria-live="polite"></div>
+
+      <p class="note">Al publicar, el artículo se agrega a la colección de GDN y aparece en el sitio en ~1 minuto.</p>
+
+      <div class="btn-row">
+        <button class="xp-btn" type="button" id="btn-cancel">Cancelar</button>
+        <button class="xp-btn xp-btn-primary" type="button" id="btn-publish" disabled>Publicar</button>
+      </div>
+
+      <hr class="xp-divider">
+
+      <details class="manage">
+        <summary>Administrar artículos existentes</summary>
+        <div id="manage-list"><span class="hint">Cargando…</span></div>
+      </details>
+
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Embed mode: strip chrome + report height to parent ────────────────────
+    if (new URLSearchParams(location.search).get('embed') === '1') {
+      document.documentElement.classList.add('embedded');
+      function reportHeight() {
+        document.documentElement.style.height = 'auto';
+        parent.postMessage({ type: 'articulo-upload-resize', height: document.body.offsetHeight }, location.origin);
+      }
+      new ResizeObserver(reportHeight).observe(document.body);
+    }
+
+    // ── Config (shared with archivo upload) ───────────────────────────────────
+    const WORKER_URL  = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+    const PW_HASH     = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
+    const SESSION_KEY = 'articulo_auth';
+    const MAX_SIZE_MB = 10;
+
+    // ── Password gate ─────────────────────────────────────────────────────────
+    let _authed = false;
+    let _password = '';
+    let _attempts = 0, _lockedUntil = 0, _lockTimer = null;
+    const MAX_ATTEMPTS = 5, LOCKOUT_MS = 60000;
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const $ = id => document.getElementById(id);
+    const pwOverlay = $('pw-overlay'), pwInput = $('pw-input'), pwSubmit = $('pw-submit'), pwError = $('pw-error');
+
+    function startLockoutTimer() {
+      if (_lockTimer) clearInterval(_lockTimer);
+      _lockTimer = setInterval(function() {
+        const remaining = Math.ceil((_lockedUntil - Date.now()) / 1000);
+        if (remaining <= 0) {
+          clearInterval(_lockTimer); _lockTimer = null;
+          pwSubmit.disabled = false; pwInput.disabled = false; pwError.textContent = ''; _attempts = 0;
+        } else {
+          pwError.textContent = 'Demasiados intentos. Espera ' + remaining + 's.';
+        }
+      }, 500);
+    }
+
+    async function checkPassword() {
+      if (Date.now() < _lockedUntil) return;
+      const typed = pwInput.value;
+      if (await sha256(typed) === PW_HASH) {
+        _authed = true; _password = typed;
+        sessionStorage.setItem(SESSION_KEY, PW_HASH);
+        pwOverlay.classList.add('hidden'); pwInput.value = ''; _attempts = 0;
+        loadManageList();
+      } else {
+        _attempts++; pwInput.value = '';
+        if (_attempts >= MAX_ATTEMPTS) {
+          _lockedUntil = Date.now() + LOCKOUT_MS;
+          pwSubmit.disabled = true; pwInput.disabled = true; startLockoutTimer();
+        } else {
+          const left = MAX_ATTEMPTS - _attempts;
+          pwError.textContent = 'Contraseña incorrecta. (' + left + ' intento' + (left === 1 ? '' : 's') + ' restante' + (left === 1 ? '' : 's') + ')';
+          pwInput.focus();
+        }
+      }
+    }
+    pwSubmit.addEventListener('click', checkPassword);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+    pwInput.focus();
+
+    // ── Elements ──────────────────────────────────────────────────────────────
+    const inTitulo = $('in-titulo'), inAutor = $('in-autor'), inCategoria = $('in-categoria');
+    const inContenido = $('in-contenido'), inDesc = $('in-descripcion');
+    const preview = $('preview'), segTipo = $('seg-tipo');
+    const btnPublish = $('btn-publish'), btnCancel = $('btn-cancel');
+    const statusBox = $('status-box'), progressWrap = $('progress-wrap'), progressFill = $('progress-fill');
+    const imgZone = $('img-zone'), imgInput = $('img-input'), imgPreviewWrap = $('img-preview-wrap'), imgPreview = $('img-preview'), imgRemove = $('img-remove');
+
+    let _clase = 'poema';      // 'poema' | ''
+    let _imgFile = null;       // selected cover image File
+
+    // ── Content parser: blank line = block, --- = separator, \n preserved ─────
+    function parseContenido(raw) {
+      const text = String(raw || '').replace(/\r\n?/g, '\n');
+      const blocks = [];
+      let buf = [];
+      const flush = () => {
+        if (!buf.length) return;
+        const joined = buf.join('\n');
+        if (joined.trim()) blocks.push({ tipo: 'p', texto: joined });
+        buf = [];
+      };
+      text.split('\n').forEach(line => {
+        if (/^\s*$/.test(line)) flush();
+        else if (/^\s*(-{3,}|\*{3,}|—{2,})\s*$/.test(line)) { flush(); blocks.push({ tipo: 'hr', texto: '' }); }
+        else buf.push(line);
+      });
+      flush();
+      return blocks;
+    }
+
+    function buildMeta() {
+      const autor = inAutor.value.trim();
+      const cat = inCategoria.value.trim();
+      return [autor, cat].filter(Boolean).join(' • ');
+    }
+
+    // ── Live preview ──────────────────────────────────────────────────────────
+    function renderPreview() {
+      const blocks = parseContenido(inContenido.value);
+      preview.className = 'art-preview' + (_clase === 'poema' ? ' poema' : '');
+      preview.innerHTML = '';
+
+      const titulo = inTitulo.value.trim();
+      const meta = buildMeta();
+      if (titulo) { const t = document.createElement('div'); t.className = 'ap-title'; t.textContent = titulo; preview.appendChild(t); }
+      if (meta)   { const m = document.createElement('div'); m.className = 'ap-meta';  m.textContent = meta;   preview.appendChild(m); }
+      if (_imgFile && imgPreview.src) {
+        const im = document.createElement('img'); im.className = 'ap-hero'; im.src = imgPreview.src; preview.appendChild(im);
+      }
+
+      if (!blocks.length) {
+        const e = document.createElement('span'); e.className = 'ap-empty';
+        e.textContent = 'Escribe el contenido para ver la vista previa…';
+        preview.appendChild(e);
+        return;
+      }
+      const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote', hr: 'hr' };
+      blocks.forEach(b => {
+        const el = document.createElement(typeMap[b.tipo] || 'p');
+        if (b.tipo !== 'hr') el.textContent = b.tipo === 'quote' ? '"' + b.texto + '"' : b.texto;
+        preview.appendChild(el);
+      });
+    }
+
+    function syncPublishBtn() {
+      const ok = inTitulo.value.trim() && inAutor.value.trim() && parseContenido(inContenido.value).length > 0;
+      btnPublish.disabled = !ok;
+    }
+
+    ['input', 'change'].forEach(ev => {
+      [inTitulo, inAutor, inCategoria, inContenido, inDesc].forEach(el => el.addEventListener(ev, () => { renderPreview(); syncPublishBtn(); }));
+    });
+
+    // Formato toggle
+    segTipo.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      segTipo.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      _clase = b.dataset.clase;
+      renderPreview();
+    }));
+
+    // Insert separator at cursor
+    $('tool-sep').addEventListener('click', () => {
+      const s = inContenido.selectionStart ?? inContenido.value.length;
+      const e = inContenido.selectionEnd ?? inContenido.value.length;
+      const before = inContenido.value.slice(0, s).replace(/\n*$/, '');
+      const after = inContenido.value.slice(e).replace(/^\n*/, '');
+      inContenido.value = before + '\n\n---\n\n' + after;
+      inContenido.dispatchEvent(new Event('input'));
+      inContenido.focus();
+    });
+
+    // ── Cover image selection ─────────────────────────────────────────────────
+    imgZone.addEventListener('click', () => imgInput.click());
+    imgZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); imgInput.click(); } });
+    imgZone.addEventListener('dragover', e => { e.preventDefault(); imgZone.classList.add('drag-over'); });
+    imgZone.addEventListener('dragleave', e => { if (!imgZone.contains(e.relatedTarget)) imgZone.classList.remove('drag-over'); });
+    imgZone.addEventListener('drop', e => { e.preventDefault(); imgZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) setImage(e.dataTransfer.files[0]); });
+    imgInput.addEventListener('change', () => { if (imgInput.files[0]) setImage(imgInput.files[0]); imgInput.value = ''; });
+    imgRemove.addEventListener('click', () => { _imgFile = null; imgPreview.src = ''; imgPreviewWrap.classList.remove('visible'); imgZone.style.display = ''; renderPreview(); });
+
+    function setImage(f) {
+      if (!f.type.startsWith('image/')) { showStatus('Solo se permiten imágenes.', 'error'); return; }
+      if (f.size > MAX_SIZE_MB * 1024 * 1024) { showStatus('La imagen supera los ' + MAX_SIZE_MB + ' MB.', 'error'); return; }
+      _imgFile = f;
+      const r = new FileReader();
+      r.onload = e => { imgPreview.src = e.target.result; renderPreview(); };
+      r.readAsDataURL(f);
+      imgPreviewWrap.classList.add('visible');
+      imgZone.style.display = 'none';
+    }
+
+    // ── Publish ───────────────────────────────────────────────────────────────
+    btnPublish.addEventListener('click', publish);
+
+    async function publish() {
+      if (!_authed || !_password) { reauth(); return; }
+      const titulo = inTitulo.value.trim();
+      const autor = inAutor.value.trim();
+      const contenido = parseContenido(inContenido.value);
+      if (!titulo || !autor || !contenido.length) return;
+
+      btnPublish.disabled = true; btnCancel.disabled = true;
+      progressWrap.classList.add('visible'); setProgress(8);
+
+      let imagen = '';
+      try {
+        if (_imgFile) {
+          showStatus('Subiendo imagen…', '');
+          imagen = await uploadCover(_imgFile, autor, titulo);
+          setProgress(60);
+        }
+        showStatus('Publicando…', '');
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'articulo-submit', password: _password,
+            articulo: { titulo, meta: buildMeta(), clase: _clase, imagen, descripcion: inDesc.value.trim(), contenido }
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+        setProgress(100);
+        showStatus('✓ Publicado como artículo #' + data.id + '. Aparecerá en el sitio en ~1 minuto.', 'success');
+        resetForm();
+        loadManageList();
+      } catch (err) {
+        showStatus('Error al publicar: ' + err.message, 'error');
+      } finally {
+        btnCancel.disabled = false;
+        setTimeout(() => progressWrap.classList.remove('visible'), 800);
+        syncPublishBtn();
+      }
+    }
+
+    async function uploadCover(file, autor, titulo) {
+      // 1) get signed params from the Worker
+      const signRes = await fetch(WORKER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'articulo-sign', password: _password, autor, titulo, content_type: file.type })
+      });
+      if (!signRes.ok) throw new Error('No se pudo firmar la subida (' + signRes.status + ')');
+      const p = await signRes.json();
+
+      // 2) upload to Cloudinary
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', p.upload_preset);
+      fd.append('folder', p.folder);
+      fd.append('asset_folder', p.asset_folder || p.folder);
+      fd.append('timestamp', p.timestamp);
+      fd.append('api_key', p.api_key);
+      fd.append('signature', p.signature);
+      if (p.context) fd.append('context', p.context);
+
+      const up = await fetch('https://api.cloudinary.com/v1_1/' + p.cloud_name + '/image/upload', { method: 'POST', body: fd });
+      if (!up.ok) throw new Error('Cloudinary rechazó la imagen (' + up.status + ')');
+      const cloud = await up.json();
+      if (!cloud.secure_url) throw new Error('Cloudinary no devolvió URL');
+      return cloud.secure_url;
+    }
+
+    function resetForm() {
+      inTitulo.value = ''; inContenido.value = ''; inDesc.value = '';
+      _imgFile = null; imgPreview.src = ''; imgPreviewWrap.classList.remove('visible'); imgZone.style.display = '';
+      renderPreview(); syncPublishBtn();
+    }
+
+    function reauth() {
+      _authed = false; sessionStorage.removeItem(SESSION_KEY);
+      pwError.textContent = 'Sesión expirada. Ingresa la contraseña de nuevo.';
+      pwOverlay.classList.remove('hidden'); pwInput.focus();
+    }
+
+    // ── Cancel ────────────────────────────────────────────────────────────────
+    btnCancel.addEventListener('click', () => {
+      if (parent !== window) { try { parent.postMessage({ type: 'close-articulo-upload' }, location.origin); return; } catch (e) {} }
+      window.history.length > 1 ? window.history.back() : window.close();
+    });
+
+    // ── Manage list (existing articulos) ──────────────────────────────────────
+    async function loadManageList() {
+      const box = $('manage-list');
+      try {
+        const res = await fetch('articulos.json?ts=' + Date.now(), { cache: 'no-store' });
+        const list = await res.json();
+
+        // Author datalist
+        const autores = new Set();
+        list.forEach(a => { const first = String(a.meta || '').split('•')[0].trim(); if (first) autores.add(first); });
+        const dl = $('autores-list'); dl.innerHTML = '';
+        autores.forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+
+        if (!_authed) { box.innerHTML = '<span class="hint">Ingresa la contraseña para administrar.</span>'; return; }
+        if (!list.length) { box.innerHTML = '<span class="hint">No hay artículos.</span>'; return; }
+
+        box.innerHTML = '';
+        list.slice().reverse().forEach(a => box.appendChild(buildManageRow(a)));
+      } catch (e) {
+        box.innerHTML = '<span class="hint">No se pudo cargar la lista.</span>';
+      }
+    }
+
+    function buildManageRow(a) {
+      const row = document.createElement('div');
+      row.className = 'manage-row';
+      const info = document.createElement('div'); info.className = 'mr-info';
+      const t = document.createElement('div'); t.className = 'mr-title'; t.textContent = a.titulo || '(sin título)';
+      const m = document.createElement('div'); m.className = 'mr-meta'; m.textContent = a.meta || '';
+      info.appendChild(t); info.appendChild(m);
+      const idEl = document.createElement('span'); idEl.className = 'mr-id'; idEl.textContent = '#' + a.id;
+      const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Eliminar';
+      del.addEventListener('click', () => deleteArticulo(a, row, del));
+      row.appendChild(idEl); row.appendChild(info); row.appendChild(del);
+      return row;
+    }
+
+    async function deleteArticulo(a, row, btn) {
+      if (!_authed || !_password) { reauth(); return; }
+      if (!confirm('¿Eliminar "' + (a.titulo || '#' + a.id) + '"?\nEsto lo quita del sitio y borra su imagen de Cloudinary.')) return;
+      btn.disabled = true; row.classList.add('removing');
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'articulo-delete', password: _password, id: a.id })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+        row.remove();
+        showStatus('✓ "' + (a.titulo || '#' + a.id) + '" eliminado.', 'success');
+      } catch (err) {
+        row.classList.remove('removing'); btn.disabled = false;
+        showStatus('Error al eliminar: ' + err.message, 'error');
+      }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function showStatus(msg, type) { statusBox.textContent = msg; statusBox.className = 'visible' + (type ? ' ' + type : ''); }
+    function setProgress(pct) { progressFill.style.width = pct + '%'; }
+
+    // Initial: populate author datalist (and manage list once authed)
+    loadManageList();
+    renderPreview();
+  })();
+  </script>
+</body>
+</html>

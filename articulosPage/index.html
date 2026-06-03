@@ -97,10 +97,27 @@
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
         
+        function openNuevoArticulo() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'open-articulo-upload-popup' }, location.origin);
+            } else {
+                window.location.href = 'upload.html';
+            }
+        }
+
         fetch('articulos.json')
             .then(r => r.json())
             .then(articulos => {
                 const fragment = document.createDocumentFragment();
+
+                // "Nuevo artículo" entry first
+                const nuevo = document.createElement('a');
+                nuevo.className = 'folder-item';
+                nuevo.href = '#';
+                nuevo.innerHTML = `<img src="../indexPage/indexImages/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">Nuevo artículo...</span>`;
+                nuevo.addEventListener('click', (e) => { e.preventDefault(); openNuevoArticulo(); });
+                fragment.appendChild(nuevo);
+
                 articulos.forEach(art => {
                     const item = document.createElement('a');
                     item.className = 'folder-item';

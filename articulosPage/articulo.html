@@ -62,7 +62,8 @@
                 title.textContent = art.titulo;
                 meta.textContent = art.meta;
                 if (art.clase) body.classList.add(art.clase);
-                hero.src = '../' + (art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg');
+                const heroImg = art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
+                hero.src = /^https?:\/\//.test(heroImg) ? heroImg : '../' + heroImg;
                 hero.alt = art.titulo;
                 hero.style.display = '';
 

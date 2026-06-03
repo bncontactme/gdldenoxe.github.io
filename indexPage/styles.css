@@ -619,7 +619,8 @@ body {
 }
 
 /* Upload: no inset border, window auto-sizes via postMessage */
-[data-window-id="upload"] .iframe-container {
+[data-window-id="upload"] .iframe-container,
+[data-window-id="upload-articulo"] .iframe-container {
     border: none;
     height: 100%;
     overflow: hidden;

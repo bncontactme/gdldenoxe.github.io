@@ -397,6 +397,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             container.appendChild(containerFrag);
+
+            // "Nuevo artículo" entry at the top of the Artículos folder
+            const newItem = document.createElement('div');
+            newItem.className = 'folder-item';
+            newItem.innerHTML = `
+                <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
+                <span class="folder-name">Nuevo artículo...</span>`;
+            newItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                $$('.folder-item').forEach(i => i.classList.remove('selected'));
+                newItem.classList.add('selected');
+                selectedFolderItem = newItem;
+            });
+            newItem.addEventListener('dblclick', (e) => { e.stopPropagation(); openArticuloUploadOverlay(); });
+            folderContent.appendChild(newItem);
+
             folderContent.appendChild(folderFrag);
 
             // Populate article widget with a random article
@@ -1280,7 +1296,41 @@ juntxs y brillando.`
             const body = uploadWin?.querySelector('.window-body');
             if (body) body.style.height = e.data.height + 'px';
         }
+        if (e.data?.type === 'open-articulo-upload-popup') openArticuloUploadOverlay();
+        if (e.data?.type === 'articulo-upload-resize') {
+            const win = $('[data-window-id="upload-articulo"]');
+            const body = win?.querySelector('.window-body');
+            if (body) body.style.height = e.data.height + 'px';
+        }
+        if (e.data?.type === 'close-articulo-upload') {
+            const win = $('[data-window-id="upload-articulo"]');
+            if (win) { win.classList.add('hidden'); updateTaskbar(); }
+        }
     });
+
+    // ===== Nuevo artículo window (shown from the Artículos folder) =====
+    function openArticuloUploadOverlay() {
+        const iframe = $('#upload-articulo-iframe');
+        if (iframe && iframe.getAttribute('src') !== 'articulosPage/upload.html?embed=1') {
+            iframe.src = 'articulosPage/upload.html?embed=1';
+        }
+        const win = $('[data-window-id="upload-articulo"]');
+        if (!win) return;
+
+        const GAP = 16;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44;
+        const winW = win.offsetWidth || 600;
+        const winH = win.offsetHeight || 560;
+
+        const left = Math.max(GAP, Math.floor((screenW - winW) / 2));
+        const top  = Math.max(GAP, Math.min(GAP + 8, screenH - winH - GAP));
+        win.style.left = left + 'px';
+        win.style.top  = top  + 'px';
+        win.classList.remove('hidden', 'minimized');
+        bringToFront(win);
+        updateTaskbar();
+    }
 
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {
