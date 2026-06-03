@@ -237,5 +237,30 @@
         "texto": "Que no se te olvide que yo soy Dios, y tú eres Dios. Aunque me odies por ser tú, yo te amo porque eres yo. Y juntos convergemos en lo más precioso y horrible que hay, el amor."
       }
     ]
+  },
+  {
+    "id": 9,
+    "titulo": "Dios me dijo que viniera a coger y aprender",
+    "meta": "Miguel Mayorga • Poesía",
+    "clase": "poema",
+    "descripcion": "Ambos representan el hambre del alma.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Ambos representan el hambre del alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "El deseo sexual nace desde la garganta, te recorre y calienta cada costura de la piel, es sumamente expansivo y contrastante con el antes y el después ¡Es presencial! Pero, al final, estalla en tu mente, llenándote de éxtasis con cada recuerdo o visualización apurada de lo que necesita tu alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "El deseo de saber no es para nada distinto. Surge de la llama interior, esa que te mueve sin ser consciente de ello, aquella que te inunda la mente y el cuerpo, te obliga a llenar ese vacío, saciar tal hambre y cumplir con lo que requiere el alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "Ambas nacen ahí, en el fuego de lo no visible, de lo que te dicta Dios como mandato."
+      }
+    ]
   }
 ]
