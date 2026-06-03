@@ -61,18 +61,21 @@
                 document.title = art.titulo + ' - GDLDENOXE';
                 title.textContent = art.titulo;
                 meta.textContent = art.meta;
+                if (art.clase) body.classList.add(art.clase);
                 hero.src = '../' + (art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg');
                 hero.alt = art.titulo;
                 hero.style.display = '';
 
                 const fragment = document.createDocumentFragment();
-                const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote' };
-                
+                const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote', hr: 'hr' };
+
                 art.contenido.forEach(block => {
                     const tag = typeMap[block.tipo] || 'p';
                     const el = document.createElement(tag);
                     if (block.tipo === 'lead') el.className = 'lead';
-                    el.textContent = block.tipo === 'quote' ? '"' + block.texto + '"' : block.texto;
+                    if (block.tipo !== 'hr') {
+                        el.textContent = block.tipo === 'quote' ? '"' + block.texto + '"' : block.texto;
+                    }
                     fragment.appendChild(el);
                 });
                 body.appendChild(fragment);

@@ -108,5 +108,134 @@
         "texto": "SI DIOS CONMIGO, QUIÉN CONTRA MÍ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       }
     ]
+  },
+  {
+    "id": 5,
+    "titulo": "Deformarnos y mantenernos de pie",
+    "meta": "QATZii • Poesía",
+    "clase": "poema",
+    "descripcion": "Hay tormentas que aparentan aplanadoras, que arrojan canicas de granizo en sus vientos torrenciales. Son las tormentas que amenazan con sus cortinas de agua hacer ruinas de todo lo visible.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Hay tormentas que aparentan aplanadoras\nQue arrojan canicas de granizo en sus vientos torrenciales\nSon las tormentas que amenazan con sus cortinas de agua hacer ruinas de todo lo visible\nQuebrando gota por gota los pavimentos y azulejos\nTormentas que al terminar siempre nos dejan perplejos cuando los rayos de sol vuelven a\nacariciar los mismos edificios de ayer.\nA simple vista sin cambio alguno"
+      },
+      {
+        "tipo": "p",
+        "texto": "Hay terremotos que tiran bestiales rascacielos\nQue quiebran el pavimento, convirtiendo el alisado en mosaico\nHaciendo que los árboles y postes de luz compartan la misma tumba, acostados sobre las calles\nAquellos que nos dejan como testigos impotentes de la reducción de lo que considerábamos\nnuestro a escombros y polvo"
+      },
+      {
+        "tipo": "p",
+        "texto": "Pero al final de la destrucción nunca queda un llano\nY un ejército de bestias de concreto se mantienen de pie\n¿Será un mero azar quién cae y quién se salva?"
+      },
+      {
+        "tipo": "p",
+        "texto": "Hace muchas tormentas y muchos terremotos aprendimos\nque la firmeza que protege del primero no basta para el segundo\nQue firmeza sin maleabilidad nos hará compartir una fosa común con los árboles y postes\nacostados\nQue aquellos que sobreviven cuando la misma tierra sacude\nSon aquellos que padecen del regalo de la deformidad\nAquellos capaces de moldear y sacudirse sin arrancar sus propias raíces"
+      },
+      {
+        "tipo": "p",
+        "texto": "El arquitecto atascado en lo que es y siempre ha sido no es más que un hipócrita"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "titulo": "Cambia de opinión sobre algo importante",
+    "meta": "Pictoriano • Poesía",
+    "clase": "poema",
+    "descripcion": "te diré que me siento mejor, pero es mentira. no, la vdd no me arrepiento. Ya sé que te había dicho q estaba segura, pero nose.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "te diré que me siento mejor, pero es mentira."
+      },
+      {
+        "tipo": "p",
+        "texto": "no, la vdd no me arrepiento. Ya sé que te había dicho q estaba\nsegura, pero nose. aveces uno sufre más pensándolo que\nhaciéndolo.\ntalvez eso nos pasó sabes?"
+      },
+      {
+        "tipo": "p",
+        "texto": "si me da poquito miedo. esq yo pensaba q las cosas así\nimportantes de la vida se sentían, y pues nose, como q una\nenergía distinta los invadía e iluminaba."
+      },
+      {
+        "tipo": "p",
+        "texto": "pero no, para nada jaja, por no decir que fue a la suerte,\npero prácticamente ni lo pensé."
+      },
+      {
+        "tipo": "p",
+        "texto": "y está bnn, ya me sentía tan agotada de pensar lo mismo tantas\nveces, tanto que se adormeció y dejé de sentirlo como lo que\nera realmente. ya lo veía borroso, me dolían los ojos de\npensarlo y hasta aveces se me olvidaba."
+      },
+      {
+        "tipo": "p",
+        "texto": "Poreso mira, cambié de opinión, y lo que sea, en vdd, está\nbien, lo digo genuinamente, me siento mucho mejor y lo chido\nestá en q creo q cualquier decisión hubiera sido la correcta,\nel tema era decidir."
+      },
+      {
+        "tipo": "hr",
+        "texto": ""
+      },
+      {
+        "tipo": "p",
+        "texto": "¿Qué tal si no?\no peor no sé, ¿Qué tal que sí?\ndecidirse en tal o cual\nen sí es lo difícil."
+      },
+      {
+        "tipo": "p",
+        "texto": "No por el hecho de decir\nsino más por el de hacer."
+      },
+      {
+        "tipo": "p",
+        "texto": "Poreso dije que sí,\nno vaya a ser que así no se vaya a hacer\nlo que no sé cuando había dicho que sí"
+      },
+      {
+        "tipo": "p",
+        "texto": "En todo caso el decidir o decir decidiese\nsería pues no mejor que no hacer ni decir;\npero en sí me decidí,\nera algo importante."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "titulo": "Sin Título",
+    "meta": "Victoria Gueta • Poesía",
+    "clase": "poema",
+    "descripcion": "Mi áspera piel, que en tus manos se convierte en suave, y con tus labios mis dañados ojos dejan la hinchazón.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Mi áspera piel, que en tus manos se convierte en suave, y con tus labios mis dañados ojos dejan la hinchazón. Me gustas acariciando mi pelo de rara textura e inusual olor."
+      },
+      {
+        "tipo": "p",
+        "texto": "Estoy comiendo de ti; en poco tiempo mi estómago dolerá y mi alma pesará. Ya estoy llena de tu angustia y melancolía. Recorro tus largos caminos de nostalgia y recuerdos; pareces atrapado, pero es bello reconocerte. Será un largo camino procesarte."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "titulo": "Dios somos todos",
+    "meta": "Miguel Mayorga • Poesía",
+    "clase": "poema",
+    "imagen": "articulosPage/articuloImages/WhatsApp Image 2026-05-28 at 08.32.45 (1).jpeg",
+    "descripcion": "Somos todo, todos somos todos. Me odias, porque tú sabes que yo sé que tú piensas que yo sé que soy tú.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Somos todo, todos somos todos."
+      },
+      {
+        "tipo": "p",
+        "texto": "Me odias, porque tú sabes que yo sé que tú piensas que yo sé que soy tú. Y tú eres yo. Por lo mismo somos tan parecidos, porque somos parte del ciclo infinito."
+      },
+      {
+        "tipo": "p",
+        "texto": "Que sí, soy el demonio mismo, soy tan malo que he terminado con la vida de mis hermanos, he saboteado a mis padres e hijos a mi beneficio y he cometido incontables pecados en contra de mis acompañantes en el todo."
+      },
+      {
+        "tipo": "p",
+        "texto": "Y tú eres tan bueno, tan puro y santo que ayudas sin mirar a quien, que facilitas la vida a quien puedes. Que prefieres fluir, antes que afrontar a pesar de que todo vaya en tu contra. Que saboreas el presente y disfrutas cada instante como lo dictó Dios mismo."
+      },
+      {
+        "tipo": "p",
+        "texto": "Que no se te olvide que yo soy Dios, y tú eres Dios. Aunque me odies por ser tú, yo te amo porque eres yo. Y juntos convergemos en lo más precioso y horrible que hay, el amor."
+      }
+    ]
   }
 ]
