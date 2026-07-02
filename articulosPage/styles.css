@@ -29,8 +29,11 @@ body {
     font-size: 13px;
     display: flex;
     justify-content: center;
+    align-items: stretch;
     padding: 8px;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 /* === Window container === */
@@ -38,8 +41,9 @@ body {
     max-width: 720px;
     width: 100%;
     margin: 0 auto;
+    max-height: 100%;
+    overflow: hidden;
     background: var(--win95-bg);
-    min-height: auto;
     border-top: 2px solid var(--win95-white);
     border-left: 2px solid var(--win95-white);
     border-right: 2px solid var(--win95-darker);
@@ -61,6 +65,7 @@ body {
     align-items: center;
     gap: 6px;
     min-height: 22px;
+    flex-shrink: 0;
 }
 
 .back-link {
@@ -136,6 +141,7 @@ body {
     border-right: 2px solid var(--win95-white);
     border-bottom: 2px solid var(--win95-white);
     image-rendering: auto;
+    flex-shrink: 0;
 }
 
 /* === Content area — sunken white text field === */
@@ -151,6 +157,8 @@ body {
     font-size: 14px;
     line-height: 1.5;
     color: var(--win95-text);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
 }
 
@@ -214,6 +222,7 @@ body {
     border-top: 2px solid var(--win95-light);
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .article-footer .back-link {
