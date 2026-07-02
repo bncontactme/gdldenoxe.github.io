@@ -399,6 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(containerFrag);
             folderContent.appendChild(folderFrag);
 
+            const folderStatus = $('#folder-articulos-status');
+            if (folderStatus) folderStatus.textContent = articulos.length + ' objeto(s)';
+
             // Populate article widget with a random article
             const randomArt = articulos[Math.floor(Math.random() * articulos.length)];
             const widgetImg = $('#articuloWidgetImg');
@@ -448,6 +451,48 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(() => {
             randomizeWindowPositions();
         });
+
+    // Menú de la ventana Artículos (estilo explorador)
+    const artMenubar = $('#folder-articulos-menubar');
+    if (artMenubar) {
+        const artFolderWin = $('[data-window-id="folder-articulos"]');
+        const artFolderContent = $('#folder-articulos-content');
+        const closeArtMenus = () => {
+            artMenubar.querySelectorAll('.fe-menu-item.open').forEach(x => x.classList.remove('open'));
+            artMenubar.querySelectorAll('.fe-dropdown.open').forEach(x => x.classList.remove('open'));
+        };
+        artMenubar.querySelectorAll('.fe-menu-item').forEach(mi => {
+            mi.addEventListener('click', e => {
+                e.stopPropagation();
+                const dd = artMenubar.querySelector('#fe-dropdown-' + mi.dataset.menu);
+                const wasOpen = mi.classList.contains('open');
+                closeArtMenus();
+                if (!wasOpen && dd) {
+                    mi.classList.add('open');
+                    dd.style.left = mi.offsetLeft + 'px';
+                    dd.classList.add('open');
+                }
+            });
+        });
+        artMenubar.querySelectorAll('.fe-dd-item').forEach(li => {
+            li.addEventListener('click', e => {
+                e.stopPropagation();
+                const action = li.dataset.action;
+                if (action === 'close') {
+                    artFolderWin?.classList.add('hidden');
+                    updateTaskbar();
+                } else if (action === 'select-all') {
+                    artFolderContent?.querySelectorAll('.folder-item').forEach(i => i.classList.add('selected'));
+                } else if (action === 'view-icons') {
+                    artFolderContent?.classList.remove('list-view');
+                } else if (action === 'view-list') {
+                    artFolderContent?.classList.add('list-view');
+                }
+                closeArtMenus();
+            });
+        });
+        document.addEventListener('click', closeArtMenus);
+    }
 
     window.addEventListener('resize', centerYtPopup);
     window.addEventListener('resize', positionRobloxPopup);
