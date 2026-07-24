@@ -144,7 +144,7 @@
             "description": "Estampado GDN. Talla única.",
             "link": "https://www.paypal.com/ncp/payment/4BNY355KAG5QC",
             "info": "Talla Única",
-            "stock": "7 u"
+            "stock": "6 u"
         },
         {
             "id": "model-anaconda",
@@ -232,6 +232,7 @@
             "link": "https://www.paypal.com/ncp/payment/9EHPTJ7E8PY6L",
             "info": "Talla Única",
             "stock": "3 u",
+            "soldOut": true,
             "splashRight": -8,
             "splashBottom": true,
             "splashY": -8
@@ -246,7 +247,8 @@
             "link": "https://www.paypal.com/ncp/payment/EZWFBQZRT4EZE",
             "info": "Talla Única",
             "stock": "1 u",
-            "badge": "NUEVO"
+            "badge": "NUEVO",
+            "soldOut": true
         },
         {
             "id": "almohada-dorada",
@@ -348,7 +350,7 @@
             "description": "Serigrafía GDN. Talla única.",
             "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G",
             "info": "Talla Única",
-            "stock": "2 u",
+            "stock": "3 u",
             "variants": [
                 { "label": "Gris",       "price": 300, "color": "#808080", "image": "assets/products/gdn/image_3.jpeg", "link": "https://www.paypal.com/ncp/payment/4EQML54Q8PQ8G" },
                 { "label": "Mezclilla",  "price": 250, "color": "#4a6590", "image": "assets/products/gdn/image_4 (1).jpeg", "link": "https://www.paypal.com/ncp/payment/5TWDAR8VADY84" }
@@ -370,13 +372,14 @@
         {
             "id": "bolsa-gdn",
             "name": "Bolsa GDN",
-            "price": 300,
+            "price": 350,
             "image": "assets/products/101/bolsa completa.jpg",
             "imageBg": "#ffffff",
             "description": "Bolsa GDN.",
-            "link": "https://www.paypal.com/ncp/payment/TMDB63GLDYX5U",
+            "link": "https://www.paypal.com/ncp/payment/6SXG74LLTHQEU",
             "info": "Talla Única",
             "stock": "1 u",
+            "soldOut": true,
             "splashX": -8, "splashY": -10, "splashW": 65, "splashH": 55,
             "cornerPosition": "br"
         },

@@ -147,9 +147,29 @@
                 </div>
             </div>
             <div class="window-body">
+                <div class="fe-menubar" id="folder-articulos-menubar">
+                    <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+                    <div class="fe-menu-item" data-menu="editar" tabindex="0">Editar</div>
+                    <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
+                    <ul class="fe-dropdown" id="fe-dropdown-archivo">
+                        <li class="fe-dd-item" data-action="close">Cerrar</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="fe-dropdown-editar">
+                        <li class="fe-dd-item" data-action="select-all">Seleccionar todo</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="fe-dropdown-ver">
+                        <li class="fe-dd-item" data-action="view-icons">Íconos</li>
+                        <li class="fe-dd-item" data-action="view-list">Lista</li>
+                    </ul>
+                </div>
+                <div class="fe-toolbar">
+                    <button class="fe-back" type="button" disabled>← Atrás</button>
+                    <span class="fe-path">Artículos</span>
+                </div>
                 <div class="folder-content" id="folder-articulos-content">
                     <!-- Populated dynamically from articulos.json -->
                 </div>
+                <div class="fe-statusbar"><span id="folder-articulos-status">Cargando...</span></div>
             </div>
         </div>
 
