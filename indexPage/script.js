@@ -423,34 +423,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Dynamically position poema widget below articulo-widget on mobile
-            if (isMobile() && !window.__poemaResizeBound) {
-                function positionPoemaWidget() {
-                    const aw = $('[data-window-id="articulo-widget"]');
-                    const pw = $('[data-window-id="poema1"]');
-                    if (!aw || !pw) return;
-                    const awRect = aw.getBoundingClientRect();
-                    const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
-                    pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
-                }
-                // Wait for images/layout to settle then position
-                const artImg = artWidget?.querySelector('img');
-                if (artImg && !artImg.complete) {
-                    artImg.addEventListener('load', positionPoemaWidget);
-                } else {
-                    requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
-                }
-                window.addEventListener('resize', positionPoemaWidget);
-                window.__poemaResizeBound = true;
+            // Reposition poema now that the articulo widget has content,
+            // and again when its image finishes loading (or fails)
+            positionPoemaWidget();
+            const artImg = artWidget?.querySelector('img');
+            if (artImg && !artImg.complete) {
+                artImg.addEventListener('load', positionPoemaWidget);
+                artImg.addEventListener('error', positionPoemaWidget);
             }
 
             updateTaskbar();
             // Posicionar TODAS las ventanas en cascada después de cargar artículos
             randomizeWindowPositions();
+            // Re-run once fonts settle — text heights change and the smart
+            // column fit measures real heights
+            document.fonts?.ready.then(() => randomizeWindowPositions());
         })
         .catch(() => {
+            positionPoemaWidget();
             randomizeWindowPositions();
         });
+
+    // Mobile: keep the poema widget below the articulo widget. Runs
+    // immediately (not just after the articles fetch) so the widget never
+    // sits at its desktop inline coords overlapping the other widgets.
+    function positionPoemaWidget() {
+        if (!isMobile()) return;
+        const aw = $('[data-window-id="articulo-widget"]');
+        const pw = $('[data-window-id="poema1"]');
+        if (!aw || !pw) return;
+        const awRect = aw.getBoundingClientRect();
+        const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
+        pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
+    }
+    if (isMobile()) {
+        requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
+        window.addEventListener('resize', positionPoemaWidget);
+    }
 
     // Menú de la ventana Artículos (estilo explorador)
     const artMenubar = $('#folder-articulos-menubar');
@@ -548,7 +557,27 @@ juntxs y brillando.`
     // On mobile: override poema1 with ASCII art
     if (isMobile()) {
         const poema1El = $('[data-window-id="poema1"] .poem-text');
-        if (poema1El) poema1El.textContent = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
+        const flowerArt = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
+        if (poema1El) {
+            // Strip trailing braille-blank padding and blank lines — they
+            // inflate the text block width and clip the flower off-center
+            poema1El.textContent = flowerArt.split('\n')
+                .map(l => l.replace(/[⠀\s]+$/, ''))
+                .filter(l => l.length)
+                .join('\n');
+            // Scale the art to exactly fit the widget — braille glyph widths
+            // vary per device font, so a hardcoded zoom clips on some phones
+            const fitFlower = () => {
+                const box = poema1El.parentElement;
+                poema1El.style.zoom = 1;
+                const natW = poema1El.scrollWidth;
+                const availW = box.clientWidth - 4;
+                if (natW > 0 && availW > 0) poema1El.style.zoom = Math.min(1, availW / natW);
+            };
+            fitFlower();
+            document.fonts?.ready.then(fitFlower);
+            window.addEventListener('resize', fitFlower);
+        }
     }
 
     // Posicionar ventanas sin overlap, imagen a la izquierda del artículo
@@ -609,6 +638,11 @@ juntxs y brillando.`
         centerYtPopup();
         positionRobloxPopup();
         if (isMobile()) return;
+        // Restore anything a previous fit pass auto-hid (screen may have grown)
+        $$('.win95-window[data-auto-hidden="1"]').forEach(w => {
+            w.classList.remove('hidden');
+            delete w.dataset.autoHidden;
+        });
         const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup' && w.dataset.windowId !== 'roblox-popup');
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
@@ -639,7 +673,6 @@ juntxs y brillando.`
         
         if (artWin) {
             const artW = Math.min(artWin.offsetWidth || 280, availW - gap * 2);
-            const artH = artWin.offsetHeight || 300;
             const artLeft = screenW - artW - gap;
             artWin.style.left = artLeft + 'px';
             artWin.style.top = topY + 'px';
@@ -671,8 +704,65 @@ juntxs y brillando.`
                 }
             }
             
+            // ── Smart column fit ──
+            // The lonche always keeps its full original size; when the right
+            // column is too short, articulo and poema compact themselves
+            // (smaller image → clamped description → tighter poem → and only
+            // as a last resort, the poem hides) so nothing ever overlaps.
+            const poemaWin = others[0];
+            const artImgBox = artWin.querySelector('.article-image');
+            artWin.classList.remove('art-compact');
+            if (artImgBox) artImgBox.style.height = '';
+            poemaWin?.classList.remove('poema-compact', 'poema-tiny');
+
+            if (loncheWin) {
+                loncheWin.style.width = artW + 'px';
+                const loncheIfr = loncheWin.querySelector('.iframe-container');
+                if (loncheIfr) loncheIfr.style.height = '130px';
+                const loncheH = loncheWin.offsetHeight || 178;
+                const artTop = parseInt(artWin.style.top) || topY;
+                const columnOverflow = () => {
+                    let needed = artTop + artWin.offsetHeight + gap + loncheH + 8;
+                    if (poemaWin && !poemaWin.classList.contains('hidden')) {
+                        needed += poemaWin.offsetHeight + gap;
+                    }
+                    return needed - screenH;
+                };
+                let overflow = columnOverflow();
+                // 1. Shrink the article image frame (down to 100px)
+                if (overflow > 0 && artImgBox) {
+                    const boxH = artImgBox.offsetHeight || 150;
+                    artImgBox.style.height = Math.max(100, boxH - overflow) + 'px';
+                    overflow = columnOverflow();
+                }
+                // 2. Clamp the article description to 2 lines
+                if (overflow > 0) {
+                    artWin.classList.add('art-compact');
+                    overflow = columnOverflow();
+                }
+                // 3. Tighten the poem typography
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.add('poema-compact');
+                    overflow = columnOverflow();
+                }
+                // 4. Tighter still — shrink the poem font further
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.remove('poema-compact');
+                    poemaWin.classList.add('poema-tiny');
+                    overflow = columnOverflow();
+                }
+                // 5. Truly tiny screen — drop the poem; articulo and the
+                //    full-size lonche take priority
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.add('hidden');
+                    poemaWin.dataset.autoHidden = '1';
+                    others.splice(others.indexOf(poemaWin), 1);
+                    updateTaskbar();
+                }
+            }
+
             // Others (poem etc) below articulo, clamped to screen
-            let belowY = (parseInt(artWin.style.top) || topY) + artH + gap;
+            let belowY = (parseInt(artWin.style.top) || topY) + (artWin.offsetHeight || 300) + gap;
             others.forEach(win => {
                 const w = win.offsetWidth || 280;
                 if (belowY + 50 > screenH) return; // skip if off-screen
@@ -704,10 +794,14 @@ juntxs y brillando.`
                     const remaining = screenH - poemaBottom - gap - chromeH - gap;
                     if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
                 } else if (LONCHE_LAYOUT === 3) {
+                    // Full original size — the column above already compacted
+                    // itself to make room. On absurdly short screens, pin it
+                    // above the taskbar as a last resort.
                     loncheWin.style.left = artLeft + 'px';
-                    loncheWin.style.top = belowY + 'px';
                     loncheWin.style.width = artW + 'px';
                     if (iframe) iframe.style.height = '130px';
+                    const loncheH = loncheWin.offsetHeight || 178;
+                    loncheWin.style.top = Math.min(belowY, Math.max(topY, screenH - 8 - loncheH)) + 'px';
                 }
             }
         } else {
