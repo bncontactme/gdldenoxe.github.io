@@ -613,6 +613,47 @@ body {
     overflow: hidden;
 }
 
+/* Compact modes — applied by JS when the right column runs out of height,
+   so the lonche always keeps its full original size */
+.win95-window.art-compact .article-image {
+    margin-bottom: 6px;
+}
+
+.win95-window.art-compact .article-description p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.win95-window.poema-compact .window-body {
+    padding: 3px;
+}
+
+.win95-window.poema-compact .poem-content {
+    padding: 4px 8px;
+}
+
+.win95-window.poema-compact .poem-text {
+    font-size: 10px;
+    line-height: 1.25;
+}
+
+/* Second, tighter level for very short screens */
+.win95-window.poema-tiny .window-body {
+    padding: 2px;
+}
+
+.win95-window.poema-tiny .poem-content {
+    padding: 3px 6px;
+}
+
+.win95-window.poema-tiny .poem-text {
+    font-size: 8px;
+    line-height: 1.15;
+}
+
 /* Mobile-only torta taskbar icon */
 #lonche-mobile-btn {
     display: none;
