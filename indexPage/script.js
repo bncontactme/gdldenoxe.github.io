@@ -1147,7 +1147,7 @@ juntxs y brillando.`
     function updateTimeDisplay() {
         if (!timeDisplay) return;
         const track = playlist[currentTrackIndex];
-        timeDisplay.textContent = track.isLive ? 'STREAMING...' : 
+        timeDisplay.textContent = track.isLive ? (reconnecting ? 'RECONECTANDO…' : 'STREAMING...') :
             `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
     }
     
@@ -1175,11 +1175,19 @@ juntxs y brillando.`
     let reconnectTimer = null;
     let reconnectDelay = 2000;
     let reconnectFails = 0;
+    let reconnecting = false;       // mid-reconnect → show "RECONECTANDO…" instead of a frozen "STREAMING..."
+
+    function setReconnecting(on) {
+        reconnecting = on;
+        if (liveDot) liveDot.classList.toggle('reconnecting', on);
+        updateTimeDisplay();
+    }
 
     function stopReconnect() {
         if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
         reconnectDelay = 2000;
         reconnectFails = 0;
+        setReconnecting(false);
     }
 
     function reconnectLive(reason) {
@@ -1193,7 +1201,11 @@ juntxs y brillando.`
             stopReconnect();
             return;
         }
-        console.log('[Radio] stream lost (' + reason + ') — reconnecting in ' + reconnectDelay + 'ms');
+        setReconnecting(true);
+        // jitter: at the 90-listener cap, everyone drops the instant the origin swaps —
+        // spread the retries so they don't stampede the new source in lockstep.
+        const wait = reconnectDelay + Math.floor(Math.random() * 1000);
+        console.log('[Radio] stream lost (' + reason + ') — reconnecting in ' + wait + 'ms');
         reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
             // cache-bust so we get a fresh connection to whoever owns the domain now
@@ -1204,12 +1216,13 @@ juntxs y brillando.`
                 reconnectFails = 0;
                 isPlaying = true;
                 if (playBtn) playBtn.innerHTML = ICON_PAUSE;
+                setReconnecting(false);
             }).catch(() => {
                 reconnectFails++;
                 reconnectDelay = Math.min(Math.round(reconnectDelay * 1.5), 15000);
                 reconnectLive('retry ' + reconnectFails);
             });
-        }, reconnectDelay);
+        }, wait);
     }
 
     audioPlayer.addEventListener('error', () => reconnectLive('error'));
@@ -1223,7 +1236,7 @@ juntxs y brillando.`
         const t = audioPlayer.currentTime;
         if (t === lastLiveTime) reconnectLive('frozen');
         lastLiveTime = t;
-    }, 8000);
+    }, 4000);
 
     // Play/Pause
     playBtn?.addEventListener('click', () => {

@@ -1564,6 +1564,16 @@ body {
     opacity: 0.5;
 }
 
+/* Mid-reconnect: amber blink so a source handoff reads as intentional, not frozen */
+.live-dot.reconnecting {
+    background: #ffab00;
+    animation: live-dot-blink 0.8s steps(2, start) infinite;
+}
+
+@keyframes live-dot-blink {
+    to { opacity: 0.25; }
+}
+
 .time-display {
     font-size: 9px;
     opacity: 0.8;
