@@ -1167,23 +1167,86 @@ juntxs y brillando.`
         updateTimeDisplay();
     }
     
+    // ── Live-stream resilience ──────────────────────────────────
+    // The radio source can switch machines (Switch ↔ Mac live rig); when it
+    // does, the old HTTP connection dies. These helpers auto-reconnect so
+    // listeners never need to refresh.
+    let wantLive = false;          // user intent: they pressed play on the live stream
+    let reconnectTimer = null;
+    let reconnectDelay = 2000;
+    let reconnectFails = 0;
+
+    function stopReconnect() {
+        if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+        reconnectDelay = 2000;
+        reconnectFails = 0;
+    }
+
+    function reconnectLive(reason) {
+        if (!wantLive || !playlist[currentTrackIndex].isLive || reconnectTimer) return;
+        if (reconnectFails >= 15) { // ~3 min of failures: station really is off
+            console.warn('[Radio] giving up reconnecting — station offline');
+            wantLive = false;
+            audioPlayer.pause();
+            isPlaying = false;
+            if (playBtn) playBtn.innerHTML = ICON_PLAY;
+            stopReconnect();
+            return;
+        }
+        console.log('[Radio] stream lost (' + reason + ') — reconnecting in ' + reconnectDelay + 'ms');
+        reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            // cache-bust so we get a fresh connection to whoever owns the domain now
+            audioPlayer.src = streamUrl + '?r=' + Date.now();
+            audioPlayer.play().then(() => {
+                console.log('[Radio] reconnected');
+                reconnectDelay = 2000;
+                reconnectFails = 0;
+                isPlaying = true;
+                if (playBtn) playBtn.innerHTML = ICON_PAUSE;
+            }).catch(() => {
+                reconnectFails++;
+                reconnectDelay = Math.min(Math.round(reconnectDelay * 1.5), 15000);
+                reconnectLive('retry ' + reconnectFails);
+            });
+        }, reconnectDelay);
+    }
+
+    audioPlayer.addEventListener('error', () => reconnectLive('error'));
+    audioPlayer.addEventListener('ended', () => {
+        if (playlist[currentTrackIndex].isLive) reconnectLive('ended');
+    });
+    // frozen-stream watchdog: connection died silently → time stops advancing
+    let lastLiveTime = -1;
+    setInterval(() => {
+        if (!wantLive || !playlist[currentTrackIndex].isLive || reconnectTimer) return;
+        const t = audioPlayer.currentTime;
+        if (t === lastLiveTime) reconnectLive('frozen');
+        lastLiveTime = t;
+    }, 8000);
+
     // Play/Pause
     playBtn?.addEventListener('click', () => {
         if (isPlaying) {
+            wantLive = false;
+            stopReconnect();
             audioPlayer.pause();
             playBtn.innerHTML = ICON_PLAY;
             isPlaying = false;
             if (liveDot) liveDot.classList.add('paused');
         } else {
-            audioPlayer.play();
+            wantLive = playlist[currentTrackIndex].isLive;
+            audioPlayer.play().catch(() => reconnectLive('play-failed'));
             playBtn.innerHTML = ICON_PAUSE;
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
         }
     });
-    
+
     // Stop
     stopBtn?.addEventListener('click', () => {
+        wantLive = false;
+        stopReconnect();
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         if (playBtn) playBtn.innerHTML = ICON_PLAY;
@@ -1265,6 +1328,8 @@ juntxs y brillando.`
     const streamUrl = 'https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3';
     const statusUrl = 'https://radio.guadalajaradenoxe.com/api/nowplaying/1';
     let radioAvailable = false;
+    let offlineMisses = 0;
+    let lastLiveSeen = 0;
     const radioMenuItem = $('[data-shortcut="radio"]');
     
     // Radio menu item ALWAYS visible in start menu
@@ -1283,28 +1348,28 @@ juntxs y brillando.`
             .then(live => {
                 console.log('[Radio] status:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
-                
+
                 if (live) {
+                    offlineMisses = 0;
+                    lastLiveSeen = Date.now();
                     // Auto-show player when live (1:1 with old brutalist widget behavior)
                     if (musicPlayer) {
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
                         if (!isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
                     }
-                    // Ensure first track is the live stream
-                    if (playlist[0].isLive && audioPlayer.src !== streamUrl) {
+                    // Ensure first track is the live stream (don't touch an
+                    // active/reconnecting session — cache-busted URLs are fine)
+                    if (playlist[0].isLive && !String(audioPlayer.src).startsWith(streamUrl) && !isPlaying && !wantLive) {
                         loadTrack(0);
                     }
                 } else {
-                    // When offline, hide player but keep menu item visible
-                    if (musicPlayer) {
+                    // Offline — but source handoffs (Switch ↔ Mac) look offline for
+                    // ~30-60s, so only hide after 2 consecutive misses, and never
+                    // hard-stop a listener: the reconnect loop recovers or gives up.
+                    offlineMisses++;
+                    if (offlineMisses >= 2 && musicPlayer && !wantLive) {
                         musicPlayer.classList.add('hidden');
-                    }
-                    // Stop audio if playing
-                    if (isPlaying && playlist[currentTrackIndex].isLive) {
-                        audioPlayer.pause();
-                        isPlaying = false;
-                        if (playBtn) playBtn.innerHTML = ICON_PLAY;
                     }
                 }
             })
@@ -1316,12 +1381,17 @@ juntxs y brillando.`
             });
     }
 
-    // Initial check + adaptive polling (60s live, 5min offline — saves fetch cycles)
-    let icecastInterval = 60000;
+    // Initial check + adaptive polling:
+    //  45s while live · 15s during a handoff window (recently live or a listener
+    //  is waiting) · 5min when truly offline — smooth transitions, few fetches.
+    let icecastInterval = 45000;
     function scheduleIcecastCheck() {
         setTimeout(() => {
             checkIcecastStatus().finally(() => {
-                icecastInterval = radioAvailable ? 60000 : 300000;
+                const recentlyLive = Date.now() - lastLiveSeen < 10 * 60 * 1000;
+                icecastInterval = radioAvailable ? 45000
+                                : (recentlyLive || wantLive) ? 15000
+                                : 300000;
                 scheduleIcecastCheck();
             });
         }, icecastInterval);
