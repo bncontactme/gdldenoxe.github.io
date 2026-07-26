@@ -1131,7 +1131,7 @@ juntxs y brillando.`
     
     // Playlist: Radio en vivo
     const playlist = [
-        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true }
+        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3", isLive: true }
     ];
     
     const liveDot = $('#liveDot');
@@ -1262,8 +1262,8 @@ juntxs y brillando.`
     }
 
     // ===== RADIO: Check Icecast status and auto-show player (1:1 con funcionalidad original) =====
-    const streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';
-    const statusUrl = 'https://radio.guadalajaradenoxe.com/status-json.xsl';
+    const streamUrl = 'https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3';
+    const statusUrl = 'https://radio.guadalajaradenoxe.com/api/nowplaying/1';
     let radioAvailable = false;
     const radioMenuItem = $('[data-shortcut="radio"]');
     
@@ -1274,10 +1274,9 @@ juntxs y brillando.`
         return fetch(statusUrl)
             .then(r => r.json())
             .then(data => {
-                let sources = data?.icestats?.source || [];
-                if (!Array.isArray(sources)) sources = [sources];
-                const live = sources.some(s => s.listenurl?.includes('/stream.mp3'));
-                console.log('[Radio] Icecast check:', live ? 'LIVE' : 'OFFLINE');
+                // AzuraCast now-playing API: is_online tells us if the station is broadcasting
+                const live = data?.is_online === true;
+                console.log('[Radio] AzuraCast check:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
                 
                 if (live) {
