@@ -1271,12 +1271,17 @@ juntxs y brillando.`
     if (radioMenuItem) radioMenuItem.style.display = '';
 
     function checkIcecastStatus() {
+        // Primary = AzuraCast (Switch); fallback = raw Icecast if the Mac backup has taken over
         return fetch(statusUrl)
-            .then(r => r.json())
-            .then(data => {
-                // AzuraCast now-playing API: is_online tells us if the station is broadcasting
-                const live = data?.is_online === true;
-                console.log('[Radio] AzuraCast check:', live ? 'LIVE' : 'OFFLINE');
+            .then(r => r.ok ? r.json() : Promise.reject('no-api'))
+            .then(d => d?.is_online === true)
+            .catch(() => fetch('https://radio.guadalajaradenoxe.com/status-json.xsl')
+                .then(r => r.json())
+                .then(d => { let s = d?.icestats?.source || []; if (!Array.isArray(s)) s = [s];
+                    return s.some(x => x.listenurl && x.listenurl.includes('/listen/guadalajara_de_noche_radio/radio.mp3')); })
+                .catch(() => false))
+            .then(live => {
+                console.log('[Radio] status:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
                 
                 if (live) {
