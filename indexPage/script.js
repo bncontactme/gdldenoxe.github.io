@@ -9,9 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
-        EMPLEADO_MODAL: true,   // Certificado "Empleado del Mes" (modal + acceso en Inicio)
-        EMPLEADO_DIA:   30,     // Día del mes en que sale solo: 00:00 del 30 a
-                                // 00:00 del 31 (null = todos los días)
+        EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal + acceso en Inicio)
+        EMPLEADO_FECHA: '2026-07-31', // Único día en que sale: de las 00:00 de esa
+                                      // fecha a las 00:00 del día siguiente. Después
+                                      // no queda nada. (null = todos los días)
     };
 
     // ─────────────────────────────────────────
@@ -540,9 +541,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================== EMPLEADO DEL MES (certificado) ====================
-    // Capa modal que tapa el escritorio. Sale sola al entrar al sitio el día
-    // FEATURES.EMPLEADO_DIA, de 00:00 a 00:00 del día siguiente. Apagada o
-    // fuera de temporada, ni el modal ni su acceso en Inicio existen.
+    // Capa modal que tapa el escritorio. Sale sola al entrar al sitio durante
+    // FEATURES.EMPLEADO_FECHA, de las 00:00 de ese día a las 00:00 del siguiente.
+    // Apagada o fuera de fecha, ni el modal ni su acceso en Inicio existen.
     const empleadoOverlay = $('#empleado-modal-overlay');
     const empleadoMenuItem = $('.menu-item[data-shortcut="empleado"]');
 
@@ -571,15 +572,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape' && empleadoOverlay.style.display === 'flex') closeEmpleadoModal();
         });
 
-        const enTemporada = FEATURES.EMPLEADO_DIA == null ||
-                            hoy.getDate() === FEATURES.EMPLEADO_DIA;
+        // Ventana de exhibición: primera hora del día señalado hasta la
+        // medianoche siguiente. Sin fecha configurada, sale todos los días.
+        let cierre = new Date();
+        cierre.setHours(24, 0, 0, 0);   // próxima medianoche
+        let enTemporada = true;
+
+        if (FEATURES.EMPLEADO_FECHA) {
+            const [anio, mes, dia] = FEATURES.EMPLEADO_FECHA.split('-').map(Number);
+            const abre = new Date(anio, mes - 1, dia);       // 00:00 hora local
+            cierre = new Date(anio, mes - 1, dia + 1);       // 00:00 del día siguiente
+            enTemporada = hoy >= abre && hoy < cierre;
+        }
 
         if (enTemporada) {
             window.openEmpleadoModal();
             // Si dejan la pestaña abierta, se retira solo al dar la medianoche
-            const medianoche = new Date();
-            medianoche.setHours(24, 0, 0, 0);
-            setTimeout(closeEmpleadoModal, medianoche - Date.now());
+            setTimeout(closeEmpleadoModal, cierre - Date.now());
         } else {
             empleadoMenuItem?.remove();
         }
