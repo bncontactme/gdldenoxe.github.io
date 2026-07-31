@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
-        EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal + acceso en Inicio)
+        EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal de bienvenida)
         EMPLEADO_FECHA: '2026-07-31', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
                                       // no queda nada. (null = todos los días)
@@ -541,15 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================== EMPLEADO DEL MES (certificado) ====================
-    // Capa modal que tapa el escritorio. Sale sola al entrar al sitio durante
-    // FEATURES.EMPLEADO_FECHA, de las 00:00 de ese día a las 00:00 del siguiente.
-    // Apagada o fuera de fecha, ni el modal ni su acceso en Inicio existen.
+    // Capa modal que tapa el escritorio. Único disparador: entrar al sitio
+    // durante FEATURES.EMPLEADO_FECHA, de las 00:00 de ese día a las 00:00 del
+    // siguiente. No tiene acceso en Inicio ni en ningún otro lado.
     const empleadoOverlay = $('#empleado-modal-overlay');
-    const empleadoMenuItem = $('.menu-item[data-shortcut="empleado"]');
 
     if (!FEATURES.EMPLEADO_MODAL) {
         empleadoOverlay?.remove();
-        empleadoMenuItem?.remove();
     } else if (empleadoOverlay) {
         // El mes se pone solo, así la placa nunca queda vieja.
         // Mes y año por separado para que no salga el "de" de es-MX.
@@ -589,8 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
             window.openEmpleadoModal();
             // Si dejan la pestaña abierta, se retira solo al dar la medianoche
             setTimeout(closeEmpleadoModal, cierre - Date.now());
-        } else {
-            empleadoMenuItem?.remove();
         }
     }
 
@@ -1114,7 +1110,6 @@ juntxs y brillando.`
                     const msWin = $('[data-window-id="minesweeper"]');
                     if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
                 },
-                empleado: () => window.openEmpleadoModal?.(),
                 lonche: () => window.openTortaModal?.()
             };
             
@@ -1131,7 +1126,6 @@ juntxs y brillando.`
             tienda: () => openWindow('tienda', true),
             articulos: () => openWindow('folder-articulos'),
             minesweeper: () => openWindow('minesweeper'),
-            empleado: () => window.openEmpleadoModal?.(),
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             email: () => window.location.href = 'mailto:gdldenoxe@gmail.com',
