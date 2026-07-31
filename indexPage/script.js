@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
+        EMPLEADO_MODAL: true,   // Certificado "Empleado del Mes" (modal + acceso en Inicio)
+        EMPLEADO_DIA:   30,     // Día del mes en que sale solo: 00:00 del 30 a
+                                // 00:00 del 31 (null = todos los días)
     };
 
     // ─────────────────────────────────────────
@@ -536,6 +539,52 @@ document.addEventListener('DOMContentLoaded', () => {
         randomImgEl.src = imagePaths[Math.floor(Math.random() * imagePaths.length)];
     }
 
+    // ==================== EMPLEADO DEL MES (certificado) ====================
+    // Capa modal que tapa el escritorio. Sale sola al entrar al sitio el día
+    // FEATURES.EMPLEADO_DIA, de 00:00 a 00:00 del día siguiente. Apagada o
+    // fuera de temporada, ni el modal ni su acceso en Inicio existen.
+    const empleadoOverlay = $('#empleado-modal-overlay');
+    const empleadoMenuItem = $('.menu-item[data-shortcut="empleado"]');
+
+    if (!FEATURES.EMPLEADO_MODAL) {
+        empleadoOverlay?.remove();
+        empleadoMenuItem?.remove();
+    } else if (empleadoOverlay) {
+        // El mes se pone solo, así la placa nunca queda vieja.
+        // Mes y año por separado para que no salga el "de" de es-MX.
+        const hoy = new Date();
+        const empleadoMesEl = $('#empleadoMes');
+        if (empleadoMesEl) {
+            empleadoMesEl.textContent =
+                '* ' + hoy.toLocaleDateString('es-MX', { month: 'long' }) + ' ' + hoy.getFullYear() + ' *';
+        }
+
+        const closeEmpleadoModal = () => { empleadoOverlay.style.display = 'none'; };
+        window.openEmpleadoModal = () => { empleadoOverlay.style.display = 'flex'; };
+
+        $('#empleado-modal-close')?.addEventListener('click', closeEmpleadoModal);
+        $('#empleado-modal-ok')?.addEventListener('click', closeEmpleadoModal);
+        empleadoOverlay.addEventListener('click', (e) => {
+            if (e.target === empleadoOverlay) closeEmpleadoModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && empleadoOverlay.style.display === 'flex') closeEmpleadoModal();
+        });
+
+        const enTemporada = FEATURES.EMPLEADO_DIA == null ||
+                            hoy.getDate() === FEATURES.EMPLEADO_DIA;
+
+        if (enTemporada) {
+            window.openEmpleadoModal();
+            // Si dejan la pestaña abierta, se retira solo al dar la medianoche
+            const medianoche = new Date();
+            medianoche.setHours(24, 0, 0, 0);
+            setTimeout(closeEmpleadoModal, medianoche - Date.now());
+        } else {
+            empleadoMenuItem?.remove();
+        }
+    }
+
     // Sistema de poemas random
     const poemas = [
         `Cuando el sol se mete
@@ -1056,6 +1105,7 @@ juntxs y brillando.`
                     const msWin = $('[data-window-id="minesweeper"]');
                     if (msWin) { msWin.classList.remove('hidden', 'minimized'); bringToFront(msWin); }
                 },
+                empleado: () => window.openEmpleadoModal?.(),
                 lonche: () => window.openTortaModal?.()
             };
             
@@ -1072,6 +1122,7 @@ juntxs y brillando.`
             tienda: () => openWindow('tienda', true),
             articulos: () => openWindow('folder-articulos'),
             minesweeper: () => openWindow('minesweeper'),
+            empleado: () => window.openEmpleadoModal?.(),
             links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             email: () => window.location.href = 'mailto:gdldenoxe@gmail.com',

@@ -486,6 +486,162 @@ body {
     border-bottom: var(--inset-dark);
 }
 
+/* Empleado del mes — modal por encima del escritorio */
+.empleado-modal-overlay {
+    display: none; /* JS lo cambia a flex al abrir */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 21000; /* por encima de ventanas, taskbar y menú de inicio */
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+.empleado-modal-window {
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100vh - 24px);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-system);
+}
+
+.empleado-modal-titlebar {
+    background: linear-gradient(to right, var(--win95-blue), var(--win95-blue-light));
+    color: var(--win95-white);
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.empleado-modal-close {
+    background: var(--win95-light-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    width: 22px;
+    height: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--win95-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.empleado-modal-body {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    overflow-y: auto;
+    text-align: center;
+}
+
+/* Hileras de estrellas — carácter ★ dorado, igual en todas las plataformas */
+.empleado-estrellas {
+    font-size: 22px;
+    letter-spacing: 14px;
+    padding-left: 14px; /* compensa el espaciado sobrante de la última */
+    line-height: 1;
+    color: #f5b301;
+    text-shadow: 1px 1px 0 rgba(120, 80, 0, 0.35);
+}
+
+.empleado-titulo {
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--win95-blue);
+}
+
+/* Regla grabada estilo Win95 */
+.empleado-linea {
+    width: calc(100% - 36px);
+    height: 0;
+    border-top: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+/* Foto incrustada en la ventana: bisel hundido, sin blanco ni sombra afuera */
+.empleado-photo {
+    line-height: 0; /* mata el hueco de línea base bajo la imagen */
+    border-top: var(--inset-light);
+    border-left: var(--inset-light);
+    border-right: var(--inset-dark);
+    border-bottom: var(--inset-dark);
+    width: 46%;
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.empleado-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Placa de la fecha — realzada, con sombra */
+.empleado-fecha {
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-white);
+    border-left: 1px solid var(--win95-white);
+    border-right: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-dark-gray);
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.25);
+    padding: 4px 18px;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--win95-black);
+}
+
+.empleado-texto {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #222;
+    margin: 0;
+    padding: 0 10px;
+}
+
+.empleado-aceptar {
+    background: var(--win95-gray);
+    border-top: 2px solid var(--win95-white);
+    border-left: 2px solid var(--win95-white);
+    border-right: 2px solid var(--win95-dark-gray);
+    border-bottom: 2px solid var(--win95-dark-gray);
+    box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.25);
+    padding: 5px 26px;
+    font-family: var(--font-system);
+    font-size: 14px;
+    color: var(--win95-black);
+    cursor: pointer;
+}
+
+.empleado-aceptar:active {
+    border-top: 2px solid var(--win95-dark-gray);
+    border-left: 2px solid var(--win95-dark-gray);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+    box-shadow: none;
+}
+
 /* Poemas estilo notepad */
 .poem-content {
     background: var(--win95-white);
@@ -1736,6 +1892,20 @@ body {
     .win95-window[data-window-id="minesweeper"] .minimize-btn,
     .win95-window[data-window-id="minesweeper"] .maximize-btn {
         display: none;
+    }
+
+    /* --- Empleado del Mes (modal: certificado más compacto) --- */
+    .empleado-modal-body {
+        padding: 12px 10px;
+        gap: 10px;
+    }
+
+    .empleado-titulo {
+        font-size: 20px;
+    }
+
+    .empleado-photo img {
+        max-height: 34vh;
     }
 
     /* --- Random Image Widget --- */
