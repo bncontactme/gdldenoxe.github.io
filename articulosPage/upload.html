@@ -410,6 +410,22 @@
           <summary>Administrar artículos publicados</summary>
           <div id="manage-list"><span class="hint">Cargando…</span></div>
         </details>
+
+        <hr class="xp-divider">
+
+        <details class="manage">
+          <summary>Mantenimiento</summary>
+          <p class="hint" style="margin:6px 0">
+            Sube a Cloudinary las portadas de los artículos viejos que todavía
+            apuntan a archivos del repo, cada una a la carpeta de su poema.
+            Se puede correr las veces que quieras: lo ya migrado se salta.
+          </p>
+          <div class="btn-row" style="justify-content:flex-start">
+            <button class="xp-btn" type="button" id="btn-migrar-ver">Ver qué falta</button>
+            <button class="xp-btn" type="button" id="btn-migrar">Migrar portadas</button>
+          </div>
+          <div id="migrar-out"></div>
+        </details>
       </div>
 
     </div>
@@ -877,6 +893,53 @@
         row.classList.remove('removing');
         botones.forEach(b => b.disabled = false);
         showStatus('Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── Mantenimiento: portadas viejas → Cloudinary ───────────────────────────
+    if (ADMIN) {
+      $('btn-migrar-ver').addEventListener('click', () => migrarPortadas(true));
+      $('btn-migrar').addEventListener('click', () => {
+        if (confirm('¿Subir las portadas viejas a Cloudinary?\nNo borra nada, solo copia y reapunta.')) migrarPortadas(false);
+      });
+    }
+
+    async function migrarPortadas(soloVer) {
+      if (!_authed || !_password) { reauth(); return; }
+      const out = $('migrar-out');
+      out.textContent = soloVer ? 'Revisando…' : 'Migrando… (puede tardar unos segundos)';
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'articulo-migrar-imagenes', password: _password, dry_run: soloVer })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+
+        out.textContent = '';
+        const n = (data.migrados || []).length;
+        const resumen = document.createElement('p');
+        resumen.className = 'hint';
+        resumen.textContent = soloVer
+          ? (n ? n + ' portada(s) por migrar.' : 'Nada pendiente: todas ya están en Cloudinary.')
+          : (n ? '✓ ' + n + ' portada(s) migradas.' : 'No había nada que migrar.');
+        out.appendChild(resumen);
+
+        (data.migrados || []).forEach(m => {
+          const li = document.createElement('div');
+          li.className = 'hint';
+          li.textContent = '#' + m.id + ' · ' + m.desde.split('/').pop() + (m.a ? ' → ok' : '');
+          out.appendChild(li);
+        });
+        (data.fallos || []).forEach(f => {
+          const li = document.createElement('div');
+          li.className = 'hint'; li.style.color = '#900';
+          li.textContent = '#' + f.id + ' falló: ' + f.error;
+          out.appendChild(li);
+        });
+        if (!soloVer) loadManageList();
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
       }
     }
 

@@ -38,6 +38,7 @@
 import { artistSlug } from './lib/artistSlug.js';
 import {
   readIndex,
+  writeIndex,
   getPublicado,
   listPendientes,
   putPendiente,
@@ -148,6 +149,9 @@ export default {
     }
     if (body.action === 'articulo-delete') {
       return handleArticuloDelete(body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-migrar-imagenes') {
+      return handleArticuloMigrarImagenes(body, env, allowedOrigin);
     }
     return handleUpload(body, env, allowedOrigin);
   },
@@ -453,6 +457,77 @@ async function handleArticuloGet(id, env, origin) {
   return jsonResponse({ ok: true, articulo: art }, 200, origin, {
     'Cache-Control': 'public, max-age=60',
   });
+}
+
+// ── Admin: subir a Cloudinary las portadas que quedaron en el repo ───────────
+// Los 12 artículos que venían de articulos.json traían rutas locales
+// (articulosPage/articuloImages/…). Esto las sube a la carpeta propia de cada
+// poema y apunta el KV a la URL nueva, para que viejos y nuevos queden igual.
+// Es idempotente: lo que ya es https se salta.
+const SITIO = 'https://www.guadalajaradenoxe.com/';
+
+async function handleArticuloMigrarImagenes(body, env, origin) {
+  const soloVer = !!body.dry_run;
+  const index   = await readIndex(env);
+  const hechos  = [];
+  const fallos  = [];
+
+  for (const entrada of index) {
+    const art = await getPublicado(env, entrada.id);
+    if (!art || !art.imagen || /^https?:\/\//.test(art.imagen)) continue;
+
+    const fuente = SITIO + art.imagen.split('/').map(encodeURIComponent).join('/');
+    if (soloVer) { hechos.push({ id: art.id, desde: art.imagen }); continue; }
+
+    try {
+      const secure = await cloudinarySubirDesdeUrl(env, fuente, art.carpeta);
+      const actualizado = { ...art, imagen: secure };
+      await env.ARTICULOS.put('art:pub:' + art.id, JSON.stringify(actualizado));
+
+      const i = index.findIndex(e => Number(e.id) === Number(art.id));
+      if (i !== -1) index[i] = { ...index[i], imagen: secure };
+
+      hechos.push({ id: art.id, desde: art.imagen, a: secure });
+    } catch (e) {
+      fallos.push({ id: art.id, error: String(e.message || e) });
+    }
+  }
+
+  if (!soloVer && hechos.length) await writeIndex(env, index);
+  return jsonResponse({ ok: true, dry_run: soloVer, migrados: hechos, fallos }, 200, origin);
+}
+
+// Cloudinary acepta subir pasándole una URL, así el worker no tiene que
+// manipular el binario de la imagen.
+async function cloudinarySubirDesdeUrl(env, url, carpeta) {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const params = {
+    asset_folder: carpeta,
+    folder:       carpeta,
+    timestamp,
+    upload_preset: env.CLOUDINARY_UPLOAD_PRESET,
+  };
+  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
+  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  const fd = new FormData();
+  fd.append('file', url);
+  fd.append('folder', carpeta);
+  fd.append('asset_folder', carpeta);
+  fd.append('timestamp', timestamp);
+  fd.append('upload_preset', env.CLOUDINARY_UPLOAD_PRESET);
+  fd.append('api_key', env.CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/image/upload',
+    { method: 'POST', body: fd },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.secure_url) {
+    throw new Error('Cloudinary ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
+  }
+  return data.secure_url;
 }
 
 // ── Cloudinary: borrar la carpeta entera de un poema ─────────────────────────
