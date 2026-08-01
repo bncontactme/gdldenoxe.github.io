@@ -131,6 +131,32 @@
     .art-preview .ap-empty { color: #999; font-style: italic; }
 
     /* Image drop */
+    /* Imágenes extra del poema */
+    #extras-zone {
+      border: 2px dashed #ACA899; background: #fff; min-height: 56px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; cursor: pointer; color: #555; padding: 10px; text-align: center;
+    }
+    #extras-zone.drag-over { border-color: #316AC5; background: #F0F5FF; }
+    #extras-zone small { color: #777; font-size: 10px; }
+    #extras-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .extra-row { display: flex; align-items: center; gap: 8px; }
+    .extra-thumb {
+      width: 44px; height: 44px; object-fit: cover; flex-shrink: 0;
+      border: 1px solid #808080; background: #fff;
+    }
+    .extra-row .xp-input { flex: 1; min-width: 0; }
+
+    /* Cola de revisión */
+    .pendiente-row { flex-direction: column; align-items: stretch; gap: 6px; }
+    .pendiente-preview {
+      background: #fff; border: 1px inset #808080; padding: 8px;
+      max-height: 180px; overflow-y: auto; font-size: 11px; white-space: pre-wrap;
+    }
+    .pendiente-preview p { margin: 0 0 8px; }
+    .pendiente-img { max-width: 120px; height: auto; border: 1px solid #808080; }
+    .pendiente-acciones { display: flex; gap: 6px; justify-content: flex-end; }
+
     #img-zone {
       border: 2px dashed #ACA899; background: #fff; min-height: 92px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -226,6 +252,7 @@
     #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
     #pw-error { color: #900; font-size: 11px; min-height: 14px; }
   </style>
+  <script src="../shared/articulos-api.js"></script>
 </head>
 <body>
   <!-- Password gate -->
@@ -337,6 +364,16 @@
         </div>
       </div>
 
+      <div class="xp-field">
+        <span class="xp-label">Más imágenes <span class="opt">(opcional — van al final del texto)</span></span>
+        <div id="extras-zone" role="button" tabindex="0" aria-label="Agregar más imágenes">
+          <p>Agrega las imágenes que acompañen al poema</p>
+          <small>Se guardan todas juntas en la carpeta de este poema</small>
+        </div>
+        <input id="extras-input" type="file" accept="image/*" multiple style="display:none" aria-hidden="true">
+        <div id="extras-list"></div>
+      </div>
+
       <hr class="xp-divider">
 
       <div class="xp-field">
@@ -347,19 +384,33 @@
       <div class="progress-bar-wrap" id="progress-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
       <div id="status-box" role="status" aria-live="polite"></div>
 
-      <p class="note">Al publicar, el artículo se agrega a la colección de GDN y aparece en el sitio en ~1 minuto.</p>
+      <p class="note" id="note-envio">Tu texto lo revisa alguien de GDN antes de publicarse. Si queda, aparece en el sitio.</p>
 
       <div class="btn-row">
         <button class="xp-btn" type="button" id="btn-cancel">Cancelar</button>
-        <button class="xp-btn xp-btn-primary" type="button" id="btn-publish" disabled>Publicar</button>
+        <button class="xp-btn xp-btn-primary" type="button" id="btn-publish" disabled>Enviar a revisión</button>
       </div>
 
-      <hr class="xp-divider">
+      <!-- Honeypot: invisible para la gente, irresistible para los bots -->
+      <div style="position:absolute;left:-9999px;" aria-hidden="true">
+        <label>No llenar<input type="text" id="in-website" tabindex="-1" autocomplete="off"></label>
+      </div>
 
-      <details class="manage">
-        <summary>Administrar artículos existentes</summary>
-        <div id="manage-list"><span class="hint">Cargando…</span></div>
-      </details>
+      <div id="admin-only" style="display:none">
+        <hr class="xp-divider">
+
+        <details class="manage" id="pendientes-box" open>
+          <summary>Poemas esperando revisión (<span id="pendientes-count">0</span>)</summary>
+          <div id="pendientes-list"><span class="hint">Cargando…</span></div>
+        </details>
+
+        <hr class="xp-divider">
+
+        <details class="manage">
+          <summary>Administrar artículos publicados</summary>
+          <div id="manage-list"><span class="hint">Cargando…</span></div>
+        </details>
+      </div>
 
     </div>
   </div>
@@ -383,6 +434,16 @@
     const PW_HASH     = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
     const SESSION_KEY = 'articulo_auth';
     const MAX_SIZE_MB = 10;
+    const MAX_EXTRAS  = 20;
+
+    // Dos modos en la misma página:
+    //   sin ?admin=1 → cualquiera puede mandar un poema, entra a revisión
+    //   con ?admin=1 → contraseña, publica directo y modera la cola
+    const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
+
+    // Cada envío estrena uuid: es el nombre de la carpeta donde caen sus
+    // imágenes, así un poema nunca comparte carpeta con otro.
+    let _uuid = crypto.randomUUID();
 
     // ── Password gate ─────────────────────────────────────────────────────────
     let _authed = false;
@@ -418,7 +479,9 @@
         _authed = true; _password = typed;
         sessionStorage.setItem(SESSION_KEY, PW_HASH);
         pwOverlay.classList.add('hidden'); pwInput.value = ''; _attempts = 0;
+        $('admin-only').style.display = '';
         loadManageList();
+        loadPendientes();
       } else {
         _attempts++; pwInput.value = '';
         if (_attempts >= MAX_ATTEMPTS) {
@@ -433,7 +496,14 @@
     }
     pwSubmit.addEventListener('click', checkPassword);
     pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
-    pwInput.focus();
+
+    // En modo público no hay contraseña que pedir.
+    if (ADMIN) {
+      pwInput.focus();
+    } else {
+      pwOverlay.classList.add('hidden');
+      document.querySelector('.xp-titlebar').lastChild.textContent = ' Manda tu poema · GDN';
+    }
 
     // ── Elements ──────────────────────────────────────────────────────────────
     const inTitulo = $('in-titulo'), inAutor = $('in-autor'), inCategoria = $('in-categoria');
@@ -444,7 +514,8 @@
     const imgZone = $('img-zone'), imgInput = $('img-input'), imgPreviewWrap = $('img-preview-wrap'), imgPreview = $('img-preview'), imgRemove = $('img-remove');
 
     let _clase = 'poema';      // 'poema' | ''
-    let _imgFile = null;       // selected cover image File
+    let _imgFile = null;       // portada seleccionada
+    let _extras = [];          // [{file, caption, url}] imágenes que van dentro del poema
 
     // ── Content parser: blank line = block, --- = separator, \n preserved ─────
     function parseContenido(raw) {
@@ -537,6 +608,58 @@
     imgInput.addEventListener('change', () => { if (imgInput.files[0]) setImage(imgInput.files[0]); imgInput.value = ''; });
     imgRemove.addEventListener('click', () => { _imgFile = null; imgPreview.src = ''; imgPreviewWrap.classList.remove('visible'); imgZone.style.display = ''; renderPreview(); });
 
+    // ── Imágenes extra ────────────────────────────────────────────────────────
+    const extrasZone = $('extras-zone'), extrasInput = $('extras-input'), extrasList = $('extras-list');
+
+    extrasZone.addEventListener('click', () => extrasInput.click());
+    extrasZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); extrasInput.click(); } });
+    extrasZone.addEventListener('dragover', e => { e.preventDefault(); extrasZone.classList.add('drag-over'); });
+    extrasZone.addEventListener('dragleave', e => { if (!extrasZone.contains(e.relatedTarget)) extrasZone.classList.remove('drag-over'); });
+    extrasZone.addEventListener('drop', e => {
+      e.preventDefault(); extrasZone.classList.remove('drag-over');
+      agregarExtras(e.dataTransfer.files);
+    });
+    extrasInput.addEventListener('change', () => { agregarExtras(extrasInput.files); extrasInput.value = ''; });
+
+    function agregarExtras(files) {
+      Array.from(files || []).forEach(f => {
+        if (_extras.length >= MAX_EXTRAS) return;
+        if (!f.type.startsWith('image/')) { showStatus('Solo se permiten imágenes.', 'error'); return; }
+        if (f.size > MAX_SIZE_MB * 1024 * 1024) { showStatus('"' + f.name + '" supera los ' + MAX_SIZE_MB + ' MB.', 'error'); return; }
+        const item = { file: f, caption: '', url: '' };
+        const r = new FileReader();
+        r.onload = e => { item.url = e.target.result; renderExtras(); };
+        r.readAsDataURL(f);
+        _extras.push(item);
+      });
+      renderExtras();
+    }
+
+    function renderExtras() {
+      extrasList.innerHTML = '';
+      _extras.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'extra-row';
+
+        const th = document.createElement('img');
+        th.className = 'extra-thumb'; th.src = item.url || ''; th.alt = '';
+
+        const cap = document.createElement('input');
+        cap.className = 'xp-input'; cap.type = 'text'; cap.maxLength = 200;
+        cap.placeholder = 'Pie de foto (opcional)';
+        cap.value = item.caption;
+        cap.addEventListener('input', () => { item.caption = cap.value; });
+
+        const del = document.createElement('button');
+        del.className = 'xp-btn'; del.type = 'button'; del.textContent = 'Quitar';
+        del.addEventListener('click', () => { _extras.splice(i, 1); renderExtras(); });
+
+        row.appendChild(th); row.appendChild(cap); row.appendChild(del);
+        extrasList.appendChild(row);
+      });
+      extrasZone.style.display = _extras.length >= MAX_EXTRAS ? 'none' : '';
+    }
+
     function setImage(f) {
       if (!f.type.startsWith('image/')) { showStatus('Solo se permiten imágenes.', 'error'); return; }
       if (f.size > MAX_SIZE_MB * 1024 * 1024) { showStatus('La imagen supera los ' + MAX_SIZE_MB + ' MB.', 'error'); return; }
@@ -552,7 +675,7 @@
     btnPublish.addEventListener('click', publish);
 
     async function publish() {
-      if (!_authed || !_password) { reauth(); return; }
+      if (ADMIN && (!_authed || !_password)) { reauth(); return; }
       const titulo = inTitulo.value.trim();
       const autor = inAutor.value.trim();
       const contenido = parseContenido(inContenido.value);
@@ -563,27 +686,51 @@
 
       let imagen = '';
       try {
+        // Portada e imágenes extra van a la misma carpeta: articulos/<uuid>-<slug>/
         if (_imgFile) {
-          showStatus('Subiendo imagen…', '');
-          imagen = await uploadCover(_imgFile, autor, titulo);
-          setProgress(60);
+          showStatus('Subiendo portada…', '');
+          imagen = await subirImagen(_imgFile, autor, titulo);
+          setProgress(35);
         }
-        showStatus('Publicando…', '');
+
+        for (let i = 0; i < _extras.length; i++) {
+          showStatus('Subiendo imagen ' + (i + 1) + ' de ' + _extras.length + '…', '');
+          const url = await subirImagen(_extras[i].file, autor, titulo);
+          contenido.push({ tipo: 'img', url, caption: _extras[i].caption || '' });
+          setProgress(35 + Math.round((i + 1) / _extras.length * 40));
+        }
+
+        setProgress(80);
+        showStatus(ADMIN ? 'Publicando…' : 'Enviando…', '');
+
+        const payload = ADMIN
+          ? { action: 'articulo-submit', password: _password }
+          : { action: 'articulo-propose', website: $('in-website').value };
+
         const res = await fetch(WORKER_URL, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'articulo-submit', password: _password,
-            articulo: { titulo, meta: buildMeta(), clase: _clase, imagen, descripcion: inDesc.value.trim(), contenido }
+            ...payload,
+            articulo: {
+              uuid: _uuid, titulo, autor, meta: buildMeta(), clase: _clase,
+              imagen, descripcion: inDesc.value.trim(), contenido,
+            },
           })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
         setProgress(100);
-        showStatus('✓ Publicado como artículo #' + data.id + '. Aparecerá en el sitio en ~1 minuto.', 'success');
+
+        showStatus(
+          ADMIN
+            ? '✓ Publicado como artículo #' + data.id + '. Aparece en el sitio en ~1 minuto.'
+            : '✓ ¡Listo! Tu texto quedó en revisión. Si pasa, lo vas a ver en el sitio.',
+          'success',
+        );
         resetForm();
-        loadManageList();
+        if (ADMIN) { loadManageList(); }
       } catch (err) {
-        showStatus('Error al publicar: ' + err.message, 'error');
+        showStatus('Error al enviar: ' + err.message, 'error');
       } finally {
         btnCancel.disabled = false;
         setTimeout(() => progressWrap.classList.remove('visible'), 800);
@@ -591,11 +738,14 @@
       }
     }
 
-    async function uploadCover(file, autor, titulo) {
-      // 1) get signed params from the Worker
+    async function subirImagen(file, autor, titulo) {
+      // 1) firma del Worker — en modo público va sin contraseña
       const signRes = await fetch(WORKER_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'articulo-sign', password: _password, autor, titulo, content_type: file.type })
+        body: JSON.stringify({
+          action: 'articulo-sign', uuid: _uuid, autor, titulo, content_type: file.type,
+          ...(ADMIN ? { password: _password } : {}),
+        })
       });
       if (!signRes.ok) throw new Error('No se pudo firmar la subida (' + signRes.status + ')');
       const p = await signRes.json();
@@ -621,6 +771,9 @@
     function resetForm() {
       inTitulo.value = ''; inContenido.value = ''; inDesc.value = '';
       _imgFile = null; imgPreview.src = ''; imgPreviewWrap.classList.remove('visible'); imgZone.style.display = '';
+      _extras = []; renderExtras();
+      // Carpeta nueva para el siguiente poema.
+      _uuid = crypto.randomUUID();
       renderPreview(); syncPublishBtn();
     }
 
@@ -636,12 +789,102 @@
       window.history.length > 1 ? window.history.back() : window.close();
     });
 
+    // ── Cola de revisión (solo admin) ─────────────────────────────────────────
+    async function loadPendientes() {
+      if (!ADMIN || !_authed) return;
+      const box = $('pendientes-list');
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'articulo-pending', password: _password })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+
+        const lista = data.pendientes || [];
+        $('pendientes-count').textContent = lista.length;
+        box.innerHTML = '';
+        if (!lista.length) { box.innerHTML = '<span class="hint">Nada esperando revisión.</span>'; return; }
+        lista.forEach(p => box.appendChild(buildPendienteRow(p)));
+      } catch (e) {
+        box.innerHTML = '<span class="hint">No se pudo cargar la cola.</span>';
+      }
+    }
+
+    function buildPendienteRow(p) {
+      const row = document.createElement('div');
+      row.className = 'manage-row pendiente-row';
+
+      const info = document.createElement('div'); info.className = 'mr-info';
+      const t = document.createElement('div'); t.className = 'mr-title';
+      t.textContent = p.titulo || '(sin título)';
+      const m = document.createElement('div'); m.className = 'mr-meta';
+      m.textContent = [p.meta, p.creado ? new Date(p.creado).toLocaleString('es-MX') : ''].filter(Boolean).join(' · ');
+      info.appendChild(t); info.appendChild(m);
+
+      // Vista previa del texto tal como lo mandaron, sin interpretar HTML.
+      const prev = document.createElement('div');
+      prev.className = 'pendiente-preview';
+      (p.contenido || []).forEach(b => {
+        if (b.tipo === 'img') {
+          const im = document.createElement('img'); im.src = b.url; im.alt = ''; im.className = 'pendiente-img';
+          prev.appendChild(im);
+          return;
+        }
+        const el = document.createElement('p');
+        el.textContent = b.texto || '';
+        prev.appendChild(el);
+      });
+
+      const acciones = document.createElement('div'); acciones.className = 'pendiente-acciones';
+      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'xp-btn xp-btn-primary'; ok.textContent = 'Aprobar';
+      const no = document.createElement('button'); no.type = 'button'; no.className = 'xp-btn'; no.textContent = 'Rechazar';
+      ok.addEventListener('click', () => moderar(p, 'articulo-approve', row, [ok, no]));
+      no.addEventListener('click', () => {
+        if (!confirm('¿Rechazar "' + (p.titulo || 'sin título') + '"?\nSe borran también sus imágenes.')) return;
+        moderar(p, 'articulo-reject', row, [ok, no]);
+      });
+      acciones.appendChild(no); acciones.appendChild(ok);
+
+      row.appendChild(info);
+      if (p.imagen) { const hero = document.createElement('img'); hero.src = p.imagen; hero.className = 'pendiente-img'; row.appendChild(hero); }
+      row.appendChild(prev);
+      row.appendChild(acciones);
+      return row;
+    }
+
+    async function moderar(p, action, row, botones) {
+      if (!_authed || !_password) { reauth(); return; }
+      botones.forEach(b => b.disabled = true);
+      row.classList.add('removing');
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, password: _password, uuid: p.uuid })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+        row.remove();
+        showStatus(
+          action === 'articulo-approve'
+            ? '✓ Publicado como artículo #' + data.id + '.'
+            : '✓ Rechazado.',
+          'success',
+        );
+        loadPendientes();
+        loadManageList();
+      } catch (err) {
+        row.classList.remove('removing');
+        botones.forEach(b => b.disabled = false);
+        showStatus('Error: ' + err.message, 'error');
+      }
+    }
+
     // ── Manage list (existing articulos) ──────────────────────────────────────
     async function loadManageList() {
       const box = $('manage-list');
       try {
-        const res = await fetch('articulos.json?ts=' + Date.now(), { cache: 'no-store' });
-        const list = await res.json();
+        const list = await ArticulosAPI.listar();
 
         // Author datalist
         const autores = new Set();
@@ -696,8 +939,13 @@
     function showStatus(msg, type) { statusBox.textContent = msg; statusBox.className = 'visible' + (type ? ' ' + type : ''); }
     function setProgress(pct) { progressFill.style.width = pct + '%'; }
 
-    // Initial: populate author datalist (and manage list once authed)
+    // Arranque: el modo admin publica directo; el público manda a revisión.
+    if (ADMIN) {
+      btnPublish.textContent = 'Publicar';
+      $('note-envio').textContent = 'Se publica directo, sin pasar por revisión. Aparece en el sitio en ~1 minuto.';
+    }
     loadManageList();
+    renderExtras();
     renderPreview();
   })();
   </script>

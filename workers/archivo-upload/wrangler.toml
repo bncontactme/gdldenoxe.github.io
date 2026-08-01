@@ -2,3 +2,9 @@ name = "archivo-upload"
 main = "index.js"
 compatibility_date = "2025-09-23"
 workers_dev = true
+
+# Artículos / poemas — el texto vive en KV, las imágenes en Cloudinary
+# (una carpeta por poema: articulos/<uuid>-<slug>/).
+[[kv_namespaces]]
+binding = "ARTICULOS"
+id = "30ab34d6ea9f4df7873e24ee30592549"

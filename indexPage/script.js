@@ -276,19 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
         win.dataset.windowId = 'artfull-' + art.id;
         Object.assign(win.style, { left: x + 'px', top: y + 'px', width: w + 'px' });
 
-        const blockMap = {
-            lead: t => `<p class="art-full-lead">${t}</p>`,
-            h2: t => `<h2 class="art-full-h2">${t}</h2>`,
-            quote: t => `<div class="art-full-quote">"${t}"</div>`
-        };
-        
-        const bodyHTML = art.contenido.map(b => 
-            (blockMap[b.tipo] || (t => `<p class="art-full-p">${t}</p>`))(b.texto)
-        ).join('');
-
         win.innerHTML = `
             <div class="title-bar">
-                <div class="title-bar-text">${art.titulo}</div>
+                <div class="title-bar-text">${esc(art.titulo)}</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="maximize-btn" aria-label="Maximizar">□</button>
@@ -298,22 +288,63 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="window-body art-full-body">
                 <div class="art-full-inner">
                     <div class="art-full-hero">
-                        <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
+                        <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
                     </div>
-                    <div class="art-full-meta">${art.meta}</div>
-                    <div class="art-full-content">${bodyHTML}</div>
+                    <div class="art-full-meta">${esc(art.meta)}</div>
+                    <div class="art-full-content">Cargando...</div>
                 </div>
                 <div class="art-full-footer">
                     <button class="art-full-close-btn">Cerrar</button>
                 </div>
             </div>`;
-        
+
         wireWindowControls(win);
         win.querySelector('.art-full-close-btn').addEventListener('click', () => {
             win.classList.add('hidden');
             updateTaskbar();
         });
         return win;
+    }
+
+    // El índice solo trae el resumen; el cuerpo se pide la primera vez que se
+    // abre la ventana y se queda cacheado en el DOM.
+    function cargarContenidoArticulo(art) {
+        const win = $(`[data-window-id="artfull-${art.id}"]`);
+        const cont = win?.querySelector('.art-full-content');
+        if (!cont || cont.dataset.cargado) return;
+        cont.dataset.cargado = '1';
+
+        ArticulosAPI.listar && ArticulosAPI.obtener(art.id, 'articulosPage/')
+            .then(completo => {
+                cont.textContent = '';
+                if (!completo || !Array.isArray(completo.contenido)) {
+                    cont.textContent = 'No se pudo cargar el texto.';
+                    return;
+                }
+                const frag = document.createDocumentFragment();
+                completo.contenido.forEach(b => {
+                    if (b.tipo === 'img') {
+                        if (!b.url) return;
+                        const img = document.createElement('img');
+                        img.src = b.url;
+                        img.alt = b.texto || '';
+                        img.loading = 'lazy';
+                        img.className = 'art-full-img';
+                        frag.appendChild(img);
+                        return;
+                    }
+                    // textContent en todos lados: el texto puede venir del público.
+                    const el = document.createElement(b.tipo === 'h2' ? 'h2' : b.tipo === 'quote' ? 'div' : 'p');
+                    el.className = b.tipo === 'lead'  ? 'art-full-lead'
+                                 : b.tipo === 'h2'    ? 'art-full-h2'
+                                 : b.tipo === 'quote' ? 'art-full-quote'
+                                 : 'art-full-p';
+                    el.textContent = b.tipo === 'quote' ? '"' + b.texto + '"' : b.texto;
+                    frag.appendChild(el);
+                });
+                cont.appendChild(frag);
+            })
+            .catch(() => { cont.textContent = 'No se pudo cargar el texto.'; });
     }
 
     function buildArticleWindow(art, idx, visible) {
@@ -326,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         win.innerHTML = `
             <div class="title-bar">
-                <div class="title-bar-text">Artículo #${art.id}</div>
+                <div class="title-bar-text">Artículo #${esc(art.id)}</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="maximize-btn" aria-label="Maximizar">□</button>
@@ -335,17 +366,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
+                    <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
                 </div>
                 <div class="article-description">
-                    <h3>${art.titulo}</h3>
-                    <p>${art.descripcion}</p>
-                    <button class="read-more-btn" data-art-id="${art.id}">Leer más</button>
+                    <h3>${esc(art.titulo)}</h3>
+                    <p>${esc(art.descripcion)}</p>
+                    <button class="read-more-btn" data-art-id="${esc(art.id)}">Leer más</button>
                 </div>
             </div>`;
-        
+
         wireWindowControls(win);
         win.querySelector('.read-more-btn').addEventListener('click', () => {
+            cargarContenidoArticulo(art);
             fullWin.classList.remove('hidden', 'minimized');
             bringToFront(fullWin);
             updateTaskbar();
@@ -359,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.dataset.openArticle = 'art-' + art.id;
         item.innerHTML = `
             <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
-            <span class="folder-name">${art.titulo}.txt</span>`;
+            <span class="folder-name">${esc(art.titulo)}.txt</span>`;
 
         item.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -371,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('dblclick', (e) => {
             e.stopPropagation();
             const artId = item.dataset.openArticle.replace('art-', '');
+            cargarContenidoArticulo(art);
             const fullWin = $(`[data-window-id="artfull-${artId}"]`);
             if (fullWin) {
                 fullWin.classList.remove('hidden', 'minimized');
@@ -381,10 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return item;
     }
 
+    // Los títulos y textos ahora pueden venir de envíos del público, así que
+    // todo lo que se arma con innerHTML pasa por aquí primero.
+    function esc(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+    }
+
     // Fetch y render
     const DEFAULT_ARTICLE_IMAGE = 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
-    fetch('articulosPage/articulos.json')
-        .then(r => r.json())
+    ArticulosAPI.listar('articulosPage/')
         .then(articulos => {
             articulos.forEach(art => { if (!art.imagen) art.imagen = DEFAULT_ARTICLE_IMAGE; });
             const container = $('#articles-container');

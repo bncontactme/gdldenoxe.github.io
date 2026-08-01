@@ -15,17 +15,37 @@
 //     with folder = archivo, then DISABLE the old archivo_unsigned preset.
 //
 // Actions (POST JSON, routed by body.action):
-//   (none)/upload   sign a photo upload         (archivo/<slug>)      [auth]
-//   register        append photo to images.json                       [auth]
-//   delete          remove photo(s) from Cloudinary + images.json      [auth]
-//   list            live photo list from Cloudinary                    [public]
-//   articulo-sign   sign an article cover image (articulos/<slug>)     [auth]
-//   articulo-submit append a new article to articulos.json             [auth]
-//   articulo-delete remove an article (+ its Cloudinary cover)         [auth]
-// The articulo-* actions reuse the same PW_HASH, Cloudinary creds, GitHub
-// token and signed preset — no new secrets. Just redeploy: `wrangler deploy`.
+//   (none)/upload    sign a photo upload         (archivo/<slug>)      [auth]
+//   register         append photo to images.json                       [auth]
+//   delete           remove photo(s) from Cloudinary + images.json      [auth]
+//   list             live photo list from Cloudinary                    [public]
+//   articulo-propose enviar un poema a revisión                         [público]
+//   articulo-sign    firmar una imagen del poema (articulos/<uuid>-<slug>/)
+//   articulo-submit  alta directa del admin                             [auth]
+//   articulo-pending cola de revisión                                   [auth]
+//   articulo-approve publicar un pendiente                              [auth]
+//   articulo-reject  rechazar (borra su carpeta de imágenes)            [auth]
+//   articulo-delete  borrar un publicado (+ su carpeta)                 [auth]
+//
+// Lecturas públicas (GET):
+//   GET /articulos       índice de publicados
+//   GET /articulo?id=N   un artículo completo
+//
+// Los artículos viven en KV (binding ARTICULOS); cada poema tiene su propia
+// carpeta de imágenes en Cloudinary. Reusa PW_HASH y las creds de Cloudinary
+// que ya existían — no hay secrets nuevos. Redeploy: `wrangler deploy`.
 
 import { artistSlug } from './lib/artistSlug.js';
+import {
+  readIndex,
+  getPublicado,
+  listPendientes,
+  putPendiente,
+  publicarDirecto,
+  aprobar,
+  rechazar,
+  borrarPublicado,
+} from './lib/articulos.js';
 
 const ALLOWED_ORIGINS = new Set([
   'https://gdldenoxe.github.io',
@@ -38,9 +58,8 @@ const GITHUB_OWNER      = 'bncontactme';
 const GITHUB_REPO       = 'gdldenoxe.github.io';
 const IMAGES_JSON_PATH  = 'archivoPage/images.json';
 
-// Artículos / poemas — same Cloudinary account + GitHub token, different folder + manifest.
-const ARTICULOS_FOLDER    = 'articulos';
-const ARTICULOS_JSON_PATH = 'articulosPage/articulos.json';
+// Artículos / poemas — misma cuenta de Cloudinary, carpeta propia por poema.
+const ARTICULOS_FOLDER = 'articulos';
 
 export default {
   async fetch(request, env) {
@@ -58,6 +77,19 @@ export default {
         status: 204,
         headers: corsHeaders(allowedOrigin),
       });
+    }
+
+    // ── Lecturas públicas por GET ─────────────────────────────────────────────
+    // Sirven al sitio, así que van abiertas a cualquier origen.
+    if (request.method === 'GET') {
+      const url = new URL(request.url);
+      if (url.pathname === '/articulos') {
+        return handleArticulosList(env, '*');
+      }
+      if (url.pathname === '/articulo') {
+        return handleArticuloGet(url.searchParams.get('id'), env, '*');
+      }
+      return new Response('Not Found', { status: 404 });
     }
 
     if (request.method !== 'POST') {
@@ -79,6 +111,14 @@ export default {
     if (body.action === 'list') {
       return handleList(env, allowedOrigin);
     }
+    // Cualquiera puede proponer un poema y subirle imágenes; nada de esto se
+    // publica hasta que el admin lo apruebe.
+    if (body.action === 'articulo-propose') {
+      return handleArticuloPropose(request, body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-sign') {
+      return handleArticuloSign(body, env, allowedOrigin);
+    }
 
     // ── Verify password ───────────────────────────────────────────────────────
     const submittedHash = await sha256hex(String(body.password || ''));
@@ -93,12 +133,18 @@ export default {
     if (body.action === 'register') {
       return handleRegister(body, env, allowedOrigin);
     }
-    // ── Artículos / poemas ────────────────────────────────────────────────────
-    if (body.action === 'articulo-sign') {
-      return handleArticuloSign(body, env, allowedOrigin);
-    }
+    // ── Artículos / poemas (solo admin) ───────────────────────────────────────
     if (body.action === 'articulo-submit') {
       return handleArticuloSubmit(body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-pending') {
+      return handleArticuloPending(env, allowedOrigin);
+    }
+    if (body.action === 'articulo-approve') {
+      return handleArticuloApprove(body, env, allowedOrigin);
+    }
+    if (body.action === 'articulo-reject') {
+      return handleArticuloReject(body, env, allowedOrigin);
     }
     if (body.action === 'articulo-delete') {
       return handleArticuloDelete(body, env, allowedOrigin);
@@ -271,19 +317,24 @@ async function handleRegister(body, env, origin) {
   }
 }
 
-// ── Artículo: sign Cloudinary upload for a cover image ────────────────────────
+// ── Artículo: firma la subida de una imagen a la carpeta del poema ───────────
+// El cliente manda el uuid que generó al empezar el envío, así todas las
+// imágenes de un poema (portada e interiores) caen en la misma carpeta.
 async function handleArticuloSign(body, env, origin) {
   const declaredMime = String(body.content_type || '').toLowerCase();
   if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
     return jsonResponse({ error: 'Unsupported content type' }, 400, origin);
   }
 
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
   const timestamp    = String(Math.floor(Date.now() / 1000));
   const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
-  // Place cover image in articulos/<author-slug>/
-  const slug   = artistSlug(body.autor || body.titulo || 'general');
-  const folder = ARTICULOS_FOLDER + '/' + slug;
+  // Carpeta propia del poema: articulos/<uuid>-<slug>/
+  const slug   = artistSlug(body.autor || body.titulo || 'anonimo');
+  const folder = ARTICULOS_FOLDER + '/' + uuid + '-' + slug;
 
   const signingParams = {
     asset_folder:  folder,
@@ -309,77 +360,122 @@ async function handleArticuloSign(body, env, origin) {
   );
 }
 
-// ── Artículo: build + append a new article to articulos.json ──────────────────
-const ALLOWED_ARTICULO_TIPOS = new Set(['p', 'lead', 'h2', 'quote', 'hr']);
-
-async function handleArticuloSubmit(body, env, origin) {
-  const a = body.articulo || {};
-
-  const titulo = String(a.titulo || '').trim().replace(/\s+/g, ' ').slice(0, 200);
-  if (!titulo) return jsonResponse({ error: 'titulo required' }, 400, origin);
-
-  const contenido = (Array.isArray(a.contenido) ? a.contenido : [])
-    .map(function(b) {
-      const tipo = (b && ALLOWED_ARTICULO_TIPOS.has(b.tipo)) ? b.tipo : 'p';
-      if (tipo === 'hr') return { tipo: 'hr', texto: '' };
-      return { tipo, texto: String((b && b.texto) || '').slice(0, 8000) };
-    })
-    .filter(function(b) { return b.tipo === 'hr' || b.texto.trim(); });
-  if (!contenido.length) return jsonResponse({ error: 'contenido required' }, 400, origin);
-
-  const meta    = String(a.meta || '').trim().slice(0, 200);
-  const esPoema = a.clase === 'poema';
-
-  let descripcion = String(a.descripcion || '').trim().replace(/\s+/g, ' ').slice(0, 300);
-  if (!descripcion) {
-    const firstText = (contenido.find(function(b) { return b.texto; }) || {}).texto || '';
-    descripcion = firstText.replace(/\s+/g, ' ').trim().slice(0, 200);
+// ── Público: proponer un poema (entra a la cola de revisión) ─────────────────
+async function handleArticuloPropose(request, body, env, origin) {
+  // Honeypot: campo invisible en el formulario. Si viene lleno es un bot.
+  if (String(body.website || '').trim()) {
+    return jsonResponse({ ok: true, id: null }, 200, origin);
   }
 
-  // Only accept https Cloudinary URLs for the cover image; anything else is dropped.
-  let imagen = String(a.imagen || '').trim();
-  if (imagen && !/^https:\/\/res\.cloudinary\.com\//.test(imagen)) imagen = '';
+  const ip = request.headers.get('CF-Connecting-IP') || 'sin-ip';
+  const rl = 'rl:' + ip;
+  if (await env.ARTICULOS.get(rl)) {
+    return jsonResponse({ error: 'Espérate tantito antes de mandar otro.' }, 429, origin);
+  }
+  // expirationTtl mínimo de KV son 60s, que es justo la ventana que queremos.
+  await env.ARTICULOS.put(rl, '1', { expirationTtl: 60 });
 
-  let newId = null;
-  await githubUpdateJson(env, ARTICULOS_JSON_PATH, function(current) {
-    const list  = Array.isArray(current) ? current : [];
-    const maxId = list.reduce(function(m, x) { return Math.max(m, Number(x && x.id) || 0); }, 0);
-    newId = maxId + 1;
-
-    const obj = { id: newId, titulo, meta };
-    if (esPoema) obj.clase = 'poema';
-    if (imagen)  obj.imagen = imagen;
-    obj.descripcion = descripcion;
-    obj.contenido   = contenido;
-
-    return list.concat([obj]);
-  });
-
-  return jsonResponse({ ok: true, id: newId }, 200, origin);
+  let art;
+  try {
+    art = await putPendiente(env, body.articulo || {});
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 400, origin);
+  }
+  return jsonResponse({ ok: true, uuid: art.uuid, estado: 'pendiente' }, 200, origin);
 }
 
-// ── Artículo: delete by id (+ best-effort Cloudinary cleanup) ─────────────────
+// ── Admin: alta directa, sin pasar por la cola ───────────────────────────────
+async function handleArticuloSubmit(body, env, origin) {
+  try {
+    const art = await publicarDirecto(env, body.articulo || {});
+    return jsonResponse({ ok: true, id: art.id }, 200, origin);
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 400, origin);
+  }
+}
+
+// ── Admin: cola de pendientes ────────────────────────────────────────────────
+async function handleArticuloPending(env, origin) {
+  return jsonResponse({ ok: true, pendientes: await listPendientes(env) }, 200, origin);
+}
+
+// ── Admin: aprobar ───────────────────────────────────────────────────────────
+async function handleArticuloApprove(body, env, origin) {
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
+  // El admin puede corregir título/meta/clase al momento de aprobar.
+  const overrides = {};
+  if (body.titulo) overrides.titulo = String(body.titulo).trim().slice(0, 200);
+  if (body.meta)   overrides.meta   = String(body.meta).trim().slice(0, 200);
+  if (body.clase !== undefined) overrides.clase = body.clase === 'poema' ? 'poema' : undefined;
+
+  const art = await aprobar(env, uuid, overrides);
+  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
+  return jsonResponse({ ok: true, id: art.id }, 200, origin);
+}
+
+// ── Admin: rechazar (borra la carpeta de imágenes del poema) ─────────────────
+async function handleArticuloReject(body, env, origin) {
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
+  const art = await rechazar(env, uuid, body.motivo);
+  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
+
+  await borrarCarpetaCloudinary(env, art.carpeta);
+  return jsonResponse({ ok: true, uuid }, 200, origin);
+}
+
+// ── Admin: borrar un publicado (+ su carpeta de imágenes) ───────────────────
 async function handleArticuloDelete(body, env, origin) {
   const id = Number(body.id);
   if (!Number.isFinite(id)) return jsonResponse({ error: 'id required' }, 400, origin);
 
-  let removed = null;
-  await githubUpdateJson(env, ARTICULOS_JSON_PATH, function(current) {
-    const list = Array.isArray(current) ? current : [];
-    removed = list.find(function(x) { return Number(x && x.id) === id; }) || null;
-    return list.filter(function(x) { return Number(x && x.id) !== id; });
-  });
+  const art = await borrarPublicado(env, id);
+  if (!art) return jsonResponse({ ok: true, removed: false }, 200, origin);
 
-  if (!removed) return jsonResponse({ ok: true, removed: false }, 200, origin);
-
-  // Best-effort: only delete Cloudinary assets that live under the articulos/ folder.
-  const pub = removed.imagen ? cloudinaryPublicId(removed.imagen) : null;
-  if (pub && pub.startsWith(ARTICULOS_FOLDER + '/')) {
-    try { await cloudinaryDeleteByPublicIds(env, [pub]); }
-    catch (e) { console.error('Cloudinary cleanup failed after articulo delete:', e); }
-  }
-
+  await borrarCarpetaCloudinary(env, art.carpeta);
   return jsonResponse({ ok: true, removed: true, id }, 200, origin);
+}
+
+// ── Lecturas públicas ────────────────────────────────────────────────────────
+async function handleArticulosList(env, origin) {
+  const list = await readIndex(env);
+  return jsonResponse({ ok: true, articulos: list }, 200, origin, {
+    'Cache-Control': 'public, max-age=30',
+  });
+}
+
+async function handleArticuloGet(id, env, origin) {
+  const art = await getPublicado(env, id);
+  if (!art) return jsonResponse({ error: 'No encontrado' }, 404, origin);
+  return jsonResponse({ ok: true, articulo: art }, 200, origin, {
+    'Cache-Control': 'public, max-age=60',
+  });
+}
+
+// ── Cloudinary: borrar la carpeta entera de un poema ─────────────────────────
+// Se borra por prefijo, así se van portada e interiores de un solo golpe.
+// Es best-effort: si Cloudinary falla, el texto ya salió del sitio igual.
+async function borrarCarpetaCloudinary(env, carpeta) {
+  const prefix = String(carpeta || '');
+  if (!prefix.startsWith(ARTICULOS_FOLDER + '/')) return;
+
+  try {
+    const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+    const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/upload?prefix=${encodeURIComponent(prefix + '/')}`;
+    await fetch(url, { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
+    await fetch(`https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/folders/${encodeURIComponent(prefix)}`,
+      { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
+  } catch (e) {
+    console.error('Cloudinary: no se pudo borrar la carpeta ' + prefix + ':', e);
+  }
+}
+
+function uuidValido(valor) {
+  const uuid = String(valor || '').trim().toLowerCase();
+  return /^[a-z0-9-]{8,64}$/.test(uuid) ? uuid : null;
 }
 
 // ── Cloudinary delete helper (shared by photo + articulo delete) ──────────────
@@ -390,14 +486,8 @@ function cloudinaryDeleteByPublicIds(env, ids) {
   return fetch(url, { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
 }
 
-// Extract the Cloudinary public_id (incl. folder) from a secure_url.
-// e.g. https://res.cloudinary.com/x/image/upload/v123/articulos/slug/name.jpg → articulos/slug/name
-function cloudinaryPublicId(url) {
-  const m = String(url || '').match(/\/upload\/(?:v\d+\/)?(.+)\.[^.\/]+$/);
-  return m ? m[1] : null;
-}
-
-// ── GitHub JSON manifest updater (shared by images.json + articulos.json) ─────
+// ── GitHub images.json updater (solo el archivo fotográfico) ─────────────────
+// Los artículos ya no pasan por aquí: viven en KV y no generan commits.
 async function githubUpdateJson(env, path, updateFn) {
   const ghHeaders = {
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
@@ -452,18 +542,19 @@ async function sha256hex(str) {
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin':  origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age':       '86400',
   };
 }
 
-function jsonResponse(data, status, origin) {
+function jsonResponse(data, status, origin, extraHeaders) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
       ...corsHeaders(origin),
+      ...(extraHeaders || {}),
     },
   });
 }

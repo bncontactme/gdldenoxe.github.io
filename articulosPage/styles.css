@@ -195,6 +195,31 @@ body {
     white-space: pre-wrap;
 }
 
+/* Imágenes intercaladas dentro del texto (bloques tipo img) */
+.article-figure {
+    margin: 16px 0;
+    text-align: center;
+}
+
+.article-figure img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-top: 2px solid var(--win95-dark);
+    border-left: 2px solid var(--win95-dark);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+}
+
+.article-figure figcaption {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--win95-text);
+    font-family: var(--win95-font);
+    font-style: italic;
+}
+
 .article-content hr {
     border: none;
     border-top: 2px solid var(--win95-dark);

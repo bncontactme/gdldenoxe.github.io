@@ -227,6 +227,7 @@
         <span id="status-text">Cargando...</span>
     </div>
 
+    <script src="../shared/articulos-api.js"></script>
     <script>
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
@@ -239,8 +240,7 @@
             }
         }
 
-        fetch('articulos.json')
-            .then(r => r.json())
+        ArticulosAPI.listar()
             .then(articulos => {
                 const fragment = document.createDocumentFragment();
 
