@@ -945,7 +945,12 @@ juntxs y brillando.`
                 windowElement.style.setProperty('--drag-top', rect.top + 'px');
                 windowElement.classList.add('dragging');
             }
-            
+
+            // Mientras se arrastra, los iframes dejan de recibir el mouse: si no,
+            // al pasar el cursor por encima los eventos se los queda el documento
+            // de adentro y la ventana se queda atorada a medio camino.
+            document.body.classList.add('arrastrando');
+
             bringToFront(windowElement);
         };
         
@@ -1009,10 +1014,14 @@ juntxs y brillando.`
         e.preventDefault();
     }, { passive: false });
 
-    document.addEventListener('mouseup', () => { draggedWindow = null; });
+    document.addEventListener('mouseup', () => {
+        draggedWindow = null;
+        document.body.classList.remove('arrastrando');
+    });
     document.addEventListener('touchend', () => {
         if (draggedWindow) draggedWindow.classList.remove('dragging');
         draggedWindow = null;
+        document.body.classList.remove('arrastrando');
     });
 
     // Traer ventana al frente

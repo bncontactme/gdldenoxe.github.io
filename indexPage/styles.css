@@ -126,6 +126,12 @@ body {
     will-change: transform, left, top;
 }
 
+/* Al arrastrar, ningún iframe se queda con el mouse — si no, la ventana se
+   atora en cuanto el cursor le pasa por encima. */
+body.arrastrando iframe {
+    pointer-events: none;
+}
+
 .win95-window.hidden {
     display: none;
 }

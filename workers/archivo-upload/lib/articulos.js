@@ -203,6 +203,7 @@ export function normalizar(entrada) {
     carpeta:     ARTICULOS_FOLDER + '/' + uuid + '-' + slug,
     titulo,
     autor,
+    instagram:   handleInstagram(a.instagram) || undefined,
     meta:        limpiar(a.meta, 200),
     clase:       a.clase === 'poema' ? 'poema' : undefined,
     descripcion,
@@ -234,6 +235,16 @@ function normalizarBloque(bloque) {
 export function urlCloudinary(valor) {
   const url = String(valor || '').trim();
   return /^https:\/\/res\.cloudinary\.com\/[\w.-]+\//.test(url) ? url : '';
+}
+
+// Solo el handle: sin @, sin URL, y con los caracteres que Instagram permite.
+// Lo que no cuadre se descarta — nunca se guarda a medias.
+export function handleInstagram(valor) {
+  const h = String(valor || '').trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .replace(/[/?#].*$/, '');   // ruta, ?igshid=... y demás cola de los links compartidos
+  return /^[A-Za-z0-9._]{1,30}$/.test(h) ? h : '';
 }
 
 function limpiar(valor, max) {

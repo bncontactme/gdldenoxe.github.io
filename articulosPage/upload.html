@@ -7,94 +7,129 @@
 <link rel="stylesheet" href="../shared/win95.css">
 <style>
   body {
-    margin: 0; padding: 10px; background: var(--win95-teal);
-    font: 11px var(--font-system); color: #000;
+    margin: 0; padding: 12px; background: var(--win95-teal);
+    font: 12px var(--font-system); color: #111;
   }
-  html.embed body { padding: 0; background: var(--win95-gray); }
+  html.embed body { padding: 0; background: #f4f3ee; }
 
-  .win { max-width: 460px; margin: 0 auto; background: var(--win95-gray);
+  .win { max-width: 470px; margin: 0 auto; background: #f4f3ee;
          border-top: var(--border-raised); border-left: var(--border-raised);
          border-right: var(--border-sunken); border-bottom: var(--border-sunken); }
   html.embed .win { max-width: none; border: none; }
 
   .bar { background: linear-gradient(90deg, var(--win95-blue), var(--win95-blue-light));
-         color: #fff; font-weight: bold; padding: 2px 5px; }
-  html.embed .bar { display: none; }
+         color: #fff; font-weight: bold; padding: 3px 6px; letter-spacing: .02em; }
+  html.embed > body .win > .bar { display: none; }
 
-  .body { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .body { padding: 14px 16px 12px; }
 
-  label { display: block; font-weight: bold; margin-bottom: 1px; }
-  .opt { font-weight: normal; color: #444; }
+  /* Cada bloque del formulario, separado por aire y no por cajas */
+  .campo { margin-bottom: 12px; }
+  .campo:last-of-type { margin-bottom: 0; }
 
-  input[type=text], textarea, select {
-    width: 100%; box-sizing: border-box; padding: 2px 3px; font: 11px var(--font-system);
-    background: #fff; border-top: var(--inset-light); border-left: var(--inset-light);
-    border-right: var(--inset-dark); border-bottom: var(--inset-dark);
+  label, .rotulo {
+    display: block; font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
+    color: #5c5a52; margin-bottom: 3px;
   }
-  textarea { font-family: var(--font-mono); resize: vertical; }
-  #texto { height: 130px; }
+  .opt { text-transform: none; letter-spacing: 0; color: #8a887f; }
 
-  .fila { display: flex; gap: 6px; }
-  .fila > * { flex: 1; min-width: 0; }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; box-sizing: border-box; padding: 5px 6px;
+    font: 12px var(--font-system); color: #111;
+    background: #fff; border: 1px solid #b9b6ac; border-top-color: #8f8c84;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--win95-blue-light); }
+  textarea { font: 12px/1.55 var(--font-mono); resize: vertical; }
+  #texto { height: 150px; }
+  .arroba { display: flex; align-items: stretch; }
+  .arroba span {
+    display: flex; align-items: center; padding: 0 7px; color: #8a887f;
+    background: #eceae2; border: 1px solid #b9b6ac; border-right: none; border-top-color: #8f8c84;
+  }
+
+  .dos { display: flex; gap: 10px; }
+  .dos > * { flex: 1; min-width: 0; }
+
+  hr { border: none; border-top: 1px solid #dedbd1; margin: 14px 0 12px; }
 
   button {
-    font: 11px var(--font-system); padding: 2px 10px; background: var(--win95-gray);
-    border-top: var(--border-raised); border-left: var(--border-raised);
-    border-right: var(--border-sunken); border-bottom: var(--border-sunken); cursor: pointer;
+    font: 12px var(--font-system); padding: 4px 14px; background: #e7e5dc; color: #111;
+    border: 1px solid #a8a59c; cursor: pointer;
   }
-  button:active:not(:disabled) { border-top: var(--border-sunken); border-left: var(--border-sunken);
-                                 border-right: var(--border-raised); border-bottom: var(--border-raised); }
-  button:disabled { color: var(--win95-dark-gray); cursor: default; }
-  .acciones { display: flex; justify-content: flex-end; gap: 5px; }
+  button:hover:not(:disabled) { background: #f0eee6; }
+  button:active:not(:disabled) { background: #dbd8cf; }
+  button:disabled { color: #a5a29a; cursor: default; }
+  button.fuerte { background: var(--win95-blue); border-color: #00004d; color: #fff; font-weight: bold; }
+  button.fuerte:hover:not(:disabled) { background: #0a0aa0; }
+  button.fuerte:disabled { background: #c9c7c0; border-color: #b0ada4; color: #8a887f; }
 
-  #fotos-lista { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pie { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .pie .der { margin-left: auto; display: flex; gap: 6px; }
+
+  #fotos-lista { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
   .foto { position: relative; }
-  .foto img { width: 40px; height: 40px; object-fit: cover; display: block;
-              border: 1px solid var(--win95-dark-gray); }
-  .foto button { position: absolute; top: -3px; right: -3px; padding: 0; width: 13px; height: 13px;
-                 line-height: 1; font-size: 9px; }
+  .foto img { width: 46px; height: 46px; object-fit: cover; display: block; border: 1px solid #b9b6ac; }
+  .foto span { position: absolute; left: 0; bottom: 0; background: rgba(0,0,0,.6); color: #fff;
+               font-size: 9px; padding: 0 3px; }
+  .foto button { position: absolute; top: -5px; right: -5px; width: 15px; height: 15px;
+                 padding: 0; line-height: 1; font-size: 10px; border-radius: 50%; }
 
-  #estado { min-height: 13px; }
-  #estado.ok  { color: #060; font-weight: bold; }
-  #estado.err { color: #900; font-weight: bold; }
+  #estado { font-size: 11px; min-height: 14px; }
+  #estado.ok  { color: #1d6b3a; }
+  #estado.err { color: #9b2222; }
   .oculto { display: none; }
 
-  /* Puerta: la contraseña la valida el worker, aquí no se guarda ningún hash */
-  #puerta { position: fixed; inset: 0; background: rgba(0,0,0,.45);
-            display: flex; align-items: center; justify-content: center; z-index: 9; }
-  #puerta .win { max-width: 260px; border-top: var(--border-raised); border-left: var(--border-raised);
-                 border-right: var(--border-sunken); border-bottom: var(--border-sunken); }
-  #puerta .bar { display: block; }   /* la puerta sí conserva su barra al ir embebida */
-  #puerta.abierta { display: none; }
+  /* La puerta va dentro del panel, no como ventanita aparte —
+     así no se confunde con la del archivo de fotos. */
+  #puerta { padding: 26px 16px 30px; text-align: center; }
+  #puerta p { margin: 0 0 14px; color: #5c5a52; font-size: 11px; line-height: 1.5; }
+  #puerta .caja { display: flex; gap: 6px; max-width: 250px; margin: 0 auto; }
+  #puerta input { text-align: center; }
+  #pw-error { color: #9b2222; font-size: 11px; min-height: 15px; margin-top: 8px; }
+  #forma.oculto, #puerta.oculto { display: none; }
 </style>
 </head>
 <body>
-<div id="puerta">
-  <div class="win">
-    <div class="bar">Contraseña</div>
-    <div class="body">
-      <input type="password" id="pw" autocomplete="current-password" maxlength="120">
-      <div id="pw-error" style="color:#900;min-height:13px"></div>
-      <div class="acciones"><button type="button" id="pw-ok">Entrar</button></div>
-    </div>
-  </div>
-</div>
-
 <div class="win">
   <div class="bar">Manda tu poema · GDN</div>
-  <div class="body">
 
-    <div class="fila">
-      <div><label for="titulo">Título</label><input type="text" id="titulo" maxlength="200"></div>
-      <div><label for="autor">Tu nombre</label><input type="text" id="autor" maxlength="120"></div>
+  <div id="puerta">
+    <p>Escribe la contraseña de GDN<br>para mandar tu texto.</p>
+    <div class="caja">
+      <input type="password" id="pw" autocomplete="current-password" maxlength="120">
+      <button type="button" id="pw-ok">Entrar</button>
+    </div>
+    <div id="pw-error"></div>
+  </div>
+
+  <div class="body oculto" id="forma">
+
+    <div class="campo">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" maxlength="200" placeholder="Cómo se llama">
     </div>
 
-    <div class="fila">
+    <div class="campo dos">
+      <div>
+        <label for="autor">Autor</label>
+        <input type="text" id="autor" maxlength="120" placeholder="Tu nombre o seudónimo">
+      </div>
+      <div>
+        <label for="instagram">Instagram <span class="opt">(opcional)</span></label>
+        <div class="arroba">
+          <span>@</span>
+          <input type="text" id="instagram" maxlength="40" placeholder="tucuenta">
+        </div>
+      </div>
+    </div>
+
+    <div class="campo dos">
       <div>
         <label for="formato">Formato</label>
         <select id="formato">
-          <option value="poema">Poema (centrado)</option>
-          <option value="">Prosa</option>
+          <option value="poema">Poema — centrado</option>
+          <option value="">Prosa — alineado a la izquierda</option>
         </select>
       </div>
       <div>
@@ -106,25 +141,26 @@
       </div>
     </div>
 
-    <div>
-      <label for="texto">Texto <span class="opt">— línea sola con --- para separar</span></label>
-      <textarea id="texto"></textarea>
+    <hr>
+
+    <div class="campo">
+      <label for="texto">Texto <span class="opt">— deja una línea en blanco entre estrofas; una línea con --- pone un separador</span></label>
+      <textarea id="texto" placeholder="Pega aquí tu poema.&#10;Los saltos de línea se respetan tal cual."></textarea>
     </div>
 
-    <div>
-      <label>Imágenes <span class="opt">(opcional, hasta 12 · la primera es la portada)</span></label>
-      <div class="acciones" style="justify-content:flex-start;margin-bottom:4px">
-        <button type="button" id="btn-fotos">Agregar imágenes...</button>
-      </div>
+    <div class="campo">
+      <span class="rotulo">Imágenes <span class="opt">(opcional · hasta 12 · la primera es la portada)</span></span>
+      <button type="button" id="btn-fotos">Agregar imágenes...</button>
       <input type="file" id="fotos" accept="image/*" multiple class="oculto">
       <div id="fotos-lista"></div>
     </div>
 
-    <div id="estado" role="status" aria-live="polite"></div>
-
-    <div class="acciones">
-      <button type="button" id="cancelar">Cancelar</button>
-      <button type="button" id="enviar" disabled>Enviar a revisión</button>
+    <div class="pie">
+      <span id="estado" role="status" aria-live="polite"></span>
+      <span class="der">
+        <button type="button" id="cancelar">Cancelar</button>
+        <button type="button" class="fuerte" id="enviar" disabled>Enviar a revisión</button>
+      </span>
     </div>
 
   </div>
@@ -147,6 +183,16 @@
   let fotos = [];
   let clave = '';   // vive solo en memoria, no se guarda en ningún lado
 
+  const pedir = async cuerpo => {
+    const res = await fetch(WORKER, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  };
+
   // ── Puerta ─────────────────────────────────────────────────────────────────
   const entrar = async () => {
     const intento = $('pw').value;
@@ -157,10 +203,11 @@
       await pedir({ action: 'ping', password: intento });
       clave = intento;
       $('pw').value = '';
-      $('puerta').classList.add('abierta');
+      $('puerta').classList.add('oculto');
+      $('forma').classList.remove('oculto');
       $('titulo').focus();
     } catch (e) {
-      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Esa no es.' : e.message;
     } finally {
       $('pw-ok').disabled = false;
     }
@@ -214,10 +261,11 @@
       const caja = document.createElement('div');
       caja.className = 'foto';
       const img = document.createElement('img'); img.src = f.url || ''; img.alt = '';
-      const x = document.createElement('button'); x.type = 'button'; x.textContent = '×';
-      x.title = 'Quitar';
+      const x = document.createElement('button');
+      x.type = 'button'; x.textContent = '×'; x.title = 'Quitar';
       x.addEventListener('click', () => { fotos.splice(i, 1); pintarFotos(); });
       caja.append(img, x);
+      if (i === 0) { const t = document.createElement('span'); t.textContent = 'portada'; caja.append(t); }
       lista.appendChild(caja);
     });
   }
@@ -233,12 +281,12 @@
     if (!listo()) return;
     $('enviar').disabled = true; $('cancelar').disabled = true;
 
-    const autor = $('autor').value.trim();
+    const autor  = $('autor').value.trim();
     const titulo = $('titulo').value.trim();
 
     try {
-      // Las imágenes primero: así el texto ya entra a la cola con sus fotos
-      // colgadas y el admin lo ve completo de una.
+      // Las imágenes primero: así el texto entra a la cola ya con sus fotos
+      // colgadas y quien revisa lo ve completo de una.
       const uuid = crypto.randomUUID();
       const contenido = parsear($('texto').value);
       let portada = '';
@@ -254,11 +302,11 @@
         action: 'articulo-propose', password: clave,
         articulo: {
           uuid, titulo, autor, clase: $('formato').value,
+          instagram: $('instagram').value,
           meta: [autor, $('categoria').value].filter(Boolean).join(' • '),
           imagen: portada, contenido,
         },
       });
-
 
       decir('✓ Listo. Tu texto quedó en revisión.', 'ok');
       $('titulo').value = ''; $('texto').value = ''; fotos = []; pintarFotos();
@@ -268,16 +316,6 @@
       $('cancelar').disabled = false;
       sync();
     }
-  }
-
-  async function pedir(cuerpo) {
-    const res = await fetch(WORKER, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cuerpo),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
-    return data;
   }
 
   async function subir(file, uuid, autor, titulo) {

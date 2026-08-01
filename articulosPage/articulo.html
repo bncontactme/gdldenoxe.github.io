@@ -60,6 +60,18 @@
                 document.title = art.titulo + ' - GDLDENOXE';
                 title.textContent = art.titulo;
                 meta.textContent = art.meta;
+
+                // El handle ya viene validado por el worker, pero se arma como
+                // nodo y no como HTML, para no meter nada crudo en la página.
+                if (art.instagram) {
+                    const ig = document.createElement('a');
+                    ig.className = 'article-ig';
+                    ig.href = 'https://instagram.com/' + art.instagram;
+                    ig.target = '_blank';
+                    ig.rel = 'noopener noreferrer';
+                    ig.textContent = '@' + art.instagram;
+                    meta.append(' · ', ig);
+                }
                 if (art.clase) body.classList.add(art.clase);
                 const heroImg = art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
                 hero.src = /^https?:\/\//.test(heroImg) ? heroImg : '../' + heroImg;

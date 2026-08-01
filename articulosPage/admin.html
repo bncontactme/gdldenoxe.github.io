@@ -161,7 +161,8 @@
     const cab = document.createElement('div');
     cab.className = 'cab';
     const b = document.createElement('b'); b.textContent = p.titulo || '(sin título)';
-    const meta = document.createElement('span'); meta.textContent = p.meta || p.autor || '';
+    const meta = document.createElement('span');
+    meta.textContent = [p.meta || p.autor || '', p.instagram ? '@' + p.instagram : ''].filter(Boolean).join('  ');
     const fecha = document.createElement('span'); fecha.className = 'fecha';
     fecha.textContent = p.creado ? new Date(p.creado).toLocaleString('es-MX') : '';
     cab.append(b, meta, fecha);

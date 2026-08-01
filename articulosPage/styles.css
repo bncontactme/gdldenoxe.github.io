@@ -195,6 +195,13 @@ body {
     white-space: pre-wrap;
 }
 
+.article-ig {
+    color: var(--win95-blue);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--win95-blue);
+}
+.article-ig:hover { text-decoration: none; border-bottom-style: solid; }
+
 /* Imágenes intercaladas dentro del texto (bloques tipo img) */
 .article-figure {
     margin: 16px 0;
