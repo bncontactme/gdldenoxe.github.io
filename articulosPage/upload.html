@@ -80,28 +80,69 @@
   #estado.err { color: #9b2222; }
   .oculto { display: none; }
 
-  /* La puerta va dentro del panel, no como ventanita aparte —
-     así no se confunde con la del archivo de fotos. */
-  #puerta { padding: 26px 16px 30px; text-align: center; }
-  #puerta p { margin: 0 0 14px; color: #5c5a52; font-size: 11px; line-height: 1.5; }
-  #puerta .caja { display: flex; gap: 6px; max-width: 250px; margin: 0 auto; }
-  #puerta input { text-align: center; }
-  #pw-error { color: #9b2222; font-size: 11px; min-height: 15px; margin-top: 8px; }
-  #forma.oculto, #puerta.oculto { display: none; }
+  /* Puerta: el mismo cuadro de "Acceso restringido" que el de subir al
+     archivo de fotos, para que sea la misma experiencia en los dos lados. */
+  #pw-overlay {
+    position: fixed; inset: 0; background: #008080;
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+  }
+  #pw-overlay.oculto { display: none; }
+  #pw-window {
+    width: 340px; max-width: 90vw; background: #ECE9D8;
+    border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+  }
+  #pw-titlebar {
+    background: linear-gradient(#0054E3, #0042B3);
+    color: #fff; padding: 4px 8px; height: 26px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: bold; user-select: none;
+  }
+  #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  #pw-body label { font: bold 11px Tahoma, 'MS Sans Serif', sans-serif;
+                   text-transform: none; letter-spacing: 0; color: #000; margin-bottom: 4px; }
+  #pw-input {
+    width: 100%; border: 2px inset #fff; padding: 3px 5px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; background: #fff;
+  }
+  #pw-error { color: #900; font-size: 11px; min-height: 14px; }
+  #pw-fila { display: flex; justify-content: flex-end; }
+  #pw-submit {
+    background: linear-gradient(#316AC5, #1A52A0); color: #fff;
+    border: 2px outset #316AC5; border-color: #316AC5;
+    padding: 4px 18px; min-width: 75px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; cursor: pointer;
+  }
+  #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
+  #pw-submit:active { border-style: inset; }
+  #forma.oculto { display: none; }
 </style>
 </head>
 <body>
+<div id="pw-overlay">
+  <div id="pw-window">
+    <div id="pw-titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+      </svg>
+      Acceso restringido
+    </div>
+    <div id="pw-body">
+      <div>
+        <label for="pw-input">Contraseña</label>
+        <input type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+      </div>
+      <div id="pw-error"></div>
+      <div id="pw-fila">
+        <button type="button" id="pw-submit">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="win">
   <div class="bar">Manda tu poema · GDN</div>
-
-  <div id="puerta">
-    <p>Escribe la contraseña de GDN<br>para mandar tu texto.</p>
-    <div class="caja">
-      <input type="password" id="pw" autocomplete="current-password" maxlength="120">
-      <button type="button" id="pw-ok">Entrar</button>
-    </div>
-    <div id="pw-error"></div>
-  </div>
 
   <div class="body oculto" id="forma">
 
@@ -195,26 +236,27 @@
 
   // ── Puerta ─────────────────────────────────────────────────────────────────
   const entrar = async () => {
-    const intento = $('pw').value;
+    const intento = $('pw-input').value;
     if (!intento) return;
-    $('pw-ok').disabled = true;
+    $('pw-submit').disabled = true;
     $('pw-error').textContent = '';
     try {
       await pedir({ action: 'ping', password: intento });
       clave = intento;
-      $('pw').value = '';
-      $('puerta').classList.add('oculto');
+      $('pw-input').value = '';
+      $('pw-overlay').classList.add('oculto');
       $('forma').classList.remove('oculto');
       $('titulo').focus();
     } catch (e) {
-      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Esa no es.' : e.message;
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      $('pw-input').select();
     } finally {
-      $('pw-ok').disabled = false;
+      $('pw-submit').disabled = false;
     }
   };
-  $('pw-ok').addEventListener('click', entrar);
-  $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
-  $('pw').focus();
+  $('pw-submit').addEventListener('click', entrar);
+  $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw-input').focus();
 
   // Línea en blanco = párrafo nuevo; línea con --- = separador. Los saltos
   // dentro de una estrofa se conservan tal cual.
