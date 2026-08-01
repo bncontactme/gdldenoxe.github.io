@@ -442,21 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             container.appendChild(containerFrag);
 
-            // "Nuevo artículo" entry at the top of the Artículos folder
-            const newItem = document.createElement('div');
-            newItem.className = 'folder-item';
-            newItem.innerHTML = `
-                <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
-                <span class="folder-name">Nuevo artículo...</span>`;
-            newItem.addEventListener('click', (e) => {
-                e.stopPropagation();
-                $$('.folder-item').forEach(i => i.classList.remove('selected'));
-                newItem.classList.add('selected');
-                selectedFolderItem = newItem;
-            });
-            newItem.addEventListener('dblclick', (e) => { e.stopPropagation(); openArticuloUploadOverlay(); });
-            folderContent.appendChild(newItem);
-
             folderContent.appendChild(folderFrag);
 
             const folderStatus = $('#folder-articulos-status');

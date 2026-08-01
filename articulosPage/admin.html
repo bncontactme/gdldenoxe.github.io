@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandeja · GDN</title>
+<style>
+  :root { --bg:#101418; --panel:#171c22; --linea:#2a323c; --txt:#d6dde5;
+          --tenue:#7c8894; --ok:#4ec07a; --no:#e2564a; --acento:#e8c547; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt);
+         font:13px ui-monospace,'SF Mono',Menlo,monospace; }
+
+  header { display:flex; align-items:baseline; gap:10px; padding:10px 14px;
+           border-bottom:1px solid var(--linea); position:sticky; top:0; background:var(--bg); }
+  header h1 { margin:0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+  header .n { color:var(--acento); }
+  header .der { margin-left:auto; color:var(--tenue); font-size:11px; }
+
+  main { padding:14px; max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+
+  .tarjeta { background:var(--panel); border:1px solid var(--linea); }
+  .cab { display:flex; gap:8px; align-items:baseline; padding:8px 10px; border-bottom:1px solid var(--linea); }
+  .cab b { font-size:13px; }
+  .cab span { color:var(--tenue); font-size:11px; }
+  .cab .fecha { margin-left:auto; }
+
+  .cuerpo { padding:8px 10px; max-height:200px; overflow:auto; white-space:pre-wrap;
+            color:#c2cad3; border-bottom:1px solid var(--linea); }
+  .cuerpo p { margin:0 0 8px; }
+  .fotos { display:flex; gap:5px; flex-wrap:wrap; padding:8px 10px 0; }
+  .fotos img { width:52px; height:52px; object-fit:cover; border:1px solid var(--linea); }
+
+  .pie { display:flex; gap:6px; padding:8px 10px; }
+  .pie .der { margin-left:auto; display:flex; gap:6px; }
+  button { font:12px inherit; padding:3px 12px; background:transparent; color:var(--txt);
+           border:1px solid var(--linea); cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--tenue); }
+  button.si { color:var(--ok); border-color:#2c4a38; }
+  button.no { color:var(--no); border-color:#4a2c2c; }
+  button:disabled { opacity:.4; cursor:default; }
+
+  .vacio, .cargando { color:var(--tenue); padding:8px 0; }
+  h2 { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--tenue);
+       margin:14px 0 0; font-weight:normal; }
+
+  .fila { display:flex; align-items:center; gap:10px; padding:5px 10px;
+          background:var(--panel); border:1px solid var(--linea); }
+  .fila .id { color:var(--tenue); min-width:34px; }
+  .fila .t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  #puerta { position:fixed; inset:0; background:var(--bg); display:flex;
+            align-items:center; justify-content:center; z-index:9; }
+  #puerta.fuera { display:none; }
+  #puerta div { display:flex; flex-direction:column; gap:8px; width:250px; }
+  input { font:13px inherit; padding:5px 7px; background:#0b0e11; color:var(--txt);
+          border:1px solid var(--linea); }
+  #pw-error { color:var(--no); min-height:15px; font-size:11px; }
+  #aviso { padding:0 14px; color:var(--acento); font-size:11px; min-height:15px; }
+</style>
+</head>
+<body>
+
+<div id="puerta">
+  <div>
+    <h1 style="font-size:12px;letter-spacing:.14em;margin:0 0 4px">GDN · BANDEJA</h1>
+    <input type="password" id="pw" placeholder="contraseña de admin" autocomplete="current-password">
+    <div id="pw-error"></div>
+    <button type="button" id="pw-ok">Entrar</button>
+  </div>
+</div>
+
+<header>
+  <h1>Bandeja</h1>
+  <span class="n" id="conteo"></span>
+  <span class="der"><a href="upload.html" style="color:inherit">+ mandar poema</a></span>
+</header>
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<main>
+  <div id="pendientes" class="cargando">Cargando…</div>
+  <h2>Publicados</h2>
+  <div id="publicados" class="cargando">Cargando…</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+  const $ = id => document.getElementById(id);
+  let clave = '';   // solo en memoria
+
+  const pedir = async cuerpo => {
+    const res = await fetch(WORKER, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...cuerpo, password: clave || cuerpo.password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  };
+
+  const avisar = (msg, malo) => {
+    $('aviso').textContent = msg;
+    $('aviso').style.color = malo ? 'var(--no)' : 'var(--acento)';
+  };
+
+  // ── Puerta ─────────────────────────────────────────────────────────────────
+  const entrar = async () => {
+    const intento = $('pw').value;
+    if (!intento) return;
+    $('pw-ok').disabled = true; $('pw-error').textContent = '';
+    try {
+      const r = await pedir({ action: 'ping', password: intento });
+      if (!r.admin) throw new Error('Esa es la contraseña de colaborador, no la de admin.');
+      clave = intento; $('pw').value = '';
+      $('puerta').classList.add('fuera');
+      cargar();
+    } catch (e) {
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+    } finally { $('pw-ok').disabled = false; }
+  };
+  $('pw-ok').addEventListener('click', entrar);
+  $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw').focus();
+
+  // ── Carga ──────────────────────────────────────────────────────────────────
+  async function cargar() { await Promise.all([cargarPendientes(), cargarPublicados()]); }
+
+  async function cargarPendientes() {
+    const caja = $('pendientes');
+    try {
+      const { pendientes } = await pedir({ action: 'articulo-pending' });
+      $('conteo').textContent = pendientes.length ? '(' + pendientes.length + ')' : '';
+      caja.className = ''; caja.textContent = '';
+      if (!pendientes.length) { caja.className = 'vacio'; caja.textContent = 'Nada esperando.'; return; }
+      pendientes.forEach(p => caja.appendChild(tarjeta(p)));
+    } catch (e) {
+      caja.className = 'vacio'; caja.textContent = 'No se pudo cargar: ' + e.message;
+    }
+  }
+
+  async function cargarPublicados() {
+    const caja = $('publicados');
+    try {
+      const res = await fetch(WORKER + '/articulos');
+      const { articulos } = await res.json();
+      caja.className = ''; caja.textContent = '';
+      if (!articulos.length) { caja.className = 'vacio'; caja.textContent = 'Ninguno.'; return; }
+      articulos.slice().reverse().forEach(a => caja.appendChild(filaPublicado(a)));
+    } catch (e) {
+      caja.className = 'vacio'; caja.textContent = 'No se pudo cargar.';
+    }
+  }
+
+  // Todo con textContent: el texto lo escribió alguien más.
+  function tarjeta(p) {
+    const el = document.createElement('article');
+    el.className = 'tarjeta';
+
+    const cab = document.createElement('div');
+    cab.className = 'cab';
+    const b = document.createElement('b'); b.textContent = p.titulo || '(sin título)';
+    const meta = document.createElement('span'); meta.textContent = p.meta || p.autor || '';
+    const fecha = document.createElement('span'); fecha.className = 'fecha';
+    fecha.textContent = p.creado ? new Date(p.creado).toLocaleString('es-MX') : '';
+    cab.append(b, meta, fecha);
+
+    const cuerpo = document.createElement('div');
+    cuerpo.className = 'cuerpo';
+    (p.contenido || []).forEach(bloque => {
+      if (bloque.tipo === 'img') return;
+      const linea = document.createElement('p');
+      linea.textContent = bloque.texto || '';
+      cuerpo.append(linea);
+    });
+
+    const fotos = document.createElement('div');
+    fotos.className = 'fotos';
+    [p.imagen, ...(p.contenido || []).filter(x => x.tipo === 'img').map(x => x.url)]
+      .filter(Boolean)
+      .forEach(url => { const i = document.createElement('img'); i.src = url; i.alt = ''; fotos.append(i); });
+
+    const pie = document.createElement('div');
+    pie.className = 'pie';
+    const der = document.createElement('div'); der.className = 'der';
+    const no = boton('Rechazar', 'no', () => moderar(p, 'articulo-reject', el));
+    const si = boton('Publicar', 'si', () => moderar(p, 'articulo-approve', el));
+    der.append(no, si); pie.append(der);
+
+    el.append(cab, cuerpo);
+    if (fotos.children.length) el.append(fotos);
+    el.append(pie);
+    return el;
+  }
+
+  function filaPublicado(a) {
+    const el = document.createElement('div');
+    el.className = 'fila';
+    const id = document.createElement('span'); id.className = 'id'; id.textContent = '#' + a.id;
+    const t = document.createElement('span'); t.className = 't'; t.textContent = a.titulo || '';
+    const ver = document.createElement('a');
+    ver.href = 'articulo.html?id=' + a.id; ver.target = '_blank';
+    ver.textContent = 'ver'; ver.style.color = 'var(--tenue)';
+    const del = boton('Borrar', 'no', async () => {
+      if (!confirm('¿Borrar "' + (a.titulo || '#' + a.id) + '"? También se van sus imágenes.')) return;
+      try {
+        await pedir({ action: 'articulo-delete', id: a.id });
+        el.remove(); avisar('Borrado #' + a.id + '.');
+      } catch (e) { avisar('Error: ' + e.message, true); }
+    });
+    el.append(id, t, ver, del);
+    return el;
+  }
+
+  function boton(texto, clase, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = clase; b.textContent = texto;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  async function moderar(p, action, tarjetaEl) {
+    if (action === 'articulo-reject' &&
+        !confirm('¿Rechazar "' + (p.titulo || 'sin título') + '"? Se borran sus imágenes.')) return;
+    tarjetaEl.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const r = await pedir({ action, uuid: p.uuid });
+      tarjetaEl.remove();
+      avisar(action === 'articulo-approve' ? 'Publicado como #' + r.id + '.' : 'Rechazado.');
+      cargarPendientes(); cargarPublicados();
+    } catch (e) {
+      tarjetaEl.querySelectorAll('button').forEach(b => b.disabled = false);
+      avisar('Error: ' + e.message, true);
+    }
+  }
+})();
+</script>
+</body>
+</html>

@@ -9,7 +9,6 @@
 //   art:pub:<id>       artículo publicado, completo
 //   art:pend:<uuid>    envío esperando revisión
 //   art:rej:<uuid>     envío rechazado (se conserva, no se borra)
-//   rl:<ip>            marca de rate-limit para envíos públicos (TTL 60s)
 //
 // Cada artículo vive además en su propia carpeta de Cloudinary,
 // `articulos/<uuid>-<slug>/`, que se crea al enviarlo y nunca se renombra:
@@ -147,7 +146,7 @@ export async function publicarDirecto(env, entrada) {
   return publicado;
 }
 
-// Siembra usada por migrate-articulos.mjs: respeta el id que ya traía el JSON.
+// Siembra con id fijo (se usó para migrar articulos.json).
 export async function sembrar(env, art) {
   await env.ARTICULOS.put(kPub(art.id), JSON.stringify(art));
   await reindex(env, list =>

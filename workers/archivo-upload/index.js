@@ -3,7 +3,8 @@
 // parameters. The Cloudinary API secret never leaves this Worker.
 //
 // Required secrets — set via CLI (see wrangler.toml for commands):
-//   PW_HASH                    SHA-256 hex of your upload password
+//   PW_HASH                    SHA-256 de la contraseña de colaborador
+//   ADMIN_HASH                 SHA-256 de la contraseña de admin
 //   CLOUDINARY_CLOUD_NAME      e.g. duog120j4
 //   CLOUDINARY_API_KEY         from Cloudinary Dashboard > Settings > API Keys
 //   CLOUDINARY_API_SECRET      from Cloudinary Dashboard > Settings > API Keys
@@ -19,13 +20,14 @@
 //   register         append photo to images.json                       [auth]
 //   delete           remove photo(s) from Cloudinary + images.json      [auth]
 //   list             live photo list from Cloudinary                    [public]
-//   articulo-propose enviar un poema a revisión                         [público]
-//   articulo-sign    firmar una imagen del poema (articulos/<uuid>-<slug>/)
-//   articulo-submit  alta directa del admin                             [auth]
-//   articulo-pending cola de revisión                                   [auth]
-//   articulo-approve publicar un pendiente                              [auth]
-//   articulo-reject  rechazar (borra su carpeta de imágenes)            [auth]
-//   articulo-delete  borrar un publicado (+ su carpeta)                 [auth]
+//   ping             probar la contraseña y saber de qué nivel es     [colab]
+//   articulo-propose mandar un poema a la cola de revisión             [colab]
+//   articulo-sign    firmar una imagen del poema                       [colab]
+//   articulo-submit  publicar sin pasar por la cola                    [admin]
+//   articulo-pending ver la cola                                       [admin]
+//   articulo-approve publicar un pendiente                             [admin]
+//   articulo-reject  rechazar (borra su carpeta de imágenes)           [admin]
+//   articulo-delete  borrar un publicado (+ su carpeta)                [admin]
 //
 // Lecturas públicas (GET):
 //   GET /articulos       índice de publicados
@@ -61,6 +63,14 @@ const IMAGES_JSON_PATH  = 'archivoPage/images.json';
 
 // Artículos / poemas — misma cuenta de Cloudinary, carpeta propia por poema.
 const ARTICULOS_FOLDER = 'articulos';
+
+// Lo que solo abre la contraseña de admin. El resto lo puede hacer cualquiera
+// que tenga la de colaborador.
+// El archivo fotográfico se queda como estaba, con la contraseña de siempre.
+const ACCIONES_ADMIN = new Set([
+  'articulo-submit', 'articulo-pending', 'articulo-approve',
+  'articulo-reject', 'articulo-delete',
+]);
 
 export default {
   async fetch(request, env) {
@@ -112,19 +122,27 @@ export default {
     if (body.action === 'list') {
       return handleList(env, allowedOrigin);
     }
-    // Cualquiera puede proponer un poema y subirle imágenes; nada de esto se
-    // publica hasta que el admin lo apruebe.
+    // ── Dos contraseñas ───────────────────────────────────────────────────────
+    // Colaborador (PW_HASH): manda poemas e imágenes; todo cae en la cola.
+    // Admin (ADMIN_HASH): además decide qué se publica y qué se va.
+    const hash    = await sha256hex(String(body.password || ''));
+    const esAdmin = !!env.ADMIN_HASH && hash === env.ADMIN_HASH;
+    if (!esAdmin && hash !== env.PW_HASH) {
+      return jsonResponse({ error: 'Unauthorized' }, 401, allowedOrigin);
+    }
+    if (ACCIONES_ADMIN.has(body.action) && !esAdmin) {
+      return jsonResponse({ error: 'Necesitas la contraseña de admin' }, 403, allowedOrigin);
+    }
+
+    // ── Nivel colaborador ─────────────────────────────────────────────────────
+    if (body.action === 'ping') {
+      return jsonResponse({ ok: true, admin: esAdmin }, 200, allowedOrigin);
+    }
     if (body.action === 'articulo-propose') {
-      return handleArticuloPropose(request, body, env, allowedOrigin);
+      return handleArticuloPropose(body, env, allowedOrigin);
     }
     if (body.action === 'articulo-sign') {
       return handleArticuloSign(body, env, allowedOrigin);
-    }
-
-    // ── Verify password ───────────────────────────────────────────────────────
-    const submittedHash = await sha256hex(String(body.password || ''));
-    if (submittedHash !== env.PW_HASH) {
-      return jsonResponse({ error: 'Unauthorized' }, 401, allowedOrigin);
     }
 
     // ── Route by action ───────────────────────────────────────────────────────
@@ -149,9 +167,6 @@ export default {
     }
     if (body.action === 'articulo-delete') {
       return handleArticuloDelete(body, env, allowedOrigin);
-    }
-    if (body.action === 'articulo-migrar-imagenes') {
-      return handleArticuloMigrarImagenes(body, env, allowedOrigin);
     }
     return handleUpload(body, env, allowedOrigin);
   },
@@ -322,8 +337,8 @@ async function handleRegister(body, env, origin) {
 }
 
 // ── Artículo: firma la subida de una imagen a la carpeta del poema ───────────
-// El cliente manda el uuid que generó al empezar el envío, así todas las
-// imágenes de un poema (portada e interiores) caen en la misma carpeta.
+// Llega ya autenticado por el enrutador. El uuid es el del envío, así todas
+// las imágenes de un poema caen juntas en su carpeta.
 async function handleArticuloSign(body, env, origin) {
   const declaredMime = String(body.content_type || '').toLowerCase();
   if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
@@ -337,8 +352,7 @@ async function handleArticuloSign(body, env, origin) {
   const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
   // Carpeta propia del poema: articulos/<uuid>-<slug>/
-  const slug   = artistSlug(body.autor || body.titulo || 'anonimo');
-  const folder = ARTICULOS_FOLDER + '/' + uuid + '-' + slug;
+  const folder = ARTICULOS_FOLDER + '/' + uuid + '-' + artistSlug(body.autor || body.titulo || 'anonimo');
 
   const signingParams = {
     asset_folder:  folder,
@@ -364,28 +378,14 @@ async function handleArticuloSign(body, env, origin) {
   );
 }
 
-// ── Público: proponer un poema (entra a la cola de revisión) ─────────────────
-async function handleArticuloPropose(request, body, env, origin) {
-  // Honeypot: campo invisible en el formulario. Si viene lleno es un bot.
-  if (String(body.website || '').trim()) {
-    return jsonResponse({ ok: true, id: null }, 200, origin);
-  }
-
-  const ip = request.headers.get('CF-Connecting-IP') || 'sin-ip';
-  const rl = 'rl:' + ip;
-  if (await env.ARTICULOS.get(rl)) {
-    return jsonResponse({ error: 'Espérate tantito antes de mandar otro.' }, 429, origin);
-  }
-  // expirationTtl mínimo de KV son 60s, que es justo la ventana que queremos.
-  await env.ARTICULOS.put(rl, '1', { expirationTtl: 60 });
-
-  let art;
+// ── Colaborador: mandar un poema a la cola de revisión ──────────────────────
+async function handleArticuloPropose(body, env, origin) {
   try {
-    art = await putPendiente(env, body.articulo || {});
+    const art = await putPendiente(env, body.articulo || {});
+    return jsonResponse({ ok: true, uuid: art.uuid }, 200, origin);
   } catch (e) {
     return jsonResponse({ error: String(e.message || e) }, 400, origin);
   }
-  return jsonResponse({ ok: true, uuid: art.uuid, estado: 'pendiente' }, 200, origin);
 }
 
 // ── Admin: alta directa, sin pasar por la cola ───────────────────────────────
@@ -457,77 +457,6 @@ async function handleArticuloGet(id, env, origin) {
   return jsonResponse({ ok: true, articulo: art }, 200, origin, {
     'Cache-Control': 'public, max-age=60',
   });
-}
-
-// ── Admin: subir a Cloudinary las portadas que quedaron en el repo ───────────
-// Los 12 artículos que venían de articulos.json traían rutas locales
-// (articulosPage/articuloImages/…). Esto las sube a la carpeta propia de cada
-// poema y apunta el KV a la URL nueva, para que viejos y nuevos queden igual.
-// Es idempotente: lo que ya es https se salta.
-const SITIO = 'https://www.guadalajaradenoxe.com/';
-
-async function handleArticuloMigrarImagenes(body, env, origin) {
-  const soloVer = !!body.dry_run;
-  const index   = await readIndex(env);
-  const hechos  = [];
-  const fallos  = [];
-
-  for (const entrada of index) {
-    const art = await getPublicado(env, entrada.id);
-    if (!art || !art.imagen || /^https?:\/\//.test(art.imagen)) continue;
-
-    const fuente = SITIO + art.imagen.split('/').map(encodeURIComponent).join('/');
-    if (soloVer) { hechos.push({ id: art.id, desde: art.imagen }); continue; }
-
-    try {
-      const secure = await cloudinarySubirDesdeUrl(env, fuente, art.carpeta);
-      const actualizado = { ...art, imagen: secure };
-      await env.ARTICULOS.put('art:pub:' + art.id, JSON.stringify(actualizado));
-
-      const i = index.findIndex(e => Number(e.id) === Number(art.id));
-      if (i !== -1) index[i] = { ...index[i], imagen: secure };
-
-      hechos.push({ id: art.id, desde: art.imagen, a: secure });
-    } catch (e) {
-      fallos.push({ id: art.id, error: String(e.message || e) });
-    }
-  }
-
-  if (!soloVer && hechos.length) await writeIndex(env, index);
-  return jsonResponse({ ok: true, dry_run: soloVer, migrados: hechos, fallos }, 200, origin);
-}
-
-// Cloudinary acepta subir pasándole una URL, así el worker no tiene que
-// manipular el binario de la imagen.
-async function cloudinarySubirDesdeUrl(env, url, carpeta) {
-  const timestamp = String(Math.floor(Date.now() / 1000));
-  const params = {
-    asset_folder: carpeta,
-    folder:       carpeta,
-    timestamp,
-    upload_preset: env.CLOUDINARY_UPLOAD_PRESET,
-  };
-  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
-  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
-
-  const fd = new FormData();
-  fd.append('file', url);
-  fd.append('folder', carpeta);
-  fd.append('asset_folder', carpeta);
-  fd.append('timestamp', timestamp);
-  fd.append('upload_preset', env.CLOUDINARY_UPLOAD_PRESET);
-  fd.append('api_key', env.CLOUDINARY_API_KEY);
-  fd.append('signature', signature);
-
-  const res = await fetch(
-    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/image/upload',
-    { method: 'POST', body: fd },
-  );
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.secure_url) {
-    throw new Error('Cloudinary ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
-  }
-  return data.secure_url;
 }
 
 // ── Cloudinary: borrar la carpeta entera de un poema ─────────────────────────
