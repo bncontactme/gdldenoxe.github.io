@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
+        EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal de bienvenida)
+        EMPLEADO_FECHA: '2026-07-31', // Único día en que sale: de las 00:00 de esa
+                                      // fecha a las 00:00 del día siguiente. Después
+                                      // no queda nada. (null = todos los días)
     };
 
     // ─────────────────────────────────────────
@@ -415,6 +419,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             folderContent.appendChild(folderFrag);
 
+            const folderStatus = $('#folder-articulos-status');
+            if (folderStatus) folderStatus.textContent = articulos.length + ' objeto(s)';
+
             // Populate article widget with a random article
             const randomArt = articulos[Math.floor(Math.random() * articulos.length)];
             const widgetImg = $('#articuloWidgetImg');
@@ -436,34 +443,85 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Dynamically position poema widget below articulo-widget on mobile
-            if (isMobile() && !window.__poemaResizeBound) {
-                function positionPoemaWidget() {
-                    const aw = $('[data-window-id="articulo-widget"]');
-                    const pw = $('[data-window-id="poema1"]');
-                    if (!aw || !pw) return;
-                    const awRect = aw.getBoundingClientRect();
-                    const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
-                    pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
-                }
-                // Wait for images/layout to settle then position
-                const artImg = artWidget?.querySelector('img');
-                if (artImg && !artImg.complete) {
-                    artImg.addEventListener('load', positionPoemaWidget);
-                } else {
-                    requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
-                }
-                window.addEventListener('resize', positionPoemaWidget);
-                window.__poemaResizeBound = true;
+            // Reposition poema now that the articulo widget has content,
+            // and again when its image finishes loading (or fails)
+            positionPoemaWidget();
+            const artImg = artWidget?.querySelector('img');
+            if (artImg && !artImg.complete) {
+                artImg.addEventListener('load', positionPoemaWidget);
+                artImg.addEventListener('error', positionPoemaWidget);
             }
 
             updateTaskbar();
             // Posicionar TODAS las ventanas en cascada después de cargar artículos
             randomizeWindowPositions();
+            // Re-run once fonts settle — text heights change and the smart
+            // column fit measures real heights
+            document.fonts?.ready.then(() => randomizeWindowPositions());
         })
         .catch(() => {
+            positionPoemaWidget();
             randomizeWindowPositions();
         });
+
+    // Mobile: keep the poema widget below the articulo widget. Runs
+    // immediately (not just after the articles fetch) so the widget never
+    // sits at its desktop inline coords overlapping the other widgets.
+    function positionPoemaWidget() {
+        if (!isMobile()) return;
+        const aw = $('[data-window-id="articulo-widget"]');
+        const pw = $('[data-window-id="poema1"]');
+        if (!aw || !pw) return;
+        const awRect = aw.getBoundingClientRect();
+        const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
+        pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
+    }
+    if (isMobile()) {
+        requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
+        window.addEventListener('resize', positionPoemaWidget);
+    }
+
+    // Menú de la ventana Artículos (estilo explorador)
+    const artMenubar = $('#folder-articulos-menubar');
+    if (artMenubar) {
+        const artFolderWin = $('[data-window-id="folder-articulos"]');
+        const artFolderContent = $('#folder-articulos-content');
+        const closeArtMenus = () => {
+            artMenubar.querySelectorAll('.fe-menu-item.open').forEach(x => x.classList.remove('open'));
+            artMenubar.querySelectorAll('.fe-dropdown.open').forEach(x => x.classList.remove('open'));
+        };
+        artMenubar.querySelectorAll('.fe-menu-item').forEach(mi => {
+            mi.addEventListener('click', e => {
+                e.stopPropagation();
+                const dd = artMenubar.querySelector('#fe-dropdown-' + mi.dataset.menu);
+                const wasOpen = mi.classList.contains('open');
+                closeArtMenus();
+                if (!wasOpen && dd) {
+                    mi.classList.add('open');
+                    dd.style.left = mi.offsetLeft + 'px';
+                    dd.classList.add('open');
+                }
+            });
+        });
+        artMenubar.querySelectorAll('.fe-dd-item').forEach(li => {
+            li.addEventListener('click', e => {
+                e.stopPropagation();
+                const action = li.dataset.action;
+                if (action === 'close') {
+                    artFolderWin?.classList.add('hidden');
+                    updateTaskbar();
+                } else if (action === 'select-all') {
+                    artFolderContent?.querySelectorAll('.folder-item').forEach(i => i.classList.add('selected'));
+                } else if (action === 'view-icons') {
+                    artFolderContent?.classList.remove('list-view');
+                } else if (action === 'view-list') {
+                    artFolderContent?.classList.add('list-view');
+                }
+                closeArtMenus();
+            });
+        });
+        document.addEventListener('click', closeArtMenus);
+    }
 
     window.addEventListener('resize', centerYtPopup);
     window.addEventListener('resize', positionRobloxPopup);
@@ -498,6 +556,56 @@ document.addEventListener('DOMContentLoaded', () => {
         randomImgEl.src = imagePaths[Math.floor(Math.random() * imagePaths.length)];
     }
 
+    // ==================== EMPLEADO DEL MES (certificado) ====================
+    // Capa modal que tapa el escritorio. Único disparador: entrar al sitio
+    // durante FEATURES.EMPLEADO_FECHA, de las 00:00 de ese día a las 00:00 del
+    // siguiente. No tiene acceso en Inicio ni en ningún otro lado.
+    const empleadoOverlay = $('#empleado-modal-overlay');
+
+    if (!FEATURES.EMPLEADO_MODAL) {
+        empleadoOverlay?.remove();
+    } else if (empleadoOverlay) {
+        // El mes se pone solo, así la placa nunca queda vieja.
+        // Mes y año por separado para que no salga el "de" de es-MX.
+        const hoy = new Date();
+        const empleadoMesEl = $('#empleadoMes');
+        if (empleadoMesEl) {
+            empleadoMesEl.textContent =
+                '* ' + hoy.toLocaleDateString('es-MX', { month: 'long' }) + ' ' + hoy.getFullYear() + ' *';
+        }
+
+        const closeEmpleadoModal = () => { empleadoOverlay.style.display = 'none'; };
+        window.openEmpleadoModal = () => { empleadoOverlay.style.display = 'flex'; };
+
+        $('#empleado-modal-close')?.addEventListener('click', closeEmpleadoModal);
+        $('#empleado-modal-ok')?.addEventListener('click', closeEmpleadoModal);
+        empleadoOverlay.addEventListener('click', (e) => {
+            if (e.target === empleadoOverlay) closeEmpleadoModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && empleadoOverlay.style.display === 'flex') closeEmpleadoModal();
+        });
+
+        // Ventana de exhibición: primera hora del día señalado hasta la
+        // medianoche siguiente. Sin fecha configurada, sale todos los días.
+        let cierre = new Date();
+        cierre.setHours(24, 0, 0, 0);   // próxima medianoche
+        let enTemporada = true;
+
+        if (FEATURES.EMPLEADO_FECHA) {
+            const [anio, mes, dia] = FEATURES.EMPLEADO_FECHA.split('-').map(Number);
+            const abre = new Date(anio, mes - 1, dia);       // 00:00 hora local
+            cierre = new Date(anio, mes - 1, dia + 1);       // 00:00 del día siguiente
+            enTemporada = hoy >= abre && hoy < cierre;
+        }
+
+        if (enTemporada) {
+            window.openEmpleadoModal();
+            // Si dejan la pestaña abierta, se retira solo al dar la medianoche
+            setTimeout(closeEmpleadoModal, cierre - Date.now());
+        }
+    }
+
     // Sistema de poemas random
     const poemas = [
         `Cuando el sol se mete
@@ -519,7 +627,27 @@ juntxs y brillando.`
     // On mobile: override poema1 with ASCII art
     if (isMobile()) {
         const poema1El = $('[data-window-id="poema1"] .poem-text');
-        if (poema1El) poema1El.textContent = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
+        const flowerArt = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
+        if (poema1El) {
+            // Strip trailing braille-blank padding and blank lines — they
+            // inflate the text block width and clip the flower off-center
+            poema1El.textContent = flowerArt.split('\n')
+                .map(l => l.replace(/[⠀\s]+$/, ''))
+                .filter(l => l.length)
+                .join('\n');
+            // Scale the art to exactly fit the widget — braille glyph widths
+            // vary per device font, so a hardcoded zoom clips on some phones
+            const fitFlower = () => {
+                const box = poema1El.parentElement;
+                poema1El.style.zoom = 1;
+                const natW = poema1El.scrollWidth;
+                const availW = box.clientWidth - 4;
+                if (natW > 0 && availW > 0) poema1El.style.zoom = Math.min(1, availW / natW);
+            };
+            fitFlower();
+            document.fonts?.ready.then(fitFlower);
+            window.addEventListener('resize', fitFlower);
+        }
     }
 
     // Posicionar ventanas sin overlap, imagen a la izquierda del artículo
@@ -580,6 +708,11 @@ juntxs y brillando.`
         centerYtPopup();
         positionRobloxPopup();
         if (isMobile()) return;
+        // Restore anything a previous fit pass auto-hid (screen may have grown)
+        $$('.win95-window[data-auto-hidden="1"]').forEach(w => {
+            w.classList.remove('hidden');
+            delete w.dataset.autoHidden;
+        });
         const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup' && w.dataset.windowId !== 'roblox-popup');
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
@@ -610,7 +743,6 @@ juntxs y brillando.`
         
         if (artWin) {
             const artW = Math.min(artWin.offsetWidth || 280, availW - gap * 2);
-            const artH = artWin.offsetHeight || 300;
             const artLeft = screenW - artW - gap;
             artWin.style.left = artLeft + 'px';
             artWin.style.top = topY + 'px';
@@ -642,8 +774,65 @@ juntxs y brillando.`
                 }
             }
             
+            // ── Smart column fit ──
+            // The lonche always keeps its full original size; when the right
+            // column is too short, articulo and poema compact themselves
+            // (smaller image → clamped description → tighter poem → and only
+            // as a last resort, the poem hides) so nothing ever overlaps.
+            const poemaWin = others[0];
+            const artImgBox = artWin.querySelector('.article-image');
+            artWin.classList.remove('art-compact');
+            if (artImgBox) artImgBox.style.height = '';
+            poemaWin?.classList.remove('poema-compact', 'poema-tiny');
+
+            if (loncheWin) {
+                loncheWin.style.width = artW + 'px';
+                const loncheIfr = loncheWin.querySelector('.iframe-container');
+                if (loncheIfr) loncheIfr.style.height = '130px';
+                const loncheH = loncheWin.offsetHeight || 178;
+                const artTop = parseInt(artWin.style.top) || topY;
+                const columnOverflow = () => {
+                    let needed = artTop + artWin.offsetHeight + gap + loncheH + 8;
+                    if (poemaWin && !poemaWin.classList.contains('hidden')) {
+                        needed += poemaWin.offsetHeight + gap;
+                    }
+                    return needed - screenH;
+                };
+                let overflow = columnOverflow();
+                // 1. Shrink the article image frame (down to 100px)
+                if (overflow > 0 && artImgBox) {
+                    const boxH = artImgBox.offsetHeight || 150;
+                    artImgBox.style.height = Math.max(100, boxH - overflow) + 'px';
+                    overflow = columnOverflow();
+                }
+                // 2. Clamp the article description to 2 lines
+                if (overflow > 0) {
+                    artWin.classList.add('art-compact');
+                    overflow = columnOverflow();
+                }
+                // 3. Tighten the poem typography
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.add('poema-compact');
+                    overflow = columnOverflow();
+                }
+                // 4. Tighter still — shrink the poem font further
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.remove('poema-compact');
+                    poemaWin.classList.add('poema-tiny');
+                    overflow = columnOverflow();
+                }
+                // 5. Truly tiny screen — drop the poem; articulo and the
+                //    full-size lonche take priority
+                if (overflow > 0 && poemaWin) {
+                    poemaWin.classList.add('hidden');
+                    poemaWin.dataset.autoHidden = '1';
+                    others.splice(others.indexOf(poemaWin), 1);
+                    updateTaskbar();
+                }
+            }
+
             // Others (poem etc) below articulo, clamped to screen
-            let belowY = (parseInt(artWin.style.top) || topY) + artH + gap;
+            let belowY = (parseInt(artWin.style.top) || topY) + (artWin.offsetHeight || 300) + gap;
             others.forEach(win => {
                 const w = win.offsetWidth || 280;
                 if (belowY + 50 > screenH) return; // skip if off-screen
@@ -675,10 +864,14 @@ juntxs y brillando.`
                     const remaining = screenH - poemaBottom - gap - chromeH - gap;
                     if (iframe && remaining > 80) iframe.style.height = remaining + 'px';
                 } else if (LONCHE_LAYOUT === 3) {
+                    // Full original size — the column above already compacted
+                    // itself to make room. On absurdly short screens, pin it
+                    // above the taskbar as a last resort.
                     loncheWin.style.left = artLeft + 'px';
-                    loncheWin.style.top = belowY + 'px';
                     loncheWin.style.width = artW + 'px';
                     if (iframe) iframe.style.height = '130px';
+                    const loncheH = loncheWin.offsetHeight || 178;
+                    loncheWin.style.top = Math.min(belowY, Math.max(topY, screenH - 8 - loncheH)) + 'px';
                 }
             }
         } else {
@@ -1008,7 +1201,7 @@ juntxs y brillando.`
     
     // Playlist: Radio en vivo
     const playlist = [
-        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/stream.mp3", isLive: true }
+        { title: "RADIO GDN", url: "https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3", isLive: true }
     ];
     
     const liveDot = $('#liveDot');
@@ -1024,7 +1217,7 @@ juntxs y brillando.`
     function updateTimeDisplay() {
         if (!timeDisplay) return;
         const track = playlist[currentTrackIndex];
-        timeDisplay.textContent = track.isLive ? 'STREAMING...' : 
+        timeDisplay.textContent = track.isLive ? (reconnecting ? 'RECONECTANDO…' : 'STREAMING...') :
             `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
     }
     
@@ -1044,23 +1237,99 @@ juntxs y brillando.`
         updateTimeDisplay();
     }
     
+    // ── Live-stream resilience ──────────────────────────────────
+    // The radio source can switch machines (Switch ↔ Mac live rig); when it
+    // does, the old HTTP connection dies. These helpers auto-reconnect so
+    // listeners never need to refresh.
+    let wantLive = false;          // user intent: they pressed play on the live stream
+    let reconnectTimer = null;
+    let reconnectDelay = 2000;
+    let reconnectFails = 0;
+    let reconnecting = false;       // mid-reconnect → show "RECONECTANDO…" instead of a frozen "STREAMING..."
+
+    function setReconnecting(on) {
+        reconnecting = on;
+        if (liveDot) liveDot.classList.toggle('reconnecting', on);
+        updateTimeDisplay();
+    }
+
+    function stopReconnect() {
+        if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+        reconnectDelay = 2000;
+        reconnectFails = 0;
+        setReconnecting(false);
+    }
+
+    function reconnectLive(reason) {
+        if (!wantLive || !playlist[currentTrackIndex].isLive || reconnectTimer) return;
+        if (reconnectFails >= 15) { // ~3 min of failures: station really is off
+            console.warn('[Radio] giving up reconnecting — station offline');
+            wantLive = false;
+            audioPlayer.pause();
+            isPlaying = false;
+            if (playBtn) playBtn.innerHTML = ICON_PLAY;
+            stopReconnect();
+            return;
+        }
+        setReconnecting(true);
+        // jitter: at the 90-listener cap, everyone drops the instant the origin swaps —
+        // spread the retries so they don't stampede the new source in lockstep.
+        const wait = reconnectDelay + Math.floor(Math.random() * 1000);
+        console.log('[Radio] stream lost (' + reason + ') — reconnecting in ' + wait + 'ms');
+        reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            // cache-bust so we get a fresh connection to whoever owns the domain now
+            audioPlayer.src = streamUrl + '?r=' + Date.now();
+            audioPlayer.play().then(() => {
+                console.log('[Radio] reconnected');
+                reconnectDelay = 2000;
+                reconnectFails = 0;
+                isPlaying = true;
+                if (playBtn) playBtn.innerHTML = ICON_PAUSE;
+                setReconnecting(false);
+            }).catch(() => {
+                reconnectFails++;
+                reconnectDelay = Math.min(Math.round(reconnectDelay * 1.5), 15000);
+                reconnectLive('retry ' + reconnectFails);
+            });
+        }, wait);
+    }
+
+    audioPlayer.addEventListener('error', () => reconnectLive('error'));
+    audioPlayer.addEventListener('ended', () => {
+        if (playlist[currentTrackIndex].isLive) reconnectLive('ended');
+    });
+    // frozen-stream watchdog: connection died silently → time stops advancing
+    let lastLiveTime = -1;
+    setInterval(() => {
+        if (!wantLive || !playlist[currentTrackIndex].isLive || reconnectTimer) return;
+        const t = audioPlayer.currentTime;
+        if (t === lastLiveTime) reconnectLive('frozen');
+        lastLiveTime = t;
+    }, 4000);
+
     // Play/Pause
     playBtn?.addEventListener('click', () => {
         if (isPlaying) {
+            wantLive = false;
+            stopReconnect();
             audioPlayer.pause();
             playBtn.innerHTML = ICON_PLAY;
             isPlaying = false;
             if (liveDot) liveDot.classList.add('paused');
         } else {
-            audioPlayer.play();
+            wantLive = playlist[currentTrackIndex].isLive;
+            audioPlayer.play().catch(() => reconnectLive('play-failed'));
             playBtn.innerHTML = ICON_PAUSE;
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
         }
     });
-    
+
     // Stop
     stopBtn?.addEventListener('click', () => {
+        wantLive = false;
+        stopReconnect();
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         if (playBtn) playBtn.innerHTML = ICON_PLAY;
@@ -1139,45 +1408,51 @@ juntxs y brillando.`
     }
 
     // ===== RADIO: Check Icecast status and auto-show player (1:1 con funcionalidad original) =====
-    const streamUrl = 'https://radio.guadalajaradenoxe.com/stream.mp3';
-    const statusUrl = 'https://radio.guadalajaradenoxe.com/status-json.xsl';
+    const streamUrl = 'https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3';
+    const statusUrl = 'https://radio.guadalajaradenoxe.com/api/nowplaying/1';
     let radioAvailable = false;
+    let offlineMisses = 0;
+    let lastLiveSeen = 0;
     const radioMenuItem = $('[data-shortcut="radio"]');
     
     // Radio menu item ALWAYS visible in start menu
     if (radioMenuItem) radioMenuItem.style.display = '';
 
     function checkIcecastStatus() {
+        // Primary = AzuraCast (Switch); fallback = raw Icecast if the Mac backup has taken over
         return fetch(statusUrl)
-            .then(r => r.json())
-            .then(data => {
-                let sources = data?.icestats?.source || [];
-                if (!Array.isArray(sources)) sources = [sources];
-                const live = sources.some(s => s.listenurl?.includes('/stream.mp3'));
-                console.log('[Radio] Icecast check:', live ? 'LIVE' : 'OFFLINE');
+            .then(r => r.ok ? r.json() : Promise.reject('no-api'))
+            .then(d => d?.is_online === true)
+            .catch(() => fetch('https://radio.guadalajaradenoxe.com/status-json.xsl')
+                .then(r => r.json())
+                .then(d => { let s = d?.icestats?.source || []; if (!Array.isArray(s)) s = [s];
+                    return s.some(x => x.listenurl && x.listenurl.includes('/listen/guadalajara_de_noche_radio/radio.mp3')); })
+                .catch(() => false))
+            .then(live => {
+                console.log('[Radio] status:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
-                
+
                 if (live) {
+                    offlineMisses = 0;
+                    lastLiveSeen = Date.now();
                     // Auto-show player when live (1:1 with old brutalist widget behavior)
                     if (musicPlayer) {
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
                         if (!isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
                     }
-                    // Ensure first track is the live stream
-                    if (playlist[0].isLive && audioPlayer.src !== streamUrl) {
+                    // Ensure first track is the live stream (don't touch an
+                    // active/reconnecting session — cache-busted URLs are fine)
+                    if (playlist[0].isLive && !String(audioPlayer.src).startsWith(streamUrl) && !isPlaying && !wantLive) {
                         loadTrack(0);
                     }
                 } else {
-                    // When offline, hide player but keep menu item visible
-                    if (musicPlayer) {
+                    // Offline — but source handoffs (Switch ↔ Mac) look offline for
+                    // ~30-60s, so only hide after 2 consecutive misses, and never
+                    // hard-stop a listener: the reconnect loop recovers or gives up.
+                    offlineMisses++;
+                    if (offlineMisses >= 2 && musicPlayer && !wantLive) {
                         musicPlayer.classList.add('hidden');
-                    }
-                    // Stop audio if playing
-                    if (isPlaying && playlist[currentTrackIndex].isLive) {
-                        audioPlayer.pause();
-                        isPlaying = false;
-                        if (playBtn) playBtn.innerHTML = ICON_PLAY;
                     }
                 }
             })
@@ -1189,12 +1464,17 @@ juntxs y brillando.`
             });
     }
 
-    // Initial check + adaptive polling (60s live, 5min offline — saves fetch cycles)
-    let icecastInterval = 60000;
+    // Initial check + adaptive polling:
+    //  45s while live · 15s during a handoff window (recently live or a listener
+    //  is waiting) · 5min when truly offline — smooth transitions, few fetches.
+    let icecastInterval = 45000;
     function scheduleIcecastCheck() {
         setTimeout(() => {
             checkIcecastStatus().finally(() => {
-                icecastInterval = radioAvailable ? 60000 : 300000;
+                const recentlyLive = Date.now() - lastLiveSeen < 10 * 60 * 1000;
+                icecastInterval = radioAvailable ? 45000
+                                : (recentlyLive || wantLive) ? 15000
+                                : 300000;
                 scheduleIcecastCheck();
             });
         }, icecastInterval);

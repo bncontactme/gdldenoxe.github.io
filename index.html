@@ -147,9 +147,29 @@
                 </div>
             </div>
             <div class="window-body">
+                <div class="fe-menubar" id="folder-articulos-menubar">
+                    <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+                    <div class="fe-menu-item" data-menu="editar" tabindex="0">Editar</div>
+                    <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
+                    <ul class="fe-dropdown" id="fe-dropdown-archivo">
+                        <li class="fe-dd-item" data-action="close">Cerrar</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="fe-dropdown-editar">
+                        <li class="fe-dd-item" data-action="select-all">Seleccionar todo</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="fe-dropdown-ver">
+                        <li class="fe-dd-item" data-action="view-icons">Íconos</li>
+                        <li class="fe-dd-item" data-action="view-list">Lista</li>
+                    </ul>
+                </div>
+                <div class="fe-toolbar">
+                    <button class="fe-back" type="button" disabled>← Atrás</button>
+                    <span class="fe-path">Artículos</span>
+                </div>
                 <div class="folder-content" id="folder-articulos-content">
                     <!-- Populated dynamically from articulos.json -->
                 </div>
+                <div class="fe-statusbar"><span id="folder-articulos-status">Cargando...</span></div>
             </div>
         </div>
 
@@ -457,6 +477,33 @@
     <script>
     if(screen.width<=768||window.innerWidth<=768){var a=document.getElementById('win95-player-panel');var b=document.getElementById('win95-details-panel');if(a)a.parentNode.removeChild(a);if(b)b.parentNode.removeChild(b);}
     </script>
+
+    <!-- Modal: Empleado del Mes (certificado de RH) -->
+    <div id="empleado-modal-overlay" class="empleado-modal-overlay">
+        <div class="empleado-modal-window">
+            <div class="empleado-modal-titlebar">
+                <span><img src="indexPage/indexImages/icons/computer_explorer-0.png" alt="" class="titlebar-icon"> Certificado — Recursos Humanos</span>
+                <button id="empleado-modal-close" class="empleado-modal-close" aria-label="Cerrar">✕</button>
+            </div>
+            <div class="empleado-modal-body">
+                <div class="empleado-estrellas">★★★★★</div>
+                <div class="empleado-titulo">Empleado del Mes</div>
+                <div class="empleado-linea"></div>
+                <div class="empleado-photo">
+                    <img src="indexPage/indexImages/empleado-del-mes.jpg" alt="Empleado del mes" loading="lazy">
+                </div>
+                <div class="empleado-fecha" id="empleadoMes"></div>
+                <div class="empleado-linea"></div>
+                <p class="empleado-texto">
+                    Por su sobresaliente rendimiento y firme compromiso con la excelencia.
+                    Su trabajo constante y actitud profesional fortalecen el crecimiento y
+                    los valores de nuestra empresa.
+                </p>
+                <div class="empleado-estrellas">★★★★★</div>
+                <button id="empleado-modal-ok" class="empleado-aceptar">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal torta -->
     <div id="torta-modal-overlay" class="torta-modal-overlay">

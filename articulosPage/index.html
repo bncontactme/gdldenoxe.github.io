@@ -7,96 +7,230 @@
     <meta name="description" content="Artículos y crónicas de la movida tapatía — Guadalajara De Noche.">
     <title>Artículos - GDLDENOXE</title>
     <style>
-        :root {
-            --win95-gray: #c0c0c0;
-            --win95-dark-gray: #808080;
-            --win95-light-gray: #dfdfdf;
-            --win95-blue: #000080;
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
         body {
             font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
             background: #fff;
             color: #000;
-            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 11px;
         }
 
-        /* Folder items grid */
+        /* === Win95 menu bar (matches Archivo GDN) === */
+        #fe-menubar {
+            background: #ECE9D8;
+            border-bottom: 1px solid #ACA899;
+            display: flex;
+            align-items: stretch;
+            font-size: 11px;
+            user-select: none;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 20;
+        }
+        .fe-menu-item {
+            padding: 3px 8px;
+            cursor: default;
+            white-space: nowrap;
+            position: relative;
+        }
+        .fe-menu-item:hover,
+        .fe-menu-item.open {
+            background: #316AC5;
+            color: #fff;
+        }
+        .fe-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #ECE9D8;
+            border: 1px solid #808080;
+            box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+            list-style: none;
+            min-width: 160px;
+            z-index: 9999;
+            padding: 2px 0;
+            color: #000;
+        }
+        .fe-dropdown.open { display: block; }
+        .fe-dd-item {
+            padding: 4px 20px 4px 24px;
+            cursor: default;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .fe-dd-item:hover { background: #316AC5; color: #fff; }
+        .fe-dd-sep {
+            height: 1px;
+            background: #ACA899;
+            margin: 3px 2px;
+        }
+
+        /* === Toolbar (Atrás + address bar) === */
+        #file-explorer-toolbar {
+            background: #ECE9D8;
+            border-bottom: 1px solid #808080;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        #file-explorer-back {
+            background: #ECE9D8;
+            border: 1px outset #ECE9D8;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+            height: 20px;
+        }
+        #file-explorer-back:hover:not(:disabled) { background: #F0F0F0; }
+        #file-explorer-back:disabled { color: #808080; cursor: default; }
+        #file-explorer-path {
+            flex: 1;
+            background: #fff;
+            border: 1px inset #808080;
+            padding: 2px 6px;
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* === Body — icon grid (Explorer icon view) === */
         .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 2px;
-            padding: 10px;
-            padding-bottom: 30px;
+            background: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 4px;
+            padding: 8px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .folder-item {
+            width: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 8px 4px;
+            padding: 6px 4px;
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 1px solid transparent;
+            border-radius: 2px;
             text-decoration: none;
             color: #000;
         }
-
         .folder-item:hover {
-            background: rgba(0, 0, 128, 0.1);
+            background: #E8E8F0;
+            border-color: #C0C0D0;
         }
-
+        .folder-item.selected,
         .folder-item:active {
-            background: var(--win95-blue);
+            background: #316AC5;
+            border-color: #316AC5;
             color: #fff;
-            border: 2px dotted #fff;
         }
-
         .folder-item img {
             width: 32px;
             height: 32px;
             margin-bottom: 4px;
+            flex-shrink: 0;
             image-rendering: pixelated;
         }
-
         .folder-item-label {
-            font-size: 11px;
+            font-size: 10px;
+            line-height: 1.2;
             word-break: break-word;
-            line-height: 1.3;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
-        .status-bar {
-            background: var(--win95-gray);
-            border-top: 2px solid var(--win95-light-gray);
-            padding: 2px 6px;
-            font-size: 11px;
-            color: #000;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+        /* === List view (Ver > Lista) === */
+        .folder-grid.list-view {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: 0;
+        }
+        .folder-grid.list-view .folder-item {
+            width: 100%;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            padding: 3px 6px;
+            text-align: left;
+        }
+        .folder-grid.list-view .folder-item img {
+            width: 16px;
+            height: 16px;
+            margin-bottom: 0;
+        }
+        .folder-grid.list-view .folder-item-label {
+            max-width: none;
+            -webkit-line-clamp: 1;
         }
 
-        .status-bar span {
-            border-top: 1px solid var(--win95-dark-gray);
-            border-left: 1px solid var(--win95-dark-gray);
-            border-right: 1px solid var(--win95-light-gray);
-            border-bottom: 1px solid var(--win95-light-gray);
-            padding: 1px 8px;
-            display: inline-block;
+        /* === Status bar === */
+        #file-explorer-statusbar {
+            background: #ECE9D8;
+            border-top: 1px solid #808080;
+            padding: 3px 8px;
+            font-size: 10px;
+            color: #333;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
+    <!-- Win95 menu bar -->
+    <div id="fe-menubar">
+        <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+        <div class="fe-menu-item" data-menu="editar" tabindex="0">Editar</div>
+        <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
+        <ul class="fe-dropdown" id="fe-dropdown-archivo">
+            <li class="fe-dd-item" data-action="close">Cerrar</li>
+        </ul>
+        <ul class="fe-dropdown" id="fe-dropdown-editar">
+            <li class="fe-dd-item" data-action="select-all">Seleccionar todo</li>
+        </ul>
+        <ul class="fe-dropdown" id="fe-dropdown-ver">
+            <li class="fe-dd-item" data-action="view-icons">Íconos</li>
+            <li class="fe-dd-item" data-action="view-list">Lista</li>
+        </ul>
+    </div>
+
+    <!-- Toolbar -->
+    <div id="file-explorer-toolbar">
+        <button id="file-explorer-back" type="button" disabled>← Atrás</button>
+        <span id="file-explorer-path">Artículos</span>
+    </div>
+
+    <!-- Body: icon grid -->
     <div class="folder-grid" id="folder-grid"></div>
-    <div class="status-bar">
+
+    <!-- Status bar -->
+    <div id="file-explorer-statusbar">
         <span id="status-text">Cargando...</span>
     </div>
 
     <script>
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
-        
+
         function openNuevoArticulo() {
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({ type: 'open-articulo-upload-popup' }, location.origin);
@@ -130,6 +264,43 @@
                 status.textContent = articulos.length + ' objeto(s)';
             })
             .catch(() => status.textContent = 'Error al cargar');
+
+        /* === Menu bar behavior === */
+        const closeMenus = () => {
+            document.querySelectorAll('.fe-menu-item.open').forEach(x => x.classList.remove('open'));
+            document.querySelectorAll('.fe-dropdown.open').forEach(x => x.classList.remove('open'));
+        };
+        document.querySelectorAll('.fe-menu-item').forEach(mi => {
+            mi.addEventListener('click', e => {
+                e.stopPropagation();
+                const dd = document.getElementById('fe-dropdown-' + mi.dataset.menu);
+                const wasOpen = mi.classList.contains('open');
+                closeMenus();
+                if (!wasOpen) { mi.classList.add('open'); dd.classList.add('open'); }
+            });
+        });
+        const handleAction = (action) => {
+            if (action === 'close') {
+                if (window.top !== window.self) window.top.location.href = '../index.html';
+            } else if (action === 'view-icons') {
+                grid.classList.remove('list-view');
+            } else if (action === 'view-list') {
+                grid.classList.add('list-view');
+            } else if (action === 'select-all') {
+                grid.querySelectorAll('.folder-item').forEach(i => i.classList.add('selected'));
+            }
+        };
+        document.querySelectorAll('.fe-dd-item').forEach(li => {
+            li.addEventListener('click', e => {
+                e.stopPropagation();
+                handleAction(li.dataset.action);
+                closeMenus();
+            });
+        });
+        document.addEventListener('click', () => {
+            closeMenus();
+            grid.querySelectorAll('.folder-item.selected').forEach(i => i.classList.remove('selected'));
+        });
     </script>
 </body>
 </html>

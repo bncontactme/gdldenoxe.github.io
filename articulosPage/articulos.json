@@ -237,5 +237,112 @@
         "texto": "Que no se te olvide que yo soy Dios, y tú eres Dios. Aunque me odies por ser tú, yo te amo porque eres yo. Y juntos convergemos en lo más precioso y horrible que hay, el amor."
       }
     ]
+  },
+  {
+    "id": 9,
+    "titulo": "Dios me dijo que viniera a coger y aprender",
+    "meta": "Miguel Mayorga • Poesía",
+    "clase": "poema",
+    "descripcion": "Ambos representan el hambre del alma.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Ambos representan el hambre del alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "El deseo sexual nace desde la garganta, te recorre y calienta cada costura de la piel, es sumamente expansivo y contrastante con el antes y el después ¡Es presencial! Pero, al final, estalla en tu mente, llenándote de éxtasis con cada recuerdo o visualización apurada de lo que necesita tu alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "El deseo de saber no es para nada distinto. Surge de la llama interior, esa que te mueve sin ser consciente de ello, aquella que te inunda la mente y el cuerpo, te obliga a llenar ese vacío, saciar tal hambre y cumplir con lo que requiere el alma."
+      },
+      {
+        "tipo": "p",
+        "texto": "Ambas nacen ahí, en el fuego de lo no visible, de lo que te dicta Dios como mandato."
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "titulo": "Odio el sol",
+    "meta": "Miguel Mayorga • Poesía",
+    "clase": "poema",
+    "descripcion": "No puedo vivir, porque tendría que convivir con muertos.",
+    "imagen": "articulosPage/articuloImages/WhatsApp Image 2026-06-29 at 12.33.50.jpeg",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "No puedo vivir, porque tendría que convivir con muertos."
+      },
+      {
+        "tipo": "p",
+        "texto": "Me suele ser muy complicado salir sin el rostro cubierto, es extraño que me miren tan raro al ser yo. Y de verdad no me importaría, pero me pongo la máscara porque mi mamá odia que me traten mal y me pedía disculpas en el nombre de la gente."
+      },
+      {
+        "tipo": "p",
+        "texto": "Que duela si tiene que doler mamá, ellos están muertos porque perdieron lo único que te dan al nacer, tu alma. Le temen a la incomodidad como si fuera mala, cuando es lo que nos hace quitarnos las máscaras."
+      },
+      {
+        "tipo": "p",
+        "texto": "A veces siento que debo ser libre, pero libre para expresarme ¿con muertos? Mejor me quedo con mi alma, mientras más me encierro en la hoja más me expando."
+      },
+      {
+        "tipo": "p",
+        "texto": "Ellos están muertos desde que perdieron la fé en sí mismos, que ironía que sucedió cuando nacieron."
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "titulo": "Mi Casa (?)",
+    "meta": "Julia Domínguez • Poesía",
+    "clase": "poema",
+    "descripcion": "Al final del día ¿qué es una casa? El definirla es raro cuando estás en constante movimiento.",
+    "imagen": "articulosPage/articuloImages/WhatsApp Image 2026-07-02 at 10.27.43.jpeg",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Mi casa cambia\nMi casa nunca es la misma\nMi casa puede ser un depa en las ciudades hermanas\no puede ser la casa de mis abuelos en la Guadalupe"
+      },
+      {
+        "tipo": "p",
+        "texto": "Mi casa no solo es una,\nMi casa son 2 o 3 o 4 o 5\nA veces ella se mueve conmigo\nO se queda atrás y me alcanza después"
+      },
+      {
+        "tipo": "p",
+        "texto": "Mi casa a veces son 4 paredes\nMi casa a veces se divide en múltiples personas\nMi casa a veces son mis recuerdos"
+      },
+      {
+        "tipo": "p",
+        "texto": "Al final del día ¿qué es una casa?\nEl definirla es raro cuando estas en constante movimiento."
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "titulo": "Esto lo escribí en el Vietnam.",
+    "meta": "pictoriano • Poesía",
+    "clase": "poema",
+    "descripcion": "Querida, ya no me confunde tu mirada; supe que te escondías pero no supe de quién.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Querida , ya no me confunde tu mirada\nsupe que te escondías pero no supe de quién.\ncansado de descifrarte\nen mis temores te lo escondí.\nSin embargo, codificados siguen tus ojos\ny que a pesar de mi honestidad\nno mostraste lo que eras\ny otra vez, te tuve que creer.\nPor ahora, seguiremos pretendiendo\ncon la esperanza de conocerte algún día\npero se que lo ocultarás\nparecerá que todo bien"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "titulo": "habibi",
+    "meta": "pictoriano • Poesía",
+    "clase": "poema",
+    "descripcion": "Estoy solo esta noche, bebiendo en mi bohemia, recordando que te fuiste.",
+    "contenido": [
+      {
+        "tipo": "p",
+        "texto": "Fétidas en mi memoria,\nañoranzas concebiste,\nme volví uno con el mar ,\nY tu pecho compartiste.\nEstoy solo esta noche,\nbebiendo en mi bohemia,\nlloro más de lo que follo,\nrecordando que te fuiste.\nExternando lo vivido\nCallábame con los demás\ntus actuares pretendiste,\ntus verdades ocultaste,\nEn otra te convertiste,\ny nos pusimos el disfraz."
+      }
+    ]
   }
 ]
