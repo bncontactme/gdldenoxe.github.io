@@ -532,7 +532,9 @@ document.addEventListener('DOMContentLoaded', () => {
             li.addEventListener('click', e => {
                 e.stopPropagation();
                 const action = li.dataset.action;
-                if (action === 'close') {
+                if (action === 'nuevo-articulo') {
+                    openArticuloUploadOverlay();
+                } else if (action === 'close') {
                     artFolderWin?.classList.add('hidden');
                     updateTaskbar();
                 } else if (action === 'select-all') {
