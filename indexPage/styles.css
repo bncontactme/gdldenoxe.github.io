@@ -898,7 +898,10 @@ body.arrastrando iframe {
 /* Iframe para Galería y Tienda */
 .iframe-container {
     width: 100%;
-    height: 500px;
+    /* Alto tope, pero nunca tanto que la ventana se pegue a la barra de tareas:
+       se deja aire abajo en pantallas cortas. 150px cubre la barra de título,
+       la barra de tareas y el margen. */
+    height: min(500px, calc(100vh - 150px));
     background: var(--win95-white);
     border-top: var(--inset-light);
     border-left: var(--inset-light);
@@ -909,7 +912,7 @@ body.arrastrando iframe {
 
 /* Tienda más alta */
 [data-window-id="tienda"] .iframe-container {
-    height: 650px;
+    height: min(650px, calc(100vh - 150px));
 }
 
 /* Lonche */
