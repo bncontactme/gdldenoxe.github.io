@@ -7,6 +7,7 @@
     <title>Artículo - GDLDENOXE</title>
     <link rel="stylesheet" href="../shared/win95.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="../shared/articulos-api.js"></script>
 </head>
 <body>
     <div class="article-container" id="article-container">
@@ -49,10 +50,8 @@
         const hero = document.getElementById('art-hero');
         const body = document.getElementById('art-body');
 
-        fetch('articulos.json')
-            .then(r => r.json())
-            .then(articulos => {
-                const art = articulos.find(a => String(a.id) === id);
+        ArticulosAPI.obtener(id)
+            .then(art => {
                 if (!art) {
                     title.textContent = 'Artículo no encontrado';
                     return;
@@ -61,8 +60,21 @@
                 document.title = art.titulo + ' - GDLDENOXE';
                 title.textContent = art.titulo;
                 meta.textContent = art.meta;
+
+                // El handle ya viene validado por el worker, pero se arma como
+                // nodo y no como HTML, para no meter nada crudo en la página.
+                if (art.instagram) {
+                    const ig = document.createElement('a');
+                    ig.className = 'article-ig';
+                    ig.href = 'https://instagram.com/' + art.instagram;
+                    ig.target = '_blank';
+                    ig.rel = 'noopener noreferrer';
+                    ig.textContent = '@' + art.instagram;
+                    meta.append(' · ', ig);
+                }
                 if (art.clase) body.classList.add(art.clase);
-                hero.src = '../' + (art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg');
+                const heroImg = art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
+                hero.src = /^https?:\/\//.test(heroImg) ? heroImg : '../' + heroImg;
                 hero.alt = art.titulo;
                 hero.style.display = '';
 
@@ -70,6 +82,25 @@
                 const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote', hr: 'hr' };
 
                 art.contenido.forEach(block => {
+                    // Imágenes intercaladas en el poema (van en su carpeta de Cloudinary)
+                    if (block.tipo === 'img') {
+                        if (!block.url) return;
+                        const figura = document.createElement('figure');
+                        figura.className = 'article-figure';
+                        const img = document.createElement('img');
+                        img.src = block.url;
+                        img.alt = block.texto || '';
+                        img.loading = 'lazy';
+                        figura.appendChild(img);
+                        if (block.texto) {
+                            const pie = document.createElement('figcaption');
+                            pie.textContent = block.texto;
+                            figura.appendChild(pie);
+                        }
+                        fragment.appendChild(figura);
+                        return;
+                    }
+
                     const tag = typeMap[block.tipo] || 'p';
                     const el = document.createElement(tag);
                     if (block.tipo === 'lead') el.className = 'lead';

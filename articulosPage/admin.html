@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#008080">
+<title>Bandeja · GDN</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font: 11px 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, sans-serif;
+    background: #fff; color: #000;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* Barra de menú — la misma del explorador de Artículos */
+  #fe-menubar {
+    background: #ECE9D8; border-bottom: 1px solid #ACA899;
+    display: flex; align-items: stretch; user-select: none;
+    flex-shrink: 0; position: relative; z-index: 20;
+  }
+  .fe-menu-item { padding: 3px 8px; cursor: default; white-space: nowrap; position: relative; }
+  .fe-menu-item:hover, .fe-menu-item.open { background: #316AC5; color: #fff; }
+  .fe-dropdown {
+    display: none; position: absolute; top: 100%; left: 0; background: #ECE9D8;
+    border: 1px solid #808080; box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+    list-style: none; min-width: 170px; z-index: 9999; padding: 2px 0; color: #000;
+  }
+  .fe-dropdown.open { display: block; }
+  .fe-dd-item { padding: 4px 20px 4px 24px; cursor: default; white-space: nowrap; }
+  .fe-dd-item:hover { background: #316AC5; color: #fff; }
+
+  #toolbar {
+    background: #ECE9D8; border-bottom: 1px solid #808080; padding: 4px 8px;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  #ruta {
+    flex: 1; background: #fff; border: 1px inset #808080; padding: 2px 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  #lienzo { background: #fff; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 10px; }
+
+  h2 {
+    font-size: 11px; font-weight: bold; color: #316AC5;
+    margin: 14px 0 6px; padding-bottom: 2px; border-bottom: 1px solid #ACA899;
+  }
+  h2:first-child { margin-top: 0; }
+
+  /* Cada pendiente: una ficha con marco hundido, como el visor de artículos */
+  .ficha {
+    border-top: 2px solid #808080; border-left: 2px solid #808080;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+    background: #ECE9D8; margin-bottom: 10px;
+  }
+  .ficha-cab {
+    background: linear-gradient(90deg, #000080, #1084d0); color: #fff;
+    padding: 3px 6px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .ficha-cab b { font-size: 11px; }
+  .ficha-cab .quien { opacity: .85; }
+  .ficha-cab .cuando { margin-left: auto; opacity: .75; font-size: 10px; }
+
+  .ficha-texto {
+    background: #fff; margin: 6px; padding: 8px;
+    border-top: 2px solid #808080; border-left: 2px solid #808080;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+    font: 12px/1.5 'Fixedsys', 'Courier New', monospace;
+    max-height: 190px; overflow-y: auto; white-space: pre-wrap;
+  }
+  .ficha-texto p { margin-bottom: 10px; }
+  .ficha-texto p:last-child { margin-bottom: 0; }
+
+  .ficha-fotos { display: flex; gap: 5px; flex-wrap: wrap; padding: 0 6px 6px; }
+  .ficha-fotos img { width: 54px; height: 54px; object-fit: cover; border: 1px solid #808080; }
+
+  .ficha-pie { display: flex; gap: 5px; justify-content: flex-end; padding: 0 6px 6px; }
+
+  button {
+    font: 11px 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, sans-serif;
+    background: #ECE9D8; border: 1px outset #ECE9D8; padding: 3px 12px;
+    cursor: pointer; min-width: 72px;
+  }
+  button:hover:not(:disabled) { background: #F0F0F0; }
+  button:active:not(:disabled) { border-style: inset; }
+  button:disabled { color: #808080; cursor: default; }
+  button.primario { font-weight: bold; }
+
+  /* Publicados: filas de explorador */
+  .fila {
+    display: flex; align-items: center; gap: 8px; padding: 3px 6px;
+    border: 1px solid transparent;
+  }
+  .fila:hover { background: #E8E8F0; border-color: #C0C0D0; }
+  .fila .id { color: #808080; min-width: 32px; }
+  .fila .titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fila a { color: #000080; }
+  .fila button { min-width: 0; padding: 1px 8px; }
+
+  .nota { color: #808080; padding: 4px 0; }
+
+  /* Fotos del archivo — cuadrícula con selección, como el explorador */
+  #fotos.rejilla { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0 6px; }
+  .foto {
+    width: 78px; padding: 4px; text-align: center; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .foto:hover { background: #E8E8F0; border-color: #C0C0D0; }
+  .foto.marcada { background: #316AC5; border-color: #316AC5; color: #fff; }
+  .foto img { width: 64px; height: 64px; object-fit: cover; border: 1px solid #808080; display: block; margin: 0 auto 3px; }
+  .foto span { font-size: 10px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #fotos-acciones { display: flex; align-items: center; gap: 8px; padding: 4px 0 8px; }
+
+  /* Fotos en revisión: ficha con la foto grande, quién la manda y los botones */
+  .rejilla-pend { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 6px; }
+  .foto-pend {
+    width: 172px; background: #ECE9D8; padding: 6px;
+    border-top: 2px solid #808080; border-left: 2px solid #808080;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+  }
+  .foto-pend img { width: 100%; height: 130px; object-fit: cover; border: 1px solid #808080; display: block; }
+  .foto-pend-datos { display: flex; flex-direction: column; gap: 1px; padding: 5px 1px; }
+  .foto-pend-datos span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .foto-pend-datos .tenue { color: #808080; font-size: 10px; }
+  .foto-pend-acciones { display: flex; gap: 4px; }
+  .foto-pend-acciones button { min-width: 0; flex: 1; padding: 2px 4px; }
+  #fotos-acciones .cuenta { color: #808080; }
+
+  #barra-estado {
+    background: #ECE9D8; border-top: 1px solid #808080; padding: 3px 8px;
+    font-size: 10px; color: #333; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #aviso { flex: 1; }
+  #aviso.malo { color: #900; font-weight: bold; }
+
+  /* Puerta: el mismo "Acceso restringido" del archivo de fotos */
+  #pw-overlay {
+    position: fixed; inset: 0; background: #008080;
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+  }
+  #pw-overlay.oculto { display: none; }
+  #pw-window {
+    width: 340px; max-width: 90vw; background: #ECE9D8;
+    border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+  }
+  #pw-titlebar {
+    background: linear-gradient(#0054E3, #0042B3); color: #fff;
+    padding: 4px 8px; height: 26px; display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: bold; user-select: none;
+  }
+  #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  #pw-body label { font-weight: bold; display: block; margin-bottom: 4px; }
+  #pw-input {
+    width: 100%; border: 2px inset #fff; padding: 3px 5px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; background: #fff;
+  }
+  #pw-error { color: #900; min-height: 14px; }
+  #pw-fila { display: flex; justify-content: flex-end; }
+  #pw-submit {
+    background: linear-gradient(#316AC5, #1A52A0); color: #fff;
+    border: 2px outset #316AC5; border-color: #316AC5; padding: 4px 18px; min-width: 75px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; cursor: pointer;
+  }
+  #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
+  #pw-submit:active { border-style: inset; }
+</style>
+</head>
+<body>
+
+<div id="pw-overlay">
+  <div id="pw-window">
+    <div id="pw-titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+      </svg>
+      Acceso restringido
+    </div>
+    <div id="pw-body">
+      <div>
+        <label for="pw-input">Contraseña de admin</label>
+        <input type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+      </div>
+      <div id="pw-error"></div>
+      <div id="pw-fila"><button type="button" id="pw-submit">Entrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="fe-menubar">
+  <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+  <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
+  <ul class="fe-dropdown" id="fe-dropdown-archivo">
+    <li class="fe-dd-item" data-action="nuevo">Nuevo artículo...</li>
+    <li class="fe-dd-item" data-action="cerrar">Cerrar</li>
+  </ul>
+  <ul class="fe-dropdown" id="fe-dropdown-ver">
+    <li class="fe-dd-item" data-action="recargar">Actualizar</li>
+  </ul>
+  <div class="fe-menu-item" data-menu="respaldo" tabindex="0">Respaldo</div>
+  <ul class="fe-dropdown" id="fe-dropdown-respaldo">
+    <li class="fe-dd-item" data-action="respaldar">Respaldar ahora</li>
+  </ul>
+</div>
+
+<div id="toolbar">
+  <span id="ruta">Bandeja de revisión</span>
+</div>
+
+<div id="lienzo">
+  <h2>Esperando revisión <span id="conteo"></span></h2>
+  <div id="pendientes" class="nota">Cargando...</div>
+  <h2>Publicados</h2>
+  <div id="publicados" class="nota">Cargando...</div>
+  <h2>Fotos esperando revisión <span id="conteo-fotos-pend"></span></h2>
+  <div id="fotos-pendientes" class="nota">Cargando...</div>
+  <h2>Fotos del archivo <span id="conteo-fotos"></span></h2>
+  <div id="fotos" class="nota">Cargando...</div>
+</div>
+
+<div id="barra-estado">
+  <span id="aviso" role="status" aria-live="polite"></span>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+  const $ = id => document.getElementById(id);
+  let clave = '';   // solo en memoria
+
+  const pedir = async (cuerpo, pass) => {
+    const res = await fetch(WORKER, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...cuerpo, password: pass || clave }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  };
+
+  const avisar = (msg, malo) => {
+    $('aviso').textContent = msg;
+    $('aviso').className = malo ? 'malo' : '';
+  };
+
+  // ── Puerta ─────────────────────────────────────────────────────────────────
+  const entrar = async () => {
+    const intento = $('pw-input').value;
+    if (!intento) return;
+    $('pw-submit').disabled = true; $('pw-error').textContent = '';
+    try {
+      const r = await pedir({ action: 'ping' }, intento);
+      if (!r.admin) throw new Error('Esa es la de colaborador. Aquí va la de admin.');
+      clave = intento; $('pw-input').value = '';
+      $('pw-overlay').classList.add('oculto');
+      cargar();
+    } catch (e) {
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      $('pw-input').select();
+    } finally { $('pw-submit').disabled = false; }
+  };
+  $('pw-submit').addEventListener('click', entrar);
+  $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw-input').focus();
+
+  // ── Menú ───────────────────────────────────────────────────────────────────
+  const cerrarMenus = () => {
+    document.querySelectorAll('.fe-menu-item.open, .fe-dropdown.open')
+      .forEach(x => x.classList.remove('open'));
+  };
+  document.querySelectorAll('.fe-menu-item').forEach(mi => {
+    mi.addEventListener('click', e => {
+      e.stopPropagation();
+      const dd = $('fe-dropdown-' + mi.dataset.menu);
+      const abierto = mi.classList.contains('open');
+      cerrarMenus();
+      if (!abierto && dd) { mi.classList.add('open'); dd.classList.add('open'); }
+    });
+  });
+  document.querySelectorAll('.fe-dd-item').forEach(li => {
+    li.addEventListener('click', e => {
+      e.stopPropagation();
+      const a = li.dataset.action;
+      if (a === 'nuevo') location.href = 'upload.html';
+      else if (a === 'cerrar') location.href = '../index.html';
+      else if (a === 'recargar') cargar();
+      else if (a === 'respaldar') respaldar();
+      cerrarMenus();
+    });
+  });
+  document.addEventListener('click', cerrarMenus);
+
+  // ── Carga ──────────────────────────────────────────────────────────────────
+  function cargar() { cargarPendientes(); cargarPublicados(); cargarFotosPendientes(); cargarFotos(); }
+
+  // ── Fotos esperando revisión ───────────────────────────────────────────────
+  // Viven en archivo-pendiente/ y no las ve nadie hasta que se aprueban:
+  // aprobar las mueve a la carpeta que sí lee la galería.
+  async function cargarFotosPendientes() {
+    const caja = $('fotos-pendientes');
+    try {
+      const { fotos } = await pedir({ action: 'foto-pending' });
+      $('conteo-fotos-pend').textContent = fotos.length ? '(' + fotos.length + ')' : '';
+      caja.className = ''; caja.textContent = '';
+      if (!fotos.length) { caja.className = 'nota'; caja.textContent = 'Ninguna esperando.'; return; }
+      caja.className = 'rejilla-pend';
+      fotos.forEach(f => caja.appendChild(fichaFoto(f)));
+    } catch (e) {
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar: ' + e.message;
+    }
+  }
+
+  function fichaFoto(f) {
+    const el = document.createElement('div');
+    el.className = 'foto-pend';
+
+    const img = document.createElement('img');
+    img.src = f.thumbUrl || f.url; img.alt = ''; img.loading = 'lazy';
+
+    const datos = document.createElement('div');
+    datos.className = 'foto-pend-datos';
+    const quien = document.createElement('b'); quien.textContent = f.artista || '(sin artista)';
+    const desc = document.createElement('span'); desc.textContent = f.descripcion || '';
+    const cuando = document.createElement('span'); cuando.className = 'tenue';
+    cuando.textContent = f.subida ? new Date(f.subida).toLocaleString('es-MX') : '';
+    datos.append(quien, desc, cuando);
+
+    const acciones = document.createElement('div');
+    acciones.className = 'foto-pend-acciones';
+    const no = boton('Rechazar', false, () => moderarFoto(f, 'foto-reject', el));
+    const si = boton('Publicar', true, () => moderarFoto(f, 'foto-approve', el));
+    acciones.append(no, si);
+
+    el.append(img, datos, acciones);
+    return el;
+  }
+
+  async function moderarFoto(f, action, el) {
+    if (action === 'foto-reject' && !confirm('¿Rechazar esta foto? Se borra de Cloudinary.')) return;
+    el.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      await pedir({ action, public_id: f.public_id, artista: f.artista, descripcion: f.descripcion, fecha: f.fecha });
+      el.remove();
+      avisar(action === 'foto-approve' ? 'Foto publicada en la galería.' : 'Foto rechazada.');
+      cargarFotosPendientes();
+    } catch (e) {
+      el.querySelectorAll('button').forEach(b => b.disabled = false);
+      avisar('Error: ' + e.message, true);
+    }
+  }
+
+  // ── Respaldo ───────────────────────────────────────────────────────────────
+  // Corre solo cada lunes; el menú es para cuando quieras uno al momento.
+  async function respaldar() {
+    avisar('Respaldando…');
+    try {
+      const r = await pedir({ action: 'respaldo' });
+      avisar('Respaldados ' + r.total + ' textos en Cloudinary (' + r.archivo + ').');
+    } catch (e) { avisar('Error al respaldar: ' + e.message, true); }
+  }
+
+  // ── Fotos del archivo ──────────────────────────────────────────────────────
+  // Borrarlas salió del menú de la galería: es cosa de admin y aquí es donde
+  // vive lo de admin. La lista es pública (misma que pinta el collage).
+  let marcadas = new Set();
+
+  async function cargarFotos() {
+    const caja = $('fotos');
+    try {
+      const { entries } = await pedir({ action: 'list' });
+      marcadas = new Set();
+      caja.className = 'rejilla'; caja.textContent = '';
+      if (!entries || !entries.length) { caja.className = 'nota'; caja.textContent = 'Ninguna.'; return; }
+
+      $('conteo-fotos').textContent = '(' + entries.length + ')';
+      entries.forEach(img => caja.appendChild(celdaFoto(img)));
+      pintarAccionesFotos();
+    } catch (e) {
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar: ' + e.message;
+    }
+  }
+
+  function celdaFoto(img) {
+    const el = document.createElement('div');
+    el.className = 'foto';
+    const th = document.createElement('img');
+    th.src = img.thumbUrl || img.url; th.alt = ''; th.loading = 'lazy';
+    const pie = document.createElement('span');
+    pie.textContent = img.artista || (img.public_id || '').split('/').pop();
+    el.append(th, pie);
+    el.addEventListener('click', () => {
+      if (marcadas.has(img.public_id)) { marcadas.delete(img.public_id); el.classList.remove('marcada'); }
+      else { marcadas.add(img.public_id); el.classList.add('marcada'); }
+      pintarAccionesFotos();
+    });
+    return el;
+  }
+
+  function pintarAccionesFotos() {
+    let barra = $('fotos-acciones');
+    if (!barra) {
+      barra = document.createElement('div');
+      barra.id = 'fotos-acciones';
+      $('fotos').before(barra);
+    }
+    barra.textContent = '';
+    const cuenta = document.createElement('span');
+    cuenta.className = 'cuenta';
+    cuenta.textContent = marcadas.size
+      ? marcadas.size + ' seleccionada(s)'
+      : 'Haz clic en las fotos que quieras borrar.';
+    const btn = boton('Borrar', false, borrarFotos);
+    btn.disabled = !marcadas.size;
+    barra.append(cuenta, btn);
+  }
+
+  async function borrarFotos() {
+    const ids = [...marcadas];
+    if (!ids.length) return;
+    if (!confirm('¿Borrar ' + ids.length + ' foto(s)? Se van de Cloudinary y del archivo.')) return;
+    try {
+      await pedir({ action: 'delete', public_ids: ids });
+      avisar(ids.length + ' foto(s) borradas.');
+      cargarFotos();
+    } catch (e) { avisar('Error: ' + e.message, true); }
+  }
+
+  async function cargarPendientes() {
+    const caja = $('pendientes');
+    try {
+      const { pendientes } = await pedir({ action: 'articulo-pending' });
+      $('conteo').textContent = pendientes.length ? '(' + pendientes.length + ')' : '';
+      caja.className = ''; caja.textContent = '';
+      if (!pendientes.length) { caja.className = 'nota'; caja.textContent = 'Nada esperando.'; return; }
+      pendientes.forEach(p => caja.appendChild(ficha(p)));
+    } catch (e) {
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar: ' + e.message;
+    }
+  }
+
+  async function cargarPublicados() {
+    const caja = $('publicados');
+    try {
+      const res = await fetch(WORKER + '/articulos');
+      const { articulos } = await res.json();
+      caja.className = ''; caja.textContent = '';
+      if (!articulos.length) { caja.className = 'nota'; caja.textContent = 'Ninguno.'; return; }
+      articulos.slice().reverse().forEach(a => caja.appendChild(fila(a)));
+    } catch (e) {
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar.';
+    }
+  }
+
+  // Todo con textContent: el texto lo escribió alguien más.
+  function ficha(p) {
+    const el = document.createElement('div');
+    el.className = 'ficha';
+
+    const cab = document.createElement('div');
+    cab.className = 'ficha-cab';
+    const b = document.createElement('b'); b.textContent = p.titulo || '(sin título)';
+    const quien = document.createElement('span'); quien.className = 'quien';
+    quien.textContent = [p.meta || p.autor || '', p.instagram ? '@' + p.instagram : ''].filter(Boolean).join(' · ');
+    const cuando = document.createElement('span'); cuando.className = 'cuando';
+    cuando.textContent = p.creado ? new Date(p.creado).toLocaleString('es-MX') : '';
+    cab.append(b, quien, cuando);
+
+    const texto = document.createElement('div');
+    texto.className = 'ficha-texto';
+    (p.contenido || []).forEach(bloque => {
+      if (bloque.tipo === 'img') return;
+      const linea = document.createElement('p');
+      linea.textContent = bloque.texto || '';
+      texto.append(linea);
+    });
+
+    const fotos = document.createElement('div');
+    fotos.className = 'ficha-fotos';
+    [p.imagen, ...(p.contenido || []).filter(x => x.tipo === 'img').map(x => x.url)]
+      .filter(Boolean)
+      .forEach(url => { const i = document.createElement('img'); i.src = url; i.alt = ''; fotos.append(i); });
+
+    const pie = document.createElement('div');
+    pie.className = 'ficha-pie';
+    const no = boton('Rechazar', false, () => moderar(p, 'articulo-reject', el));
+    const si = boton('Publicar', true, () => moderar(p, 'articulo-approve', el));
+    pie.append(no, si);
+
+    el.append(cab, texto);
+    if (fotos.children.length) el.append(fotos);
+    el.append(pie);
+    return el;
+  }
+
+  function fila(a) {
+    const el = document.createElement('div');
+    el.className = 'fila';
+    const id = document.createElement('span'); id.className = 'id'; id.textContent = '#' + a.id;
+    const t = document.createElement('span'); t.className = 'titulo'; t.textContent = a.titulo || '';
+    const ver = document.createElement('a');
+    ver.href = 'articulo.html?id=' + a.id; ver.target = '_blank'; ver.textContent = 'ver';
+    const del = boton('Borrar', false, async () => {
+      if (!confirm('¿Borrar "' + (a.titulo || '#' + a.id) + '"? También se van sus imágenes.')) return;
+      try {
+        await pedir({ action: 'articulo-delete', id: a.id });
+        el.remove(); avisar('Borrado #' + a.id + '.');
+      } catch (e) { avisar('Error: ' + e.message, true); }
+    });
+    el.append(id, t, ver, del);
+    return el;
+  }
+
+  function boton(texto, primario, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = texto;
+    if (primario) b.className = 'primario';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  async function moderar(p, action, fichaEl) {
+    if (action === 'articulo-reject' &&
+        !confirm('¿Rechazar "' + (p.titulo || 'sin título') + '"? Se borran sus imágenes.')) return;
+    fichaEl.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const r = await pedir({ action, uuid: p.uuid });
+      fichaEl.remove();
+      avisar(action === 'articulo-approve' ? 'Publicado como #' + r.id + '.' : 'Rechazado.');
+      cargar();
+    } catch (e) {
+      fichaEl.querySelectorAll('button').forEach(b => b.disabled = false);
+      avisar('Error: ' + e.message, true);
+    }
+  }
+})();
+</script>
+</body>
+</html>

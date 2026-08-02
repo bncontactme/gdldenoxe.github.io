@@ -152,6 +152,7 @@
                     <div class="fe-menu-item" data-menu="editar" tabindex="0">Editar</div>
                     <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
                     <ul class="fe-dropdown" id="fe-dropdown-archivo">
+                        <li class="fe-dd-item" data-action="nuevo-articulo">Nuevo artículo...</li>
                         <li class="fe-dd-item" data-action="close">Cerrar</li>
                     </ul>
                     <ul class="fe-dropdown" id="fe-dropdown-editar">
@@ -246,6 +247,43 @@
             </div>
             <div class="upload-statusbar">
                 <span>Archivo colectivo · GDN</span>
+            </div>
+        </div>
+
+        <!-- Terminal — aparece con 10 clics rápidos en Inicio (solo escritorio) -->
+        <div class="win95-window hidden" data-window-id="terminal" style="left:170px;top:130px;">
+            <div class="title-bar">
+                <div class="title-bar-text">gdn@guadalajara: ~</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="maximize-btn" aria-label="Maximizar">□</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
+                </div>
+            </div>
+            <div class="window-body terminal-body">
+                <div id="term-salida" aria-live="polite"></div>
+                <div class="term-linea">
+                    <span class="term-prompt">gdn@guadalajara:~$</span>
+                    <input id="term-input" type="text" autocomplete="off" spellcheck="false"
+                           aria-label="Escribe un comando">
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana: Nuevo artículo / poema -->
+        <div class="win95-window hidden" data-window-id="upload-articulo" style="left:320px;top:80px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="titlebar-icon"> Nuevo artículo</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="maximize-btn" aria-label="Maximizar">□</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe id="upload-articulo-iframe" src="" frameborder="0" title="Nuevo artículo"></iframe>
+                </div>
             </div>
         </div>
 
@@ -516,6 +554,7 @@
     </script>
 
     <script src="shared/win95.js" defer></script>
+    <script src="shared/articulos-api.js" defer></script>
     <script src="indexPage/script.js" defer></script>
 </body>
 </html>

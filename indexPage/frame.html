@@ -231,6 +231,17 @@
       </div>
     </div>
 
+    <!-- Nuevo artículo popup — rendered at parent level via postMessage from articulos iframe -->
+    <div id="articulo-upload-frame-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;justify-content:center;align-items:center;padding:16px;">
+      <div style="width:600px;max-width:96vw;height:86vh;max-height:760px;background:#ECE9D8;border:2px outset #ECE9D8;box-shadow:2px 2px 12px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;">
+        <div style="background:linear-gradient(#0054E3,#0042B3);color:#fff;padding:4px 8px;min-height:22px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:Tahoma,'MS Sans Serif',sans-serif;font-weight:bold;flex-shrink:0;">
+          <span>Nuevo artículo</span>
+          <button id="articulo-upload-frame-close" style="background:linear-gradient(#E9583A,#C43010);border:1px outset #e0e0e0;color:#fff;font-weight:bold;font-size:11px;width:18px;height:16px;cursor:pointer;padding:0;line-height:1;">✕</button>
+        </div>
+        <iframe id="articulo-upload-frame-iframe" src="" style="flex:1;width:100%;border:none;" frameborder="0" title="Nuevo artículo"></iframe>
+      </div>
+    </div>
+
     <!-- Torta modal — opened via postMessage from lonchedonation/layout2.html -->
     <div id="torta-frame-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;align-items:center;justify-content:center;padding:12px;">
         <div style="background:#c0c0c0;border-top:2px solid #fff;border-left:2px solid #fff;border-right:2px solid #000;border-bottom:2px solid #000;width:100%;max-width:360px;font-family:'MS Sans Serif','Microsoft Sans Serif',Arial,sans-serif;">
@@ -322,6 +333,32 @@
             window.addEventListener('message', function(e) {
                 if (e.origin !== location.origin) return;
                 if (e.data && e.data.type === 'open-upload-popup') openUpload();
+                if (e.data && e.data.type === 'close-upload-window') closeUpload();
+            });
+        })();
+        // =====================================================================
+
+        // ===== Nuevo artículo popup (triggered by postMessage from articulos iframe) =====
+        (function() {
+            const popup       = document.getElementById('articulo-upload-frame-popup');
+            const popupIframe = document.getElementById('articulo-upload-frame-iframe');
+            const closeBtn    = document.getElementById('articulo-upload-frame-close');
+
+            function openArticuloUpload() {
+                if (popupIframe.getAttribute('src') !== '../articulosPage/upload.html?embed=1') {
+                    popupIframe.src = '../articulosPage/upload.html?embed=1';
+                }
+                popup.style.display = 'flex';
+            }
+            function closeArticuloUpload() { popup.style.display = 'none'; }
+
+            closeBtn.addEventListener('click', closeArticuloUpload);
+            popup.addEventListener('click', function(e) { if (e.target === popup) closeArticuloUpload(); });
+
+            window.addEventListener('message', function(e) {
+                if (e.origin !== location.origin) return;
+                if (e.data && e.data.type === 'open-articulo-upload-popup') openArticuloUpload();
+                if (e.data && e.data.type === 'close-articulo-upload') closeArticuloUpload();
             });
         })();
         // =====================================================================

@@ -276,19 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
         win.dataset.windowId = 'artfull-' + art.id;
         Object.assign(win.style, { left: x + 'px', top: y + 'px', width: w + 'px' });
 
-        const blockMap = {
-            lead: t => `<p class="art-full-lead">${t}</p>`,
-            h2: t => `<h2 class="art-full-h2">${t}</h2>`,
-            quote: t => `<div class="art-full-quote">"${t}"</div>`
-        };
-        
-        const bodyHTML = art.contenido.map(b => 
-            (blockMap[b.tipo] || (t => `<p class="art-full-p">${t}</p>`))(b.texto)
-        ).join('');
-
         win.innerHTML = `
             <div class="title-bar">
-                <div class="title-bar-text">${art.titulo}</div>
+                <div class="title-bar-text">${esc(art.titulo)}</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="maximize-btn" aria-label="Maximizar">□</button>
@@ -298,22 +288,63 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="window-body art-full-body">
                 <div class="art-full-inner">
                     <div class="art-full-hero">
-                        <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
+                        <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
                     </div>
-                    <div class="art-full-meta">${art.meta}</div>
-                    <div class="art-full-content">${bodyHTML}</div>
+                    <div class="art-full-meta">${esc(art.meta)}</div>
+                    <div class="art-full-content">Cargando...</div>
                 </div>
                 <div class="art-full-footer">
                     <button class="art-full-close-btn">Cerrar</button>
                 </div>
             </div>`;
-        
+
         wireWindowControls(win);
         win.querySelector('.art-full-close-btn').addEventListener('click', () => {
             win.classList.add('hidden');
             updateTaskbar();
         });
         return win;
+    }
+
+    // El índice solo trae el resumen; el cuerpo se pide la primera vez que se
+    // abre la ventana y se queda cacheado en el DOM.
+    function cargarContenidoArticulo(art) {
+        const win = $(`[data-window-id="artfull-${art.id}"]`);
+        const cont = win?.querySelector('.art-full-content');
+        if (!cont || cont.dataset.cargado) return;
+        cont.dataset.cargado = '1';
+
+        ArticulosAPI.listar && ArticulosAPI.obtener(art.id, 'articulosPage/')
+            .then(completo => {
+                cont.textContent = '';
+                if (!completo || !Array.isArray(completo.contenido)) {
+                    cont.textContent = 'No se pudo cargar el texto.';
+                    return;
+                }
+                const frag = document.createDocumentFragment();
+                completo.contenido.forEach(b => {
+                    if (b.tipo === 'img') {
+                        if (!b.url) return;
+                        const img = document.createElement('img');
+                        img.src = b.url;
+                        img.alt = b.texto || '';
+                        img.loading = 'lazy';
+                        img.className = 'art-full-img';
+                        frag.appendChild(img);
+                        return;
+                    }
+                    // textContent en todos lados: el texto puede venir del público.
+                    const el = document.createElement(b.tipo === 'h2' ? 'h2' : b.tipo === 'quote' ? 'div' : 'p');
+                    el.className = b.tipo === 'lead'  ? 'art-full-lead'
+                                 : b.tipo === 'h2'    ? 'art-full-h2'
+                                 : b.tipo === 'quote' ? 'art-full-quote'
+                                 : 'art-full-p';
+                    el.textContent = b.tipo === 'quote' ? '"' + b.texto + '"' : b.texto;
+                    frag.appendChild(el);
+                });
+                cont.appendChild(frag);
+            })
+            .catch(() => { cont.textContent = 'No se pudo cargar el texto.'; });
     }
 
     function buildArticleWindow(art, idx, visible) {
@@ -326,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         win.innerHTML = `
             <div class="title-bar">
-                <div class="title-bar-text">Artículo #${art.id}</div>
+                <div class="title-bar-text">Artículo #${esc(art.id)}</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="maximize-btn" aria-label="Maximizar">□</button>
@@ -335,17 +366,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="${art.imagen}" alt="${art.titulo}" loading="lazy">
+                    <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
                 </div>
                 <div class="article-description">
-                    <h3>${art.titulo}</h3>
-                    <p>${art.descripcion}</p>
-                    <button class="read-more-btn" data-art-id="${art.id}">Leer más</button>
+                    <h3>${esc(art.titulo)}</h3>
+                    <p>${esc(art.descripcion)}</p>
+                    <button class="read-more-btn" data-art-id="${esc(art.id)}">Leer más</button>
                 </div>
             </div>`;
-        
+
         wireWindowControls(win);
         win.querySelector('.read-more-btn').addEventListener('click', () => {
+            cargarContenidoArticulo(art);
             fullWin.classList.remove('hidden', 'minimized');
             bringToFront(fullWin);
             updateTaskbar();
@@ -359,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.dataset.openArticle = 'art-' + art.id;
         item.innerHTML = `
             <span class="folder-icon"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="folder-item-icon"></span>
-            <span class="folder-name">${art.titulo}.txt</span>`;
+            <span class="folder-name">${esc(art.titulo)}.txt</span>`;
 
         item.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -371,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('dblclick', (e) => {
             e.stopPropagation();
             const artId = item.dataset.openArticle.replace('art-', '');
+            cargarContenidoArticulo(art);
             const fullWin = $(`[data-window-id="artfull-${artId}"]`);
             if (fullWin) {
                 fullWin.classList.remove('hidden', 'minimized');
@@ -381,10 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return item;
     }
 
+    // Los títulos y textos ahora pueden venir de envíos del público, así que
+    // todo lo que se arma con innerHTML pasa por aquí primero.
+    function esc(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+    }
+
     // Fetch y render
     const DEFAULT_ARTICLE_IMAGE = 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
-    fetch('articulosPage/articulos.json')
-        .then(r => r.json())
+    ArticulosAPI.listar('articulosPage/')
         .then(articulos => {
             articulos.forEach(art => { if (!art.imagen) art.imagen = DEFAULT_ARTICLE_IMAGE; });
             const container = $('#articles-container');
@@ -401,6 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             container.appendChild(containerFrag);
+
             folderContent.appendChild(folderFrag);
 
             const folderStatus = $('#folder-articulos-status');
@@ -491,7 +532,9 @@ document.addEventListener('DOMContentLoaded', () => {
             li.addEventListener('click', e => {
                 e.stopPropagation();
                 const action = li.dataset.action;
-                if (action === 'close') {
+                if (action === 'nuevo-articulo') {
+                    openArticuloUploadOverlay();
+                } else if (action === 'close') {
                     artFolderWin?.classList.add('hidden');
                     updateTaskbar();
                 } else if (action === 'select-all') {
@@ -697,7 +740,16 @@ juntxs y brillando.`
             w.classList.remove('hidden');
             delete w.dataset.autoHidden;
         });
-        const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup' && w.dataset.windowId !== 'roblox-popup');
+        // Esta función acomoda los widgets del escritorio —la imagen, el
+        // artículo, el lonche y los poemas— y nada más. Las ventanas que abre
+        // la persona (carpetas, galería, tienda, formularios) se quedan donde
+        // las dejó: antes entraban aquí y cada pasada se las llevaba a la
+        // esquina de abajo a la derecha, o incluso las escondía creyendo que
+        // eran el poema.
+        const ES_WIDGET = id => id === 'random' || id === 'lonche' ||
+                                id.startsWith('art-') || id.startsWith('poema');
+        const windows = Array.from($$('.win95-window:not(.hidden)'))
+            .filter(w => ES_WIDGET(w.dataset.windowId || ''));
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
@@ -902,7 +954,12 @@ juntxs y brillando.`
                 windowElement.style.setProperty('--drag-top', rect.top + 'px');
                 windowElement.classList.add('dragging');
             }
-            
+
+            // Mientras se arrastra, los iframes dejan de recibir el mouse: si no,
+            // al pasar el cursor por encima los eventos se los queda el documento
+            // de adentro y la ventana se queda atorada a medio camino.
+            document.body.classList.add('arrastrando');
+
             bringToFront(windowElement);
         };
         
@@ -966,10 +1023,14 @@ juntxs y brillando.`
         e.preventDefault();
     }, { passive: false });
 
-    document.addEventListener('mouseup', () => { draggedWindow = null; });
+    document.addEventListener('mouseup', () => {
+        draggedWindow = null;
+        document.body.classList.remove('arrastrando');
+    });
     document.addEventListener('touchend', () => {
         if (draggedWindow) draggedWindow.classList.remove('dragging');
         draggedWindow = null;
+        document.body.classList.remove('arrastrando');
     });
 
     // Traer ventana al frente
@@ -1072,6 +1133,99 @@ juntxs y brillando.`
         e.stopPropagation();
         startMenu?.classList.toggle('active');
         startButton.classList.toggle('active');
+        contarClicsInicio();
+    });
+
+    // ===== Terminal (modo debug) =====
+    // Diez clics seguidos en Inicio, sin pausas largas, abren una terminal.
+    // Solo en escritorio: en un teléfono no hay dónde escribir cómodo y el
+    // menú de inicio se abre y cierra con cada toque.
+    const CLICS_PARA_TERMINAL = 10;
+    const VENTANA_MS          = 2000;  // los diez tienen que caber aquí
+    const clicsInicio = [];            // marcas de tiempo de los últimos clics
+
+    function contarClicsInicio() {
+        if (isMobile()) return;
+        clicsInicio.push(Date.now());
+        if (clicsInicio.length > CLICS_PARA_TERMINAL) clicsInicio.shift();
+
+        // Se mide el primero contra el último: aunque no haya pausas largas,
+        // diez clics tranquilos no cuentan. Tienen que ser una ráfaga.
+        const esRafaga = clicsInicio.length === CLICS_PARA_TERMINAL &&
+                         clicsInicio[CLICS_PARA_TERMINAL - 1] - clicsInicio[0] <= VENTANA_MS;
+        if (!esRafaga) return;
+
+        clicsInicio.length = 0;
+        startMenu?.classList.remove('active');
+        startButton?.classList.remove('active');
+        abrirTerminal();
+    }
+
+    const termSalida = $('#term-salida');
+    const termInput  = $('#term-input');
+    const termWin    = $('[data-window-id="terminal"]');
+
+    function termEscribir(texto, clase) {
+        const linea = document.createElement('div');
+        if (clase) linea.className = clase;
+        linea.textContent = texto;
+        termSalida.appendChild(linea);
+        termSalida.parentElement.scrollTop = termSalida.parentElement.scrollHeight;
+    }
+
+    function abrirTerminal() {
+        if (!termWin) return;
+        if (!termSalida.childElementCount) {
+            termEscribir('GDN Terminal — modo debug', 'verde');
+            termEscribir('Escribe "help" para ver los comandos.');
+            termEscribir('');
+        }
+        termWin.classList.remove('hidden', 'minimized');
+        bringToFront(termWin);
+        updateTaskbar();
+        termInput.focus();
+    }
+
+    // Clic en cualquier parte de la terminal = escribir
+    termWin?.querySelector('.terminal-body')?.addEventListener('click', () => termInput.focus());
+
+    const COMANDOS = {
+        help() {
+            termEscribir('Comandos:');
+            termEscribir('  admin      abre el panel de administración');
+            termEscribir('  articulos  abre la carpeta de Artículos');
+            termEscribir('  galeria    abre la Galería');
+            termEscribir('  whoami     quién eres');
+            termEscribir('  clear      limpia la pantalla');
+            termEscribir('  exit       cierra la terminal');
+        },
+        admin() {
+            termEscribir('Abriendo el panel...', 'verde');
+            window.open('articulosPage/admin.html', '_blank', 'noopener');
+        },
+        articulos() { abrirCarpeta('articulos'); termEscribir('Carpeta de Artículos abierta.'); },
+        galeria()   { abrirCarpeta('galeria');   termEscribir('Galería abierta.'); },
+        whoami()    { termEscribir('gdn'); },
+        clear()     { termSalida.textContent = ''; },
+        exit()      { termWin.classList.add('hidden'); updateTaskbar(); },
+    };
+
+    function abrirCarpeta(cual) {
+        document.querySelector(`.desktop-icon[data-folder="${cual}"]`)
+            ?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    }
+
+    termInput?.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const escrito = termInput.value.trim();
+        termInput.value = '';
+        termEscribir('gdn@guadalajara:~$ ' + escrito);
+        if (!escrito) return;
+
+        const comando = COMANDOS[escrito.toLowerCase().split(/\s+/)[0]];
+        if (comando) comando();
+        else termEscribir('comando no encontrado: ' + escrito, 'rojo');
+        termEscribir('');
     });
 
     document.addEventListener('click', (e) => {
@@ -1421,9 +1575,13 @@ juntxs y brillando.`
                     lastLiveSeen = Date.now();
                     // Auto-show player when live (1:1 with old brutalist widget behavior)
                     if (musicPlayer) {
+                        // Solo se reacomoda cuando el reproductor pasa de oculto
+                        // a visible. Antes corría en cada chequeo —cada 45s con
+                        // la radio al aire— y movía las ventanas solo.
+                        const estabaOculto = musicPlayer.classList.contains('hidden');
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
-                        if (!isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
+                        if (estabaOculto && !isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
                     }
                     // Ensure first track is the live stream (don't touch an
                     // active/reconnecting session — cache-busted URLs are fine)
@@ -1560,7 +1718,42 @@ juntxs y brillando.`
             const body = uploadWin?.querySelector('.window-body');
             if (body) body.style.height = e.data.height + 'px';
         }
+        if (e.data?.type === 'open-articulo-upload-popup') openArticuloUploadOverlay();
+        if (e.data?.type === 'close-articulo-upload') {
+            const win = $('[data-window-id="upload-articulo"]');
+            if (win) { win.classList.add('hidden'); updateTaskbar(); }
+        }
+        // El Cancelar del formulario de fotos mandaba este aviso y nadie lo
+        // escuchaba: el botón no cerraba nada.
+        if (e.data?.type === 'close-upload-window') {
+            const win = $('[data-window-id="upload"]');
+            if (win) { win.classList.add('hidden'); updateTaskbar(); }
+        }
     });
+
+    // ===== Nuevo artículo window (shown from the Artículos folder) =====
+    function openArticuloUploadOverlay() {
+        const iframe = $('#upload-articulo-iframe');
+        if (iframe && iframe.getAttribute('src') !== 'articulosPage/upload.html?embed=1') {
+            iframe.src = 'articulosPage/upload.html?embed=1';
+        }
+        const win = $('[data-window-id="upload-articulo"]');
+        if (!win) return;
+
+        const GAP = 16;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44;
+        const winW = win.offsetWidth || 600;
+        const winH = win.offsetHeight || 560;
+
+        const left = Math.max(GAP, Math.floor((screenW - winW) / 2));
+        const top  = Math.max(GAP, Math.min(GAP + 8, screenH - winH - GAP));
+        win.style.left = left + 'px';
+        win.style.top  = top  + 'px';
+        win.classList.remove('hidden', 'minimized');
+        bringToFront(win);
+        updateTaskbar();
+    }
 
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {

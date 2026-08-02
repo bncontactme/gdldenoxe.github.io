@@ -126,6 +126,12 @@ body {
     will-change: transform, left, top;
 }
 
+/* Al arrastrar, ningún iframe se queda con el mouse — si no, la ventana se
+   atora en cuanto el cursor le pasa por encima. */
+body.arrastrando iframe {
+    pointer-events: none;
+}
+
 .win95-window.hidden {
     display: none;
 }
@@ -890,9 +896,45 @@ body {
 }
 
 /* Iframe para Galería y Tienda */
+/* ===== Terminal (modo debug) ===== */
+[data-window-id="terminal"] {
+    width: 520px;
+}
+
+.terminal-body {
+    background: #0c0c0c;
+    color: #d0d0d0;
+    font: 12px/1.5 'Fixedsys', 'Courier New', monospace;
+    padding: 6px 8px;
+    height: min(300px, calc(100vh - 150px));
+    overflow-y: auto;
+    cursor: text;
+}
+
+#term-salida { white-space: pre-wrap; word-break: break-word; }
+.terminal-body .verde { color: #4ec07a; }
+.terminal-body .rojo  { color: #e2564a; }
+
+.term-linea { display: flex; gap: 6px; align-items: baseline; }
+.term-prompt { color: #4ec07a; flex-shrink: 0; }
+
+#term-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    caret-color: #4ec07a;
+}
+
 .iframe-container {
     width: 100%;
-    height: 500px;
+    /* Alto tope, pero nunca tanto que la ventana se pegue a la barra de tareas:
+       se deja aire abajo en pantallas cortas. 150px cubre la barra de título,
+       la barra de tareas y el margen. */
+    height: min(500px, calc(100vh - 150px));
     background: var(--win95-white);
     border-top: var(--inset-light);
     border-left: var(--inset-light);
@@ -903,7 +945,7 @@ body {
 
 /* Tienda más alta */
 [data-window-id="tienda"] .iframe-container {
-    height: 650px;
+    height: min(650px, calc(100vh - 150px));
 }
 
 /* Lonche */
@@ -963,7 +1005,7 @@ body {
     display: none;
 }
 
-/* Upload: no inset border, window auto-sizes via postMessage */
+/* Upload de fotos: sin marco hundido, se autoajusta por postMessage */
 [data-window-id="upload"] .iframe-container {
     border: none;
     height: 100%;
@@ -1022,7 +1064,9 @@ body {
 }
 
 /* Ventanas de Galería y Tienda más grandes */
-[data-window-id="galeria"] {
+/* Galería y Nuevo artículo comparten medidas: son la misma clase de ventana. */
+[data-window-id="galeria"],
+[data-window-id="upload-articulo"] {
     width: 550px;
 }
 
@@ -1819,7 +1863,8 @@ body {
         max-width: calc(100vw - 24px);
     }
 
-    [data-window-id="galeria"] {
+    [data-window-id="galeria"],
+    [data-window-id="upload-articulo"] {
         width: 480px;
     }
 

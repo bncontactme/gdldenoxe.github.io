@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manda tu poema · GDN</title>
+<link rel="stylesheet" href="../shared/win95.css">
+<style>
+  body {
+    margin: 0; padding: 12px; background: var(--win95-teal);
+    font: 12px var(--font-system); color: #111;
+  }
+  html.embed body { padding: 0; background: #f4f3ee; min-height: 100%; }
+
+  .win { max-width: 470px; margin: 0 auto; background: #f4f3ee;
+         border-top: var(--border-raised); border-left: var(--border-raised);
+         border-right: var(--border-sunken); border-bottom: var(--border-sunken); }
+  html.embed .win { max-width: none; border: none; }
+
+  .bar { background: linear-gradient(90deg, var(--win95-blue), var(--win95-blue-light));
+         color: #fff; font-weight: bold; padding: 3px 6px; letter-spacing: .02em; }
+  html.embed > body .win > .bar { display: none; }
+
+  .body { padding: 14px 16px 12px; }
+
+  /* Cada bloque del formulario, separado por aire y no por cajas */
+  .campo { margin-bottom: 12px; }
+  .campo:last-of-type { margin-bottom: 0; }
+
+  label, .rotulo {
+    display: block; font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
+    color: #5c5a52; margin-bottom: 3px;
+  }
+  .opt { text-transform: none; letter-spacing: 0; color: #8a887f; }
+
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; box-sizing: border-box; padding: 5px 6px;
+    font: 12px var(--font-system); color: #111;
+    background: #fff; border: 1px solid #b9b6ac; border-top-color: #8f8c84;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--win95-blue-light); }
+  textarea { font: 12px/1.55 var(--font-mono); resize: vertical; }
+
+  /* Editor: barra de formato + caja editable. Lo que se guarda son bloques
+     (párrafo, título, cita, separador), nunca el HTML del editor. */
+  #barra-formato {
+    display: flex; gap: 3px; padding: 3px; flex-wrap: wrap;
+    background: #eceae2; border: 1px solid #b9b6ac; border-bottom: none;
+  }
+  #barra-formato button {
+    padding: 2px 8px; font-size: 11px; background: #f4f3ee; border: 1px solid #cfccc2;
+  }
+  #barra-formato button:hover:not(:disabled) { background: #fff; }
+  #barra-formato button.activo { background: var(--win95-blue); border-color: #00004d; color: #fff; }
+  #barra-formato .sep { width: 1px; background: #cfccc2; margin: 1px 3px; }
+
+  #texto {
+    min-height: 170px; max-height: 340px; overflow-y: auto;
+    padding: 8px 9px; background: #fff; border: 1px solid #b9b6ac; border-top-color: #cfccc2;
+    font: 12px/1.6 var(--font-mono); outline: none; white-space: pre-wrap;
+  }
+  #texto:focus { border-color: var(--win95-blue-light); }
+  #texto:empty::before { content: attr(data-vacio); color: #a5a29a; }
+  #texto.centrado { text-align: center; }
+  #texto h2 { font: bold 13px var(--font-system); color: var(--win95-blue); margin: 12px 0 6px; }
+  #texto blockquote { margin: 10px 0; padding-left: 10px; border-left: 3px solid #cfccc2; font-style: italic; }
+  #texto hr { border: none; border-top: 1px solid #b9b6ac; margin: 12px 0; }
+  #texto p { margin: 0 0 10px; }
+  .arroba { display: flex; align-items: stretch; }
+  .arroba span {
+    display: flex; align-items: center; padding: 0 7px; color: #8a887f;
+    background: #eceae2; border: 1px solid #b9b6ac; border-right: none; border-top-color: #8f8c84;
+  }
+
+  .dos { display: flex; gap: 10px; }
+  .dos > * { flex: 1; min-width: 0; }
+
+  hr { border: none; border-top: 1px solid #dedbd1; margin: 14px 0 12px; }
+
+  button {
+    font: 12px var(--font-system); padding: 4px 14px; background: #e7e5dc; color: #111;
+    border: 1px solid #a8a59c; cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: #f0eee6; }
+  button:active:not(:disabled) { background: #dbd8cf; }
+  button:disabled { color: #a5a29a; cursor: default; }
+  button.fuerte { background: var(--win95-blue); border-color: #00004d; color: #fff; font-weight: bold; }
+  button.fuerte:hover:not(:disabled) { background: #0a0aa0; }
+  button.fuerte:disabled { background: #c9c7c0; border-color: #b0ada4; color: #8a887f; }
+
+  .pie { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .pie .der { margin-left: auto; display: flex; gap: 6px; }
+
+  #fotos-lista { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .foto { position: relative; }
+  .foto img { width: 46px; height: 46px; object-fit: cover; display: block; border: 1px solid #b9b6ac; }
+  .foto button { position: absolute; top: -5px; right: -5px; width: 15px; height: 15px;
+                 padding: 0; line-height: 1; font-size: 10px; border-radius: 50%; }
+
+  #estado { font-size: 11px; min-height: 14px; }
+  #estado.ok  { color: #1d6b3a; }
+  #estado.err { color: #9b2222; }
+  .oculto { display: none; }
+
+  /* Puerta: el mismo cuadro de "Acceso restringido" que el de subir al
+     archivo de fotos, para que sea la misma experiencia en los dos lados. */
+  #pw-overlay {
+    position: fixed; inset: 0; background: #008080;
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+  }
+  #pw-overlay.oculto { display: none; }
+  html.embed #pw-overlay { position: absolute; }
+  #pw-window {
+    width: 340px; max-width: 90vw; background: #ECE9D8;
+    border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+  }
+  #pw-titlebar {
+    background: linear-gradient(#0054E3, #0042B3);
+    color: #fff; padding: 4px 8px; height: 26px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: bold; user-select: none;
+  }
+  #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  #pw-body label { font: bold 11px Tahoma, 'MS Sans Serif', sans-serif;
+                   text-transform: none; letter-spacing: 0; color: #000; margin-bottom: 4px; }
+  #pw-input {
+    width: 100%; border: 2px inset #fff; padding: 3px 5px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; background: #fff;
+  }
+  #pw-error { color: #900; font-size: 11px; min-height: 14px; }
+  #pw-fila { display: flex; justify-content: flex-end; }
+  #pw-submit {
+    background: linear-gradient(#316AC5, #1A52A0); color: #fff;
+    border: 2px outset #316AC5; border-color: #316AC5;
+    padding: 4px 18px; min-width: 75px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; cursor: pointer;
+  }
+  #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
+  #pw-submit:active { border-style: inset; }
+  #forma.oculto { display: none; }
+</style>
+</head>
+<body>
+<div id="pw-overlay">
+  <div id="pw-window">
+    <div id="pw-titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+      </svg>
+      Acceso restringido
+    </div>
+    <div id="pw-body">
+      <div>
+        <label for="pw-input">Contraseña</label>
+        <input type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+      </div>
+      <div id="pw-error"></div>
+      <div id="pw-fila">
+        <button type="button" id="pw-submit">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="win">
+  <div class="bar">Manda tu poema · GDN</div>
+
+  <div class="body oculto" id="forma">
+
+    <div class="campo">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" maxlength="200" placeholder="Cómo se llama">
+    </div>
+
+    <div class="campo dos">
+      <div>
+        <label for="autor">Autor</label>
+        <input type="text" id="autor" maxlength="120" placeholder="Tu nombre o seudónimo">
+      </div>
+      <div>
+        <label for="instagram">Instagram <span class="opt">(opcional)</span></label>
+        <div class="arroba">
+          <span>@</span>
+          <input type="text" id="instagram" maxlength="40" placeholder="tucuenta">
+        </div>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label for="categoria">Categoría</label>
+      <select id="categoria">
+        <option>Poesía</option><option>Crónica</option><option>Cuento</option>
+        <option>Ensayo</option><option>Artículo</option>
+      </select>
+    </div>
+
+    <hr>
+
+    <div class="campo">
+      <span class="rotulo">Texto</span>
+      <div id="barra-formato">
+        <button type="button" data-fmt="p"          title="Párrafo normal">Párrafo</button>
+        <button type="button" data-fmt="h2"         title="Título de sección">Título</button>
+        <button type="button" data-fmt="blockquote" title="Cita">Cita</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="hr"         title="Separador">—</button>
+        <button type="button" data-cmd="img" id="btn-img" title="Insertar una imagen aquí">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1" y="3" width="14" height="10" rx="1" fill="#fff" stroke="#8f8c84"/>
+            <path d="M2 11l3.5-4 2.5 3 2-2 4 3z" fill="#316AC5"/>
+            <circle cx="11" cy="6" r="1.3" fill="#e8c547"/>
+          </svg>
+        </button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="centrar" id="btn-centrar"
+                title="Centrado: así se ven los poemas">Centrado</button>
+      </div>
+      <div id="texto" contenteditable="true" spellcheck="true"
+           data-vacio="Escribe o pega aquí tu texto."></div>
+    </div>
+
+    <div class="campo">
+      <span class="rotulo">Portada <span class="opt">(opcional · la imagen que representa al texto)</span></span>
+      <button type="button" id="btn-fotos">Agregar portada</button>
+      <input type="file" id="fotos" accept="image/*" class="oculto">
+      <div id="fotos-lista"></div>
+    </div>
+
+    <div class="pie">
+      <span id="estado" role="status" aria-live="polite"></span>
+      <span class="der">
+        <button type="button" id="cancelar">Cancelar</button>
+        <button type="button" class="fuerte" id="enviar" disabled>Enviar a revisión</button>
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+  const MAX_MB = 10;
+  const $ = id => document.getElementById(id);
+
+  if (new URLSearchParams(location.search).get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+  }
+
+  let portada = null;      // {file, url} — la imagen que representa al texto
+  let clave = '';          // vive solo en memoria, no se guarda en ningún lado
+  let uuid = crypto.randomUUID();   // carpeta de este envío; se renueva al enviar
+
+  const pedir = async cuerpo => {
+    const res = await fetch(WORKER, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  };
+
+  // ── Puerta ─────────────────────────────────────────────────────────────────
+  const entrar = async () => {
+    const intento = $('pw-input').value;
+    if (!intento) return;
+    $('pw-submit').disabled = true;
+    $('pw-error').textContent = '';
+    try {
+      await pedir({ action: 'ping', password: intento });
+      clave = intento;
+      $('pw-input').value = '';
+      $('pw-overlay').classList.add('oculto');
+      $('forma').classList.remove('oculto');
+      $('titulo').focus();
+    } catch (e) {
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      $('pw-input').select();
+    } finally {
+      $('pw-submit').disabled = false;
+    }
+  };
+  $('pw-submit').addEventListener('click', entrar);
+  $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw-input').focus();
+
+  // ── Editor ─────────────────────────────────────────────────────────────────
+  // Se guardan bloques, no HTML: se recorre el editor y cada hijo se traduce a
+  // {tipo, texto}. Lo que no reconocemos cae a párrafo.
+  const editor = $('texto');
+  let centrado = true;   // los poemas van centrados; es lo más común aquí
+
+  const aplicar = fmt => {
+    editor.focus();
+    document.execCommand('formatBlock', false, fmt);
+    sync();
+  };
+
+  document.querySelectorAll('#barra-formato button[data-fmt]').forEach(b => {
+    b.addEventListener('click', () => aplicar(b.dataset.fmt));
+  });
+
+  $('barra-formato').querySelector('[data-cmd="hr"]').addEventListener('click', () => {
+    editor.focus();
+    document.execCommand('insertHTML', false, '<hr><p><br></p>');
+    sync();
+  });
+
+  // Insertar imagen donde está el cursor: se sube al momento y queda dentro
+  // del texto, no al final. La URL viene de nuestro Cloudinary, no del usuario.
+  const inputImgTexto = document.createElement('input');
+  inputImgTexto.type = 'file'; inputImgTexto.accept = 'image/*'; inputImgTexto.className = 'oculto';
+  document.body.appendChild(inputImgTexto);
+
+  let rangoGuardado = null;
+  editor.addEventListener('blur', () => {
+    const sel = window.getSelection();
+    if (sel.rangeCount && editor.contains(sel.anchorNode)) rangoGuardado = sel.getRangeAt(0);
+  });
+
+  $('btn-img').addEventListener('click', () => inputImgTexto.click());
+  inputImgTexto.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > MAX_MB * 1024 * 1024) { decir('La imagen pasa de ' + MAX_MB + ' MB.', 'err'); return; }
+
+    $('btn-img').disabled = true;
+    decir('Subiendo imagen…');
+    try {
+      const url = await subir(file, uuid, $('autor').value.trim(), $('titulo').value.trim());
+      editor.focus();
+      if (rangoGuardado) {
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(rangoGuardado);
+      }
+      document.execCommand('insertHTML', false,
+        '<img src="' + url + '" alt=""><p><br></p>');
+      decir('');
+      sync();
+    } catch (err) {
+      decir('No se pudo subir: ' + err.message, 'err');
+    } finally {
+      $('btn-img').disabled = false;
+    }
+  });
+
+  const btnCentrar = $('btn-centrar');
+  const pintarCentrado = () => {
+    editor.classList.toggle('centrado', centrado);
+    btnCentrar.classList.toggle('activo', centrado);
+  };
+  btnCentrar.addEventListener('click', () => { centrado = !centrado; pintarCentrado(); });
+  pintarCentrado();
+
+  // Pegar siempre como texto plano: nada de HTML ajeno entrando al editor.
+  editor.addEventListener('paste', e => {
+    e.preventDefault();
+    const texto = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, texto);
+  });
+
+  const parsear = () => {
+    const bloques = [];
+    editor.childNodes.forEach(nodo => {
+      if (nodo.nodeType === Node.TEXT_NODE) {
+        const t = nodo.textContent.trim();
+        if (t) bloques.push({ tipo: 'p', texto: t });
+        return;
+      }
+      if (nodo.nodeType !== Node.ELEMENT_NODE) return;
+
+      const etiqueta = nodo.tagName.toLowerCase();
+      if (etiqueta === 'hr') { bloques.push({ tipo: 'hr', texto: '' }); return; }
+
+      // Imagen suelta, o dentro de un párrafo. Si el párrafo trae imagen Y
+      // texto salen las dos cosas: antes la imagen se perdía al guardar.
+      if (etiqueta === 'img') { bloques.push({ tipo: 'img', url: nodo.src }); return; }
+      if (nodo.querySelectorAll) {
+        nodo.querySelectorAll('img').forEach(im => bloques.push({ tipo: 'img', url: im.src }));
+      }
+
+      // innerText respeta los <br> como saltos, que es lo que un verso necesita
+      const texto = (nodo.innerText || '').replace(/\u00a0/g, ' ').replace(/\s+$/, '');
+      if (!texto.trim()) return;
+
+      const tipo = etiqueta === 'h1' || etiqueta === 'h2' || etiqueta === 'h3' ? 'h2'
+                 : etiqueta === 'blockquote' ? 'quote'
+                 : 'p';
+      bloques.push({ tipo, texto });
+    });
+    return bloques;
+  };
+
+  const listo = () => $('titulo').value.trim() && $('autor').value.trim() && parsear().length;
+  const sync = () => { $('enviar').disabled = !listo(); };
+  ['titulo', 'autor'].forEach(id => $(id).addEventListener('input', sync));
+  editor.addEventListener('input', sync);
+
+  const decir = (msg, clase) => { $('estado').textContent = msg; $('estado').className = clase || ''; };
+
+  // ── Portada ────────────────────────────────────────────────────────────────
+  $('btn-fotos').addEventListener('click', () => $('fotos').click());
+  $('fotos').addEventListener('change', e => { ponerPortada(e.target.files[0]); e.target.value = ''; });
+
+  function ponerPortada(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { decir('Solo imágenes.', 'err'); return; }
+    if (file.size > MAX_MB * 1024 * 1024) { decir('La imagen pasa de ' + MAX_MB + ' MB.', 'err'); return; }
+    portada = { file, url: '' };
+    const r = new FileReader();
+    r.onload = ev => { portada.url = ev.target.result; pintarPortada(); };
+    r.readAsDataURL(file);
+    pintarPortada();
+  }
+
+  function pintarPortada() {
+    const lista = $('fotos-lista');
+    lista.textContent = '';
+    $('btn-fotos').textContent = portada ? 'Cambiar portada' : 'Agregar portada';
+    if (!portada) return;
+
+    const caja = document.createElement('div');
+    caja.className = 'foto';
+    const img = document.createElement('img'); img.src = portada.url || ''; img.alt = '';
+    const x = document.createElement('button');
+    x.type = 'button'; x.textContent = '×'; x.title = 'Quitar';
+    x.addEventListener('click', () => { portada = null; pintarPortada(); });
+    caja.append(img, x);
+    lista.appendChild(caja);
+  }
+
+  // ── Enviar ─────────────────────────────────────────────────────────────────
+  $('enviar').addEventListener('click', enviar);
+  $('cancelar').addEventListener('click', () => {
+    if (parent !== window) parent.postMessage({ type: 'close-articulo-upload' }, location.origin);
+    else if (history.length > 1) history.back();
+  });
+
+  async function enviar() {
+    if (!listo()) return;
+    $('enviar').disabled = true; $('cancelar').disabled = true;
+
+    const autor  = $('autor').value.trim();
+    const titulo = $('titulo').value.trim();
+
+    try {
+      // Las imágenes primero: así el texto entra a la cola ya con sus fotos
+      // colgadas y quien revisa lo ve completo de una.
+      const contenido = parsear();
+      let urlPortada = '';
+
+      if (portada) {
+        decir('Subiendo portada…');
+        urlPortada = await subir(portada.file, uuid, autor, titulo);
+      }
+
+      decir('Enviando…');
+      await pedir({
+        action: 'articulo-propose', password: clave,
+        articulo: {
+          uuid, titulo, autor, clase: centrado ? 'poema' : '',
+          instagram: $('instagram').value,
+          meta: [autor, $('categoria').value].filter(Boolean).join(' • '),
+          imagen: urlPortada, contenido,
+        },
+      });
+
+      decir('✓ Listo. Tu texto quedó en revisión.', 'ok');
+      $('titulo').value = ''; editor.textContent = '';
+      portada = null; pintarPortada();
+      uuid = crypto.randomUUID();   // carpeta nueva para el siguiente
+    } catch (e) {
+      decir('No se pudo enviar: ' + e.message, 'err');
+    } finally {
+      $('cancelar').disabled = false;
+      sync();
+    }
+  }
+
+  async function subir(file, uuid, autor, titulo) {
+    const p = await pedir({
+      action: 'articulo-sign', password: clave, uuid, autor, titulo, content_type: file.type,
+    });
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', p.upload_preset);
+    fd.append('folder', p.folder);
+    fd.append('asset_folder', p.asset_folder || p.folder);
+    fd.append('timestamp', p.timestamp);
+    fd.append('api_key', p.api_key);
+    fd.append('signature', p.signature);
+    if (p.context) fd.append('context', p.context);
+
+    const up = await fetch('https://api.cloudinary.com/v1_1/' + p.cloud_name + '/image/upload',
+      { method: 'POST', body: fd });
+    const cloud = await up.json().catch(() => ({}));
+    if (!up.ok || !cloud.secure_url) throw new Error('Cloudinary rechazó la imagen');
+    return cloud.secure_url;
+  }
+
+  pintarPortada();
+  sync();
+})();
+</script>
+</body>
+</html>

@@ -205,18 +205,7 @@
     }
     explorerBody.appendChild(frag);
 
-    // Upload folder — always last
-    const uploadFolder = document.createElement('div');
-    uploadFolder.className = 'fe-folder fe-folder-upload';
-    uploadFolder.title = 'Subir fotos al archivo';
-    uploadFolder.innerHTML = '<img src="../indexPage/indexImages/icons/camera3_plus-0.png" class="fe-folder-icon fe-folder-icon-upload" alt="" width="32" height="32">'
-      + '<span class="fe-label">Subir fotos</span>';
-    uploadFolder.onclick = function() {
-      closeExplorer();
-      openUploadPopup();
-    };
-    explorerBody.appendChild(uploadFolder);
-
+    // Subir se hace desde el menú Archivo, no con un icono en la cuadrícula.
     if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
   }
 
@@ -286,7 +275,7 @@
       item.appendChild(label);
       item.title = fileName;
 
-      // Store Cloudinary public_id for delete mode
+      // public_id de Cloudinary — lo usa la bandeja de admin para borrar
       // URL pattern: .../upload/vTIMESTAMP/archivo/NAME.ext → public_id = archivo/NAME
       const pubIdMatch = path.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
       if (pubIdMatch) item.dataset.publicId = pubIdMatch[1];
@@ -325,12 +314,6 @@
 
     explorerBody.appendChild(frag);
     if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
-    // Re-apply delete mode if active
-    if (_deleteMode) {
-      _selectedPublicIds = new Set();
-      explorerBody?.querySelectorAll('.fe-image').forEach(addDeleteableToImage);
-      updateDeleteCount();
-    }
   }
 
   function escapeHtml(str) {
@@ -393,12 +376,6 @@
 
   // ===== Win95 Menu Bar =====
   const WORKER_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
-  const PW_HASH_DELETE = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
-
-  async function sha256(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
 
   // Menu open/close
   const menubar = document.getElementById('fe-menubar');
@@ -440,175 +417,16 @@
     if (action === 'upload')      { openUploadPopup(); }
     if (action === 'close')       { closeExplorer(); }
     if (action === 'select-all')  { selectAllImages(); }
-    if (action === 'delete-mode') { openDeletePasswordDialog(); }
     if (action === 'view-icons')  { /* already icon view */ }
     if (action === 'view-list')   { /* future */ }
   });
 
-  // ===== Delete mode =====
-  let _deleteAuthed = false;
-  let _deletePassword = '';
-  let _deleteMode = false;
-  let _selectedPublicIds = new Set();
-
-  const deletePwOverlay  = document.getElementById('delete-pw-overlay');
-  const deletePwInput    = document.getElementById('delete-pw-input');
-  const deletePwSubmit   = document.getElementById('delete-pw-submit');
-  const deletePwCancel   = document.getElementById('delete-pw-cancel');
-  const deletePwError    = document.getElementById('delete-pw-error');
-  const deleteActionbar  = document.getElementById('delete-actionbar');
-  const deleteCount      = document.getElementById('delete-selected-count');
-  const deleteStatusMsg  = document.getElementById('delete-status-msg');
-  const deleteCancelMode = document.getElementById('delete-cancel-mode');
-  const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
-
-  function openDeletePasswordDialog() {
-    if (_deleteAuthed) { enterDeleteMode(); return; }
-    if (deletePwOverlay) { deletePwOverlay.classList.remove('hidden'); deletePwInput?.focus(); }
-  }
-
-  async function submitDeletePassword() {
-    const typed = deletePwInput?.value || '';
-    const hash = await sha256(typed);
-    if (hash === PW_HASH_DELETE) {
-      _deleteAuthed = true;
-      _deletePassword = typed;
-      if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
-      if (deletePwInput) deletePwInput.value = '';
-      if (deletePwError) deletePwError.textContent = '';
-      enterDeleteMode();
-    } else {
-      if (deletePwError) deletePwError.textContent = 'Contraseña incorrecta.';
-      if (deletePwInput) { deletePwInput.value = ''; deletePwInput.focus(); }
-    }
-  }
-
-  deletePwSubmit?.addEventListener('click', submitDeletePassword);
-  deletePwInput?.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitDeletePassword(); });
-  function closePwDialog() {
-    if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
-    if (deletePwInput) deletePwInput.value = '';
-    if (deletePwError) deletePwError.textContent = '';
-  }
-  deletePwCancel?.addEventListener('click', closePwDialog);
-  document.getElementById('delete-pw-close')?.addEventListener('click', closePwDialog);
-
-  function enterDeleteMode() {
-    _deleteMode = true;
-    _selectedPublicIds = new Set();
-    if (deleteActionbar) deleteActionbar.classList.remove('hidden');
-    updateDeleteCount();
-    // Make all images in current folder selectable
-    explorerBody?.querySelectorAll('.fe-image').forEach(addDeleteableToImage);
-  }
-
-  function exitDeleteMode() {
-    _deleteMode = false;
-    _selectedPublicIds = new Set();
-    if (deleteActionbar) deleteActionbar.classList.add('hidden');
-    explorerBody?.querySelectorAll('.fe-image').forEach(function(el) {
-      el.classList.remove('deletable', 'selected');
-      el.querySelector('.fe-delete-check')?.remove();
-    });
-  }
-
-  function addDeleteableToImage(el) {
-    el.classList.add('deletable');
-    if (!el.querySelector('.fe-delete-check')) {
-      const chk = document.createElement('span');
-      chk.className = 'fe-delete-check';
-      el.prepend(chk);
-    }
-    const publicId = el.dataset.publicId;
-    el.onclick = function(e) {
-      e.stopPropagation();
-      if (!publicId) return;
-      if (_selectedPublicIds.has(publicId)) {
-        _selectedPublicIds.delete(publicId);
-        el.classList.remove('selected');
-      } else {
-        _selectedPublicIds.add(publicId);
-        el.classList.add('selected');
-      }
-      updateDeleteCount();
-    };
-  }
-
-  function selectAllImages() {
-    if (!_deleteMode) return;
-    explorerBody?.querySelectorAll('.fe-image.deletable').forEach(function(el) {
-      const pid = el.dataset.publicId;
-      if (pid) { _selectedPublicIds.add(pid); el.classList.add('selected'); }
-    });
-    updateDeleteCount();
-  }
-
-  function updateDeleteCount() {
-    const n = _selectedPublicIds.size;
-    if (deleteCount) deleteCount.textContent = n + (n === 1 ? ' seleccionada' : ' seleccionadas');
-    if (deleteConfirmBtn) deleteConfirmBtn.disabled = n === 0;
-  }
-
-  deleteCancelMode?.addEventListener('click', exitDeleteMode);
-
-  function setDeleteStatus(msg) {
-    if (!deleteStatusMsg) return;
-    deleteStatusMsg.textContent = msg;
-  }
-
-  deleteConfirmBtn?.addEventListener('click', async function() {
-    const ids = Array.from(_selectedPublicIds);
-    if (!ids.length) return;
-    deleteConfirmBtn.disabled = true;
-    deleteCancelMode.disabled = true;
-    deleteConfirmBtn.textContent = 'Eliminando...';
-    setDeleteStatus('');
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', password: _deletePassword, public_ids: ids }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        // Remove deleted images from the DOM immediately
-        ids.forEach(function(pid) {
-          document.querySelectorAll('[data-public-id="' + pid + '"]').forEach(function(el) { el.remove(); });
-        });
-        const n = ids.length;
-        setDeleteStatus(n + (n === 1 ? ' imagen eliminada.' : ' imágenes eliminadas.'));
-        setTimeout(function() { exitDeleteMode(); }, 1500);
-        deleteCancelMode.disabled = false;
-        deleteConfirmBtn.disabled = false;
-        deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
-        return;
-      } else {
-        setDeleteStatus('Error: ' + (data.error || res.status));
-      }
-    } catch (err) {
-      setDeleteStatus('Error de red al contactar el servidor.');
-    }
-    deleteCancelMode.disabled = false;
-    deleteConfirmBtn.disabled = false;
-    deleteConfirmBtn.textContent = 'Eliminar seleccionadas';
-  });
-
-  // Patch renderFolder to store public_id on each image element
-  const _origRenderFolder = renderFolder;
-  // Note: renderFolder is already defined above and closes over archiveImages/imageMetadata
-  // We patch it here by overriding the image onclick to not interfere with delete mode,
-  // and by adding data-public-id to each .fe-image item.
-  // The actual patching happens inside renderFolder via a post-render hook below.
-
-  // After renderFolderList/renderFolder, re-apply delete mode if active
-  const _origOpenExplorer = openExplorer;
-
   // ========================
   if (explorerBack) explorerBack.onclick = function() {
-    if (explorerCurrentFolder !== null) { exitDeleteMode(); renderFolderList(); }
+    if (explorerCurrentFolder !== null) renderFolderList();
   };
   if (explorerOverlay) explorerOverlay.onclick = function(e) {
-    if (e.target === explorerOverlay) { exitDeleteMode(); closeExplorer(); }
+    if (e.target === explorerOverlay) closeExplorer();
   };
   if (exploreBtn) exploreBtn.onclick = function(e) {
     e.stopPropagation();

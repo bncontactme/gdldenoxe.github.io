@@ -391,10 +391,8 @@
     // ─────────────────────────────────────────────────────────────────────────
 
     // ── Password gate ─────────────────────────────────────────────────────────
-    // SHA-256 hash of the password. To change it:
-    // node -e "const c=require('crypto');console.log(c.createHash('sha256').update('NEW_PW').digest('hex'));"
-    const PW_HASH = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
-    const SESSION_KEY = 'archivo_auth';
+    // La contraseña la valida el Worker (acción `ping`). Aquí no se guarda ni
+    // el hash ni la sesión: la contraseña vive en memoria mientras dure la página.
 
     // Private auth flag — lives only in this closure, unreachable from DevTools console
     let _authed = false;
@@ -407,24 +405,10 @@
     const LOCKOUT_MS   = 60000; // 60 s
     let _lockTimer = null;
 
-    async function sha256(str) {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-      return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
-    }
-
     const pwOverlay = document.getElementById('pw-overlay');
     const pwInput   = document.getElementById('pw-input');
     const pwSubmit  = document.getElementById('pw-submit');
     const pwError   = document.getElementById('pw-error');
-
-    // Restore session only in non-Worker mode; Worker mode always needs the plaintext
-    // password in memory. WORKER_URL is declared below — forward-ref resolved at runtime.
-    function maybeRestoreSession() {
-      if (!WORKER_URL && sessionStorage.getItem(SESSION_KEY) === PW_HASH) {
-        _authed = true;
-        pwOverlay.classList.add('hidden');
-      }
-    }
 
     function startLockoutTimer() {
       if (_lockTimer) clearInterval(_lockTimer);
@@ -443,16 +427,34 @@
       }, 500);
     }
 
+    // Quien decide si la contraseña sirve es el Worker. La página ya no guarda
+    // ningún hash: uno escrito aquí se puede atacar sin límite en otra máquina.
+    async function passwordValida(typed) {
+      if (!WORKER_URL) return false;
+      try {
+        var res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'ping', password: typed }),
+        });
+        return res.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
     async function checkPassword() {
       if (Date.now() < _lockedUntil) return;
       var typed = pwInput.value;
-      var hash  = await sha256(typed);
-      if (hash === PW_HASH) {
+      pwSubmit.disabled = true;
+      var ok = await passwordValida(typed);
+      pwSubmit.disabled = false;
+      if (ok) {
         _authed = true;
         _password = typed;
-        sessionStorage.setItem(SESSION_KEY, PW_HASH);
         pwOverlay.classList.add('hidden');
         pwInput.value = '';
+        pwError.textContent = '';
         _attempts = 0;
       } else {
         _attempts++;
@@ -491,9 +493,7 @@
     const MAX_PER_UPLOAD = 5;
     const MAX_PER_ARTIST = 30;
 
-    // Run session restore after WORKER_URL is defined
-    maybeRestoreSession();
-    if (!_authed) pwInput.focus();
+    pwInput.focus();
     // ─────────────────────────────────────────────────────────────────────────
 
     const zone         = document.getElementById('upload-zone');
@@ -630,7 +630,6 @@
       // In Worker mode: password must be in memory (not just session flag)
       if (WORKER_URL && !_password) {
         _authed = false;
-        sessionStorage.removeItem(SESSION_KEY);
         pwError.textContent = 'Sesión expirada. Ingresa la contraseña de nuevo.';
         pwOverlay.classList.remove('hidden');
         pwInput.focus();
@@ -679,26 +678,14 @@
 
       let uploaded = 0;
       let failed   = 0;
-      const uploadedEntries = [];
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         setProgress(Math.round((i / selectedFiles.length) * 100));
 
         try {
-          const cloudRes = await uploadFile(file, artista, descripcion, fecha, signedParams);
+          await uploadFile(file, artista, descripcion, fecha, signedParams);
           uploaded++;
-          // Build the entry for images.json
-          if (cloudRes && cloudRes.secure_url) {
-            const thumbUrl = cloudRes.secure_url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/');
-            uploadedEntries.push({
-              url:         cloudRes.secure_url,
-              thumbUrl:    thumbUrl,
-              artista:     artista,
-              descripcion: descripcion,
-              fecha:       fecha,
-            });
-          }
         } catch (err) {
           failed++;
           console.error('Upload failed:', file.name, err);
@@ -715,26 +702,11 @@
         }
         selectedFiles = [];
         renderThumbs();
+        // No se registran en images.json todavía: eso pasa cuando el admin
+        // las aprueba y la foto se mueve a la carpeta de la galería.
         showStatus(
-          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
-          ' correctamente. Actualizando galería...',
-          'success'
-        );
-        // Register new entries in images.json via the Worker
-        if (WORKER_URL && uploadedEntries.length) {
-          try {
-            await fetch(WORKER_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'register', password: _password, entries: uploadedEntries }),
-            });
-          } catch (e) {
-            console.error('Register failed:', e);
-          }
-        }
-        showStatus(
-          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
-          ' correctamente. La galería ya fue actualizada.',
+          uploaded + (uploaded === 1 ? ' imagen enviada' : ' imágenes enviadas') +
+          '. Quedan en revisión — aparecerán en la galería cuando les den el visto bueno.',
           'success'
         );
       } else {
@@ -806,12 +778,6 @@
 
     function setProgress(pct) {
       progressFill.style.width = pct + '%';
-    }
-
-    function escHtml(str) {
-      return str.replace(/[&<>"']/g, function(c) {
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
     }
   })();
   </script>

@@ -202,6 +202,7 @@
         <div class="fe-menu-item" data-menu="editar" tabindex="0">Editar</div>
         <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
         <ul class="fe-dropdown" id="fe-dropdown-archivo">
+            <li class="fe-dd-item" data-action="nuevo">Nuevo artículo...</li>
             <li class="fe-dd-item" data-action="close">Cerrar</li>
         </ul>
         <ul class="fe-dropdown" id="fe-dropdown-editar">
@@ -227,14 +228,23 @@
         <span id="status-text">Cargando...</span>
     </div>
 
+    <script src="../shared/articulos-api.js"></script>
     <script>
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
 
-        fetch('articulos.json')
-            .then(r => r.json())
+        function openNuevoArticulo() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'open-articulo-upload-popup' }, location.origin);
+            } else {
+                window.location.href = 'upload.html';
+            }
+        }
+
+        ArticulosAPI.listar()
             .then(articulos => {
                 const fragment = document.createDocumentFragment();
+
                 articulos.forEach(art => {
                     const item = document.createElement('a');
                     item.className = 'folder-item';
@@ -263,7 +273,9 @@
             });
         });
         const handleAction = (action) => {
-            if (action === 'close') {
+            if (action === 'nuevo') {
+                openNuevoArticulo();
+            } else if (action === 'close') {
                 if (window.top !== window.self) window.top.location.href = '../index.html';
             } else if (action === 'view-icons') {
                 grid.classList.remove('list-view');
