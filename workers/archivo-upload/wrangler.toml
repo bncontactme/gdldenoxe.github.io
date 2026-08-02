@@ -8,3 +8,7 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "ARTICULOS"
 id = "30ab34d6ea9f4df7873e24ee30592549"
+
+# Respaldo semanal de los textos a Cloudinary (lunes 9:00 UTC ≈ 3:00 en GDL).
+[triggers]
+crons = ["0 9 * * 1"]

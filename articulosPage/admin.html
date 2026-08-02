@@ -186,6 +186,10 @@
   <ul class="fe-dropdown" id="fe-dropdown-ver">
     <li class="fe-dd-item" data-action="recargar">Actualizar</li>
   </ul>
+  <div class="fe-menu-item" data-menu="respaldo" tabindex="0">Respaldo</div>
+  <ul class="fe-dropdown" id="fe-dropdown-respaldo">
+    <li class="fe-dd-item" data-action="respaldar">Respaldar ahora</li>
+  </ul>
 </div>
 
 <div id="toolbar">
@@ -268,6 +272,7 @@
       if (a === 'nuevo') location.href = 'upload.html';
       else if (a === 'cerrar') location.href = '../index.html';
       else if (a === 'recargar') cargar();
+      else if (a === 'respaldar') respaldar();
       cerrarMenus();
     });
   });
@@ -275,6 +280,16 @@
 
   // ── Carga ──────────────────────────────────────────────────────────────────
   function cargar() { cargarPendientes(); cargarPublicados(); cargarFotos(); }
+
+  // ── Respaldo ───────────────────────────────────────────────────────────────
+  // Corre solo cada lunes; el menú es para cuando quieras uno al momento.
+  async function respaldar() {
+    avisar('Respaldando…');
+    try {
+      const r = await pedir({ action: 'respaldo' });
+      avisar('Respaldados ' + r.total + ' textos en Cloudinary (' + r.archivo + ').');
+    } catch (e) { avisar('Error al respaldar: ' + e.message, true); }
+  }
 
   // ── Fotos del archivo ──────────────────────────────────────────────────────
   // Borrarlas salió del menú de la galería: es cosa de admin y aquí es donde

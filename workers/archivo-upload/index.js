@@ -28,6 +28,7 @@
 //   articulo-approve publicar un pendiente                             [admin]
 //   articulo-reject  rechazar (borra su carpeta de imágenes)           [admin]
 //   articulo-delete  borrar un publicado (+ su carpeta)                [admin]
+//   respaldo         volcar todos los publicados a Cloudinary          [admin]
 //
 // Lecturas públicas (GET):
 //   GET /articulos       índice de publicados
@@ -72,7 +73,7 @@ const ARTICULOS_FOLDER = 'articulos';
 // de artículos como de fotos— pide la de admin.
 const ACCIONES_ADMIN = new Set([
   'articulo-submit', 'articulo-pending', 'articulo-approve',
-  'articulo-reject', 'articulo-delete',
+  'articulo-reject', 'articulo-delete', 'respaldo',
   'delete',   // borrar fotos del archivo fotográfico
 ]);
 
@@ -185,7 +186,24 @@ export default {
     if (body.action === 'articulo-delete') {
       return handleArticuloDelete(body, env, allowedOrigin);
     }
+    if (body.action === 'respaldo') {
+      try {
+        return jsonResponse({ ok: true, ...(await respaldarTodo(env)) }, 200, allowedOrigin);
+      } catch (e) {
+        return jsonResponse({ error: String(e.message || e) }, 502, allowedOrigin);
+      }
+    }
     return handleUpload(body, env, allowedOrigin);
+  },
+
+  // Respaldo semanal (ver [triggers] en wrangler.toml). Vuelca todos los
+  // publicados a articulos/respaldo/articulos.json en Cloudinary.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(
+      respaldarTodo(env)
+        .then(r => console.log('Respaldo semanal: ' + r.total + ' artículos'))
+        .catch(e => console.error('Respaldo semanal falló:', e)),
+    );
   },
 };
 
@@ -417,6 +435,7 @@ async function handleArticuloPropose(body, env, origin) {
 async function handleArticuloSubmit(body, env, origin) {
   try {
     const art = await publicarDirecto(env, body.articulo || {});
+    await respaldarPoema(env, art);
     return jsonResponse({ ok: true, id: art.id }, 200, origin);
   } catch (e) {
     return jsonResponse({ error: String(e.message || e) }, 400, origin);
@@ -441,6 +460,8 @@ async function handleArticuloApprove(body, env, origin) {
 
   const art = await aprobar(env, uuid, overrides);
   if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
+
+  await respaldarPoema(env, art);
   return jsonResponse({ ok: true, id: art.id }, 200, origin);
 }
 
@@ -484,6 +505,72 @@ async function handleArticuloGet(id, env, origin) {
   });
 }
 
+// ── Respaldo en Cloudinary ────────────────────────────────────────────────────
+// KV es la fuente de verdad, pero es la única copia: un borrado por error o un
+// mal día de Cloudflare y el texto no está en ningún otro lado. Así que cada
+// poema deja también un poema.json dentro de su propia carpeta —la carpeta se
+// explica sola: portada, imágenes y texto— y una vez por semana se guarda un
+// volcado completo en articulos/respaldo/.
+//
+// Todo es best-effort: si Cloudinary falla, el poema igual queda publicado.
+
+async function respaldarPoema(env, art) {
+  if (!art || !art.carpeta) return;
+  try {
+    await cloudinarySubirTexto(env, art.carpeta + '/poema.json', JSON.stringify(art, null, 2));
+  } catch (e) {
+    console.error('Respaldo del poema falló (' + art.carpeta + '):', e);
+  }
+}
+
+async function respaldarTodo(env) {
+  const index = await readIndex(env);
+  const completos = [];
+  for (const entrada of index) {
+    const art = await getPublicado(env, entrada.id);
+    if (art) completos.push(art);
+  }
+
+  const volcado = {
+    generado: new Date().toISOString(),
+    total:    completos.length,
+    articulos: completos,
+  };
+  const nombre = ARTICULOS_FOLDER + '/respaldo/articulos.json';
+  await cloudinarySubirTexto(env, nombre, JSON.stringify(volcado, null, 2));
+  return { total: completos.length, archivo: nombre };
+}
+
+// Sube un archivo de texto a Cloudinary (resource_type raw). Sobreescribe, para
+// que la ruta del respaldo sea siempre la misma y no se llene de versiones.
+async function cloudinarySubirTexto(env, publicId, contenido) {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const params = {
+    invalidate: 'true',
+    overwrite:  'true',
+    public_id:  publicId,
+    timestamp,
+  };
+  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
+  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  const fd = new FormData();
+  fd.append('file', new Blob([contenido], { type: 'application/json' }), 'datos.json');
+  Object.keys(params).forEach(k => fd.append(k, params[k]));
+  fd.append('api_key', env.CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/raw/upload',
+    { method: 'POST', body: fd },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.secure_url) {
+    throw new Error('Cloudinary ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
+  }
+  return data.secure_url;
+}
+
 // ── Cloudinary: borrar la carpeta entera de un poema ─────────────────────────
 // Se borra por prefijo, así se van portada e interiores de un solo golpe.
 // Es best-effort: si Cloudinary falla, el texto ya salió del sitio igual.
@@ -493,8 +580,12 @@ async function borrarCarpetaCloudinary(env, carpeta) {
 
   try {
     const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
-    const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image/upload?prefix=${encodeURIComponent(prefix + '/')}`;
-    await fetch(url, { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
+    // Las imágenes van como `image` y el poema.json como `raw`: hay que pedir
+    // el borrado de los dos, si no el texto se queda huérfano en la carpeta.
+    for (const tipo of ['image', 'raw']) {
+      const url = `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/${tipo}/upload?prefix=${encodeURIComponent(prefix + '/')}`;
+      await fetch(url, { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
+    }
     await fetch(`https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/folders/${encodeURIComponent(prefix)}`,
       { method: 'DELETE', headers: { Authorization: `Basic ${basicAuth}` } });
   } catch (e) {
