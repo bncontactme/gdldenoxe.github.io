@@ -45,12 +45,10 @@
 import { artistSlug } from './lib/artistSlug.js';
 import {
   readIndex,
-  writeIndex,
   getPublicado,
   listPendientes,
   putPendiente,
   publicarDirecto,
-  urlCloudinary,
   aprobar,
   rechazar,
   borrarPublicado,
@@ -359,6 +357,198 @@ async function handleList(env, origin) {
   return jsonResponse({ entries }, 200, origin);
 }
 
+// ── Artículo: firma la subida de una imagen a la carpeta del poema ───────────
+// Llega ya autenticado por el enrutador. El uuid es el del envío, así todas
+// las imágenes de un poema caen juntas en su carpeta.
+async function handleArticuloSign(body, env, origin) {
+  const declaredMime = String(body.content_type || '').toLowerCase();
+  if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
+    return jsonResponse({ error: 'Unsupported content type' }, 400, origin);
+  }
+
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
+  const timestamp    = String(Math.floor(Date.now() / 1000));
+  const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
+
+  // Carpeta propia del poema: articulos/<uuid>-<slug>/
+  const folder = ARTICULOS_FOLDER + '/' + uuid + '-' + artistSlug(body.autor || body.titulo || 'anonimo');
+
+  const signingParams = {
+    asset_folder:  folder,
+    folder,
+    timestamp,
+    upload_preset: uploadPreset,
+  };
+
+  const contextParts = [];
+  if (body.autor)  contextParts.push('artista=' + sanitize(body.autor));
+  if (body.titulo) contextParts.push('caption=' + sanitize(body.titulo));
+  if (contextParts.length) signingParams.context = contextParts.join('|');
+
+  const paramString = Object.keys(signingParams)
+    .sort()
+    .map(k => k + '=' + signingParams[k])
+    .join('&');
+  const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  return jsonResponse(
+    { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, asset_folder: folder, context: signingParams.context || null },
+    200, origin,
+  );
+}
+
+// ── Colaborador: mandar un poema a la cola de revisión ──────────────────────
+async function handleArticuloPropose(body, env, origin) {
+  try {
+    const art = await putPendiente(env, body.articulo || {});
+    return jsonResponse({ ok: true, uuid: art.uuid }, 200, origin);
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 400, origin);
+  }
+}
+
+// ── Admin: alta directa, sin pasar por la cola ───────────────────────────────
+async function handleArticuloSubmit(body, env, origin) {
+  try {
+    const art = await publicarDirecto(env, body.articulo || {});
+    await respaldarPoema(env, art);
+    return jsonResponse({ ok: true, id: art.id }, 200, origin);
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 400, origin);
+  }
+}
+
+// ── Admin: cola de pendientes ────────────────────────────────────────────────
+async function handleArticuloPending(env, origin) {
+  return jsonResponse({ ok: true, pendientes: await listPendientes(env) }, 200, origin);
+}
+
+// ── Admin: aprobar ───────────────────────────────────────────────────────────
+async function handleArticuloApprove(body, env, origin) {
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
+  // El admin puede corregir título/meta/clase al momento de aprobar.
+  const overrides = {};
+  if (body.titulo) overrides.titulo = String(body.titulo).trim().slice(0, 200);
+  if (body.meta)   overrides.meta   = String(body.meta).trim().slice(0, 200);
+  if (body.clase !== undefined) overrides.clase = body.clase === 'poema' ? 'poema' : undefined;
+
+  const art = await aprobar(env, uuid, overrides);
+  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
+
+  await respaldarPoema(env, art);
+  return jsonResponse({ ok: true, id: art.id }, 200, origin);
+}
+
+// ── Admin: rechazar (borra la carpeta de imágenes del poema) ─────────────────
+async function handleArticuloReject(body, env, origin) {
+  const uuid = uuidValido(body.uuid);
+  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
+
+  const art = await rechazar(env, uuid, body.motivo);
+  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
+
+  await borrarCarpetaCloudinary(env, art.carpeta);
+  return jsonResponse({ ok: true, uuid }, 200, origin);
+}
+
+// ── Admin: borrar un publicado (+ su carpeta de imágenes) ───────────────────
+async function handleArticuloDelete(body, env, origin) {
+  const id = Number(body.id);
+  if (!Number.isFinite(id)) return jsonResponse({ error: 'id required' }, 400, origin);
+
+  const art = await borrarPublicado(env, id);
+  if (!art) return jsonResponse({ ok: true, removed: false }, 200, origin);
+
+  await borrarCarpetaCloudinary(env, art.carpeta);
+  return jsonResponse({ ok: true, removed: true, id }, 200, origin);
+}
+
+// ── Lecturas públicas ────────────────────────────────────────────────────────
+async function handleArticulosList(env, origin) {
+  const list = await readIndex(env);
+  return jsonResponse({ ok: true, articulos: list }, 200, origin, {
+    'Cache-Control': 'public, max-age=30',
+  });
+}
+
+async function handleArticuloGet(id, env, origin) {
+  const art = await getPublicado(env, id);
+  if (!art) return jsonResponse({ error: 'No encontrado' }, 404, origin);
+  return jsonResponse({ ok: true, articulo: art }, 200, origin, {
+    'Cache-Control': 'public, max-age=60',
+  });
+}
+
+// ── Respaldo en Cloudinary ────────────────────────────────────────────────────
+// KV es la fuente de verdad, pero es la única copia: un borrado por error o un
+// mal día de Cloudflare y el texto no está en ningún otro lado. Así que cada
+// poema deja también un poema.json dentro de su propia carpeta —la carpeta se
+// explica sola: portada, imágenes y texto— y una vez por semana se guarda un
+// volcado completo en articulos/respaldo/.
+//
+// Todo es best-effort: si Cloudinary falla, el poema igual queda publicado.
+
+async function respaldarPoema(env, art) {
+  if (!art || !art.carpeta) return;
+  try {
+    await cloudinarySubirTexto(env, art.carpeta + '/poema.json', JSON.stringify(art, null, 2));
+  } catch (e) {
+    console.error('Respaldo del poema falló (' + art.carpeta + '):', e);
+  }
+}
+
+async function respaldarTodo(env) {
+  const index = await readIndex(env);
+  const completos = [];
+  for (const entrada of index) {
+    const art = await getPublicado(env, entrada.id);
+    if (art) completos.push(art);
+  }
+
+  const volcado = {
+    generado: new Date().toISOString(),
+    total:    completos.length,
+    articulos: completos,
+  };
+  const nombre = ARTICULOS_FOLDER + '/respaldo/articulos.json';
+  await cloudinarySubirTexto(env, nombre, JSON.stringify(volcado, null, 2));
+  return { total: completos.length, archivo: nombre };
+}
+
+// Sube un archivo de texto a Cloudinary (resource_type raw). Sobreescribe, para
+// que la ruta del respaldo sea siempre la misma y no se llene de versiones.
+async function cloudinarySubirTexto(env, publicId, contenido) {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const params = {
+    invalidate: 'true',
+    overwrite:  'true',
+    public_id:  publicId,
+    timestamp,
+  };
+  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
+  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  const fd = new FormData();
+  fd.append('file', new Blob([contenido], { type: 'application/json' }), 'datos.json');
+  Object.keys(params).forEach(k => fd.append(k, params[k]));
+  fd.append('api_key', env.CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/raw/upload',
+    { method: 'POST', body: fd },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.secure_url) {
+    throw new Error('Cloudinary ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
+  }
+  return data.secure_url;
+}
+
 // ── Fotos del archivo: revisión ───────────────────────────────────────────────
 // Suben a archivo-pendiente/ y ahí se quedan, fuera de la galería, hasta que el
 // admin decide. Aprobar es renombrar a archivo/ (Cloudinary no mueve bytes) y
@@ -456,72 +646,6 @@ async function cloudinaryRenombrar(env, desde, hacia) {
     throw new Error('Cloudinary rename ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
   }
   return data;
-}
-
-// ── Respaldo en Cloudinary ────────────────────────────────────────────────────
-// KV es la fuente de verdad, pero es la única copia: un borrado por error o un
-// mal día de Cloudflare y el texto no está en ningún otro lado. Así que cada
-// poema deja también un poema.json dentro de su propia carpeta —la carpeta se
-// explica sola: portada, imágenes y texto— y una vez por semana se guarda un
-// volcado completo en articulos/respaldo/.
-//
-// Todo es best-effort: si Cloudinary falla, el poema igual queda publicado.
-
-async function respaldarPoema(env, art) {
-  if (!art || !art.carpeta) return;
-  try {
-    await cloudinarySubirTexto(env, art.carpeta + '/poema.json', JSON.stringify(art, null, 2));
-  } catch (e) {
-    console.error('Respaldo del poema falló (' + art.carpeta + '):', e);
-  }
-}
-
-async function respaldarTodo(env) {
-  const index = await readIndex(env);
-  const completos = [];
-  for (const entrada of index) {
-    const art = await getPublicado(env, entrada.id);
-    if (art) completos.push(art);
-  }
-
-  const volcado = {
-    generado: new Date().toISOString(),
-    total:    completos.length,
-    articulos: completos,
-  };
-  const nombre = ARTICULOS_FOLDER + '/respaldo/articulos.json';
-  await cloudinarySubirTexto(env, nombre, JSON.stringify(volcado, null, 2));
-  return { total: completos.length, archivo: nombre };
-}
-
-// Sube un archivo de texto a Cloudinary (resource_type raw). Sobreescribe, para
-// que la ruta del respaldo sea siempre la misma y no se llene de versiones.
-async function cloudinarySubirTexto(env, publicId, contenido) {
-  const timestamp = String(Math.floor(Date.now() / 1000));
-  const params = {
-    invalidate: 'true',
-    overwrite:  'true',
-    public_id:  publicId,
-    timestamp,
-  };
-  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
-  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
-
-  const fd = new FormData();
-  fd.append('file', new Blob([contenido], { type: 'application/json' }), 'datos.json');
-  Object.keys(params).forEach(k => fd.append(k, params[k]));
-  fd.append('api_key', env.CLOUDINARY_API_KEY);
-  fd.append('signature', signature);
-
-  const res = await fetch(
-    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/raw/upload',
-    { method: 'POST', body: fd },
-  );
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.secure_url) {
-    throw new Error('Cloudinary ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
-  }
-  return data.secure_url;
 }
 
 // ── Cloudinary: borrar la carpeta entera de un poema ─────────────────────────

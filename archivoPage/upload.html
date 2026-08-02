@@ -678,26 +678,14 @@
 
       let uploaded = 0;
       let failed   = 0;
-      const uploadedEntries = [];
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         setProgress(Math.round((i / selectedFiles.length) * 100));
 
         try {
-          const cloudRes = await uploadFile(file, artista, descripcion, fecha, signedParams);
+          await uploadFile(file, artista, descripcion, fecha, signedParams);
           uploaded++;
-          // Build the entry for images.json
-          if (cloudRes && cloudRes.secure_url) {
-            const thumbUrl = cloudRes.secure_url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/');
-            uploadedEntries.push({
-              url:         cloudRes.secure_url,
-              thumbUrl:    thumbUrl,
-              artista:     artista,
-              descripcion: descripcion,
-              fecha:       fecha,
-            });
-          }
         } catch (err) {
           failed++;
           console.error('Upload failed:', file.name, err);
@@ -790,12 +778,6 @@
 
     function setProgress(pct) {
       progressFill.style.width = pct + '%';
-    }
-
-    function escHtml(str) {
-      return str.replace(/[&<>"']/g, function(c) {
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
     }
   })();
   </script>
