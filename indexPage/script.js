@@ -1141,21 +1141,24 @@ juntxs y brillando.`
     // Solo en escritorio: en un teléfono no hay dónde escribir cómodo y el
     // menú de inicio se abre y cierra con cada toque.
     const CLICS_PARA_TERMINAL = 10;
-    const PAUSA_MAXIMA_MS     = 600;   // más lento que esto y se reinicia la cuenta
-    let clicsInicio = 0;
-    let ultimoClicInicio = 0;
+    const VENTANA_MS          = 2000;  // los diez tienen que caber aquí
+    const clicsInicio = [];            // marcas de tiempo de los últimos clics
 
     function contarClicsInicio() {
         if (isMobile()) return;
-        const ahora = Date.now();
-        clicsInicio = (ahora - ultimoClicInicio <= PAUSA_MAXIMA_MS) ? clicsInicio + 1 : 1;
-        ultimoClicInicio = ahora;
-        if (clicsInicio >= CLICS_PARA_TERMINAL) {
-            clicsInicio = 0;
-            startMenu?.classList.remove('active');
-            startButton?.classList.remove('active');
-            abrirTerminal();
-        }
+        clicsInicio.push(Date.now());
+        if (clicsInicio.length > CLICS_PARA_TERMINAL) clicsInicio.shift();
+
+        // Se mide el primero contra el último: aunque no haya pausas largas,
+        // diez clics tranquilos no cuentan. Tienen que ser una ráfaga.
+        const esRafaga = clicsInicio.length === CLICS_PARA_TERMINAL &&
+                         clicsInicio[CLICS_PARA_TERMINAL - 1] - clicsInicio[0] <= VENTANA_MS;
+        if (!esRafaga) return;
+
+        clicsInicio.length = 0;
+        startMenu?.classList.remove('active');
+        startButton?.classList.remove('active');
+        abrirTerminal();
     }
 
     const termSalida = $('#term-salida');
