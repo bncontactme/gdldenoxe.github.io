@@ -740,7 +740,16 @@ juntxs y brillando.`
             w.classList.remove('hidden');
             delete w.dataset.autoHidden;
         });
-        const windows = Array.from($$('.win95-window:not(.hidden)')).filter(w => w.dataset.windowId !== 'yt-popup' && w.dataset.windowId !== 'roblox-popup');
+        // Esta función acomoda los widgets del escritorio —la imagen, el
+        // artículo, el lonche y los poemas— y nada más. Las ventanas que abre
+        // la persona (carpetas, galería, tienda, formularios) se quedan donde
+        // las dejó: antes entraban aquí y cada pasada se las llevaba a la
+        // esquina de abajo a la derecha, o incluso las escondía creyendo que
+        // eran el poema.
+        const ES_WIDGET = id => id === 'random' || id === 'lonche' ||
+                                id.startsWith('art-') || id.startsWith('poema');
+        const windows = Array.from($$('.win95-window:not(.hidden)'))
+            .filter(w => ES_WIDGET(w.dataset.windowId || ''));
         const screenW = window.innerWidth;
         const screenH = window.innerHeight - 44; // minus taskbar
         const gap = 12;
@@ -1473,9 +1482,13 @@ juntxs y brillando.`
                     lastLiveSeen = Date.now();
                     // Auto-show player when live (1:1 with old brutalist widget behavior)
                     if (musicPlayer) {
+                        // Solo se reacomoda cuando el reproductor pasa de oculto
+                        // a visible. Antes corría en cada chequeo —cada 45s con
+                        // la radio al aire— y movía las ventanas solo.
+                        const estabaOculto = musicPlayer.classList.contains('hidden');
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
-                        if (!isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
+                        if (estabaOculto && !isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
                     }
                     // Ensure first track is the live stream (don't touch an
                     // active/reconnecting session — cache-busted URLs are fine)
