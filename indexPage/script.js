@@ -1133,6 +1133,96 @@ juntxs y brillando.`
         e.stopPropagation();
         startMenu?.classList.toggle('active');
         startButton.classList.toggle('active');
+        contarClicsInicio();
+    });
+
+    // ===== Terminal (modo debug) =====
+    // Diez clics seguidos en Inicio, sin pausas largas, abren una terminal.
+    // Solo en escritorio: en un teléfono no hay dónde escribir cómodo y el
+    // menú de inicio se abre y cierra con cada toque.
+    const CLICS_PARA_TERMINAL = 10;
+    const PAUSA_MAXIMA_MS     = 600;   // más lento que esto y se reinicia la cuenta
+    let clicsInicio = 0;
+    let ultimoClicInicio = 0;
+
+    function contarClicsInicio() {
+        if (isMobile()) return;
+        const ahora = Date.now();
+        clicsInicio = (ahora - ultimoClicInicio <= PAUSA_MAXIMA_MS) ? clicsInicio + 1 : 1;
+        ultimoClicInicio = ahora;
+        if (clicsInicio >= CLICS_PARA_TERMINAL) {
+            clicsInicio = 0;
+            startMenu?.classList.remove('active');
+            startButton?.classList.remove('active');
+            abrirTerminal();
+        }
+    }
+
+    const termSalida = $('#term-salida');
+    const termInput  = $('#term-input');
+    const termWin    = $('[data-window-id="terminal"]');
+
+    function termEscribir(texto, clase) {
+        const linea = document.createElement('div');
+        if (clase) linea.className = clase;
+        linea.textContent = texto;
+        termSalida.appendChild(linea);
+        termSalida.parentElement.scrollTop = termSalida.parentElement.scrollHeight;
+    }
+
+    function abrirTerminal() {
+        if (!termWin) return;
+        if (!termSalida.childElementCount) {
+            termEscribir('GDN Terminal — modo debug', 'verde');
+            termEscribir('Escribe "help" para ver los comandos.');
+            termEscribir('');
+        }
+        termWin.classList.remove('hidden', 'minimized');
+        bringToFront(termWin);
+        updateTaskbar();
+        termInput.focus();
+    }
+
+    // Clic en cualquier parte de la terminal = escribir
+    termWin?.querySelector('.terminal-body')?.addEventListener('click', () => termInput.focus());
+
+    const COMANDOS = {
+        help() {
+            termEscribir('Comandos:');
+            termEscribir('  admin      abre el panel de administración');
+            termEscribir('  articulos  abre la carpeta de Artículos');
+            termEscribir('  galeria    abre la Galería');
+            termEscribir('  whoami     quién eres');
+            termEscribir('  clear      limpia la pantalla');
+            termEscribir('  exit       cierra la terminal');
+        },
+        admin() {
+            termEscribir('Abriendo el panel...', 'verde');
+            window.open('articulosPage/admin.html', '_blank', 'noopener');
+        },
+        articulos() { abrirCarpeta('articulos'); termEscribir('Carpeta de Artículos abierta.'); },
+        galeria()   { abrirCarpeta('galeria');   termEscribir('Galería abierta.'); },
+        whoami()    { termEscribir('gdn'); },
+        clear()     { termSalida.textContent = ''; },
+        exit()      { termWin.classList.add('hidden'); updateTaskbar(); },
+    };
+
+    function abrirCarpeta(cual) {
+        document.querySelector(`.desktop-icon[data-folder="${cual}"]`)
+            ?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    }
+
+    termInput?.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const escrito = termInput.value.trim();
+        termInput.value = '';
+        termEscribir('gdn@guadalajara:~$ ' + escrito);
+        if (!escrito) return;
+
+        const comando = COMANDOS[escrito.toLowerCase().split(/\s+/)[0]];
+        if (comando) comando();
+        else termEscribir('comando no encontrado: ' + escrito, 'rojo');
+        termEscribir('');
     });
 
     document.addEventListener('click', (e) => {

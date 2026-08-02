@@ -896,6 +896,39 @@ body.arrastrando iframe {
 }
 
 /* Iframe para Galería y Tienda */
+/* ===== Terminal (modo debug) ===== */
+[data-window-id="terminal"] {
+    width: 520px;
+}
+
+.terminal-body {
+    background: #0c0c0c;
+    color: #d0d0d0;
+    font: 12px/1.5 'Fixedsys', 'Courier New', monospace;
+    padding: 6px 8px;
+    height: min(300px, calc(100vh - 150px));
+    overflow-y: auto;
+    cursor: text;
+}
+
+#term-salida { white-space: pre-wrap; word-break: break-word; }
+.terminal-body .verde { color: #4ec07a; }
+.terminal-body .rojo  { color: #e2564a; }
+
+.term-linea { display: flex; gap: 6px; align-items: baseline; }
+.term-prompt { color: #4ec07a; flex-shrink: 0; }
+
+#term-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    caret-color: #4ec07a;
+}
+
 .iframe-container {
     width: 100%;
     /* Alto tope, pero nunca tanto que la ventana se pegue a la barra de tareas:
