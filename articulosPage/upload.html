@@ -6,26 +6,38 @@
 <title>Manda tu poema · GDN</title>
 <link rel="stylesheet" href="../shared/win95.css">
 <style>
+  /* La forma nunca hace scroll de página: es una columna de alto fijo y lo
+     único que cede es el editor, que se estira o se encoge con la ventana. */
+  html, body { height: 100%; }
   body {
-    margin: 0; padding: 12px; background: var(--win95-teal);
+    margin: 0; padding: 12px; box-sizing: border-box; background: var(--win95-teal);
     font: 12px var(--font-system); color: #111;
+    display: flex; overflow: hidden;
   }
-  html.embed body { padding: 0; background: #f4f3ee; min-height: 100%; }
+  html.embed body { padding: 0; background: #f4f3ee; }
 
-  .win { max-width: 470px; margin: 0 auto; background: #f4f3ee;
+  .win { width: 100%; max-width: 470px; margin: 0 auto; background: #f4f3ee;
+         display: flex; flex-direction: column; min-height: 0; max-height: 100%;
          border-top: var(--border-raised); border-left: var(--border-raised);
          border-right: var(--border-sunken); border-bottom: var(--border-sunken); }
   html.embed .win { max-width: none; border: none; }
 
-  .bar { background: linear-gradient(90deg, var(--win95-blue), var(--win95-blue-light));
+  .bar { flex: none;
+         background: linear-gradient(90deg, var(--win95-blue), var(--win95-blue-light));
          color: #fff; font-weight: bold; padding: 3px 6px; letter-spacing: .02em; }
   html.embed > body .win > .bar { display: none; }
 
-  .body { padding: 14px 16px 12px; }
+  /* overflow auto y no hidden: en un alto imposible (ventana de ~200px) más
+     vale que se pueda alcanzar el botón que perderlo recortado. */
+  .body { padding: 14px 16px 12px; display: flex; flex-direction: column;
+          flex: 1 1 auto; min-height: 0; overflow: auto; }
 
   /* Cada bloque del formulario, separado por aire y no por cajas */
-  .campo { margin-bottom: 12px; }
+  .campo { margin-bottom: 12px; flex: none; }
   .campo:last-of-type { margin-bottom: 0; }
+
+  /* El bloque del texto es el que absorbe el alto que sobra o falta */
+  .campo-texto { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 
   label, .rotulo {
     display: block; font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
@@ -45,7 +57,7 @@
   /* Editor: barra de formato + caja editable. Lo que se guarda son bloques
      (párrafo, título, cita, separador), nunca el HTML del editor. */
   #barra-formato {
-    display: flex; gap: 3px; padding: 3px; flex-wrap: wrap;
+    display: flex; gap: 3px; padding: 3px; flex-wrap: wrap; flex: none;
     background: #eceae2; border: 1px solid #b9b6ac; border-bottom: none;
   }
   #barra-formato button {
@@ -56,7 +68,7 @@
   #barra-formato .sep { width: 1px; background: #cfccc2; margin: 1px 3px; }
 
   #texto {
-    min-height: 170px; max-height: 340px; overflow-y: auto;
+    flex: 1 1 auto; min-height: 80px; overflow-y: auto;
     padding: 8px 9px; background: #fff; border: 1px solid #b9b6ac; border-top-color: #cfccc2;
     font: 12px/1.6 var(--font-mono); outline: none; white-space: pre-wrap;
   }
@@ -76,7 +88,7 @@
   .dos { display: flex; gap: 10px; }
   .dos > * { flex: 1; min-width: 0; }
 
-  hr { border: none; border-top: 1px solid #dedbd1; margin: 14px 0 12px; }
+  hr { border: none; border-top: 1px solid #dedbd1; margin: 14px 0 12px; flex: none; }
 
   button {
     font: 12px var(--font-system); padding: 4px 14px; background: #e7e5dc; color: #111;
@@ -89,7 +101,7 @@
   button.fuerte:hover:not(:disabled) { background: #0a0aa0; }
   button.fuerte:disabled { background: #c9c7c0; border-color: #b0ada4; color: #8a887f; }
 
-  .pie { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .pie { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex: none; }
   .pie .der { margin-left: auto; display: flex; gap: 6px; }
 
   #fotos-lista { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
@@ -139,6 +151,33 @@
   #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
   #pw-submit:active { border-style: inset; }
   #forma.oculto { display: none; }
+
+  /* Ventanas bajas: se aprieta el aire entre bloques antes que recortar nada,
+     así el editor conserva alto usable y la forma sigue entrando completa. */
+  @media (max-height: 560px) {
+    body { padding: 6px; }
+    .body { padding: 8px 12px 8px; }
+    .campo { margin-bottom: 7px; }
+    hr { margin: 8px 0 7px; }
+    .pie { margin-top: 8px; }
+    #texto { min-height: 60px; }
+  }
+  @media (max-height: 430px) {
+    .body { padding: 6px 10px; }
+    .campo { margin-bottom: 5px; }
+    hr { display: none; }
+    .pie { margin-top: 6px; }
+    #texto { min-height: 44px; }
+    label, .rotulo { margin-bottom: 1px; }
+  }
+  @media (max-height: 300px) {
+    body { padding: 4px; }
+    .body { padding: 5px 8px; }
+    .campo { margin-bottom: 4px; }
+    .pie { margin-top: 4px; }
+    #texto { min-height: 28px; }
+    input[type=text], input[type=password], select { padding: 3px 5px; }
+  }
 </style>
 </head>
 <body>
@@ -199,7 +238,7 @@
 
     <hr>
 
-    <div class="campo">
+    <div class="campo campo-texto">
       <span class="rotulo">Texto</span>
       <div id="barra-formato">
         <button type="button" data-fmt="p"          title="Párrafo normal">Párrafo</button>
