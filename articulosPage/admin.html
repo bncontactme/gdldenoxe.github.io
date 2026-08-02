@@ -3,85 +3,192 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#008080">
 <title>Bandeja · GDN</title>
 <style>
-  :root { --bg:#101418; --panel:#171c22; --linea:#2a323c; --txt:#d6dde5;
-          --tenue:#7c8894; --ok:#4ec07a; --no:#e2564a; --acento:#e8c547; }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--txt);
-         font:13px ui-monospace,'SF Mono',Menlo,monospace; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font: 11px 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, sans-serif;
+    background: #fff; color: #000;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
 
-  header { display:flex; align-items:baseline; gap:10px; padding:10px 14px;
-           border-bottom:1px solid var(--linea); position:sticky; top:0; background:var(--bg); }
-  header h1 { margin:0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
-  header .n { color:var(--acento); }
-  header .der { margin-left:auto; color:var(--tenue); font-size:11px; }
+  /* Barra de menú — la misma del explorador de Artículos */
+  #fe-menubar {
+    background: #ECE9D8; border-bottom: 1px solid #ACA899;
+    display: flex; align-items: stretch; user-select: none;
+    flex-shrink: 0; position: relative; z-index: 20;
+  }
+  .fe-menu-item { padding: 3px 8px; cursor: default; white-space: nowrap; position: relative; }
+  .fe-menu-item:hover, .fe-menu-item.open { background: #316AC5; color: #fff; }
+  .fe-dropdown {
+    display: none; position: absolute; top: 100%; left: 0; background: #ECE9D8;
+    border: 1px solid #808080; box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+    list-style: none; min-width: 170px; z-index: 9999; padding: 2px 0; color: #000;
+  }
+  .fe-dropdown.open { display: block; }
+  .fe-dd-item { padding: 4px 20px 4px 24px; cursor: default; white-space: nowrap; }
+  .fe-dd-item:hover { background: #316AC5; color: #fff; }
 
-  main { padding:14px; max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+  #toolbar {
+    background: #ECE9D8; border-bottom: 1px solid #808080; padding: 4px 8px;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  #ruta {
+    flex: 1; background: #fff; border: 1px inset #808080; padding: 2px 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 
-  .tarjeta { background:var(--panel); border:1px solid var(--linea); }
-  .cab { display:flex; gap:8px; align-items:baseline; padding:8px 10px; border-bottom:1px solid var(--linea); }
-  .cab b { font-size:13px; }
-  .cab span { color:var(--tenue); font-size:11px; }
-  .cab .fecha { margin-left:auto; }
+  #lienzo { background: #fff; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 10px; }
 
-  .cuerpo { padding:8px 10px; max-height:200px; overflow:auto; white-space:pre-wrap;
-            color:#c2cad3; border-bottom:1px solid var(--linea); }
-  .cuerpo p { margin:0 0 8px; }
-  .fotos { display:flex; gap:5px; flex-wrap:wrap; padding:8px 10px 0; }
-  .fotos img { width:52px; height:52px; object-fit:cover; border:1px solid var(--linea); }
+  h2 {
+    font-size: 11px; font-weight: bold; color: #316AC5;
+    margin: 14px 0 6px; padding-bottom: 2px; border-bottom: 1px solid #ACA899;
+  }
+  h2:first-child { margin-top: 0; }
 
-  .pie { display:flex; gap:6px; padding:8px 10px; }
-  .pie .der { margin-left:auto; display:flex; gap:6px; }
-  button { font:12px inherit; padding:3px 12px; background:transparent; color:var(--txt);
-           border:1px solid var(--linea); cursor:pointer; }
-  button:hover:not(:disabled) { border-color:var(--tenue); }
-  button.si { color:var(--ok); border-color:#2c4a38; }
-  button.no { color:var(--no); border-color:#4a2c2c; }
-  button:disabled { opacity:.4; cursor:default; }
+  /* Cada pendiente: una ficha con marco hundido, como el visor de artículos */
+  .ficha {
+    border-top: 2px solid #808080; border-left: 2px solid #808080;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+    background: #ECE9D8; margin-bottom: 10px;
+  }
+  .ficha-cab {
+    background: linear-gradient(90deg, #000080, #1084d0); color: #fff;
+    padding: 3px 6px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .ficha-cab b { font-size: 11px; }
+  .ficha-cab .quien { opacity: .85; }
+  .ficha-cab .cuando { margin-left: auto; opacity: .75; font-size: 10px; }
 
-  .vacio, .cargando { color:var(--tenue); padding:8px 0; }
-  h2 { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--tenue);
-       margin:14px 0 0; font-weight:normal; }
+  .ficha-texto {
+    background: #fff; margin: 6px; padding: 8px;
+    border-top: 2px solid #808080; border-left: 2px solid #808080;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+    font: 12px/1.5 'Fixedsys', 'Courier New', monospace;
+    max-height: 190px; overflow-y: auto; white-space: pre-wrap;
+  }
+  .ficha-texto p { margin-bottom: 10px; }
+  .ficha-texto p:last-child { margin-bottom: 0; }
 
-  .fila { display:flex; align-items:center; gap:10px; padding:5px 10px;
-          background:var(--panel); border:1px solid var(--linea); }
-  .fila .id { color:var(--tenue); min-width:34px; }
-  .fila .t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ficha-fotos { display: flex; gap: 5px; flex-wrap: wrap; padding: 0 6px 6px; }
+  .ficha-fotos img { width: 54px; height: 54px; object-fit: cover; border: 1px solid #808080; }
 
-  #puerta { position:fixed; inset:0; background:var(--bg); display:flex;
-            align-items:center; justify-content:center; z-index:9; }
-  #puerta.fuera { display:none; }
-  #puerta div { display:flex; flex-direction:column; gap:8px; width:250px; }
-  input { font:13px inherit; padding:5px 7px; background:#0b0e11; color:var(--txt);
-          border:1px solid var(--linea); }
-  #pw-error { color:var(--no); min-height:15px; font-size:11px; }
-  #aviso { padding:0 14px; color:var(--acento); font-size:11px; min-height:15px; }
+  .ficha-pie { display: flex; gap: 5px; justify-content: flex-end; padding: 0 6px 6px; }
+
+  button {
+    font: 11px 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, sans-serif;
+    background: #ECE9D8; border: 1px outset #ECE9D8; padding: 3px 12px;
+    cursor: pointer; min-width: 72px;
+  }
+  button:hover:not(:disabled) { background: #F0F0F0; }
+  button:active:not(:disabled) { border-style: inset; }
+  button:disabled { color: #808080; cursor: default; }
+  button.primario { font-weight: bold; }
+
+  /* Publicados: filas de explorador */
+  .fila {
+    display: flex; align-items: center; gap: 8px; padding: 3px 6px;
+    border: 1px solid transparent;
+  }
+  .fila:hover { background: #E8E8F0; border-color: #C0C0D0; }
+  .fila .id { color: #808080; min-width: 32px; }
+  .fila .titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fila a { color: #000080; }
+  .fila button { min-width: 0; padding: 1px 8px; }
+
+  .nota { color: #808080; padding: 4px 0; }
+
+  #barra-estado {
+    background: #ECE9D8; border-top: 1px solid #808080; padding: 3px 8px;
+    font-size: 10px; color: #333; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #aviso { flex: 1; }
+  #aviso.malo { color: #900; font-weight: bold; }
+
+  /* Puerta: el mismo "Acceso restringido" del archivo de fotos */
+  #pw-overlay {
+    position: fixed; inset: 0; background: #008080;
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+  }
+  #pw-overlay.oculto { display: none; }
+  #pw-window {
+    width: 340px; max-width: 90vw; background: #ECE9D8;
+    border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
+  }
+  #pw-titlebar {
+    background: linear-gradient(#0054E3, #0042B3); color: #fff;
+    padding: 4px 8px; height: 26px; display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: bold; user-select: none;
+  }
+  #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  #pw-body label { font-weight: bold; display: block; margin-bottom: 4px; }
+  #pw-input {
+    width: 100%; border: 2px inset #fff; padding: 3px 5px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; background: #fff;
+  }
+  #pw-error { color: #900; min-height: 14px; }
+  #pw-fila { display: flex; justify-content: flex-end; }
+  #pw-submit {
+    background: linear-gradient(#316AC5, #1A52A0); color: #fff;
+    border: 2px outset #316AC5; border-color: #316AC5; padding: 4px 18px; min-width: 75px;
+    font: 11px Tahoma, 'MS Sans Serif', sans-serif; cursor: pointer;
+  }
+  #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
+  #pw-submit:active { border-style: inset; }
 </style>
 </head>
 <body>
 
-<div id="puerta">
-  <div>
-    <h1 style="font-size:12px;letter-spacing:.14em;margin:0 0 4px">GDN · BANDEJA</h1>
-    <input type="password" id="pw" placeholder="contraseña de admin" autocomplete="current-password">
-    <div id="pw-error"></div>
-    <button type="button" id="pw-ok">Entrar</button>
+<div id="pw-overlay">
+  <div id="pw-window">
+    <div id="pw-titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+      </svg>
+      Acceso restringido
+    </div>
+    <div id="pw-body">
+      <div>
+        <label for="pw-input">Contraseña de admin</label>
+        <input type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+      </div>
+      <div id="pw-error"></div>
+      <div id="pw-fila"><button type="button" id="pw-submit">Entrar</button></div>
+    </div>
   </div>
 </div>
 
-<header>
-  <h1>Bandeja</h1>
-  <span class="n" id="conteo"></span>
-  <span class="der"><a href="upload.html" style="color:inherit">+ mandar poema</a></span>
-</header>
-<div id="aviso" role="status" aria-live="polite"></div>
+<div id="fe-menubar">
+  <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+  <div class="fe-menu-item" data-menu="ver" tabindex="0">Ver</div>
+  <ul class="fe-dropdown" id="fe-dropdown-archivo">
+    <li class="fe-dd-item" data-action="nuevo">Nuevo artículo...</li>
+    <li class="fe-dd-item" data-action="cerrar">Cerrar</li>
+  </ul>
+  <ul class="fe-dropdown" id="fe-dropdown-ver">
+    <li class="fe-dd-item" data-action="recargar">Actualizar</li>
+  </ul>
+</div>
 
-<main>
-  <div id="pendientes" class="cargando">Cargando…</div>
+<div id="toolbar">
+  <span id="ruta">Bandeja de revisión</span>
+</div>
+
+<div id="lienzo">
+  <h2>Esperando revisión <span id="conteo"></span></h2>
+  <div id="pendientes" class="nota">Cargando...</div>
   <h2>Publicados</h2>
-  <div id="publicados" class="cargando">Cargando…</div>
-</main>
+  <div id="publicados" class="nota">Cargando...</div>
+</div>
+
+<div id="barra-estado">
+  <span id="aviso" role="status" aria-live="polite"></span>
+</div>
 
 <script>
 (() => {
@@ -90,10 +197,10 @@
   const $ = id => document.getElementById(id);
   let clave = '';   // solo en memoria
 
-  const pedir = async cuerpo => {
+  const pedir = async (cuerpo, pass) => {
     const res = await fetch(WORKER, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cuerpo, password: clave || cuerpo.password }),
+      body: JSON.stringify({ ...cuerpo, password: pass || clave }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
@@ -102,30 +209,57 @@
 
   const avisar = (msg, malo) => {
     $('aviso').textContent = msg;
-    $('aviso').style.color = malo ? 'var(--no)' : 'var(--acento)';
+    $('aviso').className = malo ? 'malo' : '';
   };
 
   // ── Puerta ─────────────────────────────────────────────────────────────────
   const entrar = async () => {
-    const intento = $('pw').value;
+    const intento = $('pw-input').value;
     if (!intento) return;
-    $('pw-ok').disabled = true; $('pw-error').textContent = '';
+    $('pw-submit').disabled = true; $('pw-error').textContent = '';
     try {
-      const r = await pedir({ action: 'ping', password: intento });
-      if (!r.admin) throw new Error('Esa es la contraseña de colaborador, no la de admin.');
-      clave = intento; $('pw').value = '';
-      $('puerta').classList.add('fuera');
+      const r = await pedir({ action: 'ping' }, intento);
+      if (!r.admin) throw new Error('Esa es la de colaborador. Aquí va la de admin.');
+      clave = intento; $('pw-input').value = '';
+      $('pw-overlay').classList.add('oculto');
       cargar();
     } catch (e) {
       $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
-    } finally { $('pw-ok').disabled = false; }
+      $('pw-input').select();
+    } finally { $('pw-submit').disabled = false; }
   };
-  $('pw-ok').addEventListener('click', entrar);
-  $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
-  $('pw').focus();
+  $('pw-submit').addEventListener('click', entrar);
+  $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw-input').focus();
+
+  // ── Menú ───────────────────────────────────────────────────────────────────
+  const cerrarMenus = () => {
+    document.querySelectorAll('.fe-menu-item.open, .fe-dropdown.open')
+      .forEach(x => x.classList.remove('open'));
+  };
+  document.querySelectorAll('.fe-menu-item').forEach(mi => {
+    mi.addEventListener('click', e => {
+      e.stopPropagation();
+      const dd = $('fe-dropdown-' + mi.dataset.menu);
+      const abierto = mi.classList.contains('open');
+      cerrarMenus();
+      if (!abierto && dd) { mi.classList.add('open'); dd.classList.add('open'); }
+    });
+  });
+  document.querySelectorAll('.fe-dd-item').forEach(li => {
+    li.addEventListener('click', e => {
+      e.stopPropagation();
+      const a = li.dataset.action;
+      if (a === 'nuevo') location.href = 'upload.html';
+      else if (a === 'cerrar') location.href = '../index.html';
+      else if (a === 'recargar') cargar();
+      cerrarMenus();
+    });
+  });
+  document.addEventListener('click', cerrarMenus);
 
   // ── Carga ──────────────────────────────────────────────────────────────────
-  async function cargar() { await Promise.all([cargarPendientes(), cargarPublicados()]); }
+  function cargar() { cargarPendientes(); cargarPublicados(); }
 
   async function cargarPendientes() {
     const caja = $('pendientes');
@@ -133,10 +267,10 @@
       const { pendientes } = await pedir({ action: 'articulo-pending' });
       $('conteo').textContent = pendientes.length ? '(' + pendientes.length + ')' : '';
       caja.className = ''; caja.textContent = '';
-      if (!pendientes.length) { caja.className = 'vacio'; caja.textContent = 'Nada esperando.'; return; }
-      pendientes.forEach(p => caja.appendChild(tarjeta(p)));
+      if (!pendientes.length) { caja.className = 'nota'; caja.textContent = 'Nada esperando.'; return; }
+      pendientes.forEach(p => caja.appendChild(ficha(p)));
     } catch (e) {
-      caja.className = 'vacio'; caja.textContent = 'No se pudo cargar: ' + e.message;
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar: ' + e.message;
     }
   }
 
@@ -146,64 +280,62 @@
       const res = await fetch(WORKER + '/articulos');
       const { articulos } = await res.json();
       caja.className = ''; caja.textContent = '';
-      if (!articulos.length) { caja.className = 'vacio'; caja.textContent = 'Ninguno.'; return; }
-      articulos.slice().reverse().forEach(a => caja.appendChild(filaPublicado(a)));
+      if (!articulos.length) { caja.className = 'nota'; caja.textContent = 'Ninguno.'; return; }
+      articulos.slice().reverse().forEach(a => caja.appendChild(fila(a)));
     } catch (e) {
-      caja.className = 'vacio'; caja.textContent = 'No se pudo cargar.';
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar.';
     }
   }
 
   // Todo con textContent: el texto lo escribió alguien más.
-  function tarjeta(p) {
-    const el = document.createElement('article');
-    el.className = 'tarjeta';
+  function ficha(p) {
+    const el = document.createElement('div');
+    el.className = 'ficha';
 
     const cab = document.createElement('div');
-    cab.className = 'cab';
+    cab.className = 'ficha-cab';
     const b = document.createElement('b'); b.textContent = p.titulo || '(sin título)';
-    const meta = document.createElement('span');
-    meta.textContent = [p.meta || p.autor || '', p.instagram ? '@' + p.instagram : ''].filter(Boolean).join('  ');
-    const fecha = document.createElement('span'); fecha.className = 'fecha';
-    fecha.textContent = p.creado ? new Date(p.creado).toLocaleString('es-MX') : '';
-    cab.append(b, meta, fecha);
+    const quien = document.createElement('span'); quien.className = 'quien';
+    quien.textContent = [p.meta || p.autor || '', p.instagram ? '@' + p.instagram : ''].filter(Boolean).join(' · ');
+    const cuando = document.createElement('span'); cuando.className = 'cuando';
+    cuando.textContent = p.creado ? new Date(p.creado).toLocaleString('es-MX') : '';
+    cab.append(b, quien, cuando);
 
-    const cuerpo = document.createElement('div');
-    cuerpo.className = 'cuerpo';
+    const texto = document.createElement('div');
+    texto.className = 'ficha-texto';
     (p.contenido || []).forEach(bloque => {
       if (bloque.tipo === 'img') return;
       const linea = document.createElement('p');
       linea.textContent = bloque.texto || '';
-      cuerpo.append(linea);
+      texto.append(linea);
     });
 
     const fotos = document.createElement('div');
-    fotos.className = 'fotos';
+    fotos.className = 'ficha-fotos';
     [p.imagen, ...(p.contenido || []).filter(x => x.tipo === 'img').map(x => x.url)]
       .filter(Boolean)
       .forEach(url => { const i = document.createElement('img'); i.src = url; i.alt = ''; fotos.append(i); });
 
     const pie = document.createElement('div');
-    pie.className = 'pie';
-    const der = document.createElement('div'); der.className = 'der';
-    const no = boton('Rechazar', 'no', () => moderar(p, 'articulo-reject', el));
-    const si = boton('Publicar', 'si', () => moderar(p, 'articulo-approve', el));
-    der.append(no, si); pie.append(der);
+    pie.className = 'ficha-pie';
+    const no = boton('Rechazar', false, () => moderar(p, 'articulo-reject', el));
+    const si = boton('Publicar', true, () => moderar(p, 'articulo-approve', el));
+    pie.append(no, si);
 
-    el.append(cab, cuerpo);
+    el.append(cab, texto);
     if (fotos.children.length) el.append(fotos);
     el.append(pie);
     return el;
   }
 
-  function filaPublicado(a) {
+  function fila(a) {
     const el = document.createElement('div');
     el.className = 'fila';
     const id = document.createElement('span'); id.className = 'id'; id.textContent = '#' + a.id;
-    const t = document.createElement('span'); t.className = 't'; t.textContent = a.titulo || '';
+    const t = document.createElement('span'); t.className = 'titulo'; t.textContent = a.titulo || '';
     const ver = document.createElement('a');
-    ver.href = 'articulo.html?id=' + a.id; ver.target = '_blank';
-    ver.textContent = 'ver'; ver.style.color = 'var(--tenue)';
-    const del = boton('Borrar', 'no', async () => {
+    ver.href = 'articulo.html?id=' + a.id; ver.target = '_blank'; ver.textContent = 'ver';
+    const del = boton('Borrar', false, async () => {
       if (!confirm('¿Borrar "' + (a.titulo || '#' + a.id) + '"? También se van sus imágenes.')) return;
       try {
         await pedir({ action: 'articulo-delete', id: a.id });
@@ -214,24 +346,25 @@
     return el;
   }
 
-  function boton(texto, clase, onClick) {
+  function boton(texto, primario, onClick) {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = clase; b.textContent = texto;
+    b.type = 'button'; b.textContent = texto;
+    if (primario) b.className = 'primario';
     b.addEventListener('click', onClick);
     return b;
   }
 
-  async function moderar(p, action, tarjetaEl) {
+  async function moderar(p, action, fichaEl) {
     if (action === 'articulo-reject' &&
         !confirm('¿Rechazar "' + (p.titulo || 'sin título') + '"? Se borran sus imágenes.')) return;
-    tarjetaEl.querySelectorAll('button').forEach(b => b.disabled = true);
+    fichaEl.querySelectorAll('button').forEach(b => b.disabled = true);
     try {
       const r = await pedir({ action, uuid: p.uuid });
-      tarjetaEl.remove();
+      fichaEl.remove();
       avisar(action === 'articulo-approve' ? 'Publicado como #' + r.id + '.' : 'Rechazado.');
-      cargarPendientes(); cargarPublicados();
+      cargar();
     } catch (e) {
-      tarjetaEl.querySelectorAll('button').forEach(b => b.disabled = false);
+      fichaEl.querySelectorAll('button').forEach(b => b.disabled = false);
       avisar('Error: ' + e.message, true);
     }
   }

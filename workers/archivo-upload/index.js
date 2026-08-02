@@ -64,12 +64,13 @@ const IMAGES_JSON_PATH  = 'archivoPage/images.json';
 // Artículos / poemas — misma cuenta de Cloudinary, carpeta propia por poema.
 const ARTICULOS_FOLDER = 'articulos';
 
-// Lo que solo abre la contraseña de admin. El resto lo puede hacer cualquiera
-// que tenga la de colaborador.
-// El archivo fotográfico se queda como estaba, con la contraseña de siempre.
+// Con la de colaborador solo se aporta: subir fotos al archivo y mandar poemas
+// a la cola. Todo lo que decide o destruye —publicar, rechazar, borrar, tanto
+// de artículos como de fotos— pide la de admin.
 const ACCIONES_ADMIN = new Set([
   'articulo-submit', 'articulo-pending', 'articulo-approve',
   'articulo-reject', 'articulo-delete',
+  'delete',   // borrar fotos del archivo fotográfico
 ]);
 
 export default {

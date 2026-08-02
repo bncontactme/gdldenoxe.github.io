@@ -87,6 +87,10 @@
     display: flex; justify-content: center; align-items: center; z-index: 99999;
   }
   #pw-overlay.oculto { display: none; }
+  /* Embebida, la ventana se ajusta a la altura del contenido. Un overlay
+     `fixed` no ocupa lugar en el flujo, así que el alto daba cero y solo se
+     veía la barra de título: aquí sí tiene que ocupar espacio. */
+  html.embed #pw-overlay { position: relative; inset: auto; padding: 28px 0 34px; }
   #pw-window {
     width: 340px; max-width: 90vw; background: #ECE9D8;
     border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);

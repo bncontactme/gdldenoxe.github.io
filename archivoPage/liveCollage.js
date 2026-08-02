@@ -205,18 +205,7 @@
     }
     explorerBody.appendChild(frag);
 
-    // Upload folder — always last
-    const uploadFolder = document.createElement('div');
-    uploadFolder.className = 'fe-folder fe-folder-upload';
-    uploadFolder.title = 'Subir fotos al archivo';
-    uploadFolder.innerHTML = '<img src="../indexPage/indexImages/icons/camera3_plus-0.png" class="fe-folder-icon fe-folder-icon-upload" alt="" width="32" height="32">'
-      + '<span class="fe-label">Subir fotos</span>';
-    uploadFolder.onclick = function() {
-      closeExplorer();
-      openUploadPopup();
-    };
-    explorerBody.appendChild(uploadFolder);
-
+    // Subir se hace desde el menú Archivo, no con un icono en la cuadrícula.
     if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
   }
 
@@ -393,7 +382,6 @@
 
   // ===== Win95 Menu Bar =====
   const WORKER_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
-  const PW_HASH_DELETE = '2e7c9afc24a98a5fef53a99fedfd88199fa6ae3a2b255e85a3e97df9b9ce6590';
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -467,19 +455,36 @@
     if (deletePwOverlay) { deletePwOverlay.classList.remove('hidden'); deletePwInput?.focus(); }
   }
 
+  // Borrar es de admin. Quien decide es el worker: la página ya no guarda
+  // ningún hash contra el cual comparar.
   async function submitDeletePassword() {
     const typed = deletePwInput?.value || '';
-    const hash = await sha256(typed);
-    if (hash === PW_HASH_DELETE) {
+    if (!typed) return;
+    if (deletePwSubmit) deletePwSubmit.disabled = true;
+    if (deletePwError) deletePwError.textContent = '';
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ping', password: typed }),
+      });
+      const data = await res.json().catch(function() { return {}; });
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      if (!data.admin) throw new Error('Esa es la contraseña de colaborador. Borrar es de admin.');
+
       _deleteAuthed = true;
       _deletePassword = typed;
       if (deletePwOverlay) deletePwOverlay.classList.add('hidden');
       if (deletePwInput) deletePwInput.value = '';
-      if (deletePwError) deletePwError.textContent = '';
       enterDeleteMode();
-    } else {
-      if (deletePwError) deletePwError.textContent = 'Contraseña incorrecta.';
+    } catch (e) {
+      if (deletePwError) {
+        deletePwError.textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      }
       if (deletePwInput) { deletePwInput.value = ''; deletePwInput.focus(); }
+    } finally {
+      if (deletePwSubmit) deletePwSubmit.disabled = false;
     }
   }
 
