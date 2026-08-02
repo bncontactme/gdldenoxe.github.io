@@ -33,6 +33,8 @@
 //   GET /articulos       índice de publicados
 //   GET /articulo?id=N   un artículo completo
 //
+// Cinco contraseñas fallidas dejan a esa IP fuera 15 minutos (KV: fail:<ip>).
+//
 // Los artículos viven en KV (binding ARTICULOS); cada poema tiene su propia
 // carpeta de imágenes en Cloudinary. Reusa PW_HASH y las creds de Cloudinary
 // que ya existían — no hay secrets nuevos. Redeploy: `wrangler deploy`.
@@ -45,6 +47,7 @@ import {
   listPendientes,
   putPendiente,
   publicarDirecto,
+  urlCloudinary,
   aprobar,
   rechazar,
   borrarPublicado,
@@ -126,11 +129,24 @@ export default {
     // ── Dos contraseñas ───────────────────────────────────────────────────────
     // Colaborador (PW_HASH): manda poemas e imágenes; todo cae en la cola.
     // Admin (ADMIN_HASH): además decide qué se publica y qué se va.
+    //
+    // Antes de comparar nada: si esta IP ya falló demasiado, ni se le escucha.
+    // Sin esto, adivinar la contraseña es cuestión de dejar corriendo un script.
+    const ip = request.headers.get('CF-Connecting-IP') || 'sin-ip';
+    if (await estaBloqueada(env, ip)) {
+      return jsonResponse(
+        { error: 'Demasiados intentos fallidos. Espera unos minutos.' },
+        429, allowedOrigin,
+      );
+    }
+
     const hash    = await sha256hex(String(body.password || ''));
     const esAdmin = !!env.ADMIN_HASH && hash === env.ADMIN_HASH;
     if (!esAdmin && hash !== env.PW_HASH) {
+      await anotarFallo(env, ip);
       return jsonResponse({ error: 'Unauthorized' }, 401, allowedOrigin);
     }
+    await limpiarFallos(env, ip);
     if (ACCIONES_ADMIN.has(body.action) && !esAdmin) {
       return jsonResponse({ error: 'Necesitas la contraseña de admin' }, 403, allowedOrigin);
     }
@@ -318,15 +334,22 @@ async function handleRegister(body, env, origin) {
   if (!entries.length) {
     return jsonResponse({ error: 'No entries provided' }, 400, origin);
   }
+  // Solo se aceptan imágenes que ya viven en nuestro Cloudinary. Antes entraba
+  // cualquier URL, así que con la contraseña de colaborador se podía colgar en
+  // la galería una imagen alojada donde fuera.
   const sanitizedEntries = entries.map(function(e) {
     return {
-      url:         String(e.url         || ''),
-      thumbUrl:    String(e.thumbUrl    || ''),
-      artista:     String(e.artista     || ''),
-      descripcion: String(e.descripcion || ''),
-      fecha:       String(e.fecha       || ''),
+      url:         urlCloudinary(e.url),
+      thumbUrl:    urlCloudinary(e.thumbUrl),
+      artista:     String(e.artista     || '').slice(0, 200),
+      descripcion: String(e.descripcion || '').slice(0, 500),
+      fecha:       String(e.fecha       || '').slice(0, 40),
     };
   }).filter(function(e) { return e.url; });
+
+  if (!sanitizedEntries.length) {
+    return jsonResponse({ error: 'Solo se aceptan imágenes de Cloudinary' }, 400, origin);
+  }
 
   try {
     await githubUpdateJson(env, IMAGES_JSON_PATH, function(current) {
@@ -530,6 +553,34 @@ async function githubUpdateJson(env, path, updateFn) {
     const errData = await putRes.json().catch(() => ({}));
     throw new Error('GitHub PUT failed: ' + putRes.status + ' ' + JSON.stringify(errData));
   }
+}
+
+// ── Freno a la fuerza bruta ───────────────────────────────────────────────────
+// El filtro de Origin no protege nada (con curl se pone el que sea), así que lo
+// único que separa a un extraño de la cuenta es la contraseña. Aquí se le pone
+// techo: cinco fallos y esa IP queda fuera un rato.
+//
+// Es best-effort: KV es eventualmente consistente, así que un ataque muy
+// paralelo puede colar algunos intentos de más antes de que el contador se
+// propague. Aun así baja el ritmo de miles por minuto a un puñado.
+const MAX_FALLOS   = 5;
+const BLOQUEO_SEG  = 15 * 60;
+
+const kFallos = ip => 'fail:' + ip;
+
+async function estaBloqueada(env, ip) {
+  const n = Number(await env.ARTICULOS.get(kFallos(ip))) || 0;
+  return n >= MAX_FALLOS;
+}
+
+async function anotarFallo(env, ip) {
+  const n = (Number(await env.ARTICULOS.get(kFallos(ip))) || 0) + 1;
+  // El TTL se renueva con cada fallo: insistir alarga el castigo.
+  await env.ARTICULOS.put(kFallos(ip), String(n), { expirationTtl: BLOQUEO_SEG });
+}
+
+async function limpiarFallos(env, ip) {
+  if (await env.ARTICULOS.get(kFallos(ip))) await env.ARTICULOS.delete(kFallos(ip));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
