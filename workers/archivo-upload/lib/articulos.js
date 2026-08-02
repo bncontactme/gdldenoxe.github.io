@@ -27,7 +27,6 @@ export const ARTICULOS_FOLDER = 'articulos';
 const ALLOWED_TIPOS = new Set(['p', 'lead', 'h2', 'quote', 'hr', 'img']);
 const MAX_BLOQUES   = 300;
 const MAX_TEXTO     = 8000;
-const MAX_IMAGENES  = 20;
 
 // ── Index ─────────────────────────────────────────────────────────────────────
 
@@ -146,16 +145,6 @@ export async function publicarDirecto(env, entrada) {
   return publicado;
 }
 
-// Siembra con id fijo (se usó para migrar articulos.json).
-export async function sembrar(env, art) {
-  await env.ARTICULOS.put(kPub(art.id), JSON.stringify(art));
-  await reindex(env, list =>
-    list.filter(e => Number(e.id) !== Number(art.id)).concat([toIndexEntry(art)]),
-  );
-  const seq = Number(await env.ARTICULOS.get(K_SEQ)) || 0;
-  if (art.id > seq) await env.ARTICULOS.put(K_SEQ, String(art.id));
-}
-
 async function siguienteId(env) {
   // KV no tiene contadores atómicos. El riesgo real es nulo (solo el admin
   // aprueba, de uno en uno), pero se toma el máximo entre el contador y el
@@ -250,5 +239,3 @@ export function handleInstagram(valor) {
 function limpiar(valor, max) {
   return String(valor || '').trim().replace(/\s+/g, ' ').slice(0, max);
 }
-
-export { MAX_IMAGENES };

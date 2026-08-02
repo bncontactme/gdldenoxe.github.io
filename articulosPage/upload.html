@@ -378,10 +378,12 @@
       const etiqueta = nodo.tagName.toLowerCase();
       if (etiqueta === 'hr') { bloques.push({ tipo: 'hr', texto: '' }); return; }
 
-      // Imagen suelta, o envuelta en un párrafo por el navegador
+      // Imagen suelta, o dentro de un párrafo. Si el párrafo trae imagen Y
+      // texto salen las dos cosas: antes la imagen se perdía al guardar.
       if (etiqueta === 'img') { bloques.push({ tipo: 'img', url: nodo.src }); return; }
-      const img = nodo.querySelector && nodo.querySelector('img');
-      if (img && !(nodo.innerText || '').trim()) { bloques.push({ tipo: 'img', url: img.src }); return; }
+      if (nodo.querySelectorAll) {
+        nodo.querySelectorAll('img').forEach(im => bloques.push({ tipo: 'img', url: im.src }));
+      }
 
       // innerText respeta los <br> como saltos, que es lo que un verso necesita
       const texto = (nodo.innerText || '').replace(/\u00a0/g, ' ').replace(/\s+$/, '');

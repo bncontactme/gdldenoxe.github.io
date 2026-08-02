@@ -674,37 +674,6 @@ body {
 .win95-titlebar-close:active { border-top-color: #808080; border-left-color: #808080; border-right-color: #fff; border-bottom-color: #fff; }
 
 /* ===== Shared form controls ===== */
-.fe-input {
-  width: 100%;
-  border: 2px inset #fff;
-  padding: 3px 5px;
-  font-family: Tahoma, 'MS Sans Serif', sans-serif;
-  font-size: 11px;
-  background: #fff;
-  outline: none;
-}
-.fe-btn {
-  background: linear-gradient(#F2F0E8, #DAD7C9);
-  border: 2px outset #F2F0E8;
-  padding: 3px 14px;
-  font-family: Tahoma, 'MS Sans Serif', sans-serif;
-  font-size: 11px;
-  cursor: pointer;
-  min-width: 70px;
-}
-.fe-btn:hover { background: linear-gradient(#ECF1FB, #C5CBDC); }
-.fe-btn:active { border-style: inset; }
-.fe-btn:disabled { opacity: .5; cursor: default; }
-.fe-btn-primary {
-  background: linear-gradient(#316AC5, #1A52A0);
-  color: #fff; border-color: #316AC5;
-}
-.fe-btn-primary:hover { background: linear-gradient(#4479CE, #2460B0); }
-.fe-btn-danger {
-  background: linear-gradient(#C75050, #8B0000);
-  color: #fff; border-color: #8B0000;
-}
-.fe-btn-danger:hover { background: linear-gradient(#D46060, #9B1010); }
 
 /* ===== Delete action bar (inside file explorer window) ===== */
 #delete-selected-count { flex: 1; color: #333; }

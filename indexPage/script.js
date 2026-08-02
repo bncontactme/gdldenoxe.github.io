@@ -1630,6 +1630,12 @@ juntxs y brillando.`
             const win = $('[data-window-id="upload-articulo"]');
             if (win) { win.classList.add('hidden'); updateTaskbar(); }
         }
+        // El Cancelar del formulario de fotos mandaba este aviso y nadie lo
+        // escuchaba: el botón no cerraba nada.
+        if (e.data?.type === 'close-upload-window') {
+            const win = $('[data-window-id="upload"]');
+            if (win) { win.classList.add('hidden'); updateTaskbar(); }
+        }
     });
 
     // ===== Nuevo artículo window (shown from the Artículos folder) =====

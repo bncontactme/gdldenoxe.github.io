@@ -333,6 +333,7 @@
             window.addEventListener('message', function(e) {
                 if (e.origin !== location.origin) return;
                 if (e.data && e.data.type === 'open-upload-popup') openUpload();
+                if (e.data && e.data.type === 'close-upload-window') closeUpload();
             });
         })();
         // =====================================================================
