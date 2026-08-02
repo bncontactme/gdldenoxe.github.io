@@ -17,7 +17,6 @@
 //
 // Actions (POST JSON, routed by body.action):
 //   (none)/upload    sign a photo upload         (archivo/<slug>)      [auth]
-//   register         append photo to images.json                       [auth]
 //   delete           remove photo(s) from Cloudinary + images.json      [auth]
 //   list             live photo list from Cloudinary                    [public]
 //   ping             probar la contraseña y saber de qué nivel es     [colab]
@@ -29,6 +28,9 @@
 //   articulo-reject  rechazar (borra su carpeta de imágenes)           [admin]
 //   articulo-delete  borrar un publicado (+ su carpeta)                [admin]
 //   respaldo         volcar todos los publicados a Cloudinary          [admin]
+//   foto-pending     fotos esperando revisión                          [admin]
+//   foto-approve     mover una foto a la galería                       [admin]
+//   foto-reject      borrarla                                          [admin]
 //
 // Lecturas públicas (GET):
 //   GET /articulos       índice de publicados
@@ -60,6 +62,9 @@ const ALLOWED_ORIGINS = new Set([
   'https://guadalajaradenoxe.com',
 ]);
 const FOLDER = 'archivo';
+// Las fotos que sube la banda caen aquí primero. La galería solo lee `archivo/`,
+// así que nada se ve hasta que el admin lo mueve. Aprobar = renombrar.
+const FOLDER_PENDIENTE = 'archivo-pendiente';
 
 const GITHUB_OWNER      = 'bncontactme';
 const GITHUB_REPO       = 'gdldenoxe.github.io';
@@ -74,7 +79,8 @@ const ARTICULOS_FOLDER = 'articulos';
 const ACCIONES_ADMIN = new Set([
   'articulo-submit', 'articulo-pending', 'articulo-approve',
   'articulo-reject', 'articulo-delete', 'respaldo',
-  'delete',   // borrar fotos del archivo fotográfico
+  'delete',                                        // borrar fotos publicadas
+  'foto-pending', 'foto-approve', 'foto-reject',   // revisión de fotos
 ]);
 
 export default {
@@ -167,9 +173,6 @@ export default {
     if (body.action === 'delete') {
       return handleDelete(body, env, allowedOrigin);
     }
-    if (body.action === 'register') {
-      return handleRegister(body, env, allowedOrigin);
-    }
     // ── Artículos / poemas (solo admin) ───────────────────────────────────────
     if (body.action === 'articulo-submit') {
       return handleArticuloSubmit(body, env, allowedOrigin);
@@ -185,6 +188,15 @@ export default {
     }
     if (body.action === 'articulo-delete') {
       return handleArticuloDelete(body, env, allowedOrigin);
+    }
+    if (body.action === 'foto-pending') {
+      return handleFotoPending(env, allowedOrigin);
+    }
+    if (body.action === 'foto-approve') {
+      return handleFotoApprove(body, env, allowedOrigin);
+    }
+    if (body.action === 'foto-reject') {
+      return handleFotoReject(body, env, allowedOrigin);
     }
     if (body.action === 'respaldo') {
       try {
@@ -229,9 +241,10 @@ async function handleUpload(body, env, origin) {
     const timestamp    = String(Math.floor(Date.now() / 1000));
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
-    // Place image in archivo/<artist-slug>/ subfolder
+    // Entra a revisión: archivo-pendiente/<artista>/ — invisible en la galería
+    // hasta que el admin la apruebe.
     const slug   = artistSlug(body.artista);
-    const folder = FOLDER + '/' + slug;
+    const folder = FOLDER_PENDIENTE + '/' + slug;
 
     const signingParams = {
       asset_folder:  folder,
@@ -346,163 +359,103 @@ async function handleList(env, origin) {
   return jsonResponse({ entries }, 200, origin);
 }
 
-// ── Register handler (append new entries to images.json) ──────────────────────
-async function handleRegister(body, env, origin) {
-  const entries = Array.isArray(body.entries) ? body.entries : (body.entry ? [body.entry] : []);
-  if (!entries.length) {
-    return jsonResponse({ error: 'No entries provided' }, 400, origin);
-  }
-  // Solo se aceptan imágenes que ya viven en nuestro Cloudinary. Antes entraba
-  // cualquier URL, así que con la contraseña de colaborador se podía colgar en
-  // la galería una imagen alojada donde fuera.
-  const sanitizedEntries = entries.map(function(e) {
-    return {
-      url:         urlCloudinary(e.url),
-      thumbUrl:    urlCloudinary(e.thumbUrl),
-      artista:     String(e.artista     || '').slice(0, 200),
-      descripcion: String(e.descripcion || '').slice(0, 500),
-      fecha:       String(e.fecha       || '').slice(0, 40),
-    };
-  }).filter(function(e) { return e.url; });
-
-  if (!sanitizedEntries.length) {
-    return jsonResponse({ error: 'Solo se aceptan imágenes de Cloudinary' }, 400, origin);
-  }
-
-  try {
-    await githubUpdateJson(env, IMAGES_JSON_PATH, function(current) {
-      return current.concat(sanitizedEntries);
-    });
-    return jsonResponse({ ok: true }, 200, origin);
-  } catch (e) {
-    return jsonResponse({ error: String(e) }, 502, origin);
-  }
-}
-
-// ── Artículo: firma la subida de una imagen a la carpeta del poema ───────────
-// Llega ya autenticado por el enrutador. El uuid es el del envío, así todas
-// las imágenes de un poema caen juntas en su carpeta.
-async function handleArticuloSign(body, env, origin) {
-  const declaredMime = String(body.content_type || '').toLowerCase();
-  if (declaredMime && !ALLOWED_UPLOAD_MIME.has(declaredMime)) {
-    return jsonResponse({ error: 'Unsupported content type' }, 400, origin);
-  }
-
-  const uuid = uuidValido(body.uuid);
-  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
-
-  const timestamp    = String(Math.floor(Date.now() / 1000));
-  const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
-
-  // Carpeta propia del poema: articulos/<uuid>-<slug>/
-  const folder = ARTICULOS_FOLDER + '/' + uuid + '-' + artistSlug(body.autor || body.titulo || 'anonimo');
-
-  const signingParams = {
-    asset_folder:  folder,
-    folder,
-    timestamp,
-    upload_preset: uploadPreset,
-  };
-
-  const contextParts = [];
-  if (body.autor)  contextParts.push('artista=' + sanitize(body.autor));
-  if (body.titulo) contextParts.push('caption=' + sanitize(body.titulo));
-  if (contextParts.length) signingParams.context = contextParts.join('|');
-
-  const paramString = Object.keys(signingParams)
-    .sort()
-    .map(k => k + '=' + signingParams[k])
-    .join('&');
-  const signature = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
-
-  return jsonResponse(
-    { signature, timestamp, api_key: env.CLOUDINARY_API_KEY, cloud_name: env.CLOUDINARY_CLOUD_NAME, upload_preset: uploadPreset, folder, asset_folder: folder, context: signingParams.context || null },
-    200, origin,
+// ── Fotos del archivo: revisión ───────────────────────────────────────────────
+// Suben a archivo-pendiente/ y ahí se quedan, fuera de la galería, hasta que el
+// admin decide. Aprobar es renombrar a archivo/ (Cloudinary no mueve bytes) y
+// rechazar es borrar. Los datos de quién y qué viajan en el context del propio
+// asset, así que no hace falta llevar una cola aparte.
+async function handleFotoPending(env, origin) {
+  const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+  const params = new URLSearchParams({
+    type: 'upload', prefix: FOLDER_PENDIENTE + '/', context: 'true', max_results: '100',
+  });
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image?${params}`,
+    { headers: { Authorization: `Basic ${basicAuth}` } },
   );
-}
+  if (!res.ok) return jsonResponse({ error: 'Cloudinary list failed: ' + res.status }, 502, origin);
 
-// ── Colaborador: mandar un poema a la cola de revisión ──────────────────────
-async function handleArticuloPropose(body, env, origin) {
-  try {
-    const art = await putPendiente(env, body.articulo || {});
-    return jsonResponse({ ok: true, uuid: art.uuid }, 200, origin);
-  } catch (e) {
-    return jsonResponse({ error: String(e.message || e) }, 400, origin);
-  }
-}
-
-// ── Admin: alta directa, sin pasar por la cola ───────────────────────────────
-async function handleArticuloSubmit(body, env, origin) {
-  try {
-    const art = await publicarDirecto(env, body.articulo || {});
-    await respaldarPoema(env, art);
-    return jsonResponse({ ok: true, id: art.id }, 200, origin);
-  } catch (e) {
-    return jsonResponse({ error: String(e.message || e) }, 400, origin);
-  }
-}
-
-// ── Admin: cola de pendientes ────────────────────────────────────────────────
-async function handleArticuloPending(env, origin) {
-  return jsonResponse({ ok: true, pendientes: await listPendientes(env) }, 200, origin);
-}
-
-// ── Admin: aprobar ───────────────────────────────────────────────────────────
-async function handleArticuloApprove(body, env, origin) {
-  const uuid = uuidValido(body.uuid);
-  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
-
-  // El admin puede corregir título/meta/clase al momento de aprobar.
-  const overrides = {};
-  if (body.titulo) overrides.titulo = String(body.titulo).trim().slice(0, 200);
-  if (body.meta)   overrides.meta   = String(body.meta).trim().slice(0, 200);
-  if (body.clase !== undefined) overrides.clase = body.clase === 'poema' ? 'poema' : undefined;
-
-  const art = await aprobar(env, uuid, overrides);
-  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
-
-  await respaldarPoema(env, art);
-  return jsonResponse({ ok: true, id: art.id }, 200, origin);
-}
-
-// ── Admin: rechazar (borra la carpeta de imágenes del poema) ─────────────────
-async function handleArticuloReject(body, env, origin) {
-  const uuid = uuidValido(body.uuid);
-  if (!uuid) return jsonResponse({ error: 'uuid inválido' }, 400, origin);
-
-  const art = await rechazar(env, uuid, body.motivo);
-  if (!art) return jsonResponse({ error: 'No existe ese pendiente' }, 404, origin);
-
-  await borrarCarpetaCloudinary(env, art.carpeta);
-  return jsonResponse({ ok: true, uuid }, 200, origin);
-}
-
-// ── Admin: borrar un publicado (+ su carpeta de imágenes) ───────────────────
-async function handleArticuloDelete(body, env, origin) {
-  const id = Number(body.id);
-  if (!Number.isFinite(id)) return jsonResponse({ error: 'id required' }, 400, origin);
-
-  const art = await borrarPublicado(env, id);
-  if (!art) return jsonResponse({ ok: true, removed: false }, 200, origin);
-
-  await borrarCarpetaCloudinary(env, art.carpeta);
-  return jsonResponse({ ok: true, removed: true, id }, 200, origin);
-}
-
-// ── Lecturas públicas ────────────────────────────────────────────────────────
-async function handleArticulosList(env, origin) {
-  const list = await readIndex(env);
-  return jsonResponse({ ok: true, articulos: list }, 200, origin, {
-    'Cache-Control': 'public, max-age=30',
+  const data = await res.json();
+  const fotos = (data.resources || []).map(function(r) {
+    const ctx = r.context && r.context.custom ? r.context.custom : {};
+    return {
+      public_id:   r.public_id,
+      url:         `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/v${r.version}/${r.public_id}.${r.format}`,
+      thumbUrl:    `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/c_thumb,w_160,h_160,q_auto,f_auto/v${r.version}/${r.public_id}.${r.format}`,
+      artista:     ctx.artista     || '',
+      descripcion: ctx.descripcion || '',
+      fecha:       ctx.fecha       || '',
+      subida:      r.created_at    || '',
+    };
   });
+  return jsonResponse({ ok: true, fotos }, 200, origin);
 }
 
-async function handleArticuloGet(id, env, origin) {
-  const art = await getPublicado(env, id);
-  if (!art) return jsonResponse({ error: 'No encontrado' }, 404, origin);
-  return jsonResponse({ ok: true, articulo: art }, 200, origin, {
-    'Cache-Control': 'public, max-age=60',
-  });
+async function handleFotoApprove(body, env, origin) {
+  const desde = String(body.public_id || '');
+  if (!desde.startsWith(FOLDER_PENDIENTE + '/')) {
+    return jsonResponse({ error: 'Esa foto no está en revisión' }, 400, origin);
+  }
+  const hacia = FOLDER + desde.slice(FOLDER_PENDIENTE.length);
+
+  let movida;
+  try {
+    movida = await cloudinaryRenombrar(env, desde, hacia);
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 502, origin);
+  }
+
+  // images.json alimenta la lista de artistas y sus cuentas en el formulario.
+  // Si falla, la foto ya quedó publicada igual: no se revierte por esto.
+  try {
+    const ctx = (movida.context && movida.context.custom) ? movida.context.custom : {};
+    await githubUpdateJson(env, IMAGES_JSON_PATH, function(current) {
+      return current.concat([{
+        url:         movida.secure_url,
+        thumbUrl:    movida.secure_url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/'),
+        artista:     ctx.artista     || body.artista     || '',
+        descripcion: ctx.descripcion || body.descripcion || '',
+        fecha:       ctx.fecha       || body.fecha       || '',
+      }]);
+    });
+  } catch (e) {
+    console.error('images.json no se actualizó tras aprobar la foto:', e);
+  }
+
+  return jsonResponse({ ok: true, public_id: hacia }, 200, origin);
+}
+
+async function handleFotoReject(body, env, origin) {
+  const id = String(body.public_id || '');
+  if (!id.startsWith(FOLDER_PENDIENTE + '/')) {
+    return jsonResponse({ error: 'Esa foto no está en revisión' }, 400, origin);
+  }
+  const res = await cloudinaryDeleteByPublicIds(env, [id]);
+  if (!res.ok) return jsonResponse({ error: 'Cloudinary ' + res.status }, 502, origin);
+  return jsonResponse({ ok: true }, 200, origin);
+}
+
+// Renombrar = mover de carpeta sin volver a subir el archivo.
+async function cloudinaryRenombrar(env, desde, hacia) {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const params = { from_public_id: desde, timestamp, to_public_id: hacia };
+  const paramString = Object.keys(params).sort().map(k => k + '=' + params[k]).join('&');
+  const signature   = await sha256hex(paramString + env.CLOUDINARY_API_SECRET);
+
+  const fd = new FormData();
+  Object.keys(params).forEach(k => fd.append(k, params[k]));
+  fd.append('api_key', env.CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/' + env.CLOUDINARY_CLOUD_NAME + '/image/rename',
+    { method: 'POST', body: fd },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.secure_url) {
+    throw new Error('Cloudinary rename ' + res.status + ' ' + JSON.stringify(data.error || data).slice(0, 200));
+  }
+  return data;
 }
 
 // ── Respaldo en Cloudinary ────────────────────────────────────────────────────

@@ -714,26 +714,11 @@
         }
         selectedFiles = [];
         renderThumbs();
+        // No se registran en images.json todavía: eso pasa cuando el admin
+        // las aprueba y la foto se mueve a la carpeta de la galería.
         showStatus(
-          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
-          ' correctamente. Actualizando galería...',
-          'success'
-        );
-        // Register new entries in images.json via the Worker
-        if (WORKER_URL && uploadedEntries.length) {
-          try {
-            await fetch(WORKER_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'register', password: _password, entries: uploadedEntries }),
-            });
-          } catch (e) {
-            console.error('Register failed:', e);
-          }
-        }
-        showStatus(
-          uploaded + (uploaded === 1 ? ' imagen subida' : ' imágenes subidas') +
-          ' correctamente. La galería ya fue actualizada.',
+          uploaded + (uploaded === 1 ? ' imagen enviada' : ' imágenes enviadas') +
+          '. Quedan en revisión — aparecerán en la galería cuando les den el visto bueno.',
           'success'
         );
       } else {
