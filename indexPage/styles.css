@@ -969,9 +969,8 @@ body.arrastrando iframe {
     display: none;
 }
 
-/* Upload: no inset border, window auto-sizes via postMessage */
-[data-window-id="upload"] .iframe-container,
-[data-window-id="upload-articulo"] .iframe-container {
+/* Upload de fotos: sin marco hundido, se autoajusta por postMessage */
+[data-window-id="upload"] .iframe-container {
     border: none;
     height: 100%;
     overflow: hidden;
@@ -1029,7 +1028,9 @@ body.arrastrando iframe {
 }
 
 /* Ventanas de Galería y Tienda más grandes */
-[data-window-id="galeria"] {
+/* Galería y Nuevo artículo comparten medidas: son la misma clase de ventana. */
+[data-window-id="galeria"],
+[data-window-id="upload-articulo"] {
     width: 550px;
 }
 
@@ -1826,7 +1827,8 @@ body.arrastrando iframe {
         max-width: calc(100vw - 24px);
     }
 
-    [data-window-id="galeria"] {
+    [data-window-id="galeria"],
+    [data-window-id="upload-articulo"] {
         width: 480px;
     }
 

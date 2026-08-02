@@ -10,7 +10,7 @@
     margin: 0; padding: 12px; background: var(--win95-teal);
     font: 12px var(--font-system); color: #111;
   }
-  html.embed body { padding: 0; background: #f4f3ee; }
+  html.embed body { padding: 0; background: #f4f3ee; min-height: 100%; }
 
   .win { max-width: 470px; margin: 0 auto; background: #f4f3ee;
          border-top: var(--border-raised); border-left: var(--border-raised);
@@ -41,7 +41,32 @@
   }
   input:focus, textarea:focus, select:focus { border-color: var(--win95-blue-light); }
   textarea { font: 12px/1.55 var(--font-mono); resize: vertical; }
-  #texto { height: 150px; }
+
+  /* Editor: barra de formato + caja editable. Lo que se guarda son bloques
+     (párrafo, título, cita, separador), nunca el HTML del editor. */
+  #barra-formato {
+    display: flex; gap: 3px; padding: 3px; flex-wrap: wrap;
+    background: #eceae2; border: 1px solid #b9b6ac; border-bottom: none;
+  }
+  #barra-formato button {
+    padding: 2px 8px; font-size: 11px; background: #f4f3ee; border: 1px solid #cfccc2;
+  }
+  #barra-formato button:hover:not(:disabled) { background: #fff; }
+  #barra-formato button.activo { background: var(--win95-blue); border-color: #00004d; color: #fff; }
+  #barra-formato .sep { width: 1px; background: #cfccc2; margin: 1px 3px; }
+
+  #texto {
+    min-height: 170px; max-height: 340px; overflow-y: auto;
+    padding: 8px 9px; background: #fff; border: 1px solid #b9b6ac; border-top-color: #cfccc2;
+    font: 12px/1.6 var(--font-mono); outline: none; white-space: pre-wrap;
+  }
+  #texto:focus { border-color: var(--win95-blue-light); }
+  #texto:empty::before { content: attr(data-vacio); color: #a5a29a; }
+  #texto.centrado { text-align: center; }
+  #texto h2 { font: bold 13px var(--font-system); color: var(--win95-blue); margin: 12px 0 6px; }
+  #texto blockquote { margin: 10px 0; padding-left: 10px; border-left: 3px solid #cfccc2; font-style: italic; }
+  #texto hr { border: none; border-top: 1px solid #b9b6ac; margin: 12px 0; }
+  #texto p { margin: 0 0 10px; }
   .arroba { display: flex; align-items: stretch; }
   .arroba span {
     display: flex; align-items: center; padding: 0 7px; color: #8a887f;
@@ -87,10 +112,7 @@
     display: flex; justify-content: center; align-items: center; z-index: 99999;
   }
   #pw-overlay.oculto { display: none; }
-  /* Embebida, la ventana se ajusta a la altura del contenido. Un overlay
-     `fixed` no ocupa lugar en el flujo, así que el alto daba cero y solo se
-     veía la barra de título: aquí sí tiene que ocupar espacio. */
-  html.embed #pw-overlay { position: relative; inset: auto; padding: 28px 0 34px; }
+  html.embed #pw-overlay { position: absolute; }
   #pw-window {
     width: 340px; max-width: 90vw; background: #ECE9D8;
     border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5);
@@ -169,28 +191,30 @@
       </div>
     </div>
 
-    <div class="campo dos">
-      <div>
-        <label for="formato">Formato</label>
-        <select id="formato">
-          <option value="poema">Poema — centrado</option>
-          <option value="">Prosa — alineado a la izquierda</option>
-        </select>
-      </div>
-      <div>
-        <label for="categoria">Categoría</label>
-        <select id="categoria">
-          <option>Poesía</option><option>Crónica</option><option>Cuento</option>
-          <option>Ensayo</option><option>Artículo</option>
-        </select>
-      </div>
+    <div class="campo">
+      <label for="categoria">Categoría</label>
+      <select id="categoria">
+        <option>Poesía</option><option>Crónica</option><option>Cuento</option>
+        <option>Ensayo</option><option>Artículo</option>
+      </select>
     </div>
 
     <hr>
 
     <div class="campo">
-      <label for="texto">Texto <span class="opt">— deja una línea en blanco entre estrofas; una línea con --- pone un separador</span></label>
-      <textarea id="texto" placeholder="Pega aquí tu poema.&#10;Los saltos de línea se respetan tal cual."></textarea>
+      <span class="rotulo">Texto</span>
+      <div id="barra-formato">
+        <button type="button" data-fmt="p"          title="Párrafo normal">Párrafo</button>
+        <button type="button" data-fmt="h2"         title="Título de sección">Título</button>
+        <button type="button" data-fmt="blockquote" title="Cita">Cita</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="hr"         title="Separador">—</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="centrar" id="btn-centrar"
+                title="Centrado: así se ven los poemas">Centrado</button>
+      </div>
+      <div id="texto" contenteditable="true" spellcheck="true"
+           data-vacio="Escribe o pega aquí tu texto."></div>
     </div>
 
     <div class="campo">
@@ -220,9 +244,6 @@
 
   if (new URLSearchParams(location.search).get('embed') === '1') {
     document.documentElement.classList.add('embed');
-    new ResizeObserver(() => parent.postMessage(
-      { type: 'articulo-upload-resize', height: document.body.offsetHeight }, location.origin
-    )).observe(document.body);
   }
 
   let fotos = [];
@@ -262,23 +283,72 @@
   $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
   $('pw-input').focus();
 
-  // Línea en blanco = párrafo nuevo; línea con --- = separador. Los saltos
-  // dentro de una estrofa se conservan tal cual.
-  const parsear = raw => {
-    const bloques = []; let buf = [];
-    const cerrar = () => { const t = buf.join('\n'); if (t.trim()) bloques.push({ tipo: 'p', texto: t }); buf = []; };
-    String(raw || '').replace(/\r\n?/g, '\n').split('\n').forEach(l => {
-      if (/^\s*$/.test(l)) cerrar();
-      else if (/^\s*(-{3,}|\*{3,})\s*$/.test(l)) { cerrar(); bloques.push({ tipo: 'hr', texto: '' }); }
-      else buf.push(l);
+  // ── Editor ─────────────────────────────────────────────────────────────────
+  // Se guardan bloques, no HTML: se recorre el editor y cada hijo se traduce a
+  // {tipo, texto}. Lo que no reconocemos cae a párrafo.
+  const editor = $('texto');
+  let centrado = true;   // los poemas van centrados; es lo más común aquí
+
+  const aplicar = fmt => {
+    editor.focus();
+    document.execCommand('formatBlock', false, fmt);
+    sync();
+  };
+
+  document.querySelectorAll('#barra-formato button[data-fmt]').forEach(b => {
+    b.addEventListener('click', () => aplicar(b.dataset.fmt));
+  });
+
+  $('barra-formato').querySelector('[data-cmd="hr"]').addEventListener('click', () => {
+    editor.focus();
+    document.execCommand('insertHTML', false, '<hr><p><br></p>');
+    sync();
+  });
+
+  const btnCentrar = $('btn-centrar');
+  const pintarCentrado = () => {
+    editor.classList.toggle('centrado', centrado);
+    btnCentrar.classList.toggle('activo', centrado);
+  };
+  btnCentrar.addEventListener('click', () => { centrado = !centrado; pintarCentrado(); });
+  pintarCentrado();
+
+  // Pegar siempre como texto plano: nada de HTML ajeno entrando al editor.
+  editor.addEventListener('paste', e => {
+    e.preventDefault();
+    const texto = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, texto);
+  });
+
+  const parsear = () => {
+    const bloques = [];
+    editor.childNodes.forEach(nodo => {
+      if (nodo.nodeType === Node.TEXT_NODE) {
+        const t = nodo.textContent.trim();
+        if (t) bloques.push({ tipo: 'p', texto: t });
+        return;
+      }
+      if (nodo.nodeType !== Node.ELEMENT_NODE) return;
+
+      const etiqueta = nodo.tagName.toLowerCase();
+      if (etiqueta === 'hr') { bloques.push({ tipo: 'hr', texto: '' }); return; }
+
+      // innerText respeta los <br> como saltos, que es lo que un verso necesita
+      const texto = (nodo.innerText || '').replace(/\u00a0/g, ' ').replace(/\s+$/, '');
+      if (!texto.trim()) return;
+
+      const tipo = etiqueta === 'h1' || etiqueta === 'h2' || etiqueta === 'h3' ? 'h2'
+                 : etiqueta === 'blockquote' ? 'quote'
+                 : 'p';
+      bloques.push({ tipo, texto });
     });
-    cerrar();
     return bloques;
   };
 
-  const listo = () => $('titulo').value.trim() && $('autor').value.trim() && parsear($('texto').value).length;
+  const listo = () => $('titulo').value.trim() && $('autor').value.trim() && parsear().length;
   const sync = () => { $('enviar').disabled = !listo(); };
-  ['titulo', 'autor', 'texto'].forEach(id => $(id).addEventListener('input', sync));
+  ['titulo', 'autor'].forEach(id => $(id).addEventListener('input', sync));
+  editor.addEventListener('input', sync);
 
   const decir = (msg, clase) => { $('estado').textContent = msg; $('estado').className = clase || ''; };
 
@@ -334,7 +404,7 @@
       // Las imágenes primero: así el texto entra a la cola ya con sus fotos
       // colgadas y quien revisa lo ve completo de una.
       const uuid = crypto.randomUUID();
-      const contenido = parsear($('texto').value);
+      const contenido = parsear();
       let portada = '';
 
       for (let i = 0; i < fotos.length; i++) {
@@ -347,7 +417,7 @@
       await pedir({
         action: 'articulo-propose', password: clave,
         articulo: {
-          uuid, titulo, autor, clase: $('formato').value,
+          uuid, titulo, autor, clase: centrado ? 'poema' : '',
           instagram: $('instagram').value,
           meta: [autor, $('categoria').value].filter(Boolean).join(' • '),
           imagen: portada, contenido,
@@ -355,7 +425,7 @@
       });
 
       decir('✓ Listo. Tu texto quedó en revisión.', 'ok');
-      $('titulo').value = ''; $('texto').value = ''; fotos = []; pintarFotos();
+      $('titulo').value = ''; editor.textContent = ''; fotos = []; pintarFotos();
     } catch (e) {
       decir('No se pudo enviar: ' + e.message, 'err');
     } finally {

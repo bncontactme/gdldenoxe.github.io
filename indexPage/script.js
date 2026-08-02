@@ -1613,11 +1613,6 @@ juntxs y brillando.`
             if (body) body.style.height = e.data.height + 'px';
         }
         if (e.data?.type === 'open-articulo-upload-popup') openArticuloUploadOverlay();
-        if (e.data?.type === 'articulo-upload-resize') {
-            const win = $('[data-window-id="upload-articulo"]');
-            const body = win?.querySelector('.window-body');
-            if (body) body.style.height = e.data.height + 'px';
-        }
         if (e.data?.type === 'close-articulo-upload') {
             const win = $('[data-window-id="upload-articulo"]');
             if (win) { win.classList.add('hidden'); updateTaskbar(); }

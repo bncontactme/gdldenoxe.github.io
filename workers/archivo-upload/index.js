@@ -302,6 +302,7 @@ async function handleList(env, origin) {
     return {
       url,
       thumbUrl,
+      public_id:   r.public_id,   // lo usa la bandeja de admin para borrar
       artista:     ctx.artista     || '',
       descripcion: ctx.descripcion || '',
       fecha:       ctx.fecha       || '',

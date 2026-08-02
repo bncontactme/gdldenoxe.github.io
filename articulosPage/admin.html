@@ -100,6 +100,19 @@
 
   .nota { color: #808080; padding: 4px 0; }
 
+  /* Fotos del archivo — cuadrícula con selección, como el explorador */
+  #fotos.rejilla { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0 6px; }
+  .foto {
+    width: 78px; padding: 4px; text-align: center; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .foto:hover { background: #E8E8F0; border-color: #C0C0D0; }
+  .foto.marcada { background: #316AC5; border-color: #316AC5; color: #fff; }
+  .foto img { width: 64px; height: 64px; object-fit: cover; border: 1px solid #808080; display: block; margin: 0 auto 3px; }
+  .foto span { font-size: 10px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #fotos-acciones { display: flex; align-items: center; gap: 8px; padding: 4px 0 8px; }
+  #fotos-acciones .cuenta { color: #808080; }
+
   #barra-estado {
     background: #ECE9D8; border-top: 1px solid #808080; padding: 3px 8px;
     font-size: 10px; color: #333; flex-shrink: 0;
@@ -184,6 +197,8 @@
   <div id="pendientes" class="nota">Cargando...</div>
   <h2>Publicados</h2>
   <div id="publicados" class="nota">Cargando...</div>
+  <h2>Fotos del archivo <span id="conteo-fotos"></span></h2>
+  <div id="fotos" class="nota">Cargando...</div>
 </div>
 
 <div id="barra-estado">
@@ -259,7 +274,73 @@
   document.addEventListener('click', cerrarMenus);
 
   // ── Carga ──────────────────────────────────────────────────────────────────
-  function cargar() { cargarPendientes(); cargarPublicados(); }
+  function cargar() { cargarPendientes(); cargarPublicados(); cargarFotos(); }
+
+  // ── Fotos del archivo ──────────────────────────────────────────────────────
+  // Borrarlas salió del menú de la galería: es cosa de admin y aquí es donde
+  // vive lo de admin. La lista es pública (misma que pinta el collage).
+  let marcadas = new Set();
+
+  async function cargarFotos() {
+    const caja = $('fotos');
+    try {
+      const { entries } = await pedir({ action: 'list' });
+      marcadas = new Set();
+      caja.className = 'rejilla'; caja.textContent = '';
+      if (!entries || !entries.length) { caja.className = 'nota'; caja.textContent = 'Ninguna.'; return; }
+
+      $('conteo-fotos').textContent = '(' + entries.length + ')';
+      entries.forEach(img => caja.appendChild(celdaFoto(img)));
+      pintarAccionesFotos();
+    } catch (e) {
+      caja.className = 'nota'; caja.textContent = 'No se pudo cargar: ' + e.message;
+    }
+  }
+
+  function celdaFoto(img) {
+    const el = document.createElement('div');
+    el.className = 'foto';
+    const th = document.createElement('img');
+    th.src = img.thumbUrl || img.url; th.alt = ''; th.loading = 'lazy';
+    const pie = document.createElement('span');
+    pie.textContent = img.artista || (img.public_id || '').split('/').pop();
+    el.append(th, pie);
+    el.addEventListener('click', () => {
+      if (marcadas.has(img.public_id)) { marcadas.delete(img.public_id); el.classList.remove('marcada'); }
+      else { marcadas.add(img.public_id); el.classList.add('marcada'); }
+      pintarAccionesFotos();
+    });
+    return el;
+  }
+
+  function pintarAccionesFotos() {
+    let barra = $('fotos-acciones');
+    if (!barra) {
+      barra = document.createElement('div');
+      barra.id = 'fotos-acciones';
+      $('fotos').before(barra);
+    }
+    barra.textContent = '';
+    const cuenta = document.createElement('span');
+    cuenta.className = 'cuenta';
+    cuenta.textContent = marcadas.size
+      ? marcadas.size + ' seleccionada(s)'
+      : 'Haz clic en las fotos que quieras borrar.';
+    const btn = boton('Borrar', false, borrarFotos);
+    btn.disabled = !marcadas.size;
+    barra.append(cuenta, btn);
+  }
+
+  async function borrarFotos() {
+    const ids = [...marcadas];
+    if (!ids.length) return;
+    if (!confirm('¿Borrar ' + ids.length + ' foto(s)? Se van de Cloudinary y del archivo.')) return;
+    try {
+      await pedir({ action: 'delete', public_ids: ids });
+      avisar(ids.length + ' foto(s) borradas.');
+      cargarFotos();
+    } catch (e) { avisar('Error: ' + e.message, true); }
+  }
 
   async function cargarPendientes() {
     const caja = $('pendientes');
