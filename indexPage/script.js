@@ -1352,10 +1352,14 @@ juntxs y brillando.`
     const formatTime = (s) => isNaN(s) ? '00:00' : 
         `${Math.floor(s / 60).toString().padStart(2, '0')}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
     
+    // The status text now lives in its own line inside #timeDisplay, because
+    // that line rotates with the artist/song readout.
+    const tdStatus = $('#tdStatus') || timeDisplay;
+
     function updateTimeDisplay() {
-        if (!timeDisplay) return;
+        if (!tdStatus) return;
         const track = playlist[currentTrackIndex];
-        timeDisplay.textContent = track.isLive ? (reconnecting ? 'RECONECTANDO…' : 'STREAMING...') :
+        tdStatus.textContent = track.isLive ? (reconnecting ? 'RECONECTANDO…' : 'STREAMING...') :
             `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
     }
     
@@ -1388,6 +1392,10 @@ juntxs y brillando.`
     function setReconnecting(on) {
         reconnecting = on;
         if (liveDot) liveDot.classList.toggle('reconnecting', on);
+        // Durante un salto de fuente la línea de estado manda: "RECONECTANDO…"
+        // no puede quedar escondida detrás del artista.
+        if (on && typeof stopTdRotation === 'function') { stopTdRotation(); tdShow('status'); }
+        else if (typeof startTdRotation === 'function') { startTdRotation(); }
         updateTimeDisplay();
     }
 
@@ -1461,6 +1469,7 @@ juntxs y brillando.`
             playBtn.innerHTML = ICON_PAUSE;
             isPlaying = true;
             if (liveDot) liveDot.classList.remove('paused');
+            refreshTrackReadout();   // empezar a seguir los cambios de canción
         }
     });
 
@@ -1556,16 +1565,151 @@ juntxs y brillando.`
     // Radio menu item ALWAYS visible in start menu
     if (radioMenuItem) radioMenuItem.style.display = '';
 
+    // ===== Artista / canción en la línea de estado ==================
+    // La línea "STREAMING..." rota con el artista y la canción actual. Los
+    // metadatos salen de la MISMA respuesta de /api/nowplaying/1 que ya pide
+    // el chequeo de estado, así que en reposo no cuesta ni una petición
+    // extra; sólo mientras alguien escucha se pide una de más, cronometrada
+    // para caer justo cuando termina la canción.
+    const tdTrack = $('#tdTrack');
+    const tdTrackText = $('#tdTrackText');
+
+    const TD_DWELL_STATUS = 5000;   // ms mostrando "STREAMING..."
+    const TD_DWELL_TRACK = 13000;   // ms mostrando artista + canción
+
+    let tdMeta = null;      // texto ya formateado | null
+    let tdTimer = null;     // próxima petición de metadatos
+    let tdRotTimer = null;  // rotación de líneas
+    let tdShowing = 'status';
+
+    function tdMetaFrom(d) {
+        const song = d?.now_playing?.song;
+        if (!song) return null;
+        const artist = (song.artist || '').replace(/\s+/g, ' ').trim();
+        let title = (song.title || song.text || '').replace(/\s+/g, ' ').trim();
+        if (!title) return null;
+        // El título suele repetir al artista ("Alanis Yuki - Sasuke"); se
+        // quita el prefijo para no decir lo mismo dos veces.
+        if (artist) {
+            const esc = artist.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const stripped = title.replace(new RegExp(`^${esc}\\s*[-–—:]\\s*`, 'i'), '').trim();
+            if (stripped) title = stripped;
+        }
+        return artist ? `${artist} — ${title}` : title;
+    }
+
+    function fitTdMarquee() {
+        if (!tdTrackText || !tdTrack) return;
+        tdTrackText.classList.remove('td-scroll');
+        tdTrackText.style.removeProperty('--td-shift');
+        tdTrackText.style.removeProperty('--td-dur');
+        tdTrackText.style.removeProperty('--td-steps');
+        const overflow = tdTrackText.scrollWidth - tdTrack.clientWidth;
+        if (overflow > 4) {
+            const dist = overflow + 6;
+            // El keyframe sólo se mueve en el 84% central (8%-92%); el resto
+            // son las pausas de inicio y fin, así que hay que compensar para
+            // que la velocidad y el paso por píxel salgan bien.
+            const MOVE = 0.84;
+            // El barrido tiene que alcanzar a mostrar el final del título
+            // dentro del turno de la pantalla, descontando el retardo inicial.
+            const maxDur = (TD_DWELL_TRACK - 1200 - 400) / 1000;
+            const dur = Math.min(Math.max(4, (dist / 20) / MOVE), maxDur);
+            tdTrackText.style.setProperty('--td-shift', `${-dist}px`);
+            tdTrackText.style.setProperty('--td-dur', `${dur.toFixed(1)}s`);
+            // Un paso por píxel recorrido: avance columna por columna, como
+            // un letrero LED, en vez de un deslizamiento continuo.
+            tdTrackText.style.setProperty('--td-steps', String(Math.max(1, Math.round(dist / MOVE))));
+            tdTrackText.classList.add('td-scroll');
+        }
+    }
+
+    function tdShow(which) {
+        if (!tdStatus || !tdTrack || tdStatus === timeDisplay) return;
+        if (which === 'track' && !tdMeta) which = 'status';
+        if (which === tdShowing) return;
+        if (which === 'track') {
+            tdStatus.classList.replace('is-active', 'is-above');
+            tdTrack.classList.replace('is-below', 'is-active');
+            requestAnimationFrame(fitTdMarquee);
+        } else {
+            tdTrack.classList.replace('is-active', 'is-below');
+            tdStatus.classList.replace('is-above', 'is-active');
+        }
+        tdShowing = which;
+    }
+
+    function stopTdRotation() {
+        if (tdRotTimer) { clearTimeout(tdRotTimer); tdRotTimer = null; }
+    }
+
+    function startTdRotation() {
+        if (tdRotTimer || !tdMeta || document.hidden) return;
+        const tick = () => {
+            tdRotTimer = null;
+            if (!tdMeta) { tdShow('status'); return; }
+            const next = tdShowing === 'status' ? 'track' : 'status';
+            tdShow(next);
+            tdRotTimer = setTimeout(tick, next === 'track' ? TD_DWELL_TRACK : TD_DWELL_STATUS);
+        };
+        tdRotTimer = setTimeout(tick, TD_DWELL_STATUS);
+    }
+
+    function setTrackReadout(text) {
+        if (text === tdMeta) return;
+        tdMeta = text;
+        if (!text) {
+            stopTdRotation();
+            tdShow('status');
+            return;
+        }
+        if (tdTrackText) tdTrackText.textContent = text;
+        requestAnimationFrame(fitTdMarquee);
+        startTdRotation();
+    }
+
+    function scheduleTdRefresh(d) {
+        if (tdTimer) { clearTimeout(tdTimer); tdTimer = null; }
+        if (!isPlaying && !wantLive) return;   // pestaña ociosa: basta el sondeo de 45s
+        const remaining = Number(d?.now_playing?.remaining);
+        const wait = ((remaining > 0 && isFinite(remaining)) ? remaining : 30) * 1000 + 2000;
+        tdTimer = setTimeout(refreshTrackReadout, Math.min(Math.max(wait, 5000), 600000));
+    }
+
+    function applyNowPlaying(d) {
+        setTrackReadout(tdMetaFrom(d));
+        scheduleTdRefresh(d);
+    }
+
+    function refreshTrackReadout() {
+        fetch(statusUrl)
+            .then(r => r.ok ? r.json() : null)
+            .then(j => { if (j) applyNowPlaying(j); })
+            .catch(() => {});
+    }
+
+    function clearTrackReadout() {
+        if (tdTimer) { clearTimeout(tdTimer); tdTimer = null; }
+        setTrackReadout(null);
+    }
+
+    // No animar una pestaña que nadie está viendo
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopTdRotation(); else startTdRotation();
+    });
+
     function checkIcecastStatus() {
         // Primary = AzuraCast (Switch); fallback = raw Icecast if the Mac backup has taken over
         return fetch(statusUrl)
             .then(r => r.ok ? r.json() : Promise.reject('no-api'))
-            .then(d => d?.is_online === true)
+            .then(d => { applyNowPlaying(d); return d?.is_online === true; })
             .catch(() => fetch('https://radio.guadalajaradenoxe.com/status-json.xsl')
                 .then(r => r.json())
                 .then(d => { let s = d?.icestats?.source || []; if (!Array.isArray(s)) s = [s];
+                    // Respaldo del Mac al aire: Icecast puro no trae metadatos
+                    clearTrackReadout();
                     return s.some(x => x.listenurl && x.listenurl.includes('/listen/guadalajara_de_noche_radio/radio.mp3')); })
-                .catch(() => false))
+                .catch(() => { clearTrackReadout(); return false; }))
             .then(live => {
                 console.log('[Radio] status:', live ? 'LIVE' : 'OFFLINE');
                 radioAvailable = live;
@@ -1595,12 +1739,14 @@ juntxs y brillando.`
                     offlineMisses++;
                     if (offlineMisses >= 2 && musicPlayer && !wantLive) {
                         musicPlayer.classList.add('hidden');
+                        clearTrackReadout();
                     }
                 }
             })
             .catch(err => {
                 console.warn('[Radio] Icecast check failed:', err);
                 radioAvailable = false;
+                clearTrackReadout();
                 // Keep menu item visible even on error
                 if (musicPlayer) musicPlayer.classList.add('hidden');
             });

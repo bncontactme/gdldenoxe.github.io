@@ -1777,6 +1777,56 @@ body.arrastrando iframe {
 .time-display {
     font-size: 9px;
     opacity: 0.8;
+    /* Rotates between "STREAMING..." and the current artist/song. The status
+       line stays in the flow so the panel never changes height. */
+    position: relative;
+    overflow: hidden;
+}
+
+.td-line {
+    display: block;
+    white-space: nowrap;
+    /* Sin easing ni fundido: un panel de LED de los 90 no interpola ni mezcla
+       alfa, gira por filas. steps() da ese golpeteo mecánico de rodillo.
+       Mismo criterio que el parpadeo de .live-dot.reconnecting. */
+    transition: transform 280ms steps(6, end);
+}
+
+.td-line.td-track {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Exactamente 100%: las dos líneas embonan sin hueco, como la superficie
+   de un rodillo que gira. Nada de opacidad — el recorte hace el trabajo. */
+.td-line.is-active { transform: translateY(0); }
+.td-line.is-above  { transform: translateY(-100%); }
+.td-line.is-below  { transform: translateY(100%); }
+
+/* Long artist/song lines pan side to side instead of being clipped */
+.td-text {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* Un paso por píxel: el letrero avanza columna por columna, no se desliza.
+   En un solo sentido —nada de rebote—: corre hasta el final, se detiene un
+   momento y vuelve de golpe al principio, como un letrero LED de verdad. */
+.td-text.td-scroll {
+    animation: td-pan var(--td-dur, 10s) steps(var(--td-steps, 60), end) 1.2s infinite;
+}
+
+@keyframes td-pan {
+    0%, 8%    { transform: translateX(0); }                        /* pausa al inicio */
+    92%, 100% { transform: translateX(var(--td-shift, 0)); }       /* pausa al final */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .td-line { transition: none; }
+    .td-text.td-scroll { animation: none; }
 }
 
 .player-controls {

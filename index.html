@@ -385,7 +385,10 @@
             <div class="player-body">
                 <div class="player-display">
                     <div class="track-info" id="trackInfo"><span class="live-dot hidden" id="liveDot"></span> No Track Loaded</div>
-                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                    <div class="time-display" id="timeDisplay">
+                        <span class="td-line is-active" id="tdStatus">00:00 / 00:00</span>
+                        <span class="td-line td-track is-below" id="tdTrack" aria-live="polite"><span class="td-text" id="tdTrackText"></span></span>
+                    </div>
                 </div>
                 <div class="player-controls">
                     <button class="control-btn" id="prevBtn" title="Anterior"><svg viewBox="0 0 24 24" width="14" height="14" fill="#000"><rect x="2" y="4" width="3" height="16"/><polygon points="7,12 22,4 22,20"/></svg></button>
