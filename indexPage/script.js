@@ -1576,11 +1576,11 @@ juntxs y brillando.`
 
     const TD_DWELL_STATUS = 5000;   // ms mostrando "STREAMING..."
     const TD_LOOPS = 3;             // vueltas del letrero antes de volver al estado
-    const TD_LOOP_PAUSE = 1000;     // ms parado en el punto de partida cada vuelta
+    const TD_LOOP_PAUSE = 2500;     // ms parado en el punto de partida cada vuelta
     const TD_STATIC_DWELL = 7000;   // turno de un título corto, que no desfila
-    const TD_SPEED = 45;            // px por segundo
-    const TD_LAP_MIN = 2500;        // ms mínimos por vuelta
-    const TD_LAP_MAX = 8000;        // ms máximos por vuelta (3 vueltas ≈ 27s)
+    const TD_SPEED = 34;            // px por segundo
+    const TD_LAP_MIN = 3000;        // ms mínimos por vuelta
+    const TD_LAP_MAX = 10500;       // ms máximos por vuelta
 
     let tdMeta = null;        // texto ya formateado | null
     let tdTimer = null;       // próxima petición de metadatos
