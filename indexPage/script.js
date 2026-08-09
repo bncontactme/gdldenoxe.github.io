@@ -1394,8 +1394,8 @@ juntxs y brillando.`
         if (liveDot) liveDot.classList.toggle('reconnecting', on);
         // Durante un salto de fuente la línea de estado manda: "RECONECTANDO…"
         // no puede quedar escondida detrás del artista.
-        if (on && typeof stopTdRotation === 'function') { stopTdRotation(); tdShow('status'); }
-        else if (typeof startTdRotation === 'function') { startTdRotation(); }
+        if (on) { stopTdRotation(); tdShowLine('status'); }
+        else { startTdRotation(); }
         updateTimeDisplay();
     }
 
@@ -1575,12 +1575,24 @@ juntxs y brillando.`
     const tdTrackText = $('#tdTrackText');
 
     const TD_DWELL_STATUS = 5000;   // ms mostrando "STREAMING..."
-    const TD_DWELL_TRACK = 13000;   // ms mostrando artista + canción
+    const TD_LOOPS = 3;             // vueltas del letrero antes de volver al estado
+    const TD_LOOP_PAUSE = 1000;     // ms parado en el punto de partida cada vuelta
+    const TD_STATIC_DWELL = 7000;   // turno de un título corto, que no desfila
+    const TD_SPEED = 45;            // px por segundo
+    const TD_LAP_MIN = 2500;        // ms mínimos por vuelta
+    const TD_LAP_MAX = 8000;        // ms máximos por vuelta (3 vueltas ≈ 27s)
 
-    let tdMeta = null;      // texto ya formateado | null
-    let tdTimer = null;     // próxima petición de metadatos
-    let tdRotTimer = null;  // rotación de líneas
+    let tdMeta = null;        // texto ya formateado | null
+    let tdTimer = null;       // próxima petición de metadatos
+    let tdPhaseTimer = null;  // fase actual (pausa / turno estático / estado)
+    let tdAnim = null;        // vuelta en curso del letrero
+    let tdPeriod = 0;         // ancho de una copia + su hueco
+    let tdPanMs = 0;          // duración de una vuelta
+    let tdScrolls = false;    // ¿el título no cabe y hay que desfilarlo?
     let tdShowing = 'status';
+
+    const tdReduceMotion = () =>
+        window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function tdMetaFrom(d) {
         const song = d?.now_playing?.song;
@@ -1599,39 +1611,40 @@ juntxs y brillando.`
     }
 
     function fitTdMarquee() {
+        tdScrolls = false; tdPeriod = 0; tdPanMs = 0;
         if (!tdTrackText || !tdTrack) return;
         tdTrackText.classList.remove('td-scroll');
-        tdTrackText.style.removeProperty('--td-shift');
-        tdTrackText.style.removeProperty('--td-dur');
-        tdTrackText.style.removeProperty('--td-steps');
-        const overflow = tdTrackText.scrollWidth - tdTrack.clientWidth;
-        if (overflow > 4) {
-            const dist = overflow + 6;
-            // El keyframe sólo se mueve en el 84% central (8%-92%); el resto
-            // son las pausas de inicio y fin, así que hay que compensar para
-            // que la velocidad y el paso por píxel salgan bien.
-            const MOVE = 0.84;
-            // El barrido tiene que alcanzar a mostrar el final del título
-            // dentro del turno de la pantalla, descontando el retardo inicial.
-            const maxDur = (TD_DWELL_TRACK - 1200 - 400) / 1000;
-            const dur = Math.min(Math.max(4, (dist / 20) / MOVE), maxDur);
-            tdTrackText.style.setProperty('--td-shift', `${-dist}px`);
-            tdTrackText.style.setProperty('--td-dur', `${dur.toFixed(1)}s`);
-            // Un paso por píxel recorrido: avance columna por columna, como
-            // un letrero LED, en vez de un deslizamiento continuo.
-            tdTrackText.style.setProperty('--td-steps', String(Math.max(1, Math.round(dist / MOVE))));
-            tdTrackText.classList.add('td-scroll');
-        }
+
+        // Una sola copia, para medir el ancho natural del texto.
+        tdTrackText.textContent = '';
+        const seg = document.createElement('span');
+        seg.className = 'td-seg';
+        seg.textContent = tdMeta || '';
+        tdTrackText.appendChild(seg);
+
+        if (tdTrackText.scrollWidth - tdTrack.clientWidth <= 4) return;   // cabe entero
+
+        // No cabe: se duplica la frase y cada vuelta se desplaza EXACTAMENTE
+        // un período (copia + hueco). Al terminar, la segunda copia queda
+        // justo donde estaba la primera, así que no se ve costura: el texto
+        // sale por la izquierda y vuelve a entrar por la derecha.
+        const twin = seg.cloneNode(true);
+        twin.setAttribute('aria-hidden', 'true');   // que no se lea dos veces
+        tdTrackText.appendChild(twin);
+        tdTrackText.classList.add('td-scroll');     // aplica el hueco ANTES de medir
+
+        tdPeriod = seg.getBoundingClientRect().width;   // copia + hueco
+        tdPanMs = Math.min(Math.max((tdPeriod / TD_SPEED) * 1000, TD_LAP_MIN), TD_LAP_MAX);
+        tdScrolls = true;
     }
 
-    function tdShow(which) {
+    function tdShowLine(which) {
         if (!tdStatus || !tdTrack || tdStatus === timeDisplay) return;
         if (which === 'track' && !tdMeta) which = 'status';
         if (which === tdShowing) return;
         if (which === 'track') {
             tdStatus.classList.replace('is-active', 'is-above');
             tdTrack.classList.replace('is-below', 'is-active');
-            requestAnimationFrame(fitTdMarquee);
         } else {
             tdTrack.classList.replace('is-active', 'is-below');
             tdStatus.classList.replace('is-above', 'is-active');
@@ -1639,33 +1652,71 @@ juntxs y brillando.`
         tdShowing = which;
     }
 
+    function tdStopAnim() {
+        if (tdAnim) { try { tdAnim.cancel(); } catch (e) {} tdAnim = null; }
+    }
+
+    function tdClearPhase() {
+        if (tdPhaseTimer) { clearTimeout(tdPhaseTimer); tdPhaseTimer = null; }
+        tdStopAnim();
+    }
+
+    // Una vuelta = un momento quieto en el punto de partida y luego el
+    // desfile completo. Tras TD_LOOPS vueltas se vuelve a "STREAMING...".
+    function tdRunLap(lap) {
+        tdPhaseTimer = setTimeout(() => {
+            tdPhaseTimer = null;
+            tdStopAnim();
+            const steps = Math.max(1, Math.round(tdPeriod));   // un paso por píxel
+            const mine = tdTrackText.animate(
+                [{ transform: 'translateX(0)' }, { transform: `translateX(${-tdPeriod}px)` }],
+                { duration: tdPanMs, easing: `steps(${steps}, end)`, fill: 'forwards' }
+            );
+            tdAnim = mine;
+            mine.finished.then(() => {
+                if (mine !== tdAnim) return;            // cancelada o reemplazada
+                if (lap >= TD_LOOPS) tdGoStatus();
+                else tdRunLap(lap + 1);
+            }).catch(() => {});                          // cancel() rechaza: normal
+        }, TD_LOOP_PAUSE);
+    }
+
+    function tdGoTrack() {
+        tdClearPhase();
+        if (!tdMeta) { tdShowLine('status'); return; }
+        tdShowLine('track');
+        fitTdMarquee();
+        // Título corto (o motion reducido): se queda quieto su turno y ya.
+        if (!tdScrolls || tdReduceMotion()) {
+            tdPhaseTimer = setTimeout(tdGoStatus, TD_STATIC_DWELL);
+            return;
+        }
+        tdRunLap(1);
+    }
+
+    function tdGoStatus() {
+        tdClearPhase();
+        tdShowLine('status');
+        if (!tdMeta || document.hidden) return;
+        tdPhaseTimer = setTimeout(tdGoTrack, TD_DWELL_STATUS);
+    }
+
     function stopTdRotation() {
-        if (tdRotTimer) { clearTimeout(tdRotTimer); tdRotTimer = null; }
+        tdClearPhase();
     }
 
     function startTdRotation() {
-        if (tdRotTimer || !tdMeta || document.hidden) return;
-        const tick = () => {
-            tdRotTimer = null;
-            if (!tdMeta) { tdShow('status'); return; }
-            const next = tdShowing === 'status' ? 'track' : 'status';
-            tdShow(next);
-            tdRotTimer = setTimeout(tick, next === 'track' ? TD_DWELL_TRACK : TD_DWELL_STATUS);
-        };
-        tdRotTimer = setTimeout(tick, TD_DWELL_STATUS);
+        if (tdPhaseTimer || tdAnim || !tdMeta || document.hidden) return;
+        tdPhaseTimer = setTimeout(tdGoTrack, TD_DWELL_STATUS);
     }
 
     function setTrackReadout(text) {
         if (text === tdMeta) return;
         tdMeta = text;
-        if (!text) {
-            stopTdRotation();
-            tdShow('status');
-            return;
-        }
-        if (tdTrackText) tdTrackText.textContent = text;
-        requestAnimationFrame(fitTdMarquee);
-        startTdRotation();
+        tdClearPhase();
+        if (!text) { tdShowLine('status'); return; }
+        if (tdShowing === 'track') tdGoTrack();   // ya visible: reinicia las vueltas
+        else startTdRotation();
     }
 
     function scheduleTdRefresh(d) {
