@@ -161,6 +161,9 @@
                     <ul class="fe-dropdown" id="fe-dropdown-ver">
                         <li class="fe-dd-item" data-action="view-icons">Íconos</li>
                         <li class="fe-dd-item" data-action="view-list">Lista</li>
+                        <li class="fe-dd-sep"></li>
+                        <li class="fe-dd-item" data-action="group-autor">Por autor</li>
+                        <li class="fe-dd-item" data-action="group-todos">Todos los archivos</li>
                     </ul>
                 </div>
                 <div class="fe-toolbar">
@@ -185,9 +188,32 @@
                 </div>
             </div>
             <div class="window-body">
+                <!-- Las acciones del explorador, a la mano: antes había que
+                     abrir una imagen y darle a Explorar para llegar a ellas. -->
+                <div class="fe-menubar" id="galeria-menubar">
+                    <div class="fe-menu-item" data-gal-menu="archivo" tabindex="0">Archivo</div>
+                    <div class="fe-menu-item" data-gal-menu="editar" tabindex="0">Editar</div>
+                    <div class="fe-menu-item" data-gal-menu="ver" tabindex="0">Ver</div>
+                    <ul class="fe-dropdown" id="gal-dropdown-archivo">
+                        <li class="fe-dd-item" data-gal="upload">Subir fotos...</li>
+                        <li class="fe-dd-sep"></li>
+                        <li class="fe-dd-item" data-gal="close">Cerrar</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="gal-dropdown-editar">
+                        <li class="fe-dd-item" data-gal="select-all">Seleccionar todo</li>
+                    </ul>
+                    <ul class="fe-dropdown" id="gal-dropdown-ver">
+                        <li class="fe-dd-item" data-gal="view-icons">Íconos</li>
+                        <li class="fe-dd-item" data-gal="view-list">Lista</li>
+                        <li class="fe-dd-sep"></li>
+                        <li class="fe-dd-item" data-gal="modo-collage" id="gal-ver-collage">Collage</li>
+                        <li class="fe-dd-item" data-gal="modo-carpetas" id="gal-ver-carpetas">Carpetas</li>
+                    </ul>
+                </div>
                 <div class="iframe-container">
                     <iframe data-src="archivoPage/archivoPage.html" frameborder="0"></iframe>
                 </div>
+                <div class="fe-statusbar"><span id="galeria-status">Cargando...</span></div>
             </div>
         </div>
 

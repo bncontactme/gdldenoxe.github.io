@@ -44,6 +44,7 @@
     color: #5c5a52; margin-bottom: 3px;
   }
   .opt { text-transform: none; letter-spacing: 0; color: #8a887f; }
+  .ayuda { display: block; margin-top: 3px; font-size: 10px; color: #8a887f; }
 
   input[type=text], input[type=password], textarea, select {
     width: 100%; box-sizing: border-box; padding: 5px 6px;
@@ -169,6 +170,7 @@
     .pie { margin-top: 6px; }
     #texto { min-height: 44px; }
     label, .rotulo { margin-bottom: 1px; }
+    .ayuda { display: none; }   /* la lista sigue ahí; solo se va el letrero */
   }
   @media (max-height: 300px) {
     body { padding: 4px; }
@@ -217,7 +219,10 @@
     <div class="campo dos">
       <div>
         <label for="autor">Autor</label>
-        <input type="text" id="autor" maxlength="120" placeholder="Tu nombre o seudónimo">
+        <input type="text" id="autor" maxlength="120" list="lista-autores"
+               autocomplete="off" placeholder="Tu nombre o seudónimo">
+        <datalist id="lista-autores"></datalist>
+        <small class="ayuda" id="autor-ayuda">Escribe o escoge de la lista.</small>
       </div>
       <div>
         <label for="instagram">Instagram <span class="opt">(opcional)</span></label>
@@ -279,6 +284,7 @@
   </div>
 </div>
 
+<script src="../shared/articulos-api.js"></script>
 <script>
 (() => {
   'use strict';
@@ -317,6 +323,7 @@
       $('pw-overlay').classList.add('oculto');
       $('forma').classList.remove('oculto');
       $('titulo').focus();
+      cargarAutores();
     } catch (e) {
       $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
       $('pw-input').select();
@@ -436,6 +443,46 @@
     return bloques;
   };
 
+  // ── Autores con carpeta ────────────────────────────────────────────────────
+  // El campo Autor ofrece los que ya tienen carpeta; quien no esté en la lista
+  // se escribe igual y al publicarse abre la suya.
+  let carpetasAutor = [];
+
+  function cargarAutores() {
+    if (!window.ArticulosAPI) return;
+    ArticulosAPI.listar().then(lista => {
+      carpetasAutor = ArticulosAPI.agruparPorAutor(lista);
+      const datalist = $('lista-autores');
+      const frag = document.createDocumentFragment();
+      carpetasAutor.forEach(c => {
+        const op = document.createElement('option');
+        op.value = c.nombre;
+        op.label = c.articulos.length + (c.articulos.length === 1 ? ' texto' : ' textos');
+        frag.appendChild(op);
+      });
+      datalist.replaceChildren(frag);
+      if (carpetasAutor.length) {
+        $('autor-ayuda').textContent =
+          'Escribe uno nuevo o escoge de los ' + carpetasAutor.length + ' que ya tienen carpeta.';
+      }
+    }).catch(() => { /* sin lista: el campo sigue siendo de texto libre */ });
+  }
+
+  // Si lo escrito es un autor que ya tiene carpeta —aunque venga con otras
+  // mayúsculas o acentos— se usa el nombre de la carpeta, para no abrir otra
+  // casi idéntica al lado.
+  function autorCanonico(valor) {
+    if (!valor || !window.ArticulosAPI) return valor;
+    const clave = ArticulosAPI.claveCarpeta(valor);
+    const carpeta = carpetasAutor.find(c => c.clave === clave);
+    return carpeta ? carpeta.nombre : valor;
+  }
+
+  $('autor').addEventListener('change', () => {
+    $('autor').value = autorCanonico($('autor').value.trim());
+    sync();
+  });
+
   const listo = () => $('titulo').value.trim() && $('autor').value.trim() && parsear().length;
   const sync = () => { $('enviar').disabled = !listo(); };
   ['titulo', 'autor'].forEach(id => $(id).addEventListener('input', sync));
@@ -485,7 +532,7 @@
     if (!listo()) return;
     $('enviar').disabled = true; $('cancelar').disabled = true;
 
-    const autor  = $('autor').value.trim();
+    const autor  = autorCanonico($('autor').value.trim());
     const titulo = $('titulo').value.trim();
 
     try {

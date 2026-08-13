@@ -461,6 +461,62 @@ body {
   -webkit-box-orient: vertical;
 }
 
+/* ===== Explorador embebido =====
+   Dentro de la ventana de Galería el marco ya pone barra de menú, ruta y
+   estado. Aquí sobra la ventanita flotante: el explorador se vuelve el
+   contenido, a secas. */
+body.con-marco #file-explorer-overlay {
+  background: #fff;
+  padding: 0;
+}
+
+body.con-marco #file-explorer-window {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border: none;
+  box-shadow: none;
+}
+
+body.con-marco #file-explorer-titlebar,
+body.con-marco #file-explorer-window #fe-menubar,
+body.con-marco #file-explorer-toolbar,
+body.con-marco #file-explorer-statusbar {
+  display: none;
+}
+
+/* ===== Vista de lista (Ver > Lista) ===== */
+#file-explorer-body.list-view {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+#file-explorer-body.list-view .fe-folder,
+#file-explorer-body.list-view .fe-image {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 3px 6px;
+  text-align: left;
+}
+
+#file-explorer-body.list-view .fe-folder-icon,
+#file-explorer-body.list-view .fe-image-thumb {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 0;
+}
+
+#file-explorer-body.list-view .fe-label {
+  max-width: none;
+  -webkit-line-clamp: 1;
+  text-align: left;
+}
+
 #file-explorer-statusbar {
   background: #ECE9D8;
   border-top: 1px solid #808080;

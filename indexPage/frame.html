@@ -124,6 +124,81 @@
             display: block;
         }
 
+        /* Barra de menú del marco (galería): pegada al título y a todo lo
+           ancho de la cara de la ventana, como en Win95. */
+        .fe-menubar {
+            background: #ECE9D8;
+            border-bottom: 1px solid #ACA899;
+            display: flex;
+            align-items: stretch;
+            font-size: 11px;
+            user-select: none;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 20;
+        }
+        .fe-menu-item {
+            padding: 4px 9px;
+            cursor: default;
+            white-space: nowrap;
+        }
+        .fe-menu-item:hover,
+        .fe-menu-item.open { background: #316AC5; color: #fff; }
+        .fe-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #ECE9D8;
+            border: 1px solid #808080;
+            box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+            list-style: none;
+            min-width: 170px;
+            z-index: 9999;
+            padding: 2px 0;
+            color: #000;
+        }
+        .fe-dropdown.open { display: block; }
+        .fe-dd-item {
+            padding: 6px 20px 6px 22px;
+            cursor: default;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .fe-dd-item:hover { background: #316AC5; color: #fff; }
+        .fe-dd-sep {
+            height: 1px;
+            background: #ACA899;
+            margin: 3px 4px;
+        }
+        .fe-dd-item.checked::before {
+            content: '✓';
+            position: absolute;
+            left: 8px;
+        }
+        .fe-dd-item { position: relative; }
+
+        /* Táctil: sin un cursor que delate el clic, Safari se puede tragar el
+           tap en un div. Y de paso los renglones crecen para el dedo. */
+        @media (hover: none) {
+            .fe-menu-item, .fe-dd-item {
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+            .fe-menu-item { padding: 7px 12px; }
+            .fe-dd-item { padding: 9px 20px 9px 24px; }
+        }
+
+        /* Barra de estado, como en la carpeta de Artículos */
+        .fe-statusbar {
+            background: #ECE9D8;
+            border-top: 1px solid #808080;
+            padding: 3px 8px;
+            font-size: 10px;
+            color: #333;
+            flex-shrink: 0;
+        }
+
         /* Tienda debug placeholder */
         #tienda-placeholder {
             width: 100%;
@@ -215,9 +290,32 @@
                 <button onclick="window.location.href='../index.html'">✕</button>
             </div>
         </div>
+        <!-- Barra de la galería: va aquí, en el marco, no dentro del iframe
+             de las fotos. Solo se muestra cuando la página es la galería. -->
+        <div class="fe-menubar" id="gal-menubar" style="display:none;">
+            <div class="fe-menu-item" data-gal-menu="archivo" tabindex="0">Archivo</div>
+            <div class="fe-menu-item" data-gal-menu="editar" tabindex="0">Editar</div>
+            <div class="fe-menu-item" data-gal-menu="ver" tabindex="0">Ver</div>
+            <ul class="fe-dropdown" id="gal-dropdown-archivo">
+                <li class="fe-dd-item" data-gal="upload">Subir fotos...</li>
+                <li class="fe-dd-sep"></li>
+                <li class="fe-dd-item" data-gal="close">Cerrar</li>
+            </ul>
+            <ul class="fe-dropdown" id="gal-dropdown-editar">
+                <li class="fe-dd-item" data-gal="select-all">Seleccionar todo</li>
+            </ul>
+            <ul class="fe-dropdown" id="gal-dropdown-ver">
+                <li class="fe-dd-item" data-gal="view-icons">Íconos</li>
+                <li class="fe-dd-item" data-gal="view-list">Lista</li>
+                <li class="fe-dd-sep"></li>
+                <li class="fe-dd-item" data-gal="modo-collage" id="gal-ver-collage">Collage</li>
+                <li class="fe-dd-item" data-gal="modo-carpetas" id="gal-ver-carpetas">Carpetas</li>
+            </ul>
+        </div>
         <div class="frame-content" id="frame-content">
             <iframe id="frame-iframe" src="" style="display:none;"></iframe>
         </div>
+        <div class="fe-statusbar" id="gal-statusbar" style="display:none;"><span id="gal-status"></span></div>
     </div>
 
     <!-- Upload popup — rendered at parent level via postMessage from archivo iframe -->
@@ -307,6 +405,81 @@
             document.getElementById('frame-iframe').style.display = '';
         } else {
             window.location.href = '../index.html';
+        }
+
+        // ===== Barra de la galería =====
+        // Las acciones del explorador, sin tener que abrir una imagen primero.
+        // Al iframe de las fotos se le habla por postMessage.
+        if (page === 'galeria') {
+            const galBarra = document.getElementById('gal-menubar');
+            galBarra.style.display = '';
+
+            const cerrarGalMenu = function() {
+                galBarra.querySelectorAll('.fe-menu-item.open').forEach(function(x) { x.classList.remove('open'); });
+                galBarra.querySelectorAll('.fe-dropdown.open').forEach(function(x) { x.classList.remove('open'); });
+            };
+
+            galBarra.querySelectorAll('[data-gal-menu]').forEach(function(mi) {
+                mi.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const dd = document.getElementById('gal-dropdown-' + mi.dataset.galMenu);
+                    const abierto = mi.classList.contains('open');
+                    cerrarGalMenu();
+                    if (!abierto && dd) {
+                        mi.classList.add('open');
+                        dd.style.left = mi.offsetLeft + 'px';
+                        dd.classList.add('open');
+                    }
+                });
+            });
+
+            const galStatus = document.getElementById('gal-status');
+            document.getElementById('gal-statusbar').style.display = '';
+
+            const decirGaleria = function(msg) {
+                document.getElementById('frame-iframe').contentWindow
+                    ?.postMessage(msg, location.origin);
+            };
+
+            galBarra.addEventListener('click', function(e) {
+                const item = e.target.closest('[data-gal]');
+                if (!item) return;
+                e.stopPropagation();
+                cerrarGalMenu();
+                const accion = item.dataset.gal;
+                if (accion === 'upload') {
+                    window.postMessage({ type: 'open-upload-popup' }, location.origin);
+                } else if (accion === 'close') {
+                    window.location.href = '../index.html';
+                } else if (accion === 'select-all') {
+                    decirGaleria({ type: 'galeria-select-all' });
+                } else if (accion === 'view-icons') {
+                    decirGaleria({ type: 'galeria-vista', vista: 'iconos' });
+                } else if (accion === 'view-list') {
+                    decirGaleria({ type: 'galeria-vista', vista: 'lista' });
+                } else if (accion === 'modo-carpetas' || accion === 'explorar') {
+                    decirGaleria({ type: 'open-file-explorer' });
+                } else if (accion === 'modo-collage') {
+                    decirGaleria({ type: 'galeria-collage' });
+                }
+            });
+
+            document.addEventListener('click', cerrarGalMenu);
+
+            // La galería avisa qué está mostrando; el marco se acomoda.
+            window.addEventListener('message', function(e) {
+                if (e.origin !== location.origin) return;
+                if (e.data?.type !== 'galeria-estado') return;
+                galStatus.textContent = e.data.estado || '';
+                document.getElementById('gal-ver-collage')
+                    .classList.toggle('checked', e.data.modo === 'collage');
+                document.getElementById('gal-ver-carpetas')
+                    .classList.toggle('checked', e.data.modo === 'carpetas');
+            });
+
+            document.getElementById('frame-iframe').addEventListener('load', function() {
+                decirGaleria({ type: 'galeria-dime-estado' });
+            });
         }
 
         // ===== Upload popup (triggered by postMessage from archivo iframe) =====

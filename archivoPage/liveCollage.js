@@ -23,6 +23,14 @@
   // Track in-flight preloads so we can cancel them on pause/reset
   let pendingPreloads = [];
 
+  // Si el contenedor sale sin medidas (iframe recién montado), se le dan a mano.
+  function ajustarLienzo() {
+    if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
+      collageContainer.style.width = '100vw';
+      collageContainer.style.height = '100vh';
+    }
+  }
+
   function evictOldest() {
     let imgs = collageContainer.querySelectorAll('img');
     while (imgs.length >= MAX_IMAGES) {
@@ -153,6 +161,34 @@
 
   let explorerCurrentFolder = null; // null = root (folder list)
 
+  // ===== Marco con barra propia =====
+  // Cuando la galería va dentro de la ventana de Galería (o del frame), el
+  // marco ya trae menús y barra de estado. Entonces el explorador se entrega
+  // pelón —sin barra de título ni menús propios— y le avisa al marco qué está
+  // mostrando, para que el estado de allá diga la verdad.
+  let marcoConBarra = false;
+  if (parent !== window) {
+    try {
+      marcoConBarra = !!(parent.document.getElementById('galeria-menubar') ||
+                         parent.document.getElementById('gal-menubar'));
+    } catch (e) { /* cross-origin */ }
+  }
+  if (marcoConBarra) document.body.classList.add('con-marco');
+
+  function avisarMarco(modo, estado) {
+    if (!marcoConBarra) return;
+    parent.postMessage({ type: 'galeria-estado', modo: modo, estado: estado },
+      location.origin);
+  }
+
+  // Lo que ve el marco cuando no hay explorador abierto: el collage. Si el
+  // explorador sí está abierto no se dice nada: las fotos pueden terminar de
+  // cargar con las carpetas en pantalla y el estado diría una mentira.
+  function avisarCollage() {
+    if (explorerOverlay && explorerOverlay.classList.contains('open')) return;
+    avisarMarco('collage', archiveImages.length ? archiveImages.length + ' imágenes' : '');
+  }
+
   // SVG folder icon (XP-style yellow folder)
   const FOLDER_SVG = '<svg class="fe-folder-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">'
     + '<path d="M2 6 L2 26 L30 26 L30 10 L14 10 L12 6 Z" fill="#F5D73A" stroke="#C4A82A" stroke-width="1"/>'
@@ -207,6 +243,7 @@
 
     // Subir se hace desde el menú Archivo, no con un icono en la cuadrícula.
     if (explorerStatus) explorerStatus.textContent = sortedNames.length + ' carpetas';
+    avisarMarco('carpetas', sortedNames.length + ' carpetas');
   }
 
   function renderFolder(name, images) {
@@ -314,6 +351,9 @@
 
     explorerBody.appendChild(frag);
     if (explorerStatus) explorerStatus.textContent = images.length + ' imágenes';
+    // Sin barra de ruta, el nombre de la carpeta abierta va en el estado: es
+    // lo único que dice dónde estás parado.
+    avisarMarco('carpetas', name + ' — ' + images.length + ' imágenes');
   }
 
   function escapeHtml(str) {
@@ -331,6 +371,21 @@
 
   function closeExplorer() {
     if (explorerOverlay) explorerOverlay.classList.remove('open');
+    avisarCollage();
+  }
+
+  // Editar > Seleccionar todo: marca lo que hay en pantalla (carpetas o
+  // imágenes). Antes esto se llamaba desde el menú pero no existía.
+  function selectAllImages() {
+    if (!explorerBody) return;
+    explorerBody.querySelectorAll('.fe-folder, .fe-image')
+      .forEach(function(el) { el.classList.add('selected'); });
+  }
+
+  // Vista de la cuadrícula del explorador: íconos (default) o lista.
+  function setExplorerView(vista) {
+    if (!explorerBody) return;
+    explorerBody.classList.toggle('list-view', vista === 'lista');
   }
 
   // ===== Upload Popup =====
@@ -417,8 +472,8 @@
     if (action === 'upload')      { openUploadPopup(); }
     if (action === 'close')       { closeExplorer(); }
     if (action === 'select-all')  { selectAllImages(); }
-    if (action === 'view-icons')  { /* already icon view */ }
-    if (action === 'view-list')   { /* future */ }
+    if (action === 'view-icons')  { setExplorerView('iconos'); }
+    if (action === 'view-list')   { setExplorerView('lista'); }
   });
 
   // ========================
@@ -426,7 +481,8 @@
     if (explorerCurrentFolder !== null) renderFolderList();
   };
   if (explorerOverlay) explorerOverlay.onclick = function(e) {
-    if (e.target === explorerOverlay) closeExplorer();
+    // Embebido no hay fondo que picar: el explorador es todo el contenido.
+    if (!marcoConBarra && e.target === explorerOverlay) closeExplorer();
   };
   if (exploreBtn) exploreBtn.onclick = function(e) {
     e.stopPropagation();
@@ -434,10 +490,26 @@
     try { openExplorer(); } catch(err) { console.error('Explorer error:', err); }
   };
 
-  // Listen for parent requesting explorer open (desktop mode, origin-validated)
+  // Órdenes del marco (validadas por origen). La barra de la ventana de
+  // Galería no toca nada de aquí adentro: manda un aviso y esto obedece.
   window.addEventListener('message', function(e) {
     if (e.origin !== location.origin) return;
-    if (e.data?.type === 'open-file-explorer') openExplorer();
+    const tipo = e.data?.type;
+    if (tipo === 'open-file-explorer')  openExplorer();
+    if (tipo === 'galeria-collage')     closeExplorer();
+    if (tipo === 'galeria-select-all')  selectAllImages();
+    if (tipo === 'galeria-vista')       setExplorerView(e.data.vista);
+    // El marco acaba de montarse y pregunta qué se está viendo.
+    if (tipo === 'galeria-dime-estado') {
+      if (!explorerOverlay?.classList.contains('open')) {
+        avisarCollage();
+      } else if (explorerCurrentFolder === null) {
+        renderFolderList();
+      } else {
+        avisarMarco('carpetas', explorerCurrentFolder + ' — ' +
+          explorerBody.querySelectorAll('.fe-image').length + ' imágenes');
+      }
+    }
   });
 
   // Show image details — use parent panel on desktop, built-in popup otherwise
@@ -514,6 +586,7 @@
 
     if (!files || !files.length) return;
     archiveImages = files;
+    avisarCollage();   // ya con el conteo, para la barra de estado del marco
 
     // Shuffle all images
     displayImages = files.slice();
@@ -569,10 +642,7 @@
 
     function addNext() {
       if (paused) return;
-      if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
-        collageContainer.style.width = '100vw';
-        collageContainer.style.height = '100vh';
-      }
+      ajustarLienzo();
       // Walk through shuffled list, skip if in recent 10
       // Guard: if all images are in recent (e.g. only 1 image), just use the next one
       let src = displayImages[imgIndex % displayImages.length];
@@ -619,10 +689,7 @@
 
   function init() {
     collageContainer.style.display = 'block';
-    if (collageContainer.offsetWidth < 10 || collageContainer.offsetHeight < 10) {
-      collageContainer.style.width = '100vw';
-      collageContainer.style.height = '100vh';
-    }
+    ajustarLienzo();
     discoverImages();
   }
 

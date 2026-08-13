@@ -62,8 +62,15 @@
             cursor: default;
             font-size: 11px;
             white-space: nowrap;
+            position: relative;
         }
         .fe-dd-item:hover { background: #316AC5; color: #fff; }
+        /* Palomita de la opción activa (Ver > Por autor / Todos los archivos) */
+        .fe-dd-item.checked::before {
+            content: '✓';
+            position: absolute;
+            left: 9px;
+        }
         .fe-dd-sep {
             height: 1px;
             background: #ACA899;
@@ -211,6 +218,9 @@
         <ul class="fe-dropdown" id="fe-dropdown-ver">
             <li class="fe-dd-item" data-action="view-icons">Íconos</li>
             <li class="fe-dd-item" data-action="view-list">Lista</li>
+            <li class="fe-dd-sep"></li>
+            <li class="fe-dd-item" data-action="group-autor" id="fe-ver-autor">Por autor</li>
+            <li class="fe-dd-item" data-action="group-todos" id="fe-ver-todos">Todos los archivos</li>
         </ul>
     </div>
 
@@ -232,6 +242,18 @@
     <script>
         const grid = document.getElementById('folder-grid');
         const status = document.getElementById('status-text');
+        const pathBar = document.getElementById('file-explorer-path');
+        const backBtn = document.getElementById('file-explorer-back');
+
+        const ICONO_ARCHIVO = '../indexPage/indexImages/icons/notepad_file-0.png';
+        const ICONO_CARPETA = '../indexPage/indexImages/icons/directory_closed-0.png';
+
+        // La carpeta siempre abre en archivos sueltos, como toda la vida.
+        // Ver > Por autor cambia a carpetas, y dura lo que dure la ventana.
+        let vista = 'todos'; // 'autor' = una carpeta por autor
+        let articulos = [];
+        let carpetas = [];
+        let carpetaAbierta = null; // null = raíz
 
         function openNuevoArticulo() {
             if (window.parent && window.parent !== window) {
@@ -241,20 +263,80 @@
             }
         }
 
-        ArticulosAPI.listar()
-            .then(articulos => {
-                const fragment = document.createDocumentFragment();
+        // Los títulos y los nombres de autor vienen de envíos del público,
+        // así que se arman como texto y nunca como HTML.
+        function nodoItem(icono, etiqueta) {
+            const img = document.createElement('img');
+            img.src = icono;
+            img.alt = '';
+            img.loading = 'lazy';
+            const span = document.createElement('span');
+            span.className = 'folder-item-label';
+            span.textContent = etiqueta;
+            return [img, span];
+        }
 
-                articulos.forEach(art => {
-                    const item = document.createElement('a');
-                    item.className = 'folder-item';
-                    item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
-                    item.target = '_top';
-                    item.innerHTML = `<img src="../indexPage/indexImages/icons/notepad_file-0.png" alt="" loading="lazy"><span class="folder-item-label">${art.titulo}.txt</span>`;
-                    fragment.appendChild(item);
-                });
-                grid.appendChild(fragment);
-                status.textContent = articulos.length + ' objeto(s)';
+        function itemArchivo(art) {
+            const item = document.createElement('a');
+            item.className = 'folder-item';
+            item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
+            item.target = '_top';
+            item.title = art.titulo;
+            item.append(...nodoItem(ICONO_ARCHIVO, art.titulo + '.txt'));
+            return item;
+        }
+
+        function itemCarpeta(carpeta) {
+            const item = document.createElement('div');
+            item.className = 'folder-item';
+            item.tabIndex = 0;
+            item.title = carpeta.nombre + ' (' + carpeta.articulos.length + ')';
+            item.append(...nodoItem(ICONO_CARPETA, carpeta.nombre));
+            const abrir = e => { e.stopPropagation(); carpetaAbierta = carpeta; pintar(); };
+            item.addEventListener('click', abrir);
+            item.addEventListener('keydown', e => { if (e.key === 'Enter') abrir(e); });
+            return item;
+        }
+
+        function marcarVista() {
+            document.getElementById('fe-ver-autor').classList.toggle('checked', vista === 'autor');
+            document.getElementById('fe-ver-todos').classList.toggle('checked', vista === 'todos');
+        }
+
+        function pintar() {
+            const frag = document.createDocumentFragment();
+            if (vista === 'autor' && !carpetaAbierta) {
+                carpetas.forEach(c => frag.appendChild(itemCarpeta(c)));
+                pathBar.textContent = 'Artículos';
+                backBtn.disabled = true;
+                status.textContent = carpetas.length + ' carpeta(s)';
+            } else {
+                const lista = carpetaAbierta ? carpetaAbierta.articulos : articulos;
+                lista.forEach(a => frag.appendChild(itemArchivo(a)));
+                pathBar.textContent = carpetaAbierta ? 'Artículos \\ ' + carpetaAbierta.nombre : 'Artículos';
+                backBtn.disabled = !carpetaAbierta;
+                status.textContent = lista.length + ' objeto(s)';
+            }
+            grid.replaceChildren(frag);
+            marcarVista();
+        }
+
+        function cambiarVista(modo) {
+            vista = modo;
+            carpetaAbierta = null;
+            pintar();
+        }
+
+        backBtn.addEventListener('click', () => {
+            if (carpetaAbierta) { carpetaAbierta = null; pintar(); }
+        });
+
+        marcarVista();
+        ArticulosAPI.listar()
+            .then(lista => {
+                articulos = lista;
+                carpetas = ArticulosAPI.agruparPorAutor(lista);
+                pintar();
             })
             .catch(() => status.textContent = 'Error al cargar');
 
@@ -281,6 +363,10 @@
                 grid.classList.remove('list-view');
             } else if (action === 'view-list') {
                 grid.classList.add('list-view');
+            } else if (action === 'group-autor') {
+                cambiarVista('autor');
+            } else if (action === 'group-todos') {
+                cambiarVista('todos');
             } else if (action === 'select-all') {
                 grid.querySelectorAll('.folder-item').forEach(i => i.classList.add('selected'));
             }

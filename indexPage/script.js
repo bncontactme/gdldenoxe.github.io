@@ -414,6 +414,78 @@ document.addEventListener('DOMContentLoaded', () => {
         return item;
     }
 
+    // Carpeta de autor dentro de la ventana de Artículos: se abre con doble
+    // click, igual que los archivos.
+    function buildAutorFolderItem(carpeta) {
+        const item = document.createElement('div');
+        item.className = 'folder-item';
+        item.title = carpeta.nombre + ' (' + carpeta.articulos.length + ')';
+        item.innerHTML = `
+            <span class="folder-icon"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="" class="folder-item-icon"></span>
+            <span class="folder-name">${esc(carpeta.nombre)}</span>`;
+
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            $$('.folder-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedFolderItem = item;
+        });
+
+        item.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            autorAbierto = carpeta;
+            pintarCarpetaArticulos();
+        });
+        return item;
+    }
+
+    // ===== Vista de la carpeta de Artículos =====
+    // Siempre abre en archivos sueltos, la vista de siempre. Ver > Por autor
+    // la cambia a carpetas (como la galería) mientras dure la sesión.
+    let vistaArticulos = 'todos'; // 'autor' = una carpeta por autor
+    let articulosCargados = [];
+    let carpetasAutor = [];
+    let autorAbierto = null; // null = raíz
+
+    function pintarCarpetaArticulos() {
+        const contenido = $('#folder-articulos-content');
+        if (!contenido) return;
+        const win = $('[data-window-id="folder-articulos"]');
+        const back = win?.querySelector('.fe-back');
+        const path = win?.querySelector('.fe-path');
+        const estado = $('#folder-articulos-status');
+        const frag = document.createDocumentFragment();
+
+        if (vistaArticulos === 'autor' && !autorAbierto) {
+            carpetasAutor.forEach(c => frag.appendChild(buildAutorFolderItem(c)));
+            if (path) path.textContent = 'Artículos';
+            if (back) back.disabled = true;
+            if (estado) estado.textContent = carpetasAutor.length + ' carpeta(s)';
+        } else {
+            const lista = autorAbierto ? autorAbierto.articulos : articulosCargados;
+            lista.forEach(art => frag.appendChild(buildFolderItem(art)));
+            if (path) path.textContent = autorAbierto ? 'Artículos \\ ' + autorAbierto.nombre : 'Artículos';
+            if (back) back.disabled = !autorAbierto;
+            if (estado) estado.textContent = lista.length + ' objeto(s)';
+        }
+
+        contenido.replaceChildren(frag);
+        marcarVistaArticulos();
+    }
+
+    function marcarVistaArticulos() {
+        const menubar = $('#folder-articulos-menubar');
+        if (!menubar) return;
+        menubar.querySelector('[data-action="group-autor"]')?.classList.toggle('checked', vistaArticulos === 'autor');
+        menubar.querySelector('[data-action="group-todos"]')?.classList.toggle('checked', vistaArticulos === 'todos');
+    }
+
+    function cambiarVistaArticulos(modo) {
+        vistaArticulos = modo;
+        autorAbierto = null;
+        pintarCarpetaArticulos();
+    }
+
     // Los títulos y textos ahora pueden venir de envíos del público, así que
     // todo lo que se arma con innerHTML pasa por aquí primero.
     function esc(valor) {
@@ -428,24 +500,20 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(articulos => {
             articulos.forEach(art => { if (!art.imagen) art.imagen = DEFAULT_ARTICLE_IMAGE; });
             const container = $('#articles-container');
-            const folderContent = $('#folder-articulos-content');
             const visibleIdx = Math.floor(Math.random() * articulos.length);
-            
+
             // Use DocumentFragment for batch DOM insertion
             const containerFrag = document.createDocumentFragment();
-            const folderFrag = document.createDocumentFragment();
 
             articulos.forEach((art, idx) => {
                 containerFrag.appendChild(buildArticleWindow(art, idx, idx === visibleIdx));
-                folderFrag.appendChild(buildFolderItem(art));
             });
-            
+
             container.appendChild(containerFrag);
 
-            folderContent.appendChild(folderFrag);
-
-            const folderStatus = $('#folder-articulos-status');
-            if (folderStatus) folderStatus.textContent = articulos.length + ' objeto(s)';
+            articulosCargados = articulos;
+            carpetasAutor = ArticulosAPI.agruparPorAutor(articulos);
+            pintarCarpetaArticulos();
 
             // Populate article widget with a random article
             const randomArt = articulos[Math.floor(Math.random() * articulos.length)];
@@ -511,6 +579,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (artMenubar) {
         const artFolderWin = $('[data-window-id="folder-articulos"]');
         const artFolderContent = $('#folder-articulos-content');
+
+        // Atrás: de la carpeta de un autor de regreso a la lista de autores.
+        artFolderWin?.querySelector('.fe-back')?.addEventListener('click', () => {
+            if (autorAbierto) {
+                autorAbierto = null;
+                pintarCarpetaArticulos();
+            }
+        });
+        marcarVistaArticulos();
         const closeArtMenus = () => {
             artMenubar.querySelectorAll('.fe-menu-item.open').forEach(x => x.classList.remove('open'));
             artMenubar.querySelectorAll('.fe-dropdown.open').forEach(x => x.classList.remove('open'));
@@ -543,11 +620,87 @@ document.addEventListener('DOMContentLoaded', () => {
                     artFolderContent?.classList.remove('list-view');
                 } else if (action === 'view-list') {
                     artFolderContent?.classList.add('list-view');
+                } else if (action === 'group-autor') {
+                    cambiarVistaArticulos('autor');
+                } else if (action === 'group-todos') {
+                    cambiarVistaArticulos('todos');
                 }
                 closeArtMenus();
             });
         });
         document.addEventListener('click', closeArtMenus);
+    }
+
+    // Menú de la ventana Galería. Vive aquí, en el marco, y no dentro del
+    // iframe de las fotos: al explorador se le habla por postMessage.
+    const galMenubar = $('#galeria-menubar');
+    if (galMenubar) {
+        const galWin = $('[data-window-id="galeria"]');
+        const cerrarGalMenu = () => {
+            galMenubar.querySelectorAll('.fe-menu-item.open').forEach(x => x.classList.remove('open'));
+            galMenubar.querySelectorAll('.fe-dropdown.open').forEach(x => x.classList.remove('open'));
+        };
+
+        galMenubar.querySelectorAll('[data-gal-menu]').forEach(mi => {
+            mi.addEventListener('click', e => {
+                e.stopPropagation();
+                const dd = galMenubar.querySelector('#gal-dropdown-' + mi.dataset.galMenu);
+                const abierto = mi.classList.contains('open');
+                cerrarGalMenu();
+                if (!abierto && dd) {
+                    mi.classList.add('open');
+                    dd.style.left = mi.offsetLeft + 'px';
+                    dd.classList.add('open');
+                }
+            });
+        });
+
+        // Todo lo que pasa adentro se pide por mensaje; el iframe contesta
+        // con 'galeria-estado' y de ahí salen ruta, Atrás y barra de estado.
+        const decirGaleria = (msg) => {
+            const iframe = galWin?.querySelector('iframe');
+            iframe?.contentWindow?.postMessage(msg, location.origin);
+        };
+
+        const galStatus = $('#galeria-status');
+
+        galMenubar.addEventListener('click', e => {
+            const item = e.target.closest('[data-gal]');
+            if (!item) return;
+            e.stopPropagation();
+            cerrarGalMenu();
+            const accion = item.dataset.gal;
+            if (accion === 'upload') {
+                openUploadOverlay();
+            } else if (accion === 'close') {
+                galWin?.classList.add('hidden');
+                updateTaskbar();
+            } else if (accion === 'select-all') {
+                decirGaleria({ type: 'galeria-select-all' });
+            } else if (accion === 'view-icons') {
+                decirGaleria({ type: 'galeria-vista', vista: 'iconos' });
+            } else if (accion === 'view-list') {
+                decirGaleria({ type: 'galeria-vista', vista: 'lista' });
+            } else if (accion === 'modo-carpetas' || accion === 'explorar') {
+                decirGaleria({ type: 'open-file-explorer' });
+            } else if (accion === 'modo-collage') {
+                decirGaleria({ type: 'galeria-collage' });
+            }
+        });
+        document.addEventListener('click', cerrarGalMenu);
+
+        // La galería avisa qué está mostrando y el marco se acomoda.
+        window.addEventListener('message', e => {
+            if (e.origin !== location.origin) return;
+            if (e.data?.type !== 'galeria-estado') return;
+            if (galStatus) galStatus.textContent = e.data.estado || '';
+            $('#gal-ver-collage')?.classList.toggle('checked', e.data.modo === 'collage');
+            $('#gal-ver-carpetas')?.classList.toggle('checked', e.data.modo === 'carpetas');
+        });
+
+        // Al abrir la ventana, preguntar en qué quedó el iframe.
+        const preguntarEstado = () => decirGaleria({ type: 'galeria-dime-estado' });
+        galWin?.querySelector('iframe')?.addEventListener('load', preguntarEstado);
     }
 
     window.addEventListener('resize', centerYtPopup);

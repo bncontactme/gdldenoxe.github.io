@@ -725,9 +725,34 @@ body.arrastrando iframe {
     cursor: default;
     font-size: 11px;
     white-space: nowrap;
+    position: relative;
 }
 
 .fe-dd-item:hover { background: #316AC5; color: #fff; }
+
+/* Palomita de la opción activa (Ver > Por autor / Todos los archivos) */
+.fe-dd-item.checked::before {
+    content: '✓';
+    position: absolute;
+    left: 9px;
+}
+
+.fe-dd-sep {
+    height: 1px;
+    background: #ACA899;
+    margin: 3px 2px;
+}
+
+/* Táctil (tablet): sin un cursor que delate el clic, Safari se puede tragar
+   el tap en un div. Y de paso los renglones crecen para el dedo. */
+@media (hover: none) {
+    .fe-menu-item, .fe-dd-item {
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    .fe-menu-item { padding: 6px 10px; }
+    .fe-dd-item { padding: 8px 20px 8px 24px; }
+}
 
 .fe-toolbar {
     background: #ECE9D8;
@@ -946,6 +971,27 @@ body.arrastrando iframe {
 /* Tienda más alta */
 [data-window-id="tienda"] .iframe-container {
     height: min(650px, calc(100vh - 150px));
+}
+
+/* Galería: la barra de menú va pegada al título, igual que en Artículos, y el
+   iframe de las fotos toma lo que sobra. En columna para no andar restando
+   alturas a mano cuando la ventana se maximiza. */
+[data-window-id="galeria"] .window-body {
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+}
+
+[data-window-id="galeria"] .iframe-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* Menú + ruta + barra de estado se comen ~65px más que las otras
+       ventanas: se le deja ese aire para no pegarse a la barra de tareas. */
+    height: min(460px, calc(100vh - 215px));
+}
+
+.win95-window.maximized[data-window-id="galeria"] .iframe-container {
+    height: auto;
 }
 
 /* Lonche */
