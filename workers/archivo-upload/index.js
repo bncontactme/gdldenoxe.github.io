@@ -20,6 +20,7 @@
 //   delete           remove photo(s) from Cloudinary + images.json      [auth]
 //   list             live photo list from Cloudinary                    [public]
 //   ping             probar la contraseña y saber de qué nivel es     [colab]
+//   autores          carpetas de autor que ya existen en el archivo    [colab]
 //   articulo-propose mandar un poema a la cola de revisión             [colab]
 //   articulo-sign    firmar una imagen del poema                       [colab]
 //   articulo-submit  publicar sin pasar por la cola                    [admin]
@@ -52,6 +53,7 @@ import {
   aprobar,
   rechazar,
   borrarPublicado,
+  handleInstagram,
 } from './lib/articulos.js';
 
 const ALLOWED_ORIGINS = new Set([
@@ -160,6 +162,9 @@ export default {
     if (body.action === 'ping') {
       return jsonResponse({ ok: true, admin: esAdmin }, 200, allowedOrigin);
     }
+    if (body.action === 'autores') {
+      return handleAutores(env, allowedOrigin);
+    }
     if (body.action === 'articulo-propose') {
       return handleArticuloPropose(body, env, allowedOrigin);
     }
@@ -239,9 +244,15 @@ async function handleUpload(body, env, origin) {
     const timestamp    = String(Math.floor(Date.now() / 1000));
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
 
-    // Entra a revisión: archivo-pendiente/<artista>/ — invisible en la galería
-    // hasta que el admin la apruebe.
-    const slug   = artistSlug(body.artista);
+    // La forma dice «Autor»; el archivo lleva años guardando `artista`. Se
+    // aceptan los dos nombres al entrar y se sigue escribiendo `artista`, para
+    // no partir en dos las fotos que ya están.
+    const autor = body.autor || body.artista || '';
+
+    // Entra a revisión: archivo-pendiente/<autor>/ — invisible en la galería
+    // hasta que el admin la apruebe. La carpeta la abre Cloudinary sola con
+    // este `folder`, así que un autor nuevo no necesita darse de alta antes.
+    const slug   = artistSlug(autor);
     const folder = FOLDER_PENDIENTE + '/' + slug;
 
     const signingParams = {
@@ -251,8 +262,11 @@ async function handleUpload(body, env, origin) {
       upload_preset: uploadPreset,
     };
 
+    const instagram = handleInstagram(body.instagram);
+
     const contextParts = [];
-    if (body.artista)     contextParts.push('artista='     + sanitize(body.artista));
+    if (autor)            contextParts.push('artista='     + sanitize(autor));
+    if (instagram)        contextParts.push('instagram='   + instagram);
     if (body.descripcion) contextParts.push('descripcion=' + sanitize(body.descripcion));
     if (body.fecha)       contextParts.push('fecha='       + String(body.fecha || '').replace(/[^0-9\-]/g, ''));
     if (contextParts.length) signingParams.context = contextParts.join('|');
@@ -313,8 +327,8 @@ async function handleDelete(body, env, origin) {
   return jsonResponse(data, res.ok ? res.status : 502, origin);
 }
 
-// ── List handler (fetch live image list from Cloudinary) ────────────────────────
-async function handleList(env, origin) {
+// ── Cloudinary: todas las imágenes bajo un prefijo, paginando ────────────────
+async function cloudinaryListar(env, prefix) {
   const basicAuth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
   const resources = [];
   let nextCursor = null;
@@ -322,7 +336,7 @@ async function handleList(env, origin) {
   do {
     const params = new URLSearchParams({
       type: 'upload',
-      prefix: FOLDER + '/',
+      prefix,
       context: 'true',
       max_results: '500',
     });
@@ -332,13 +346,23 @@ async function handleList(env, origin) {
       `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/resources/image?${params}`,
       { headers: { Authorization: `Basic ${basicAuth}` } }
     );
-    if (!res.ok) {
-      return jsonResponse({ error: 'Cloudinary list failed: ' + res.status }, 502, origin);
-    }
+    if (!res.ok) throw new Error('Cloudinary list failed: ' + res.status);
     const data = await res.json();
     resources.push(...(data.resources || []));
     nextCursor = data.next_cursor || null;
   } while (nextCursor);
+
+  return resources;
+}
+
+// ── List handler (fetch live image list from Cloudinary) ────────────────────────
+async function handleList(env, origin) {
+  let resources;
+  try {
+    resources = await cloudinaryListar(env, FOLDER + '/');
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 502, origin);
+  }
 
   const entries = resources.map(function(r) {
     const url = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/v${r.version}/${r.public_id}.${r.format}`;
@@ -349,12 +373,81 @@ async function handleList(env, origin) {
       thumbUrl,
       public_id:   r.public_id,   // lo usa la bandeja de admin para borrar
       artista:     ctx.artista     || '',
+      instagram:   ctx.instagram   || '',
       descripcion: ctx.descripcion || '',
       fecha:       ctx.fecha       || '',
     };
   });
 
   return jsonResponse({ entries }, 200, origin);
+}
+
+// ── Colaborador: las carpetas de autor que ya existen ────────────────────────
+// La forma de subir arma su lista con esto. Se miran las dos carpetas —la
+// galería y la cola— para que quien acaba de mandar sus primeras fotos ya se
+// vea ahí, sin esperar a que se las aprueben.
+//
+// El nombre que se devuelve es el de la carpeta: si alguien escribe «zoe nuño»
+// donde ya había «Zoe Nuño», la forma lo corrige y las dos tandas caen juntas
+// en vez de abrir dos carpetas casi iguales.
+//
+// Armar la lista cuesta leerse las dos carpetas enteras, y ese cupo de la Admin
+// API es el mismo del que vive la galería pública. Como la contraseña de
+// colaborador anda en muchas manos, se guarda un minuto: así nadie tumba la
+// galería a punta de recargar la forma. El minuto no se siente — quien acaba de
+// subir ya se ve en la lista sin preguntarle al Worker.
+const K_AUTORES   = 'cache:autores';
+const AUTORES_TTL = 60;   // segundos; es el mínimo que acepta KV
+
+async function handleAutores(env, origin) {
+  const guardada = await env.ARTICULOS.get(K_AUTORES, 'json').catch(() => null);
+  if (guardada) return jsonResponse({ ok: true, autores: guardada }, 200, origin);
+
+  let recursos;
+  try {
+    const [publicadas, enCola] = await Promise.all([
+      cloudinaryListar(env, FOLDER + '/'),
+      cloudinaryListar(env, FOLDER_PENDIENTE + '/'),
+    ]);
+    recursos = publicadas.concat(enCola);
+  } catch (e) {
+    return jsonResponse({ error: String(e.message || e) }, 502, origin);
+  }
+
+  const porSlug = new Map();
+  for (const r of recursos) {
+    const ctx    = r.context && r.context.custom ? r.context.custom : {};
+    const nombre = String(ctx.artista || '').trim();
+    if (!nombre) continue;   // las viejas sin firma viven en `general/`
+
+    const slug    = artistSlug(nombre);
+    const carpeta = porSlug.get(slug) || { nombre, slug, fotos: 0, instagram: '' };
+    // Entre firmas del mismo autor se queda la mejor escrita.
+    if (mayusculasIniciales(nombre) > mayusculasIniciales(carpeta.nombre)) {
+      carpeta.nombre = nombre;
+    }
+    carpeta.fotos++;
+    if (!carpeta.instagram && ctx.instagram) {
+      carpeta.instagram = handleInstagram(ctx.instagram);
+    }
+    porSlug.set(slug, carpeta);
+  }
+
+  const autores = Array.from(porSlug.values())
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+  // Si KV falla, la lista igual sale: solo se pierde el ahorro.
+  await env.ARTICULOS.put(K_AUTORES, JSON.stringify(autores), { expirationTtl: AUTORES_TTL })
+    .catch(e => console.error('No se pudo guardar la lista de autores:', e));
+
+  return jsonResponse({ ok: true, autores }, 200, origin);
+}
+
+// "Zoe Nuño" le gana a "zoe nuño": se queda la firma con más iniciales altas.
+function mayusculasIniciales(nombre) {
+  return String(nombre).split(/\s+/)
+    .filter(p => /^[A-ZÁÉÍÓÚÜÑ]/.test(p))
+    .length;
 }
 
 // ── Artículo: firma la subida de una imagen a la carpeta del poema ───────────
@@ -573,6 +666,7 @@ async function handleFotoPending(env, origin) {
       url:         `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/v${r.version}/${r.public_id}.${r.format}`,
       thumbUrl:    `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/c_thumb,w_160,h_160,q_auto,f_auto/v${r.version}/${r.public_id}.${r.format}`,
       artista:     ctx.artista     || '',
+      instagram:   ctx.instagram   || '',
       descripcion: ctx.descripcion || '',
       fecha:       ctx.fecha       || '',
       subida:      r.created_at    || '',
@@ -604,6 +698,7 @@ async function handleFotoApprove(body, env, origin) {
         url:         movida.secure_url,
         thumbUrl:    movida.secure_url.replace('/upload/', '/upload/c_thumb,w_96,h_96,q_auto:best,f_auto/'),
         artista:     ctx.artista     || body.artista     || '',
+        instagram:   handleInstagram(ctx.instagram || body.instagram),
         descripcion: ctx.descripcion || body.descripcion || '',
         fecha:       ctx.fecha       || body.fecha       || '',
       }]);

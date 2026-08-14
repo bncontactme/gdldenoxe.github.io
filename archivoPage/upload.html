@@ -75,6 +75,24 @@
 
     .xp-field { display: flex; flex-direction: column; }
 
+    /* Autor + Instagram van lado a lado; en pantalla angosta se apilan solos. */
+    .xp-row { display: flex; gap: 10px; }
+    .xp-row > * { flex: 1; min-width: 0; }
+    @media (max-width: 380px) { .xp-row { flex-direction: column; gap: 14px; } }
+
+    .xp-arroba { display: flex; align-items: stretch; }
+    .xp-arroba span {
+      display: flex; align-items: center; padding: 0 7px;
+      color: #6a6a6a; background: #ECE9D8;
+      border: 2px inset #fff; border-right: none;
+    }
+    .xp-arroba .xp-input { border-left: none; }
+
+    .xp-ayuda {
+      display: block; margin-top: 3px;
+      font-size: 10px; color: #666;
+    }
+
     .xp-divider {
       border: none;
       border-top: 1px solid #ACA899;
@@ -290,12 +308,23 @@
     </div>
     <div class="xp-body">
 
-      <div class="xp-field">
-        <label class="xp-label" for="input-artista">Artista</label>
-        <input class="xp-input" type="text" id="input-artista"
-               placeholder="Ej: Tu nombre o @handle"
-               autocomplete="off" maxlength="120" list="artistas-list">
-        <datalist id="artistas-list"></datalist>
+      <div class="xp-row">
+        <div class="xp-field">
+          <label class="xp-label" for="input-autor">Autor</label>
+          <input class="xp-input" type="text" id="input-autor"
+                 placeholder="Ej: Tu nombre o @handle"
+                 autocomplete="off" maxlength="120" list="autores-list">
+          <datalist id="autores-list"></datalist>
+          <small class="xp-ayuda" id="autor-ayuda">Escribe o escoge de la lista.</small>
+        </div>
+        <div class="xp-field">
+          <label class="xp-label" for="input-instagram">Instagram <span style="font-weight:normal;color:#666">(opcional)</span></label>
+          <div class="xp-arroba">
+            <span>@</span>
+            <input class="xp-input" type="text" id="input-instagram"
+                   placeholder="tucuenta" autocomplete="off" maxlength="40">
+          </div>
+        </div>
       </div>
 
       <div class="xp-field">
@@ -367,27 +396,113 @@
       _ro.observe(document.body);
     }
 
-    // ── Load existing artists for datalist ───────────────────────────────────
+    // ── Carpetas de autor ────────────────────────────────────────────────────
+    // La lista sale del Worker, que mira la galería y la cola de revisión: quien
+    // acaba de mandar sus primeras fotos ya sale aquí aunque nadie se las haya
+    // aprobado. images.json queda de respaldo, y es lo que se ve mientras no se
+    // haya entrado la contraseña.
+    let carpetasAutor = [];   // [{nombre, slug, fotos, instagram}]
+
+    // Las mismas reglas que artistSlug() en el Worker — es quien decide en qué
+    // carpeta de Cloudinary cae la foto. Si esto y aquello no coinciden, dos
+    // firmas distintas del mismo autor terminan en carpetas separadas.
+    function slugAutor(nombre) {
+      if (!nombre) return 'general';
+      var handle = String(nombre).match(/@(\w+)/);
+      if (handle) return handle[1].toLowerCase();
+      return String(nombre).trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+        .slice(0, 40) || 'general';
+    }
+
+    function carpetaDe(nombre) {
+      var slug = slugAutor(nombre);
+      for (var i = 0; i < carpetasAutor.length; i++) {
+        if (carpetasAutor[i].slug === slug) return carpetasAutor[i];
+      }
+      return null;
+    }
+
+    // Si lo escrito cae en una carpeta que ya existe se usa el nombre de la
+    // carpeta: así "zoe nuño" no abre una segunda al lado de "Zoe Nuño".
+    function autorCanonico(valor) {
+      var c = carpetaDe(valor);
+      return c ? c.nombre : valor;
+    }
+
+    function ordenarAutores() {
+      carpetasAutor.sort(function(a, b) { return a.nombre.localeCompare(b.nombre, 'es'); });
+    }
+
+    // Entre firmas de la misma carpeta se queda la mejor escrita, igual que en
+    // el Worker: "Zoe Nuño" le gana a "zoe nuño".
+    function mayusculasIniciales(nombre) {
+      return String(nombre).split(/\s+/).filter(function(p) {
+        return /^[A-ZÁÉÍÓÚÜÑ]/.test(p);
+      }).length;
+    }
+
+    function pintarAutores() {
+      var dl = document.getElementById('autores-list');
+      if (!dl) return;
+      var frag = document.createDocumentFragment();
+      carpetasAutor.forEach(function(c) {
+        var op = document.createElement('option');
+        op.value = c.nombre;
+        op.label = c.fotos + (c.fotos === 1 ? ' foto' : ' fotos');
+        frag.appendChild(op);
+      });
+      dl.replaceChildren(frag);
+      var ayuda = document.getElementById('autor-ayuda');
+      if (ayuda && carpetasAutor.length) {
+        ayuda.textContent = 'Escribe uno nuevo o escoge de los ' +
+          carpetasAutor.length + ' que ya tienen carpeta.';
+      }
+    }
+
+    // Respaldo sin contraseña: lo que había en la galería la última vez.
     (async function() {
       try {
-        var res = await fetch('images.json');
-        var imgs = await res.json();
-        var seen = new Set();
-        var dl = document.getElementById('artistas-list');
+        var imgs = await (await fetch('images.json')).json();
+        if (carpetasAutor.length) return;   // el Worker ya contestó, él manda
+        var porSlug = {};
         imgs.forEach(function(img) {
-          var a = (img.artista || '').trim();
-          if (a) {
-            _artistCounts[a] = (_artistCounts[a] || 0) + 1;
-            if (!seen.has(a)) {
-              seen.add(a);
-              var opt = document.createElement('option');
-              opt.value = a;
-              dl.appendChild(opt);
-            }
+          var nombre = (img.artista || '').trim();
+          if (!nombre) return;              // las viejas sin firma viven en general/
+          var slug = slugAutor(nombre);
+          if (!porSlug[slug]) {
+            porSlug[slug] = { nombre: nombre, slug: slug, fotos: 0, instagram: '' };
           }
+          if (mayusculasIniciales(nombre) > mayusculasIniciales(porSlug[slug].nombre)) {
+            porSlug[slug].nombre = nombre;
+          }
+          if (!porSlug[slug].instagram && img.instagram) porSlug[slug].instagram = img.instagram;
+          porSlug[slug].fotos++;
         });
-      } catch(e) { /* silently ignore */ }
+        carpetasAutor = Object.keys(porSlug).map(function(k) { return porSlug[k]; });
+        ordenarAutores();
+        pintarAutores();
+      } catch(e) { /* sin respaldo: el campo sigue siendo de texto libre */ }
     })();
+
+    // Ya con la contraseña en mano: la lista de verdad, con lo que está en revisión.
+    async function cargarAutores() {
+      try {
+        var res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'autores', password: _password }),
+        });
+        if (!res.ok) return;
+        var data = await res.json();
+        if (!Array.isArray(data.autores)) return;
+        carpetasAutor = data.autores;
+        ordenarAutores();
+        pintarAutores();
+        renderThumbs();   // el contador de fotos restantes cambia con la lista
+      } catch (e) { /* nos quedamos con el respaldo */ }
+    }
     // ─────────────────────────────────────────────────────────────────────────
 
     // ── Password gate ─────────────────────────────────────────────────────────
@@ -456,6 +571,7 @@
         pwInput.value = '';
         pwError.textContent = '';
         _attempts = 0;
+        cargarAutores();
       } else {
         _attempts++;
         pwInput.value = '';
@@ -505,27 +621,22 @@
     const statusBox    = document.getElementById('status-box');
     const progressWrap = document.getElementById('progress-wrap');
     const progressFill = document.getElementById('progress-fill');
-    const inputArtista = document.getElementById('input-artista');
-    const inputDesc    = document.getElementById('input-descripcion');
-    const inputFecha   = document.getElementById('input-fecha');
+    const inputAutor     = document.getElementById('input-autor');
+    const inputInstagram = document.getElementById('input-instagram');
+    const inputDesc      = document.getElementById('input-descripcion');
+    const inputFecha     = document.getElementById('input-fecha');
 
     let selectedFiles = [];
-    // artistCounts populated from images.json by the datalist loader
-    var _artistCounts = {};
 
-    function getArtistCount(name) {
-      var key = (name || '').trim().toLowerCase();
-      if (!key) return 0;
-      // exact match first, then case-insensitive
-      for (var k in _artistCounts) {
-        if (k.toLowerCase() === key) return _artistCounts[k];
-      }
-      return 0;
+    // Cuántas lleva ya ese autor, contando las que siguen en revisión.
+    function fotosDe(nombre) {
+      var c = carpetaDe(nombre);
+      return c ? c.fotos : 0;
     }
     function getArtistRemaining() {
-      var name = inputArtista.value.trim();
-      if (!name) return MAX_PER_ARTIST; // no artist typed = no limit yet
-      return Math.max(0, MAX_PER_ARTIST - getArtistCount(name));
+      var name = inputAutor.value.trim();
+      if (!name) return MAX_PER_ARTIST; // sin autor escrito no hay límite todavía
+      return Math.max(0, MAX_PER_ARTIST - fotosDe(name));
     }
 
     // ── File selection ────────────────────────────────────────────────────────
@@ -548,8 +659,29 @@
       addFiles(Array.from(fileInput.files));
       fileInput.value = '';
     });
-    // Update counter when artist name changes
-    inputArtista.addEventListener('input', function() { renderThumbs(); syncUploadBtn(); });
+    // El contador de fotos restantes depende de quién firma
+    inputAutor.addEventListener('input', function() { renderThumbs(); syncUploadBtn(); });
+
+    // Al salir del campo: si lo escrito ya tiene carpeta se adopta su nombre, y
+    // si esa carpeta trae Instagram se ofrece — sin pisar lo que ya haya puesto.
+    inputAutor.addEventListener('change', function() {
+      inputAutor.value = autorCanonico(inputAutor.value.trim());
+      var c = carpetaDe(inputAutor.value);
+      if (c && c.instagram && !inputInstagram.value.trim()) {
+        inputInstagram.value = c.instagram;
+      }
+      renderThumbs();
+      syncUploadBtn();
+    });
+
+    // La @ ya está impresa al lado del campo; si la pegan otra vez, o pegan el
+    // link entero del perfil, aquí se queda solo el handle.
+    inputInstagram.addEventListener('change', function() {
+      inputInstagram.value = inputInstagram.value.trim()
+        .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+        .replace(/^@/, '')
+        .replace(/[/?#].*$/, '');
+    });
 
     function addFiles(files) {
       var remaining = getArtistRemaining();
@@ -566,8 +698,8 @@
           showStatus('Máximo ' + MAX_PER_UPLOAD + ' imágenes por subida.', 'error'); break;
         }
         if (selectedFiles.length >= remaining) {
-          var name = inputArtista.value.trim();
-          showStatus((name ? name : 'Este artista') + ' ya llegó al límite de ' + MAX_PER_ARTIST + ' fotos en el archivo.', 'error'); break;
+          var name = inputAutor.value.trim();
+          showStatus((name ? name : 'Este autor') + ' ya llegó al límite de ' + MAX_PER_ARTIST + ' fotos en el archivo.', 'error'); break;
         }
         selectedFiles.push(f);
       }
@@ -607,7 +739,7 @@
         fileList.appendChild(wrap);
       });
       var remaining = getArtistRemaining();
-      var name = inputArtista.value.trim();
+      var name = inputAutor.value.trim();
       uploadCounter.textContent = selectedFiles.length > 0
         ? selectedFiles.length + '/' + MAX_PER_UPLOAD + ' en esta subida'
           + (name ? ' · ' + remaining + ' restantes para ' + name : '')
@@ -638,9 +770,13 @@
 
       if (!selectedFiles.length) return;
 
-      const artista     = inputArtista.value.trim();
+      // Si el autor ya tiene carpeta se manda con el nombre de la carpeta, no
+      // como venga escrito: es lo que mantiene todo lo suyo en un solo lugar.
+      const autor       = autorCanonico(inputAutor.value.trim());
+      const instagram   = inputInstagram.value.trim().replace(/^@/, '');
       const descripcion = inputDesc.value.trim();
       const fecha       = inputFecha.value.trim();
+      inputAutor.value  = autor;
 
       btnUpload.disabled = true;
       btnCancel.disabled = true;
@@ -654,7 +790,7 @@
           var signRes = await fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: _password, artista: artista, descripcion: descripcion, fecha: fecha }),
+            body: JSON.stringify({ password: _password, autor: autor, instagram: instagram, descripcion: descripcion, fecha: fecha }),
           });
           if (!signRes.ok) {
             showStatus('Error de autenticación (' + signRes.status + '). Contacta al admin.', 'error');
@@ -684,7 +820,7 @@
         setProgress(Math.round((i / selectedFiles.length) * 100));
 
         try {
-          await uploadFile(file, artista, descripcion, fecha, signedParams);
+          await uploadFile(file, autor, instagram, descripcion, fecha, signedParams);
           uploaded++;
         } catch (err) {
           failed++;
@@ -695,10 +831,22 @@
       setProgress(100);
 
       if (failed === 0) {
-        // bump artist count locally so the counter stays accurate this session
-        var artistName = inputArtista.value.trim();
-        if (artistName) {
-          _artistCounts[artistName] = (_artistCounts[artistName] || 0) + uploaded;
+        // La carpeta del autor ya quedó abierta en Cloudinary con esta subida,
+        // así que entra a la lista de una vez: si es nuevo, aparece en el
+        // desplegable sin recargar; si ya estaba, se le suman sus fotos.
+        if (autor) {
+          var carpeta = carpetaDe(autor);
+          if (carpeta) {
+            carpeta.fotos += uploaded;
+            if (!carpeta.instagram && instagram) carpeta.instagram = instagram;
+          } else {
+            carpetasAutor.push({
+              nombre: autor, slug: slugAutor(autor),
+              fotos: uploaded, instagram: instagram,
+            });
+            ordenarAutores();
+          }
+          pintarAutores();
         }
         selectedFiles = [];
         renderThumbs();
@@ -721,7 +869,7 @@
       syncUploadBtn();
     }
 
-    function uploadFile(file, artista, descripcion, fecha, signedParams) {
+    function uploadFile(file, autor, instagram, descripcion, fecha, signedParams) {
       return new Promise(function(resolve, reject) {
         var cloudName = signedParams ? signedParams.cloud_name : CLOUD_NAME;
         const url = 'https://api.cloudinary.com/v1_1/' + cloudName + '/image/upload';
@@ -742,7 +890,8 @@
           fd.append('upload_preset', UPLOAD_PRESET);
           fd.append('folder', FOLDER);
           const contextParts = [];
-          if (artista)     contextParts.push('artista=' + artista.replace(/[|=]/g, ' '));
+          if (autor)       contextParts.push('artista=' + autor.replace(/[|=]/g, ' '));
+          if (instagram)   contextParts.push('instagram=' + instagram.replace(/[|=]/g, ' '));
           if (descripcion) contextParts.push('descripcion=' + descripcion.replace(/[|=]/g, ' '));
           if (fecha)       contextParts.push('fecha=' + fecha.replace(/[|=]/g, '-'));
           if (contextParts.length) fd.append('context', contextParts.join('|'));

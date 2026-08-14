@@ -323,7 +323,9 @@
 
     const datos = document.createElement('div');
     datos.className = 'foto-pend-datos';
-    const quien = document.createElement('b'); quien.textContent = f.artista || '(sin artista)';
+    const quien = document.createElement('b');
+    quien.textContent = [f.artista || '(sin autor)', f.instagram ? '@' + f.instagram : '']
+      .filter(Boolean).join(' · ');
     const desc = document.createElement('span'); desc.textContent = f.descripcion || '';
     const cuando = document.createElement('span'); cuando.className = 'tenue';
     cuando.textContent = f.subida ? new Date(f.subida).toLocaleString('es-MX') : '';
@@ -343,7 +345,7 @@
     if (action === 'foto-reject' && !confirm('¿Rechazar esta foto? Se borra de Cloudinary.')) return;
     el.querySelectorAll('button').forEach(b => b.disabled = true);
     try {
-      await pedir({ action, public_id: f.public_id, artista: f.artista, descripcion: f.descripcion, fecha: f.fecha });
+      await pedir({ action, public_id: f.public_id, artista: f.artista, instagram: f.instagram, descripcion: f.descripcion, fecha: f.fecha });
       el.remove();
       avisar(action === 'foto-approve' ? 'Foto publicada en la galería.' : 'Foto rechazada.');
       cargarFotosPendientes();
