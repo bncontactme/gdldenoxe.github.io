@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
-        EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal de bienvenida)
+        EMPLEADO_MODAL: true,        // Certificado "Empleadx del Mes" (modal de bienvenida)
         EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
                                       // no queda nada. (null = todos los días)
@@ -736,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         randomImgEl.src = imagePaths[Math.floor(Math.random() * imagePaths.length)];
     }
 
-    // ==================== EMPLEADO DEL MES (certificado) ====================
+    // ==================== EMPLEADX DEL MES (certificado) ====================
     // Capa modal que tapa el escritorio. Único disparador: entrar al sitio
     // durante FEATURES.EMPLEADO_FECHA, de las 00:00 de ese día a las 00:00 del
     // siguiente. No tiene acceso en Inicio ni en ningún otro lado.

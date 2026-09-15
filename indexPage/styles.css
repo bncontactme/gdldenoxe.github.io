@@ -492,7 +492,7 @@ body.arrastrando iframe {
     border-bottom: var(--inset-dark);
 }
 
-/* Empleado del mes — modal por encima del escritorio */
+/* Empleadx del mes — modal por encima del escritorio */
 .empleado-modal-overlay {
     display: none; /* JS lo cambia a flex al abrir */
     position: fixed;
@@ -2031,7 +2031,7 @@ body.arrastrando iframe {
         display: none;
     }
 
-    /* --- Empleado del Mes (modal: certificado más compacto) --- */
+    /* --- Empleadx del Mes (modal: certificado más compacto) --- */
     .empleado-modal-body {
         padding: 12px 10px;
         gap: 10px;
