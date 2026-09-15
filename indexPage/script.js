@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
         EMPLEADO_MODAL: true,        // Certificado "Empleado del Mes" (modal de bienvenida)
-        EMPLEADO_FECHA: '2026-07-31', // Único día en que sale: de las 00:00 de esa
+        EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
                                       // no queda nada. (null = todos los días)
     };
