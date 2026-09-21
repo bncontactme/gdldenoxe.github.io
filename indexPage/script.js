@@ -1538,7 +1538,7 @@ juntxs y brillando.`
     // listeners never need to refresh.
     let wantLive = false;          // user intent: they pressed play on the live stream
     let reconnectTimer = null;
-    let reconnectDelay = 2000;
+    let reconnectDelay = 500;
     let reconnectFails = 0;
     let reconnecting = false;       // mid-reconnect → show "RECONECTANDO…" instead of a frozen "STREAMING..."
 
@@ -1554,7 +1554,7 @@ juntxs y brillando.`
 
     function stopReconnect() {
         if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-        reconnectDelay = 2000;
+        reconnectDelay = 500;
         reconnectFails = 0;
         setReconnecting(false);
     }
@@ -1581,7 +1581,7 @@ juntxs y brillando.`
             audioPlayer.src = streamUrl + '?r=' + Date.now();
             audioPlayer.play().then(() => {
                 console.log('[Radio] reconnected');
-                reconnectDelay = 2000;
+                reconnectDelay = 500;
                 reconnectFails = 0;
                 isPlaying = true;
                 if (playBtn) playBtn.innerHTML = ICON_PAUSE;
@@ -1605,7 +1605,7 @@ juntxs y brillando.`
         const t = audioPlayer.currentTime;
         if (t === lastLiveTime) reconnectLive('frozen');
         lastLiveTime = t;
-    }, 4000);
+    }, 2000);
 
     // Play/Pause
     playBtn?.addEventListener('click', () => {
@@ -1710,6 +1710,10 @@ juntxs y brillando.`
     // ===== RADIO: Check Icecast status and auto-show player (1:1 con funcionalidad original) =====
     const streamUrl = 'https://radio.guadalajaradenoxe.com/listen/guadalajara_de_noche_radio/radio.mp3';
     const statusUrl = 'https://radio.guadalajaradenoxe.com/api/nowplaying/1';
+    // Con el Mac al aire servimos Icecast puro: no hay API de metadatos, así
+    // que el letrero anuncia la transmisión en vez de quedarse con el título
+    // viejo que dejó AzuraCast.
+    const LIVE_SELF_TEXT = 'GDN Radio en Vivo';
     let radioAvailable = false;
     let offlineMisses = 0;
     let lastLiveSeen = 0;
@@ -1888,7 +1892,12 @@ juntxs y brillando.`
     function refreshTrackReadout() {
         fetch(statusUrl)
             .then(r => r.ok ? r.json() : null)
-            .then(j => { if (j) applyNowPlaying(j); })
+            .then(j => {
+                if (j) { applyNowPlaying(j); return; }
+                // La API no responde => el Mac tomó el aire.
+                setTrackReadout(LIVE_SELF_TEXT);
+                scheduleTdRefresh(null);
+            })
             .catch(() => {});
     }
 
@@ -1910,9 +1919,10 @@ juntxs y brillando.`
             .catch(() => fetch('https://radio.guadalajaradenoxe.com/status-json.xsl')
                 .then(r => r.json())
                 .then(d => { let s = d?.icestats?.source || []; if (!Array.isArray(s)) s = [s];
-                    // Respaldo del Mac al aire: Icecast puro no trae metadatos
-                    clearTrackReadout();
-                    return s.some(x => x.listenurl && x.listenurl.includes('/listen/guadalajara_de_noche_radio/radio.mp3')); })
+                    const mio = s.some(x => x.listenurl && x.listenurl.includes('/listen/guadalajara_de_noche_radio/radio.mp3'));
+                    // Icecast puro no trae metadatos: el letrero anuncia la transmisión.
+                    setTrackReadout(mio ? LIVE_SELF_TEXT : null);
+                    return mio; })
                 .catch(() => { clearTrackReadout(); return false; }))
             .then(live => {
                 console.log('[Radio] status:', live ? 'LIVE' : 'OFFLINE');
