@@ -33,8 +33,11 @@
   }
 
   // Índice de publicados: [{id, titulo, meta, clase, imagen, descripcion}]
-  function listar(base) {
-    return conTiempoLimite(WORKER + '/articulos')
+  // `ms` acorta la espera al worker antes de caer al respaldo; el escritorio
+  // no acomoda sus ventanas hasta tener la lista, así que ahí no puede
+  // esperar los 6 segundos completos.
+  function listar(base, ms) {
+    return conTiempoLimite(WORKER + '/articulos', ms)
       .then(function (d) {
         if (!d || !Array.isArray(d.articulos)) throw new Error('respuesta rara');
         return d.articulos;
@@ -127,9 +130,25 @@
       .sort(function (a, b) { return a.nombre.localeCompare(b.nombre, 'es'); });
   }
 
+  // ===== Imágenes =====
+  // Las fotos se suben tal cual salen del teléfono (hay de más de 1 MB) y se
+  // mostraban así. Cloudinary las achica al vuelo si se lo pide la URL:
+  // c_limit solo reduce —nunca agranda ni recorta, la foto sale completa—,
+  // f_auto manda WebP/AVIF a quien los acepte y q_auto ajusta la calidad.
+  // Solo toca URLs de Cloudinary que todavía no traen transformación; las
+  // rutas locales, los GIF y lo demás pasan igual.
+  function imagen(url, ancho) {
+    url = String(url || '');
+    if (!/^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/v\d+\//.test(url)) return url;
+    // Los GIF animados grandes no los transforma el plan gratis (responde 400)
+    if (/\.gif(\?|$)/i.test(url)) return url;
+    return url.replace('/image/upload/', '/image/upload/f_auto,q_auto,c_limit,w_' + (ancho || 800) + '/');
+  }
+
   global.ArticulosAPI = {
     WORKER: WORKER,
     listar: listar,
+    imagen: imagen,
     obtener: obtener,
     autorDe: autorDe,
     claveCarpeta: claveCarpeta,

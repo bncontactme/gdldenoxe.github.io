@@ -17,8 +17,20 @@
         .win95-window.hidden, .win95-window.minimized { display: none; }
     </style>
 
+    <!-- Las ventanas del escritorio se muestran hasta que script.js las pone
+         en su lugar (ver indexPage/styles.css, .acomodando). Va por JS para que
+         sin JS no quede nada oculto, y con su propia red de seguridad por si
+         script.js no llega a correr. -->
+    <script>
+        document.documentElement.classList.add('acomodando');
+        setTimeout(function () { document.documentElement.classList.remove('acomodando'); }, 5000);
+    </script>
+
+    <!-- La lista de artículos viene del worker: abrir la conexión desde ya -->
+    <link rel="preconnect" href="https://archivo-upload.guadalajaradenoxe.workers.dev" crossorigin>
+
     <link rel="stylesheet" href="shared/win95.css">
-    <link rel="stylesheet" href="indexPage/styles.css">
+    <link rel="stylesheet" href="indexPage/styles.css?v=20260923">
 </head>
 <body>
     <div class="desktop">
@@ -61,7 +73,17 @@
             </div>
             <div class="window-body">
                 <div class="random-image-container">
-                    <img id="randomWindowImage" src="indexPage/indexImages/2 Intro.jpeg" alt="Imagen aleatoria" loading="lazy">
+                    <img id="randomWindowImage" alt="Imagen aleatoria" fetchpriority="high">
+                    <script>
+                        // Se escoge aquí y no en script.js para que empiece a
+                        // bajar desde el principio: es lo más grande que se ve
+                        // al entrar. Antes era lazy y salía al último.
+                        (function () {
+                            var fotos = ['intro-2', 'intro-3', 'intro-4', 'intro-6', 'intro-7'];
+                            document.getElementById('randomWindowImage').src =
+                                'indexPage/indexImages/' + fotos[Math.floor(Math.random() * fotos.length)] + '.webp';
+                        })();
+                    </script>
                 </div>
             </div>
         </div>
@@ -78,7 +100,7 @@
             </div>
             <div class="window-body">
                 <div class="articulo-widget-content">
-                    <img id="articuloWidgetImg" src="" alt="">
+                    <img id="articuloWidgetImg" alt="" loading="lazy">
                     <div class="articulo-widget-text">
                         <div class="articulo-widget-title" id="articuloWidgetTitle"></div>
                         <div class="articulo-widget-desc" id="articuloWidgetDesc"></div>
@@ -364,7 +386,7 @@
             </div>
             <div class="window-body">
                 <div id="tienda-placeholder" style="display:none;">
-                    <img src="tiendaPage/assets/webAssets/logo/path206.png" alt="GDN">
+                    <img src="tiendaPage/assets/webAssets/logo/path206.png" alt="GDN" loading="lazy">
                 </div>
                 <div class="iframe-container" id="tienda-iframe-container">
                     <iframe id="tienda-iframe" data-src="tiendaPage/index.html" frameborder="0" allow="autoplay"></iframe>
@@ -459,8 +481,18 @@
                 </div>
             </div>
             <div class="window-body">
-                <div class="iframe-container">
-                    <iframe id="lonche-iframe" frameborder="0" title="Cómprame Una Torta"></iframe>
+                <!-- Antes era un iframe a lonchedonation/layout2.html: otra página
+                     completa por visita (y se cargaba hasta en celular, donde esta
+                     ventana ni se ve). Se queda la clase iframe-container porque el
+                     acomodo de ventanas le fija el alto por ahí. -->
+                <div class="iframe-container lonche-caja">
+                    <div class="lonche-gif">
+                        <img src="indexPage/indexImages/lonche-spin.webp" alt="Torta tapatía" loading="lazy">
+                    </div>
+                    <div class="lonche-contenido">
+                        <div class="lonche-titulo">¿Te gusta nuestro contenido?</div>
+                        <button class="lonche-btn" id="lonche-open-modal" type="button">🌮 Cómprame Una Torta</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -560,7 +592,7 @@
                 <button id="torta-modal-close" class="torta-modal-close" aria-label="Cerrar">✕</button>
             </div>
             <div class="torta-modal-body">
-                <img src="indexPage/indexImages/lonche-spin.gif" alt="Torta" class="torta-modal-image" loading="lazy">
+                <img src="indexPage/indexImages/lonche-spin.webp" alt="Torta" class="torta-modal-image" loading="lazy">
                 <div class="torta-modal-separator"></div>
                 <div class="torta-modal-heading">CÓMPRAME UNA TORTA</div>
                 <div class="torta-modal-text">Cada pesito hace la diferencia. Tu donación ayuda a mantener las operaciones de Guadalajara De Noche.<br><br>Este dinero va directo para el chesco y la torta.</div>
@@ -580,10 +612,11 @@
             }
         });
         document.getElementById('lonche-mobile-btn').addEventListener('click', window.openTortaModal);
+        document.getElementById('lonche-open-modal').addEventListener('click', window.openTortaModal);
     </script>
 
     <script src="shared/win95.js" defer></script>
-    <script src="shared/articulos-api.js" defer></script>
-    <script src="indexPage/script.js?v=20260921c" defer></script>
+    <script src="shared/articulos-api.js?v=20260923" defer></script>
+    <script src="indexPage/script.js?v=20260923" defer></script>
 </body>
 </html>

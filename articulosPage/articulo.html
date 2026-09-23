@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#008080">
     <title>Artículo - GDLDENOXE</title>
+    <link rel="preconnect" href="https://archivo-upload.guadalajaradenoxe.workers.dev" crossorigin>
     <link rel="stylesheet" href="../shared/win95.css">
     <link rel="stylesheet" href="styles.css">
-    <script src="../shared/articulos-api.js"></script>
+    <script src="../shared/articulos-api.js?v=20260923"></script>
 </head>
 <body>
     <div class="article-container" id="article-container">
@@ -19,9 +20,11 @@
         
         <img id="art-hero" src="" alt="" class="article-hero" style="display:none;">
         
-        <article class="article-content" id="art-body"></article>
+        <article class="article-content" id="art-body" style="visibility:hidden"></article>
         
-        <footer class="article-footer">
+        <!-- El cuerpo y el pie van ocultos hasta que llega el artículo: si no,
+             se ven arriba y luego saltan hacia abajo cuando entra la foto. -->
+        <footer class="article-footer" id="art-footer" style="visibility:hidden">
             <a href="../index.html" class="back-link" onclick="return goHome()">← Regresar al inicio</a>
         </footer>
     </div>
@@ -42,8 +45,14 @@
         return true;
     };
     (() => {
+        const footer = document.getElementById('art-footer');
+        const mostrarPie = () => {
+            footer.style.visibility = '';
+            document.getElementById('art-body').style.visibility = '';
+        };
+
         const id = new URLSearchParams(location.search).get('id');
-        if (!id) return;
+        if (!id) { mostrarPie(); return; }
 
         const title = document.getElementById('art-title');
         const meta = document.getElementById('art-meta');
@@ -54,29 +63,22 @@
             .then(art => {
                 if (!art) {
                     title.textContent = 'Artículo no encontrado';
+                    mostrarPie();
                     return;
                 }
 
-                document.title = art.titulo + ' - GDLDENOXE';
-                title.textContent = art.titulo;
-                meta.textContent = art.meta;
-
                 // El handle ya viene validado por el worker, pero se arma como
                 // nodo y no como HTML, para no meter nada crudo en la página.
+                let ig = null;
                 if (art.instagram) {
-                    const ig = document.createElement('a');
+                    ig = document.createElement('a');
                     ig.className = 'article-ig';
                     ig.href = 'https://instagram.com/' + art.instagram;
                     ig.target = '_blank';
                     ig.rel = 'noopener noreferrer';
                     ig.textContent = '@' + art.instagram;
-                    meta.append(' · ', ig);
                 }
                 if (art.clase) body.classList.add(art.clase);
-                const heroImg = art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
-                hero.src = /^https?:\/\//.test(heroImg) ? heroImg : '../' + heroImg;
-                hero.alt = art.titulo;
-                hero.style.display = '';
 
                 const fragment = document.createDocumentFragment();
                 const typeMap = { lead: 'p', h2: 'h2', quote: 'blockquote', hr: 'hr' };
@@ -88,7 +90,7 @@
                         const figura = document.createElement('figure');
                         figura.className = 'article-figure';
                         const img = document.createElement('img');
-                        img.src = block.url;
+                        img.src = ArticulosAPI.imagen(block.url, 1200);
                         img.alt = block.texto || '';
                         img.loading = 'lazy';
                         figura.appendChild(img);
@@ -109,9 +111,34 @@
                     }
                     fragment.appendChild(el);
                 });
-                body.appendChild(fragment);
+
+                // Todo sale junto cuando la foto de arriba ya está lista. Antes
+                // el texto aparecía primero y la foto, al llegar, lo empujaba
+                // ~380px hacia abajo. No se le fija alto a la foto para no
+                // recortarla. Si tarda demasiado, se muestra lo que haya.
+                const heroImg = art.imagen || 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
+                const heroListo = new Promise(res => {
+                    hero.onload = () => res(true);
+                    hero.onerror = () => res(false);
+                    setTimeout(() => res(true), 2500);
+                });
+                hero.src = /^https?:\/\//.test(heroImg) ? ArticulosAPI.imagen(heroImg, 1200) : '../' + heroImg;
+                hero.alt = art.titulo;
+
+                return heroListo.then(cargo => {
+                    document.title = art.titulo + ' - GDLDENOXE';
+                    title.textContent = art.titulo;
+                    meta.textContent = art.meta;
+                    if (ig) meta.append(' · ', ig);
+                    if (cargo) hero.style.display = '';
+                    body.appendChild(fragment);
+                    mostrarPie();
+                });
             })
-            .catch(() => title.textContent = 'Error al cargar');
+            .catch(() => {
+                title.textContent = 'Error al cargar';
+                mostrarPie();
+            });
     })();
     </script>
 </body>

@@ -48,6 +48,27 @@
     return url.replace('/upload/', '/upload/w_800,q_auto:best,f_auto/');
   }
 
+  // Los GIF animados van siempre tal cual: Cloudinary (plan gratis) se niega
+  // a transformar los grandes —más de 10 MB o 50 megapíxeles sumando cuadros—
+  // y contesta 400, así que una versión "achicada" saldría rota.
+  function esGif(url) {
+    return /\.gif(\?|$)/i.test(url);
+  }
+
+  // Versión para el visor de imágenes (panel de ~420px). Antes se abría el
+  // original tal cual se subió —hay de 1.5 MB— y con ◀ ▶ se bajaba uno por
+  // foto. c_limit solo reduce, nunca recorta ni agranda.
+  function viewerSrc(url) {
+    if (url.indexOf('res.cloudinary.com') === -1 || esGif(url)) return url;
+    return url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,w_1200/');
+  }
+
+  // Vista previa del panel de detalles (~180px): la misma del collage, que
+  // casi siempre ya está en caché. Los GIF, tal cual (ver esGif).
+  function previewSrc(url) {
+    return esGif(url) ? url : collageSrc(url);
+  }
+
   function placeImage(src) {
     const cH = collageContainer.offsetHeight || window.innerHeight;
     const cW = collageContainer.offsetWidth || window.innerWidth;
@@ -260,7 +281,7 @@
         cachedListData = images.map(function(p) {
           const m = imageMetadata[p];
           return {
-            src: new URL(p, location.href).href,
+            src: viewerSrc(new URL(p, location.href).href),
             fileName: getFileName(p),
             fileType: getExtension(getFileName(p)),
             artista: (m && m.artista) || '',
@@ -342,7 +363,7 @@
             fakeImg.dataset.height = '';
             openDetails(fakeImg);
           };
-          fakeImg.src = path;
+          fakeImg.src = previewSrc(path);
         }
       };
 
@@ -516,7 +537,7 @@
   function openDetails(img) {
     const src = img.dataset.src || img.src;
     const fileName = getFileName(src);
-    const fullSrc = new URL(src, location.href).href;
+    const fullSrc = previewSrc(new URL(src, location.href).href);
     const dims = `${img.dataset.width || img.naturalWidth || '—'} × ${img.dataset.height || img.naturalHeight || '—'}`;
     const fileType = getExtension(fileName);
     const artista = img.dataset.artista || '';

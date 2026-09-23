@@ -40,7 +40,7 @@ body {
     overflow: hidden;
     color: transparent;
     /* Logo wallpaper centrado */
-    background-image: url('../articulosPage/articuloImages/articulo1.jpg');
+    background-image: url('indexImages/wallpaper.webp');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: 200px auto;
@@ -1003,6 +1003,83 @@ body.arrastrando iframe {
     height: 130px;
     border: none;
     overflow: hidden;
+}
+
+/* Mientras script.js acomoda las ventanas, no se ven (la clase la pone el
+   <head> de index.html). Antes se pintaban en las coordenadas del HTML y luego
+   brincaban a su lugar: eso es lo que Cloudflare contaba como layout shift.
+   En escritorio se esconden todas; en celular solo el poema, que es la única
+   que acomoda el JS (las demás las fija el CSS). */
+@media (min-width: 769px) {
+    .acomodando .desktop .win95-window,
+    .acomodando .desktop .music-player {
+        visibility: hidden;
+    }
+}
+
+@media (max-width: 768px) {
+    .acomodando .desktop [data-window-id="poema1"] {
+        visibility: hidden;
+    }
+}
+
+/* Contenido del lonche (antes vivía en lonchedonation/layout2.html) */
+.lonche-caja {
+    display: flex;
+    flex-direction: column;
+    background: var(--win95-gray);
+}
+
+.lonche-gif {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.lonche-gif img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.lonche-contenido {
+    flex-shrink: 0;
+    padding: 7px 9px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.lonche-titulo {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.lonche-btn {
+    display: block;
+    width: 100%;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 5px 0;
+    font: bold 12px var(--font-system);
+    color: var(--win95-black);
+    text-align: center;
+    cursor: pointer;
+}
+
+.lonche-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
 }
 
 /* Compact modes — applied by JS when the right column runs out of height,

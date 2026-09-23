@@ -26,14 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const MOBILE_BP = 768;
     // ─────────────────────────────────────────
 
-    // Set lonche iframe src based on layout
-    const loncheIframe = document.getElementById('lonche-iframe');
-    if (loncheIframe) {
-        loncheIframe.src = (LONCHE_LAYOUT === 2 || LONCHE_LAYOUT === 3)
-            ? 'lonchedonation/layout2.html'
-            : 'lonchedonation/index.html';
-    }
-
     // Cache DOM elements
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
@@ -288,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="window-body art-full-body">
                 <div class="art-full-inner">
                     <div class="art-full-hero">
-                        <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
+                        <img src="${esc(ArticulosAPI.imagen(art.imagen, 1200))}" alt="${esc(art.titulo)}" loading="lazy">
                     </div>
                     <div class="art-full-meta">${esc(art.meta)}</div>
                     <div class="art-full-content">Cargando...</div>
@@ -326,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (b.tipo === 'img') {
                         if (!b.url) return;
                         const img = document.createElement('img');
-                        img.src = b.url;
+                        img.src = ArticulosAPI.imagen(b.url, 1200);
                         img.alt = b.texto || '';
                         img.loading = 'lazy';
                         img.className = 'art-full-img';
@@ -366,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="window-body">
                 <div class="article-image">
-                    <img src="${esc(art.imagen)}" alt="${esc(art.titulo)}" loading="lazy">
+                    <img src="${esc(ArticulosAPI.imagen(art.imagen, 800))}" alt="${esc(art.titulo)}" loading="lazy">
                 </div>
                 <div class="article-description">
                     <h3>${esc(art.titulo)}</h3>
@@ -496,7 +488,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch y render
     const DEFAULT_ARTICLE_IMAGE = 'indexPage/indexImages/f57a45d9-9564-43c6-a00f-990caea91399 (3).jpg';
-    ArticulosAPI.listar('articulosPage/')
+    // Las ventanas del escritorio arrancan invisibles (clase `acomodando` en
+    // <html>, la pone el <head>) y se muestran ya en su lugar. Antes se veían
+    // primero en las coordenadas del HTML y luego brincaban: Cloudflare lo
+    // medía como layout shift "malo" en casi cada visita de escritorio.
+    const revelarEscritorio = () => document.documentElement.classList.remove('acomodando');
+
+    // Si el worker tarda, no se deja el escritorio vacío: se acomoda con lo
+    // que haya. (El <head> trae otra red por si este script ni corre.)
+    setTimeout(() => {
+        if (!document.documentElement.classList.contains('acomodando')) return;
+        randomizeWindowPositions();
+        positionPoemaWidget();
+        revelarEscritorio();
+    }, 3500);
+
+    ArticulosAPI.listar('articulosPage/', 2500)
         .then(articulos => {
             articulos.forEach(art => { if (!art.imagen) art.imagen = DEFAULT_ARTICLE_IMAGE; });
             const container = $('#articles-container');
@@ -522,7 +529,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const widgetDesc = $('#articuloWidgetDesc');
             
             if (widgetImg && widgetTitle) {
-                widgetImg.src = randomArt.imagen;
+                // El widget solo existe en celular (en escritorio va oculto) y
+                // mide ~200px: la imagen lleva loading="lazy" para que en
+                // escritorio no se baje, y se pide chica.
+                widgetImg.src = ArticulosAPI.imagen(randomArt.imagen, 400);
                 widgetImg.alt = randomArt.titulo;
                 widgetTitle.textContent = randomArt.titulo;
                 widgetDesc.textContent = randomArt.descripcion;
@@ -549,12 +559,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Posicionar TODAS las ventanas en cascada después de cargar artículos
             randomizeWindowPositions();
             // Re-run once fonts settle — text heights change and the smart
-            // column fit measures real heights
-            document.fonts?.ready.then(() => randomizeWindowPositions());
+            // column fit measures real heights. Only then show the desktop, so
+            // the first frame anyone sees is already the final layout.
+            (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+                randomizeWindowPositions();
+                positionPoemaWidget();
+                revelarEscritorio();
+            });
         })
         .catch(() => {
             positionPoemaWidget();
             randomizeWindowPositions();
+            revelarEscritorio();
         });
 
     // Mobile: keep the poema widget below the articulo widget. Runs
@@ -722,19 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Funcionalidad de imagen random
-    const imagePaths = [
-        "indexPage/indexImages/2 Intro.jpeg",
-        "indexPage/indexImages/3 Intro.jpeg",
-        "indexPage/indexImages/4 Intro.jpeg",
-        "indexPage/indexImages/6 Intro.jpeg",
-        "indexPage/indexImages/7 Intro.JPG"
-    ];
-
-    const randomImgEl = $('#randomWindowImage');
-    if (randomImgEl) {
-        randomImgEl.src = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-    }
+    // La foto random de "GDL DE NOCHE" se escoge en index.html, justo después
+    // de su <img>, para que empiece a bajar desde el principio.
 
     // ==================== EMPLEADX DEL MES (certificado) ====================
     // Capa modal que tapa el escritorio. Único disparador: entrar al sitio
@@ -1939,7 +1944,9 @@ juntxs y brillando.`
                         const estabaOculto = musicPlayer.classList.contains('hidden');
                         musicPlayer.classList.remove('hidden');
                         musicPlayer.style.display = 'block';
-                        if (estabaOculto && !isMobile()) setTimeout(() => randomizeWindowPositions(), 50);
+                        // En el mismo cuadro en que aparece, para que no se vea
+                        // primero en su lugar por defecto y luego brinque.
+                        if (estabaOculto && !isMobile()) randomizeWindowPositions();
                     }
                     // Ensure first track is the live stream (don't touch an
                     // active/reconnecting session — cache-busted URLs are fine)
