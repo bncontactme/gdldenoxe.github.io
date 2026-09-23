@@ -595,14 +595,10 @@
     // ─────────────────────────────────────────────────────────────────────────
 
     // ── Config ────────────────────────────────────────────────────────────────
-    const CLOUD_NAME    = 'duog120j4';
-    const UPLOAD_PRESET = 'archivo_unsigned';  // disable this preset once WORKER_URL is set
-    const FOLDER        = 'archivo';
-
-    // Phase 2 — set this to your deployed Worker URL to enable server-side auth.
-    // e.g. 'https://archivo-upload.YOUR-SUBDOMAIN.workers.dev'
-    // When set: Worker verifies password + returns signed Cloudinary params.
-    // When empty: direct unsigned upload (Phase 1 mode).
+    // El Worker verifica la contraseña y devuelve parámetros firmados para
+    // Cloudinary. Ya no existe la subida directa sin firma: el preset
+    // `archivo_unsigned` se borró en Cloudinary y su código se quitó de aquí
+    // para que nadie lo vuelva a prender por accidente.
     const WORKER_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
 
     const MAX_SIZE_MB   = 10;
@@ -871,31 +867,19 @@
 
     function uploadFile(file, autor, instagram, descripcion, fecha, signedParams) {
       return new Promise(function(resolve, reject) {
-        var cloudName = signedParams ? signedParams.cloud_name : CLOUD_NAME;
+        if (!signedParams) { reject(new Error('Sin firma del servidor')); return; }
+        var cloudName = signedParams.cloud_name;
         const url = 'https://api.cloudinary.com/v1_1/' + cloudName + '/image/upload';
         const fd  = new FormData();
         fd.append('file', file);
 
-        if (signedParams) {
-          // Signed upload via Worker (Phase 2)
-          fd.append('upload_preset', signedParams.upload_preset);
-          fd.append('folder',        signedParams.folder);
-          fd.append('asset_folder',  signedParams.asset_folder || signedParams.folder);
-          fd.append('timestamp',     signedParams.timestamp);
-          fd.append('api_key',       signedParams.api_key);
-          fd.append('signature',     signedParams.signature);
-          if (signedParams.context) fd.append('context', signedParams.context);
-        } else {
-          // Unsigned direct upload (Phase 1)
-          fd.append('upload_preset', UPLOAD_PRESET);
-          fd.append('folder', FOLDER);
-          const contextParts = [];
-          if (autor)       contextParts.push('artista=' + autor.replace(/[|=]/g, ' '));
-          if (instagram)   contextParts.push('instagram=' + instagram.replace(/[|=]/g, ' '));
-          if (descripcion) contextParts.push('descripcion=' + descripcion.replace(/[|=]/g, ' '));
-          if (fecha)       contextParts.push('fecha=' + fecha.replace(/[|=]/g, '-'));
-          if (contextParts.length) fd.append('context', contextParts.join('|'));
-        }
+        fd.append('upload_preset', signedParams.upload_preset);
+        fd.append('folder',        signedParams.folder);
+        fd.append('asset_folder',  signedParams.asset_folder || signedParams.folder);
+        fd.append('timestamp',     signedParams.timestamp);
+        fd.append('api_key',       signedParams.api_key);
+        fd.append('signature',     signedParams.signature);
+        if (signedParams.context) fd.append('context', signedParams.context);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
