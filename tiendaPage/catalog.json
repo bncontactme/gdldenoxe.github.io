@@ -18,62 +18,62 @@
     "pages": [
         {
             "template": "1-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
             "products": ["camisa-negra"]
         },
         {
             "template": "2S-1L",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
             "products": ["model-drugleaf", "gorra-oficina", "boxer-gdn"]
         },
         {
             "template": "1-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.webp",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
             "products": ["camisa-azul"]
         },
         {
             "template": "2-split",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.webp",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
             "products": ["bolsa-gdn", "model-alejavn"]
         },
         {
             "template": "2S-1L",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.webp",
             "logo": { "variant": "alt", "x": 52, "y": 5, "w": 42, "h": 10 },
             "products": ["model-pplease", "almohada-limon", "camisa-rosa"]
         },
         {
             "template": "2-split",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.webp",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
             "products": ["model-depresso", "almohada-luna"]
         },
         {
             "template": "2-split",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
             "logo": { "variant": "light", "x": 57, "y": 13, "w": 32, "h": 7 },
             "products": ["bufanda-gdn", "model-qhice"]
         },
         {
             "template": "2S-1L",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
             "logo": { "variant": "dark", "x": 52, "y": 5, "w": 42, "h": 10, "src": "assets/webAssets/logo/path1517.png" },
             "bigSplash": false,
             "products": ["model-anaconda", "totebag-gdn", "almohada-dorada"]
         },
         {
             "template": "1-featured",
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.webp",
             "logo": { "variant": "light", "x": 10, "y": 2, "w": 80, "h": 14 },
             "products": ["model-harley"]
         },
         {
             "_blank": true,
-            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
             "logo2": { "src": "assets/webAssets/logo/gdn-text-black.jpg", "x": 28, "y": 40, "w": 44, "h": 12 }
         }
     ],
@@ -85,38 +85,38 @@
             "image2816": 1.18
         },
         "backgrounds": [
-            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
-            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.png",
-            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.png",
-            "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.png",
-            "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.png"
+            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
+            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image192.webp",
+            "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
+            "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
+            "assets/webAssets/background/Guadalajara De Noche_PDF_image2853.webp"
         ],
         "frames": {
-            "square-sm":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1581.png",
-            "square-lg":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1583.png",
-            "square-sm2": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1587.png",
-            "tall":       "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1589.png",
-            "featured-1": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image2877.png",
-            "featured-2": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image366.png",
-            "featured-3": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image368.png",
-            "rounded":    "assets/webAssets/frames/image2879.png"
+            "square-sm":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1581.webp",
+            "square-lg":  "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1583.webp",
+            "square-sm2": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1587.webp",
+            "tall":       "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image1589.webp",
+            "featured-1": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image2877.webp",
+            "featured-2": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image366.webp",
+            "featured-3": "assets/webAssets/frames/Guadalajara De Noche_PDF_Background_frame_image368.webp",
+            "rounded":    "assets/webAssets/frames/image2879.webp"
         },
         "splashes": {
-            "large":    "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.png",
-            "small-1":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "small-2":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "medium-1": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.png",
-            "medium-2": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "medium-3": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "medium-4": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.png",
-            "wide":     "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "star-1":   "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "star-2":   "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.png",
-            "burst-1":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2563.png",
-            "burst-2":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "burst-3":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.png",
-            "burst-4":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png",
-            "burst-5":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.png"
+            "large":    "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.webp",
+            "small-1":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "small-2":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "medium-1": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.webp",
+            "medium-2": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "medium-3": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "medium-4": "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.webp",
+            "wide":     "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "star-1":   "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "star-2":   "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.webp",
+            "burst-1":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2563.webp",
+            "burst-2":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "burst-3":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2561.webp",
+            "burst-4":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp",
+            "burst-5":  "assets/webAssets/splashes/price splash-midsplash/Guadalajara De Noche_PDF_Background_frame_image2816.webp"
         },
         "logos": {
             "dark":  "assets/webAssets/logo/path206.png",
@@ -124,14 +124,14 @@
             "alt":   "assets/webAssets/logo/path1517.png"
         },
         "cornerEffects": [
-            "assets/webAssets/splashes/corner effects/image2845.png",
-            "assets/webAssets/splashes/corner effects/path2270.png"
+            "assets/webAssets/splashes/corner effects/image2845.webp",
+            "assets/webAssets/splashes/corner effects/path2270.webp"
         ],
         "bigSplashes": [
-            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png", "position": "middle-center" },
-            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" },
-            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "bottom-right" },
-            { "src": "assets/webAssets/splashes/big splashes/path4038.png",                           "position": "top-right" }
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.webp", "position": "middle-center" },
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.webp", "position": "top-left" },
+            { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.webp", "position": "bottom-right" },
+            { "src": "assets/webAssets/splashes/big splashes/path4038.webp",                           "position": "top-right" }
         ]
     },
 
@@ -151,7 +151,7 @@
             "name": "@anacondasangrante",
             "noSplash": true,
             "nameMarginTop": -5,
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.png", "position": "bottom-right", "offsetW": -5 },
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image3732.webp", "position": "bottom-right", "offsetW": -5 },
             "image": "assets/products/boxers_model/ana1.jpg",
             "images": [
                 "assets/products/boxers_model/ana1.jpg",
@@ -167,7 +167,7 @@
             "imageContain": true,
             "noCornerEffect": true,
             "splashY": 55,
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right" },
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.webp", "position": "top-right" },
             "description": "Camisa formal en tono rosa/morado claro, con parche Guadalajara De Noche con impresión textil blanco",
             "link": "#",
             "info": "Talla Única",
@@ -221,7 +221,7 @@
                 "assets/products/boxers_model/drugl.jpg",
                 "assets/products/boxers_model/drugl2.jpg"
             ],
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetY": 20, "offsetW": -5.5 }
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.webp", "position": "bottom-right", "offsetY": 20, "offsetW": -5.5 }
         },
         {
             "id": "gorra-oficina",
@@ -271,7 +271,7 @@
             "noSplash": true,
             "noCornerEffect": true,
             "nameMarginTop": -10,
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.png", "position": "top-right", "offsetY": 2 },
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image4252.webp", "position": "top-right", "offsetY": 2 },
             "image": "assets/products/boxers_model/aleja.jpg",
             "images": [
                 "assets/products/boxers_model/aleja.jpg",
@@ -288,7 +288,7 @@
                 "assets/products/boxers_model/pplease.jpg",
                 "assets/products/boxers_model/pplease2.jpg"
             ],
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.png", "position": "top-left" }
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/Guadalajara De Noche_PDF_image1126.webp", "position": "top-left" }
         },
         {
             "id": "almohada-limon",
@@ -395,7 +395,7 @@
                 "assets/products/boxers_model/harley2.jpg",
                 "assets/products/boxers_model/harley3.jpg"
             ],
-            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.png", "position": "bottom-right", "offsetX": 5, "offsetY": 20, "offsetW": -12 }
+            "bigSplash": { "src": "assets/webAssets/splashes/big splashes/path4038.webp", "position": "bottom-right", "offsetX": 5, "offsetY": 20, "offsetW": -12 }
         }
     ]
 }
