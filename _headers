@@ -1,0 +1,14 @@
+# Headers extra que Netlify pone en sus respuestas.
+#
+# El sitio lo sirve Netlify, pero pasa por Cloudflare (nube naranja). Netlify
+# manda `max-age=0`, así que Cloudflare no se fiaba de su copia y le preguntaba
+# a Netlify por cada imagen, CSS y JS en cada visita (cf-cache-status:
+# REVALIDATED, 200–540 ms antes del primer byte).
+#
+# Esta línea solo la lee Cloudflare: deja que guarde su copia 10 minutos. Los
+# navegadores siguen igual (4 horas, por la regla de Cloudflare), y el HTML no
+# cambia porque Cloudflare no guarda HTML por defecto. Tras un deploy, un
+# archivo cambiado en su lugar tarda a lo mucho 10 minutos en verse en el
+# borde; lo que tiene que cambiar hoy mismo sigue llevando su ?v=.
+/*
+  Cloudflare-CDN-Cache-Control: public, max-age=600
