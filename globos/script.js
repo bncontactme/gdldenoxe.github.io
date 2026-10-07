@@ -33,6 +33,8 @@
     };
     var FONDO = '#008080';    // de relleno: el fondo de verdad llega después
     var TAM = 32;             // lado de cada cosa, en pixeles del juego
+    var ANCHO_TELEFONO = 260; // ancho del campo en el teléfono, en pixeles del juego
+    var COSAS_TELEFONO = 1.55; // en el teléfono las cosas que se mojan van así de más grandes (el campo no cambia)
 
     // Cosas que salen. Para cambiarlas basta con otra imagen (con
     // transparencia) y sus puntos. Las que tienen `castigo` no se mojan: te
@@ -199,18 +201,17 @@
     var lienzo = document.getElementById('lienzo');
     var ctx = lienzo.getContext('2d');
     var manchas = lienzoNuevo(0, 0), mctx = manchas.getContext('2d');
-    var W = 0, H = 0, PX = 2, U = 1, RB = 8;
+    var W = 0, H = 0, PX = 2, U = 1, RB = 8, ESC = 1, KC = 1;   // KC: escala de las cosas
 
     function redimensionar() {
         var cw = campo.clientWidth, ch = campo.clientHeight;
         if (!cw || !ch) { pausar(); return; }
         var px = Math.max(2, Math.floor(Math.min(cw, ch) / 220));
+        var dpr = window.devicePixelRatio || 1;
         if (esTelefono) {
-            // Teléfono: cosas más chicas y más campo (unos 260 de ancho), pero
-            // cada pixel del juego mide un número entero de pixeles de la
-            // pantalla (3 a 5), para que sigan nítidas.
-            var dpr = window.devicePixelRatio || 1;
-            px = Math.max(2, Math.round(dpr * cw / 260)) / dpr;
+            // Teléfono: campo de unos ANCHO_TELEFONO de ancho, con cada pixel
+            // del juego de un número entero de pixeles de la pantalla (3 a 5)
+            px = Math.max(2, Math.round(dpr * cw / ANCHO_TELEFONO)) / dpr;
         }
         var w = Math.ceil(cw / px), h = Math.ceil(ch / px);
         if (w === W && h === H && px === PX) return;
@@ -221,7 +222,13 @@
             viejas.getContext('2d').drawImage(manchas, 0, 0);
         }
         PX = px; W = w; H = h; U = Math.min(W, H) / 100;
-        lienzo.width = W; lienzo.height = H;
+        // En el teléfono el lienzo va a la resolución de la pantalla (ESC
+        // pixeles por pixel del juego) para que las cosas puedan ir más
+        // grandes que el campo y seguir nítidas: cada pixel de una cosa mide
+        // un número entero de pixeles de la pantalla. En la compu, todo igual.
+        ESC = esTelefono ? Math.max(1, Math.round(px * dpr)) : 1;
+        KC = esTelefono ? Math.round(COSAS_TELEFONO * ESC) / ESC : 1;
+        lienzo.width = W * ESC; lienzo.height = H * ESC;
         lienzo.style.width = W * PX + 'px'; lienzo.style.height = H * PX + 'px';
         manchas.width = W; manchas.height = H;
         ctx.imageSmoothingEnabled = false;
@@ -270,13 +277,13 @@
     // aire respecto a las que van saliendo, para que no se encimen y un
     // globo no moje la torta de rebote.
     function lugarDeSalida(tipo) {
-        var min = tipo.ancho / 2 + 2, max = W - tipo.ancho / 2 - 2;
+        var min = tipo.ancho * KC / 2 + 2, max = W - tipo.ancho * KC / 2 - 2;
         if (max <= min) return W / 2;
         var recien = cosas.filter(function (c) { return !c.mojado && c.y > H * 0.55; });
         var mejor = 0, holgura = -Infinity;
         for (var i = 0; i < 10; i++) {
             var x = rand(min, max), h = Infinity;
-            recien.forEach(function (c) { h = Math.min(h, Math.abs(c.x - x) - (c.tipo.ancho + tipo.ancho) / 2); });
+            recien.forEach(function (c) { h = Math.min(h, Math.abs(c.x - x) - (c.tipo.ancho + tipo.ancho) * KC / 2); });
             if (h >= 6) return x;
             if (h > holgura) { holgura = h; mejor = x; }
         }
@@ -287,13 +294,13 @@
         if (!tipo || !tipo.seco) return;
         var g = H * AJUSTES.gravedad * (tipo.rapida ? 1.35 : 1);
         var x = lugarDeSalida(tipo);
-        var y = H + tipo.alto / 2 + 2;
+        var y = H + tipo.alto * KC / 2 + 2;
         var subida = y - H * (0.1 + Math.random() * 0.42);
         var tAire = 2 * Math.sqrt(2 * subida / g);
         // Cada una se va de lado poquito desde donde salió, sin cruzarse todas al centro
-        var destino = clamp(x + W * rand(-0.25, 0.25), tipo.ancho / 2, W - tipo.ancho / 2);
+        var destino = clamp(x + W * rand(-0.25, 0.25), tipo.ancho * KC / 2, W - tipo.ancho * KC / 2);
         cosas.push({
-            tipo: tipo, x: x, y: y, r: (tipo.ancho + tipo.alto) / 2 * 0.42, g: g,
+            tipo: tipo, x: x, y: y, r: (tipo.ancho + tipo.alto) * KC / 2 * 0.42, g: g,
             vx: (destino - x) / tAire, vy: -Math.sqrt(2 * g * subida),
             mojado: false, volteo: 0, goteo: 0
         });
@@ -706,7 +713,7 @@
                     particulas.push({ x: c.x + rand(-c.r, c.r), y: c.y, vx: c.vx * 0.3, vy: c.vy * 0.5, lado: 1, vida: 0.5, t: 0, color: '#00ffff' });
                 }
             }
-            var fuera = c.vy > 0 && c.y > H + c.tipo.alto;
+            var fuera = c.vy > 0 && c.y > H + c.tipo.alto * KC;
             if (fuera && !c.mojado && !c.tipo.castigo && estado === 'jugando') combo = 0;
             return !fuera && c.x > -W && c.x < W * 2;
         });
@@ -859,11 +866,23 @@
     var FILAS = [BUENOS.slice(0, MITAD), BUENOS.slice(MITAD), MALOS];
     // Letras de la pantalla al doble cuando el campo es ancho (teléfono, o la
     // ventana maximizada); en la ventana normal del escritorio, sencillas.
-    function letraInstr() { return W >= 230 ? 2 : 1; }
+    function letraInstr() { return W >= 180 ? 2 : 1; }   // la ventana del escritorio mide 172
+    // El mismo aire para todas las filas: el que deje caber a la más ancha
+    function aireFilas() {
+        var aire = 24 * letraInstr();
+        FILAS.forEach(function (ids) {
+            if (ids.length < 2) return;
+            var suma = 0;
+            ids.forEach(function (id) { suma += porId(id).ancho * KC; });
+            aire = Math.min(aire, Math.floor((W - 8 - suma) / (ids.length - 1)));
+        });
+        return Math.max(6, aire);
+    }
     function medidas(ids) {
-        var aire = clamp(Math.floor((W - 8 - 3 * TAM) / 2), 6, 24 * letraInstr());
+        var aire = aireFilas();
         var tipos = ids.map(porId), total = aire * (ids.length - 1), alto = TAM;
-        tipos.forEach(function (t) { total += t.ancho; alto = Math.max(alto, t.alto); });
+        alto = TAM * KC;
+        tipos.forEach(function (t) { total += t.ancho * KC; alto = Math.max(alto, t.alto * KC); });
         var k = total <= W - 4 ? 1 : 0.5;
         return { tipos: tipos, aire: aire * k, total: total * k, alto: Math.round(alto * k), k: k };
     }
@@ -871,8 +890,9 @@
     function filaIconos(ids, y, color) {
         var m = medidas(ids), x = W / 2 - m.total / 2;
         m.tipos.forEach(function (t) {
-            var w = Math.round(t.ancho * m.k), h = Math.round(t.alto * m.k), cx = Math.round(x + w / 2);
-            if (t.seco) ctx.drawImage(t.seco, cx - Math.round(w / 2), y + Math.round((m.alto - h) / 2), w, h);
+            // Sin redondear el tamaño: cada pixel de la cosa sigue midiendo pixeles enteros de pantalla
+            var w = t.ancho * KC * m.k, h = t.alto * KC * m.k, cx = Math.round(x + w / 2);
+            if (t.seco) ctx.drawImage(t.seco, Math.round(cx - w / 2), y + Math.round((m.alto - h) / 2), w, h);
             pintarTexto((t.puntos > 0 ? '+' : '') + t.puntos, cx, y + m.alto + 3, letraInstr(), color, '#000');
             x += w + m.aire;
         });
@@ -926,7 +946,7 @@
         var suelo = esc.h - 6 + esc.dy, bx = Math.round(W * 0.2);
         // En el teléfono el campo es más ancho: la bomba va al doble para que
         // no se vea enana junto a la cabeza (escala entera: sigue nítida)
-        var kb = W >= 220 ? 2 : 1;
+        var kb = W >= 190 ? 2 : 1;   // la ventana del escritorio mide 172
         var aEscala = function () { ctx.save(); ctx.translate(bx, suelo); ctx.scale(kb, kb); ctx.translate(-bx, -suelo); };
         var baja = Math.round(bonus.bombeo * 2);
         var baseY = suelo - 5, cilTop = baseY - 40 + baja;
@@ -1065,6 +1085,7 @@
     }
 
     function dibujar() {
+        ctx.setTransform(ESC, 0, 0, ESC, 0, 0);
         ctx.save();
         if (sacudida > 0.5) ctx.translate(Math.round(rand(-sacudida, sacudida)), Math.round(rand(-sacudida, sacudida)));
         ctx.fillStyle = FONDO;
@@ -1076,7 +1097,8 @@
             ctx.translate(Math.round(c.x), Math.round(c.y));
             // Mojada, se voltea de cabeza y se cae
             if (c.volteo) ctx.scale(1, Math.cos(c.volteo) || 0.1);
-            ctx.drawImage(c.mojado ? c.tipo.mojado : c.tipo.seco, -Math.round(c.tipo.ancho / 2), -Math.round(c.tipo.alto / 2), c.tipo.ancho, c.tipo.alto);
+            var cw = c.tipo.ancho * KC, ch = c.tipo.alto * KC;
+            ctx.drawImage(c.mojado ? c.tipo.mojado : c.tipo.seco, -Math.round(cw / 2), -Math.round(ch / 2), cw, ch);
             ctx.restore();
         });
 
