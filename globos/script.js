@@ -34,7 +34,11 @@
     var FONDO = '#008080';    // de relleno: el fondo de verdad llega después
     var TAM = 32;             // lado de cada cosa, en pixeles del juego
     var ANCHO_TELEFONO = 260; // ancho del campo en el teléfono, en pixeles del juego
-    var COSAS_TELEFONO = 1.55; // en el teléfono las cosas que se mojan van así de más grandes (el campo no cambia)
+    // En el teléfono las cosas van más grandes que el campo (el campo no
+    // cambia): tanto en la ronda y tanto en la pantalla de instrucciones. El
+    // aviso va más chico que lo demás. El globo va como en la compu.
+    var ESCALA_TELEFONO = { ronda: 1.75, instrucciones: 1.25, globo: 1.5 };
+    var ESCALA_POR_COSA = { 'hacer-algo': 0.72 };
 
     // Cosas que salen. Para cambiarlas basta con otra imagen (con
     // transparencia) y sus puntos. Las que tienen `castigo` no se mojan: te
@@ -201,7 +205,7 @@
     var lienzo = document.getElementById('lienzo');
     var ctx = lienzo.getContext('2d');
     var manchas = lienzoNuevo(0, 0), mctx = manchas.getContext('2d');
-    var W = 0, H = 0, PX = 2, U = 1, RB = 8, ESC = 1, KC = 1;   // KC: escala de las cosas
+    var W = 0, H = 0, PX = 2, U = 1, RB = 8, ESC = 1, KG = 1;   // KG: escala del globo
 
     function redimensionar() {
         var cw = campo.clientWidth, ch = campo.clientHeight;
@@ -227,13 +231,21 @@
         // grandes que el campo y seguir nítidas: cada pixel de una cosa mide
         // un número entero de pixeles de la pantalla. En la compu, todo igual.
         ESC = esTelefono ? Math.max(1, Math.round(px * dpr)) : 1;
-        KC = esTelefono ? Math.round(COSAS_TELEFONO * ESC) / ESC : 1;
+        KG = esTelefono ? Math.round(ESCALA_TELEFONO.globo * ESC) / ESC : 1;
         lienzo.width = W * ESC; lienzo.height = H * ESC;
         lienzo.style.width = W * PX + 'px'; lienzo.style.height = H * PX + 'px';
         manchas.width = W; manchas.height = H;
         ctx.imageSmoothingEnabled = false;
         mctx.imageSmoothingEnabled = false;
         if (viejas) mctx.drawImage(viejas, 0, 0, W, H);
+    }
+
+    // Escala de una cosa en el teléfono ('ronda' o 'instrucciones'),
+    // redondeada para que cada pixel de la cosa mida pixeles enteros de la
+    // pantalla. En la compu, 1.
+    function escalaDe(t, donde) {
+        if (!esTelefono) return 1;
+        return Math.max(1, Math.round(ESCALA_TELEFONO[donde] * (ESCALA_POR_COSA[t.id] || 1) * ESC)) / ESC;
     }
 
     // ── Estado ────────────────────────────────────────────────────────────
@@ -277,13 +289,14 @@
     // aire respecto a las que van saliendo, para que no se encimen y un
     // globo no moje la torta de rebote.
     function lugarDeSalida(tipo) {
-        var min = tipo.ancho * KC / 2 + 2, max = W - tipo.ancho * KC / 2 - 2;
+        var k = escalaDe(tipo, 'ronda');
+        var min = tipo.ancho * k / 2 + 2, max = W - tipo.ancho * k / 2 - 2;
         if (max <= min) return W / 2;
         var recien = cosas.filter(function (c) { return !c.mojado && c.y > H * 0.55; });
         var mejor = 0, holgura = -Infinity;
         for (var i = 0; i < 10; i++) {
             var x = rand(min, max), h = Infinity;
-            recien.forEach(function (c) { h = Math.min(h, Math.abs(c.x - x) - (c.tipo.ancho + tipo.ancho) * KC / 2); });
+            recien.forEach(function (c) { h = Math.min(h, Math.abs(c.x - x) - (c.tipo.ancho * c.k + tipo.ancho * k) / 2); });
             if (h >= 6) return x;
             if (h > holgura) { holgura = h; mejor = x; }
         }
@@ -294,13 +307,14 @@
         if (!tipo || !tipo.seco) return;
         var g = H * AJUSTES.gravedad * (tipo.rapida ? 1.35 : 1);
         var x = lugarDeSalida(tipo);
-        var y = H + tipo.alto * KC / 2 + 2;
+        var k = escalaDe(tipo, 'ronda');
+        var y = H + tipo.alto * k / 2 + 2;
         var subida = y - H * (0.1 + Math.random() * 0.42);
         var tAire = 2 * Math.sqrt(2 * subida / g);
         // Cada una se va de lado poquito desde donde salió, sin cruzarse todas al centro
-        var destino = clamp(x + W * rand(-0.25, 0.25), tipo.ancho * KC / 2, W - tipo.ancho * KC / 2);
+        var destino = clamp(x + W * rand(-0.25, 0.25), tipo.ancho * k / 2, W - tipo.ancho * k / 2);
         cosas.push({
-            tipo: tipo, x: x, y: y, r: (tipo.ancho + tipo.alto) * KC / 2 * 0.42, g: g,
+            tipo: tipo, x: x, y: y, k: k, r: (tipo.ancho + tipo.alto) * k / 2 * 0.42, g: g,
             vx: (destino - x) / tAire, vy: -Math.sqrt(2 * g * subida),
             mojado: false, volteo: 0, goteo: 0
         });
@@ -713,7 +727,7 @@
                     particulas.push({ x: c.x + rand(-c.r, c.r), y: c.y, vx: c.vx * 0.3, vy: c.vy * 0.5, lado: 1, vida: 0.5, t: 0, color: '#00ffff' });
                 }
             }
-            var fuera = c.vy > 0 && c.y > H + c.tipo.alto * KC;
+            var fuera = c.vy > 0 && c.y > H + c.tipo.alto * c.k;
             if (fuera && !c.mojado && !c.tipo.castigo && estado === 'jugando') combo = 0;
             return !fuera && c.x > -W && c.x < W * 2;
         });
@@ -873,7 +887,7 @@
         FILAS.forEach(function (ids) {
             if (ids.length < 2) return;
             var suma = 0;
-            ids.forEach(function (id) { suma += porId(id).ancho * KC; });
+            ids.forEach(function (id) { var t = porId(id); suma += t.ancho * escalaDe(t, 'instrucciones'); });
             aire = Math.min(aire, Math.floor((W - 8 - suma) / (ids.length - 1)));
         });
         return Math.max(6, aire);
@@ -881,8 +895,8 @@
     function medidas(ids) {
         var aire = aireFilas();
         var tipos = ids.map(porId), total = aire * (ids.length - 1), alto = TAM;
-        alto = TAM * KC;
-        tipos.forEach(function (t) { total += t.ancho * KC; alto = Math.max(alto, t.alto * KC); });
+        alto = TAM * escalaDe({}, 'instrucciones');
+        tipos.forEach(function (t) { var e = escalaDe(t, 'instrucciones'); total += t.ancho * e; alto = Math.max(alto, t.alto * e); });
         var k = total <= W - 4 ? 1 : 0.5;
         return { tipos: tipos, aire: aire * k, total: total * k, alto: Math.round(alto * k), k: k };
     }
@@ -891,7 +905,8 @@
         var m = medidas(ids), x = W / 2 - m.total / 2;
         m.tipos.forEach(function (t) {
             // Sin redondear el tamaño: cada pixel de la cosa sigue midiendo pixeles enteros de pantalla
-            var w = t.ancho * KC * m.k, h = t.alto * KC * m.k, cx = Math.round(x + w / 2);
+            var e = escalaDe(t, 'instrucciones') * m.k;
+            var w = t.ancho * e, h = t.alto * e, cx = Math.round(x + w / 2);
             if (t.seco) ctx.drawImage(t.seco, Math.round(cx - w / 2), y + Math.round((m.alto - h) / 2), w, h);
             pintarTexto((t.puntos > 0 ? '+' : '') + t.puntos, cx, y + m.alto + 3, letraInstr(), color, '#000');
             x += w + m.aire;
@@ -1097,7 +1112,7 @@
             ctx.translate(Math.round(c.x), Math.round(c.y));
             // Mojada, se voltea de cabeza y se cae
             if (c.volteo) ctx.scale(1, Math.cos(c.volteo) || 0.1);
-            var cw = c.tipo.ancho * KC, ch = c.tipo.alto * KC;
+            var cw = c.tipo.ancho * c.k, ch = c.tipo.alto * c.k;
             ctx.drawImage(c.mojado ? c.tipo.mojado : c.tipo.seco, -Math.round(cw / 2), -Math.round(ch / 2), cw, ch);
             ctx.restore();
         });
@@ -1105,10 +1120,10 @@
         // Dónde va a caer cada globo
         ctx.fillStyle = '#fff';
         globos.forEach(function (g) {
-            punteado(g.x1, g.y1, RB * (0.6 + (1 - g.t / g.dur) * 0.9), reloj * 3);
+            punteado(g.x1, g.y1, RB * KG * (0.6 + (1 - g.t / g.dur) * 0.9), reloj * 3);
         });
         globos.forEach(function (g) {
-            var p = posGlobo(g), lado = Math.round(16 * p.s);
+            var p = posGlobo(g), lado = Math.round(16 * p.s * KG);
             ctx.drawImage(g.color.sprite, Math.round(p.x - lado / 2), Math.round(p.y - lado / 2), lado, lado);
         });
 
@@ -1117,7 +1132,7 @@
         else if (estado === 'bonusIntro' || estado === 'bonus' || estado === 'bonusFin') dibujarBonus();
 
         ctx.fillStyle = '#00ffff';
-        anillos.forEach(function (a) { punteado(a.x, a.y, RB * (0.6 + 2 * a.t / a.vida) * (a.vida > 0.3 ? 4 : 1), 0); });
+        anillos.forEach(function (a) { punteado(a.x, a.y, RB * KG * (0.6 + 2 * a.t / a.vida) * (a.vida > 0.3 ? 4 : 1), 0); });
 
         particulas.forEach(function (p) {
             ctx.fillStyle = p.color;
