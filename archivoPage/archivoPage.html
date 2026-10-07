@@ -5,9 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Archivo virtual - memoria colectiva">
   <title>Archivo</title>
-  <link rel="preload" href="images.json" as="fetch" crossorigin>
+  <!-- Nada se ve hasta que llega styles.css, que es el que vuelve visible el
+       body. Dentro de la ventana de Galería (o del marco en celular) Chrome
+       acomodaba la página antes de tener el CSS —con el margen de 8px del
+       navegador y los popups sin estilo— y al llegar todo brincaba:
+       Cloudflare lo medía como un layout shift de 0.77 en body.con-marco. -->
+  <style>body{visibility:hidden}</style>
+
+  <!-- La lista de fotos es lo que más tarda (el worker se la pide a
+       Cloudinary), así que se pide desde aquí, mientras baja lo demás, y
+       liveCollage.js la recoge. Va como text/plain para que el navegador no
+       mande antes un preflight de CORS. Las fotos vienen de Cloudinary:
+       conexión abierta desde ya. -->
+  <script>
+    window.listaGaleria = fetch('https://archivo-upload.guadalajaradenoxe.workers.dev', {
+      method: 'POST',
+      body: '{"action":"list"}'
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  </script>
+  <link rel="preconnect" href="https://res.cloudinary.com">
+
   <link rel="stylesheet" href="../shared/win95.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260924">
 </head>
 <body>
   <!-- Windows XP Disclaimer Popup -->
@@ -127,6 +147,6 @@
     </div>
   </div>
 
-  <script src="liveCollage.js?v=20260923" defer></script>
+  <script src="liveCollage.js?v=20260924" defer></script>
 </body>
 </html>

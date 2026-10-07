@@ -280,7 +280,7 @@
         function itemArchivo(art) {
             const item = document.createElement('a');
             item.className = 'folder-item';
-            item.href = '../indexPage/frame.html?p=articulo&id=' + art.id;
+            item.href = '../indexpage/frame.html?p=articulo&id=' + art.id;
             item.target = '_top';
             item.title = art.titulo;
             item.append(...nodoItem(ICONO_ARCHIVO, art.titulo + '.txt'));

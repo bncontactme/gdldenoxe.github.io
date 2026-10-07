@@ -40,12 +40,18 @@
     }
   }
 
-  // Returns a resized Cloudinary URL for collage display, or the original if not Cloudinary
+  // Versión de Cloudinary para el collage (o la original si no es de ahí).
+  // En el collage las fotos miden de 90 a 300px de ancho: 600 alcanza hasta en
+  // retina. Antes iban a w_800 con q_auto:best y pesaban 60–320 KB cada una;
+  // así quedan en un tercio, y el collage baja una cada 2–3 segundos.
+  // c_limit solo reduce: nunca agranda ni recorta.
   function collageSrc(url) {
     if (url.indexOf('res.cloudinary.com') === -1) return url;
-    // q_auto:best = near-lossless quality, f_auto = WebP/AVIF (90%+ smaller than original JPEG)
-    // w_800 = enough for retina at max collage display size (~300px)
-    return url.replace('/upload/', '/upload/w_800,q_auto:best,f_auto/');
+    // Los GIF se quedan con la versión de antes. Con la nueva, Cloudinary sí
+    // convierte varios que con esta rechaza (400, y el collage se los salta),
+    // y llegarían animados de hasta 9 MB cada uno.
+    if (esGif(url)) return url.replace('/upload/', '/upload/w_800,q_auto:best,f_auto/');
+    return url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,w_600/');
   }
 
   // Los GIF animados van siempre tal cual: Cloudinary (plan gratis) se niega
@@ -181,6 +187,7 @@
   const exploreBtn = document.getElementById('img-details-explore');
 
   let explorerCurrentFolder = null; // null = root (folder list)
+  let explorerCurrentImages = [];   // las de la carpeta abierta
 
   // ===== Marco con barra propia =====
   // Cuando la galería va dentro de la ventana de Galería (o del frame), el
@@ -269,6 +276,7 @@
 
   function renderFolder(name, images) {
     explorerCurrentFolder = name;
+    explorerCurrentImages = images;
     explorerBody.innerHTML = '';
     if (explorerBack) explorerBack.disabled = false;
     if (explorerPath) explorerPath.textContent = 'Archivo GDN \\ ' + name;
@@ -404,9 +412,19 @@
   }
 
   // Vista de la cuadrícula del explorador: íconos (default) o lista.
+  // Con el explorador abierto se vuelve a pintar en vez de reacomodar lo que
+  // ya está: el clic casi siempre viene del menú del marco, que es otro
+  // documento, y Chrome no lo cuenta como interacción de esta página. El
+  // reacomodo le salía como layout shift inesperado (0.09–0.36 por cambio);
+  // lo recién pintado no cuenta.
   function setExplorerView(vista) {
     if (!explorerBody) return;
-    explorerBody.classList.toggle('list-view', vista === 'lista');
+    const lista = vista === 'lista';
+    if (explorerBody.classList.contains('list-view') === lista) return;
+    explorerBody.classList.toggle('list-view', lista);
+    if (!explorerOverlay || !explorerOverlay.classList.contains('open')) return;
+    if (explorerCurrentFolder === null) renderFolderList();
+    else renderFolder(explorerCurrentFolder, explorerCurrentImages);
   }
 
   // ===== Upload Popup =====
@@ -578,16 +596,18 @@
 
   const WORKER_LIST_URL = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
 
+  // archivoPage.html ya la pidió desde el <head> (window.listaGaleria); si
+  // este script corre en otra página, se pide aquí. text/plain: sin preflight.
+  function pedirLista() {
+    return fetch(WORKER_LIST_URL, { method: 'POST', body: JSON.stringify({ action: 'list' }) })
+      .then(function(r) { return r.ok ? r.json() : null; });
+  }
+
   async function discoverImages() {
     let files = null;
     try {
-      const res = await fetch(WORKER_LIST_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list' }),
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await (window.listaGaleria || pedirLista());
+      if (data) {
         const entries = data.entries || [];
         files = [];
         for (const entry of entries) {

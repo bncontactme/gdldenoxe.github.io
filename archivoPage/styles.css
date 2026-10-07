@@ -13,6 +13,9 @@ html, body {
 body {
   background: #fff;
   overflow: hidden;
+  /* archivoPage.html arranca con el body oculto; esto lo muestra ya con
+     todo en su lugar. Sin esta línea la galería se queda en blanco. */
+  visibility: visible;
   font-family: Tahoma, 'MS Sans Serif', sans-serif;
 }
 
