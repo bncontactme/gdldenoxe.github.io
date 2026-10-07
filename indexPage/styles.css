@@ -994,6 +994,22 @@ body.arrastrando iframe {
     height: auto;
 }
 
+/* Globos: widget alto, con la forma de una pantalla de teléfono. Ancho y
+   alto los pone acomodarJuego() en script.js (el alto por variable, para que
+   maximizar le siga ganando). El juego trae su propia cara gris. */
+[data-window-id="globos"] {
+    width: 380px;
+}
+
+[data-window-id="globos"] .window-body {
+    padding: 2px;
+}
+
+[data-window-id="globos"] .iframe-container {
+    height: var(--alto-juego, min(600px, calc(100vh - 150px)));
+    background: var(--win95-gray);
+}
+
 /* Lonche */
 [data-window-id="lonche"] {
     width: 380px;
@@ -2105,6 +2121,37 @@ body.arrastrando iframe {
 
     .win95-window[data-window-id="minesweeper"] .minimize-btn,
     .win95-window[data-window-id="minesweeper"] .maximize-btn {
+        display: none;
+    }
+
+    /* --- Globos (mobile, por ahora): a pantalla completa arriba de la
+       barra de tareas, encima de todo. Con ✕ se ve el escritorio. --- */
+    .win95-window[data-window-id="globos"]:not(.hidden):not(.minimized) {
+        display: flex !important;
+        flex-direction: column;
+        position: fixed !important;
+        top: 4px !important;
+        left: 4px !important;
+        right: 4px !important;
+        bottom: 48px !important;
+        width: auto !important;
+        height: auto !important;
+        /* Encima del radio flotante (20000): mientras el juego está abierto
+           lo tapa; al cerrarlo, el radio queda ahí. */
+        z-index: 20500 !important;
+    }
+
+    .win95-window[data-window-id="globos"] .window-body {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .win95-window[data-window-id="globos"] .iframe-container {
+        height: 100%;
+    }
+
+    .win95-window[data-window-id="globos"] .minimize-btn,
+    .win95-window[data-window-id="globos"] .maximize-btn {
         display: none;
     }
 

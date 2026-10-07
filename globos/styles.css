@@ -1,0 +1,306 @@
+/* Globos — juego estilo Win95. Los colores y bordes salen de shared/win95.css;
+   los contadores y la carita copian los del Buscaminas para que se vean igual. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+
+body {
+    visibility: visible; /* index.html la esconde hasta que llega este CSS */
+    background: var(--win95-gray);
+    font-family: var(--font-system);
+    font-size: 11px;
+    color: #000;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+.app {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Barra de menú ───────────────────────────────────────────────────── */
+.menubar {
+    display: flex;
+    flex-shrink: 0;
+    padding: 1px 2px;
+    position: relative;
+    z-index: 20;
+}
+
+.menu { position: relative; }
+
+.menu > span {
+    display: block;
+    padding: 2px 7px;
+    cursor: default;
+    touch-action: manipulation;
+}
+
+.menu > span u { text-decoration: underline; }
+
+.menu.open > span {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 170px;
+    list-style: none;
+    background: var(--win95-gray);
+    border-top: 1px solid var(--win95-light-gray);
+    border-left: 1px solid var(--win95-light-gray);
+    border-right: 1px solid var(--win95-black);
+    border-bottom: 1px solid var(--win95-black);
+    box-shadow: inset 1px 1px 0 var(--win95-white), inset -1px -1px 0 var(--win95-dark-gray);
+    padding: 2px;
+}
+
+.menu.open .dropdown { display: block; }
+
+.dropdown li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 3px 10px 3px 20px;
+    position: relative;
+    white-space: nowrap;
+    cursor: default;
+    touch-action: manipulation;
+}
+
+.dropdown li:hover {
+    background: var(--win95-blue);
+    color: var(--win95-white);
+}
+
+.dropdown li.check::before {
+    content: '✓';
+    position: absolute;
+    left: 6px;
+}
+
+.dropdown li.sep {
+    padding: 0;
+    margin: 3px 1px;
+    border-top: 1px solid var(--win95-dark-gray);
+    border-bottom: 1px solid var(--win95-white);
+    pointer-events: none;
+}
+
+/* ── Cara del juego: marcador + campo ───────────────────────────────── */
+.cara-juego {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
+    border-top: 3px solid var(--win95-white);
+    border-left: 3px solid var(--win95-white);
+    border-right: 3px solid var(--win95-dark-gray);
+    border-bottom: 3px solid var(--win95-dark-gray);
+}
+
+.status {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-top: 2px solid var(--win95-dark-gray);
+    border-left: 2px solid var(--win95-dark-gray);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+}
+
+.counter {
+    background: #000;
+    color: #ff0000;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 2px 6px;
+    min-width: 52px;
+    text-align: center;
+    border-top: 1px solid var(--win95-dark-gray);
+    border-left: 1px solid var(--win95-dark-gray);
+    border-right: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-white);
+}
+
+.counter.poco { animation: parpadeo 0.5s steps(1) infinite; }
+@keyframes parpadeo { 50% { color: #400000; } }
+
+.face {
+    width: 30px;
+    height: 30px;
+    font-size: 17px;
+    line-height: 26px;
+    text-align: center;
+    background: var(--win95-gray);
+    border-top: 2px solid var(--win95-white);
+    border-left: 2px solid var(--win95-white);
+    border-right: 2px solid var(--win95-black);
+    border-bottom: 2px solid var(--win95-black);
+    cursor: pointer;
+    padding: 0;
+    touch-action: manipulation;
+}
+
+.face:active {
+    border-top: 2px solid var(--win95-black);
+    border-left: 2px solid var(--win95-black);
+    border-right: 2px solid var(--win95-white);
+    border-bottom: 2px solid var(--win95-white);
+}
+
+/* El campo hundido donde pasa todo. El lienzo se pinta en pixeles grandes
+   (ver PX en script.js) y aquí se estira sin suavizar. */
+.campo {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--win95-teal);
+    border-top: 3px solid var(--win95-dark-gray);
+    border-left: 3px solid var(--win95-dark-gray);
+    border-right: 3px solid var(--win95-white);
+    border-bottom: 3px solid var(--win95-white);
+    touch-action: none;
+}
+
+#lienzo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* ── Puntos que brincan: tooltips amarillos de Win95 ─────────────────── */
+.tips { position: absolute; inset: 0; pointer-events: none; }
+
+.tip {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    background: #ffffe1;
+    border: 1px solid #000;
+    padding: 1px 4px;
+    white-space: nowrap;
+    font-size: 11px;
+    animation: subir 0.9s steps(6) forwards;
+}
+
+.tip.malo  { background: #ff0000; color: #fff; font-weight: bold; }
+.tip.bonus { background: var(--win95-blue); color: #fff; font-weight: bold; }
+
+@keyframes subir {
+    to { transform: translate(-50%, calc(-100% - 24px)); }
+}
+
+/* ── Cuadro de mensaje (inicio, fin, pausa, ayuda) ──────────────────── */
+.msgbox {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(300px, calc(100% - 16px));
+    z-index: 10;
+    background: var(--win95-gray);
+    border-top: 2px solid var(--win95-light-gray);
+    border-left: 2px solid var(--win95-light-gray);
+    border-right: 2px solid var(--win95-black);
+    border-bottom: 2px solid var(--win95-black);
+    box-shadow: inset 1px 1px 0 var(--win95-white), inset -1px -1px 0 var(--win95-dark-gray);
+    padding: 2px;
+}
+
+.msgbox[hidden] { display: none; }
+
+.msgbox .title-bar { cursor: default; }
+
+.msgbox-cuerpo {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 10px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.msgbox-cuerpo img {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+}
+
+.msgbox-cuerpo p + p { margin-top: 6px; }
+
+#dlgTexto { flex: 1; min-width: 0; }
+
+/* Puntos en LED, como el contador de arriba */
+.msgbox .marcador {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 8px;
+}
+
+/* Resultados: nombre a la izquierda, número a la derecha, en caja hundida */
+.msgbox .resumen {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--win95-white);
+    border-top: 1px solid var(--win95-dark-gray);
+    border-left: 1px solid var(--win95-dark-gray);
+    border-right: 1px solid var(--win95-white);
+    border-bottom: 1px solid var(--win95-white);
+    box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--win95-light-gray);
+    padding: 2px 0;
+    font-size: 11px;
+}
+
+.msgbox .resumen td { padding: 1px 6px; }
+.msgbox .resumen td + td { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.msgbox .chico { font-size: 11px; color: var(--win95-darker); }
+
+.msgbox-botones {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 8px 8px;
+}
+
+.msgbox-botones .w95-btn {
+    min-width: 75px;
+    min-height: 23px;
+    touch-action: manipulation;
+}
+
+/* Botón por defecto: el borde negro de más, como en Win95 */
+.msgbox-botones .w95-btn.defecto { outline: 1px solid #000; }
+
+.w95-btn:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
+
+/* ── Teléfono: lo mismo, con blancos de dedo ─────────────────────────── */
+@media (pointer: coarse) {
+    .menu > span { padding: 4px 9px; font-size: 12px; }
+    .dropdown li { padding: 8px 12px 8px 22px; font-size: 13px; }
+    .msgbox-botones .w95-btn { min-height: 34px; font-size: 13px; }
+    .face { width: 36px; height: 36px; font-size: 20px; line-height: 32px; }
+}

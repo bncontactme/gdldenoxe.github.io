@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
+        GLOBOS_AL_ENTRAR: true, // El juego de Globos sale como widget del escritorio (compu y teléfono)
         EMPLEADO_MODAL: true,        // Certificado "Empleadx del Mes" (modal de bienvenida)
         EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
@@ -62,6 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (galeriaIframe?.contentWindow) {
                 galeriaIframe.contentWindow.postMessage({ type: 'galeria-resume' }, location.origin);
             }
+        } catch (e) { /* Cross-origin error */ }
+    }
+
+    // Globos: al cerrar o minimizar su ventana, el juego se pausa.
+    function pausarGlobos() {
+        try {
+            $('[data-window-id="globos"] iframe')?.contentWindow
+                ?.postMessage({ type: 'globos-pausa' }, location.origin);
         } catch (e) { /* Cross-origin error */ }
     }
 
@@ -136,6 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (iframe) iframe.src = iframe.dataset.src;
 
         win.classList.remove('hidden', 'minimized');
+
+        // Globos se acomoda ya visible: escondida mide 0
+        if (windowId === 'globos') acomodarJuego();
+
         bringToFront(win);
         updateTaskbar();
 
@@ -168,7 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isMobile()) {
             if (link) window.open(link, '_blank');
-            else if (folder) window.location.href = 'indexPage/frame.html?p=' + folder;
+            // En minúsculas: con mayúsculas en la ruta, Netlify contesta
+            // primero con un 301 y el celular espera un viaje más.
+            else if (folder) window.location.href = 'indexpage/frame.html?p=' + folder;
             return;
         }
 
@@ -179,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (folder === 'galeria') { openWindow('galeria'); return; }
             if (folder === 'tienda') { openWindow('tienda', true); return; }
             if (folder === 'lonche') { openWindow('lonche'); return; }
+            if (folder === 'globos') { openWindow('globos'); return; }
             return;
         }
 
@@ -203,6 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             openWindow('galeria');
         } else if (folder === 'tienda') {
             openWindow('tienda', true);
+        } else if (folder === 'globos') {
+            openWindow('globos');
         } else if (folder === 'lonche') {
             if (window.innerWidth <= MOBILE_BP) {
                 startMenu?.classList.remove('active');
@@ -492,7 +510,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // <html>, la pone el <head>) y se muestran ya en su lugar. Antes se veían
     // primero en las coordenadas del HTML y luego brincaban: Cloudflare lo
     // medía como layout shift "malo" en casi cada visita de escritorio.
-    const revelarEscritorio = () => document.documentElement.classList.remove('acomodando');
+    const revelarEscritorio = () => {
+        document.documentElement.classList.remove('acomodando');
+        acomodarJuego();
+    };
+
+    // Menos la foto de "GDL DE NOCHE": es lo más grande que se ve al entrar
+    // (el LCP que mide Cloudflare) y su lugar no depende de los artículos
+    // (ver acomodarFoto), así que se pone en su lugar y se muestra desde ya,
+    // sin esperar al worker. Todavía no hay artículo que medir, pero mide lo
+    // mismo que la foto: las dos son .win95-window.
+    if (!isMobile()) {
+        const foto = $('[data-window-id="random"]');
+        if (foto && !foto.classList.contains('hidden')) {
+            acomodarFoto(foto, foto.offsetWidth || 280);
+            foto.style.visibility = 'visible';
+        }
+    }
+
+    // Globos, desde el principio. En compu es un widget y su lugar solo
+    // depende de la foto, así que igual que ella se acomoda y se muestra desde
+    // ya. En el teléfono, por ahora, sale a pantalla completa (lo pone el CSS).
+    // (Si no cabe a un lado de la foto, va abajo del radio, que se acomoda
+    // hasta que cargan los artículos: entonces espera a que se revele todo.)
+    if (FEATURES.GLOBOS_AL_ENTRAR) {
+        openWindow('globos');
+        const juego = $('[data-window-id="globos"]');
+        if (juego && !isMobile() && acomodarJuego()) juego.style.visibility = 'visible';
+    }
 
     // Si el worker tarda, no se deja el escritorio vacío: se acomoda con lo
     // que haya. (El <head> trae otra red por si este script ni corre.)
@@ -542,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const artWidget = $('[data-window-id="articulo-widget"]');
             artWidget?.addEventListener('click', () => {
                 if (isMobile()) {
-                    window.location.href = 'indexPage/frame.html?p=articulo&id=' + randomArt.id;
+                    window.location.href = 'indexpage/frame.html?p=articulo&id=' + randomArt.id;
                 }
             });
 
@@ -584,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const awRect = aw.getBoundingClientRect();
         const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
         pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
+        acomodarJuego();
     }
     if (isMobile()) {
         requestAnimationFrame(() => requestAnimationFrame(positionPoemaWidget));
@@ -889,6 +935,80 @@ juntxs y brillando.`
         }
     }
 
+    // Lugar de la foto de "GDL DE NOCHE": a la izquierda de la columna del
+    // artículo o, si no cabe, arriba de ella (entonces regresa true). Solo
+    // depende del ancho de la pantalla y de lo que miden las ventanas en el
+    // CSS —el artículo mide lo mismo que cualquier .win95-window—, no de lo
+    // que traiga el artículo. Por eso se puede acomodar antes de que conteste
+    // el worker, y cuando llegan los artículos ya no se mueve.
+    function acomodarFoto(imgWin, artW) {
+        const screenW = window.innerWidth;
+        const gap = 12;
+        const iconAreaW = 120;
+        const imgW = imgWin.offsetWidth || 280;
+        const idealLeft = screenW - artW - gap - imgW - gap;
+        imgWin.style.top = gap + 'px';
+        if (idealLeft >= iconAreaW) {
+            // Fits side-by-side
+            imgWin.style.left = idealLeft + 'px';
+            return false;
+        }
+        const clampedW = Math.min(imgW, screenW - iconAreaW - gap * 2);
+        imgWin.style.left = (screenW - clampedW - gap) + 'px';
+        return true;
+    }
+
+    // Lugar del widget de Globos en compu: su propia columna a la izquierda
+    // de la foto (o del artículo, si la foto quedó encima de él), de arriba
+    // hacia abajo, y se juega ahí mismo. En el teléfono lo pone el CSS.
+    function acomodarJuego() {
+        const win = $('[data-window-id="globos"]');
+        if (!win || isMobile() || win.classList.contains('hidden') || win.classList.contains('maximized')) return;
+        const gap = 12;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 40;
+        const iconAreaW = 120;
+        const foto = $('[data-window-id="random"]');
+        const colW = foto?.offsetWidth || 280; // la columna del artículo mide lo mismo
+        let borde = screenW - colW - gap;      // orilla izquierda de esa columna
+        if (foto && !foto.classList.contains('hidden')) {
+            const fotoLeft = parseInt(foto.style.left) || foto.getBoundingClientRect().left;
+            if (fotoLeft + foto.offsetWidth <= borde + 1) borde = fotoLeft; // foto a un lado
+        }
+        // El alto va al iframe, por variable, para que maximizar siga ganando
+        const marco = win.querySelector('.iframe-container');
+        const ponerAlto = alto => {
+            const chrome = win.offsetHeight - (marco ? marco.offsetHeight : 0);
+            win.style.setProperty('--alto-juego', Math.max(200, alto - chrome) + 'px');
+        };
+
+        // Pegado a la izquierda del logo del fondo (centrado, 200px de ancho),
+        // salvo que la foto quede antes
+        const escritorio = $('.desktop');
+        const logoIzq = (escritorio?.clientWidth || screenW) / 2 - 100;
+        const limite = Math.min(borde, logoIzq);
+        const ancho = Math.min(380, limite - gap - iconAreaW - gap);
+        if (ancho >= 260) {
+            win.style.left = (limite - gap - ancho) + 'px';
+            win.style.top = gap + 'px';
+            win.style.width = ancho + 'px';
+            ponerAlto(Math.min(640, screenH - gap * 2));
+            return true;
+        }
+
+        // No cabe a un lado (pantallas angostas, donde las ventanas miden
+        // 380): va abajo de la foto y del radio, en la misma columna.
+        const fondoDe = el => (el && !el.classList.contains('hidden') && el.offsetHeight)
+            ? (parseInt(el.style.top) || el.getBoundingClientRect().top) + el.offsetHeight : 0;
+        const top = Math.min(Math.max(fondoDe(foto), fondoDe(musicPlayer)) + gap, screenH - gap - 300);
+        win.style.left = (parseInt(foto?.style.left) || iconAreaW + gap) + 'px';
+        win.style.top = top + 'px';
+        win.style.width = colW + 'px';
+        ponerAlto(screenH - gap - top);
+        return false;
+    }
+    window.addEventListener('resize', acomodarJuego);
+
     function randomizeWindowPositions() {
         centerYtPopup();
         positionRobloxPopup();
@@ -942,21 +1062,11 @@ juntxs y brillando.`
             artWin.style.top = topY + 'px';
             
             if (imgWin) {
-                const imgW = imgWin.offsetWidth || 280;
-                const idealLeft = artLeft - imgW - gap;
-
-                if (idealLeft >= iconAreaW) {
-                    // Fits side-by-side
-                    imgWin.style.left = idealLeft + 'px';
-                    imgWin.style.top = topY + 'px';
-                } else {
-                    // Not enough room — stack image above article
-                    const imgH = imgWin.offsetHeight || 200;
-                    const clampedW = Math.min(imgW, availW - gap * 2);
-                    imgWin.style.left = (screenW - clampedW - gap) + 'px';
-                    imgWin.style.top = topY + 'px';
-                    // Push article below image
-                    topY += imgH + gap;
+                const apilada = acomodarFoto(imgWin, artW);
+                if (apilada) {
+                    // Not enough room — image went above the article: push
+                    // the article below it
+                    topY += (imgWin.offsetHeight || 200) + gap;
                     artWin.style.top = topY + 'px';
                 }
 
@@ -1069,9 +1179,14 @@ juntxs y brillando.`
                 }
             }
         } else {
-            // Fallback: stack all on right
+            // Fallback: stack all on right. La foto no entra en la pila: ya se
+            // ve desde el principio en su lugar de siempre y no se mueve.
             let ry = gap;
+            if (imgWin && acomodarFoto(imgWin, imgWin.offsetWidth || 280)) {
+                ry += (imgWin.offsetHeight || 200) + gap;
+            }
             windows.forEach(win => {
+                if (win === imgWin) return;
                 const w = win.offsetWidth || 280;
                 win.style.left = (screenW - Math.min(w, availW - gap * 2) - gap) + 'px';
                 win.style.top = ry + 'px';
@@ -1089,6 +1204,8 @@ juntxs y brillando.`
             musicPlayer.style.top = (imgTop + imgH + gap) + 'px';
             musicPlayer.style.transform = 'none';
         }
+
+        acomodarJuego();
     }
 
     // Mobile widget IDs that should not be draggable
@@ -1218,6 +1335,7 @@ juntxs y brillando.`
         if (btn.classList.contains('close-btn')) {
             win.classList.add('hidden');
             if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
+            if (win.dataset.windowId === 'globos') pausarGlobos();
             if (win.dataset.windowId === 'yt-popup') {
                 const ytf = win.querySelector('iframe');
                 if (ytf) ytf.src = ytf.src;
@@ -1233,6 +1351,7 @@ juntxs y brillando.`
             win.classList.add('minimized');
             if (win.dataset.windowId === 'tienda') pauseTiendaAudio();
             if (win.dataset.windowId === 'galeria') pauseGaleriaCollage();
+            if (win.dataset.windowId === 'globos') pausarGlobos();
         } else if (btn.classList.contains('maximize-btn')) {
             const isMax = win.classList.toggle('maximized');
             if (isMax) {
@@ -1359,7 +1478,7 @@ juntxs y brillando.`
         },
         admin() {
             termEscribir('Abriendo el panel...', 'verde');
-            window.open('articulosPage/admin.html', '_blank', 'noopener');
+            window.open('articulospage/admin.html', '_blank', 'noopener');
         },
         articulos() { abrirCarpeta('articulos'); termEscribir('Carpeta de Artículos abierta.'); },
         galeria()   { abrirCarpeta('galeria');   termEscribir('Galería abierta.'); },
@@ -1428,7 +1547,7 @@ juntxs y brillando.`
             if (mobileActions[shortcut]) {
                 mobileActions[shortcut]();
             } else {
-                window.location.href = 'indexPage/frame.html?p=' + shortcut;
+                window.location.href = 'indexpage/frame.html?p=' + shortcut;
             }
             return;
         }
@@ -1438,7 +1557,8 @@ juntxs y brillando.`
             tienda: () => openWindow('tienda', true),
             articulos: () => openWindow('folder-articulos'),
             minesweeper: () => openWindow('minesweeper'),
-            links: () => window.location.href = 'https://linktr.ee/guadalajaradenoche',
+            globos: () => openWindow('globos'),
+            links:() => window.location.href = 'https://linktr.ee/guadalajaradenoche',
             palestina: () => window.open('https://www.unrwa.org/', '_blank'),
             email: () => window.location.href = 'mailto:gdldenoxe@gmail.com',
             radio: () => {
@@ -2085,6 +2205,11 @@ juntxs y brillando.`
             const body = uploadWin?.querySelector('.window-body');
             if (body) body.style.height = e.data.height + 'px';
         }
+        // Un clic dentro del juego no le llega a la ventana: el iframe avisa.
+        if (e.data?.type === 'globos-frente') {
+            const win = $('[data-window-id="globos"]');
+            if (win && !win.classList.contains('active')) bringToFront(win);
+        }
         if (e.data?.type === 'open-articulo-upload-popup') openArticuloUploadOverlay();
         if (e.data?.type === 'close-articulo-upload') {
             const win = $('[data-window-id="upload-articulo"]');
@@ -2101,8 +2226,8 @@ juntxs y brillando.`
     // ===== Nuevo artículo window (shown from the Artículos folder) =====
     function openArticuloUploadOverlay() {
         const iframe = $('#upload-articulo-iframe');
-        if (iframe && iframe.getAttribute('src') !== 'articulosPage/upload.html?embed=1') {
-            iframe.src = 'articulosPage/upload.html?embed=1';
+        if (iframe && iframe.getAttribute('src') !== 'articulospage/upload.html?embed=1') {
+            iframe.src = 'articulospage/upload.html?embed=1';
         }
         const win = $('[data-window-id="upload-articulo"]');
         if (!win) return;
@@ -2125,8 +2250,8 @@ juntxs y brillando.`
     // ===== Upload window (shown from gallery iframe postMessage) =====
     function openUploadOverlay() {
         const uploadIframe = $('#upload-overlay-iframe');
-        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivoPage/upload.html?embed=1') {
-            uploadIframe.src = 'archivoPage/upload.html?embed=1';
+        if (uploadIframe && uploadIframe.getAttribute('src') !== 'archivopage/upload.html?embed=1') {
+            uploadIframe.src = 'archivopage/upload.html?embed=1';
         }
         const uploadWin = $('[data-window-id="upload"]');
         if (!uploadWin) return;

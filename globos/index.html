@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Globazo!!: globos de agua estilo Windows 95 — Guadalajara De Noche.">
+    <title>Globazo!!</title>
+    <link rel="icon" href="icono.svg" type="image/svg+xml">
+    <!-- Dentro de un iframe, Chrome acomoda la página antes de que llegue el
+         CSS y luego cuenta el brinco como layout shift. Se esconde hasta que
+         styles.css la muestra (igual que la galería). -->
+    <style>body { visibility: hidden; }</style>
+    <link rel="stylesheet" href="../shared/win95.css">
+    <link rel="stylesheet" href="styles.css?v=5">
+</head>
+<body>
+    <div class="app">
+        <div class="menubar" id="menubar">
+            <div class="menu">
+                <span><u>J</u>uego</span>
+                <ul class="dropdown">
+                    <li data-accion="nuevo">Nuevo <span>F2</span></li>
+                    <li class="sep"></li>
+                    <li data-accion="tocar" class="check">Tocar para tirar</li>
+                    <li data-accion="deslizar">Deslizar para tirar</li>
+                    <li class="sep"></li>
+                    <li data-accion="sonido" class="check">Sonido</li>
+                    <li class="sep"></li>
+                    <li data-accion="record">Mejor puntuación...</li>
+                </ul>
+            </div>
+            <div class="menu">
+                <span>Ay<u>u</u>da</span>
+                <ul class="dropdown">
+                    <li data-accion="como">Cómo jugar</li>
+                    <li class="sep"></li>
+                    <li data-accion="acerca">Acerca de Globazo!!...</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cara-juego">
+            <div class="status">
+                <div class="counter" id="puntos">0000</div>
+                <button class="face" id="cara" aria-label="Juego nuevo">🙂</button>
+                <div class="counter" id="tiempo">060</div>
+            </div>
+            <div class="campo" id="campo">
+                <canvas id="lienzo"></canvas>
+                <div class="tips" id="tips"></div>
+                <div class="msgbox" id="dlg" role="dialog" aria-labelledby="dlgTitulo" hidden>
+                    <div class="title-bar"><div class="title-bar-text" id="dlgTitulo"></div></div>
+                    <div class="msgbox-cuerpo">
+                        <img src="icono.svg" alt="">
+                        <div id="dlgTexto"></div>
+                    </div>
+                    <div class="msgbox-botones" id="dlgBotones"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=16"></script>
+</body>
+</html>

@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://archivo-upload.guadalajaradenoxe.workers.dev" crossorigin>
 
     <link rel="stylesheet" href="shared/win95.css">
-    <link rel="stylesheet" href="indexPage/styles.css?v=20260923">
+    <link rel="stylesheet" href="indexPage/styles.css?v=20261007">
 </head>
 <body>
     <div class="desktop">
@@ -51,7 +51,12 @@
                 <div class="icon-image"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="Artículos" loading="lazy"></div>
                 <div class="icon-label">Artículos</div>
             </div>
-            
+
+            <div class="desktop-icon" data-folder="globos">
+                <div class="icon-image"><img src="globos/icono.svg" alt="Globazo!!" loading="lazy"></div>
+                <div class="icon-label">Globazo!!</div>
+            </div>
+
             <div class="desktop-icon" data-link="https://linktr.ee/guadalajaradenoche">
                 <div class="icon-image"><img src="indexPage/indexImages/icons/msie1-0.png" alt="Links" loading="lazy"></div>
                 <div class="icon-label">Links</div>
@@ -233,7 +238,12 @@
                     </ul>
                 </div>
                 <div class="iframe-container">
-                    <iframe data-src="archivoPage/archivoPage.html" frameborder="0"></iframe>
+                    <!-- Las páginas van en minúsculas a propósito: Netlify
+                         contesta con un 301 a la versión en minúsculas a toda
+                         ruta de página con mayúsculas, y ese brinco se come
+                         0.2–0.5 s. Las carpetas siguen igual; Netlify no
+                         distingue mayúsculas al servir. -->
+                    <iframe data-src="archivopage/archivopage.html" frameborder="0"></iframe>
                 </div>
                 <div class="fe-statusbar"><span id="galeria-status">Cargando...</span></div>
             </div>
@@ -389,7 +399,7 @@
                     <img src="tiendaPage/assets/webAssets/logo/path206.png" alt="GDN" loading="lazy">
                 </div>
                 <div class="iframe-container" id="tienda-iframe-container">
-                    <iframe id="tienda-iframe" data-src="tiendaPage/index.html" frameborder="0" allow="autoplay"></iframe>
+                    <iframe id="tienda-iframe" data-src="tiendapage/index.html" frameborder="0" allow="autoplay"></iframe>
                 </div>
             </div>
         </div>
@@ -417,6 +427,25 @@
                         <option value="intermediate">Intermedio</option>
                         <option value="expert">Experto</option>
                     </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Globazo!! (globos/): widget del escritorio, como el artículo y el lonche. El
+             juego vive en globos/ y entra por iframe. En el teléfono, por
+             ahora, sale a pantalla completa y se cierra con ✕. -->
+        <div class="win95-window hidden" data-window-id="globos" style="left: 300px; top: 12px;">
+            <div class="title-bar">
+                <div class="title-bar-text"><img src="globos/icono.svg" alt="" class="titlebar-icon"> Globazo!!</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="maximize-btn" aria-label="Maximizar">□</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="iframe-container">
+                    <iframe data-src="globos/index.html" frameborder="0" title="Globazo!!"></iframe>
                 </div>
             </div>
         </div>
@@ -543,6 +572,7 @@
             <div class="menu-item" data-shortcut="tienda"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="" class="menu-icon"> Tienda</div>
             <div class="menu-item" data-shortcut="articulos"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="" class="menu-icon"> Artículos</div>
             <div class="menu-item" data-shortcut="minesweeper"><img src="indexPage/indexImages/icons/minesweeper-0.png" alt="" class="menu-icon"> Buscaminas</div>
+            <div class="menu-item" data-shortcut="globos"><img src="globos/icono.svg" alt="" class="menu-icon"> Globazo!!</div>
             <div class="menu-item" data-shortcut="links"><img src="indexPage/indexImages/icons/msie1-0.png" alt="" class="menu-icon"> Links</div>
             <div class="menu-item" data-shortcut="palestina"><img src="indexPage/indexImages/icons/world-0.png" alt="" class="menu-icon"> Palestina Libre</div>
             <div class="menu-item" data-shortcut="email"><img src="indexPage/indexImages/icons/notepad_file-0.png" alt="" class="menu-icon"> Email</div>
@@ -617,6 +647,6 @@
 
     <script src="shared/win95.js" defer></script>
     <script src="shared/articulos-api.js?v=20260923" defer></script>
-    <script src="indexPage/script.js?v=20260923" defer></script>
+    <script src="indexPage/script.js?v=20261007b" defer></script>
 </body>
 </html>

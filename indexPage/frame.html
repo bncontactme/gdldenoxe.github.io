@@ -189,7 +189,9 @@
             .fe-dd-item { padding: 9px 20px 9px 24px; }
         }
 
-        /* Barra de estado, como en la carpeta de Artículos */
+        /* Barra de estado, como en la carpeta de Artículos. Siempre de un
+           renglón: si crece o se encoge, el iframe de las fotos cambia de alto
+           y lo de adentro brinca. */
         .fe-statusbar {
             background: #ECE9D8;
             border-top: 1px solid #808080;
@@ -197,6 +199,9 @@
             font-size: 10px;
             color: #333;
             flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Tienda debug placeholder */
@@ -315,7 +320,7 @@
         <div class="frame-content" id="frame-content">
             <iframe id="frame-iframe" src="" style="display:none;"></iframe>
         </div>
-        <div class="fe-statusbar" id="gal-statusbar" style="display:none;"><span id="gal-status"></span></div>
+        <div class="fe-statusbar" id="gal-statusbar" style="display:none;"><span id="gal-status">Cargando...</span></div>
     </div>
 
     <!-- Upload popup — rendered at parent level via postMessage from archivo iframe -->
@@ -362,31 +367,38 @@
         const page = params.get('p');
         const artId = params.get('id');
 
+        // Rutas de página en minúsculas: con mayúsculas, Netlify contesta
+        // primero con un 301 (0.2–0.5 s más antes de que salga nada).
         const pages = {
             'galeria': {
                 title: 'Galería',
                 icon: 'indexImages/icons/kodak_imaging-0.png',
-                src: '../archivoPage/archivoPage.html'
+                src: '../archivopage/archivopage.html'
             },
             'tienda': {
                 title: 'Tienda',
                 icon: 'indexImages/icons/directory_e-0.png',
-                src: '../tiendaPage/index.html'
+                src: '../tiendapage/index.html'
             },
             'articulos': {
                 title: 'Artículos',
                 icon: 'indexImages/icons/directory_closed-0.png',
-                src: '../articulosPage/index.html'
+                src: '../articulospage/index.html'
             },
             'articulo': {
                 title: 'Artículo',
                 icon: 'indexImages/icons/notepad_file-0.png',
-                src: '../articulosPage/articulo.html?id=' + (artId || '1')
+                src: '../articulospage/articulo.html?id=' + (artId || '1')
             },
             'minesweeper': {
                 title: 'Buscaminas',
                 icon: 'indexImages/icons/minesweeper-0.png',
-                src: '../buscaminasPage/index.html'
+                src: '../buscaminaspage/index.html'
+            },
+            'globos': {
+                title: 'Globazo!!',
+                icon: '../globos/icono.svg',
+                src: '../globos/index.html'
             },
             'lonche': {
                 title: 'Cómprame Una Torta',
@@ -470,7 +482,9 @@
             window.addEventListener('message', function(e) {
                 if (e.origin !== location.origin) return;
                 if (e.data?.type !== 'galeria-estado') return;
-                galStatus.textContent = e.data.estado || '';
+                // Vacío = todavía no hay conteo: se queda "Cargando..." en vez
+                // de dejar la barra sin renglón.
+                if (e.data.estado) galStatus.textContent = e.data.estado;
                 document.getElementById('gal-ver-collage')
                     .classList.toggle('checked', e.data.modo === 'collage');
                 document.getElementById('gal-ver-carpetas')
@@ -489,8 +503,8 @@
             const closeBtn    = document.getElementById('upload-frame-close');
 
             function openUpload() {
-                if (popupIframe.getAttribute('src') !== '../archivoPage/upload.html') {
-                    popupIframe.src = '../archivoPage/upload.html';
+                if (popupIframe.getAttribute('src') !== '../archivopage/upload.html') {
+                    popupIframe.src = '../archivopage/upload.html';
                 }
                 popup.style.display = 'flex';
             }
@@ -518,8 +532,8 @@
             const closeBtn    = document.getElementById('articulo-upload-frame-close');
 
             function openArticuloUpload() {
-                if (popupIframe.getAttribute('src') !== '../articulosPage/upload.html?embed=1') {
-                    popupIframe.src = '../articulosPage/upload.html?embed=1';
+                if (popupIframe.getAttribute('src') !== '../articulospage/upload.html?embed=1') {
+                    popupIframe.src = '../articulospage/upload.html?embed=1';
                 }
                 popup.style.display = 'flex';
             }
