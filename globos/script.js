@@ -40,16 +40,16 @@
     // traen letras (de tamaño normal, palabras enteras).
     var ICONOS = '../indexPage/indexImages/icons/';
     var TIPOS = [
-        // El blanco principal: icono de 32x32 hecho de su foto de canal, con barra en los ojos
-        { id: 'lemus',       src: 'cosas/lemus.png',                 puntos: 25, peso: 4 },
-        // Cybertruck en pixeles (paleta de Win95, contorno negro), hecha a mano en código
-        { id: 'cybertruck',  src: 'cosas/cybertruck.png',            puntos: 20, peso: 3 },
-        // Carpeta manila de 54x40 (proporción de carpeta de verdad): "CARPETA DE / INVESTIGACIÓN"
-        { id: 'investigacion', src: 'cosas/carpeta-investigacion.png', puntos: 15, peso: 3, nativo: true },
+        // El blanco principal: icono de 40x40 hecho de su foto de canal, con barra en los ojos
+        { id: 'lemus',       src: 'cosas/lemus.png',                 puntos: 25, peso: 4, nativo: true },
+        // Cybertruck de 40x40 en pixeles (paleta de Win95, contorno negro), hecha a mano en código
+        { id: 'cybertruck',  src: 'cosas/cybertruck.png',            puntos: 20, peso: 3, nativo: true },
+        // Carpeta manila de 44x33 (proporción de carpeta de verdad) con sello rojo de "CARPETAZO"
+        { id: 'investigacion', src: 'cosas/carpetazo.png', puntos: 15, peso: 3, nativo: true },
         // Recibo con la orilla rota: "RECIBO / DE AGUA", gota y total en rojo (sin nombre de nadie)
         { id: 'recibo',      src: 'cosas/recibo.png',                puntos: 15, peso: 3 },
-        // El lazo coral de las rentas cortas, solo (sin nombre de nadie)
-        { id: 'rentas',      src: 'cosas/rentas.png',                puntos: 20, peso: 2 },
+        // Letrero "SE RENTA" en tabla clavada a un palo, como los del Coyote (39x32)
+        { id: 'se-renta',    src: 'cosas/se-renta.png',              puntos: 20, peso: 2, nativo: true },
         // La torta es lo único que queda de los iconos del escritorio
         { id: 'torta',       src: ICONOS + 'lonche-icon.png',        puntos: -25, peso: 0, castigo: true, grito: '¡La torta no!' },
         // Ventanita de 52x32 "⚠ AVISO: HACER ALGO / AL RESPECTO" con dos botones: este no se moja.
@@ -59,7 +59,7 @@
     var CASTIGOS = TIPOS.filter(function (t) { return t.castigo; });
     function porId(id) { return TIPOS.filter(function (t) { return t.id === id; })[0]; }
 
-    // El globo, pixel por pixel (igual que icono.svg). X contorno, b cuerpo,
+    // El globo, pixel por pixel. X contorno, b cuerpo,
     // d sombra, c brillo, w blanco.
     var GLOBO_MAPA = [
         '......XXXX......',
@@ -205,6 +205,13 @@
         var cw = campo.clientWidth, ch = campo.clientHeight;
         if (!cw || !ch) { pausar(); return; }
         var px = Math.max(2, Math.floor(Math.min(cw, ch) / 220));
+        if (esTelefono) {
+            // Teléfono: cosas más chicas y más campo (unos 260 de ancho), pero
+            // cada pixel del juego mide un número entero de pixeles de la
+            // pantalla (3 a 5), para que sigan nítidas.
+            var dpr = window.devicePixelRatio || 1;
+            px = Math.max(2, Math.round(dpr * cw / 260)) / dpr;
+        }
         var w = Math.ceil(cw / px), h = Math.ceil(ch / px);
         if (w === W && h === H && px === PX) return;
         // Las manchas se quedan al maximizar o girar el teléfono.
@@ -230,8 +237,11 @@
     var puntos = 0, combo = 0, ultimoAcierto = -9, sacudida = 0, caraMalaHasta = 0, flash = 0;
     var stats = { tirados: 0, aciertos: 0, malos: 0, mejorCombo: 0 };
     var modo = 'tocar', mudo = false, recordNuevo = false, menuAbierto = false;
-    var bonus = { inflado: 0, resta: 0, bombeo: 0, trono: false, ganado: 0, toques: 0 };
+    var bonus = { inflado: 0, resta: 0, bombeo: 0, trono: false, ganado: 0, toques: 0, ultimo: -1e9 };
     var conDedo = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+    // Lo que cambia el juego (escala y cuántas cosas salen) se decide una vez,
+    // al cargar; conDedo sigue al último toque y solo cambia los letreros.
+    var esTelefono = conDedo;
 
     function cambiar(nuevo) { estado = nuevo; estadoT = 0; }
     function enPartida() { return estado !== 'titulo' && estado !== 'instrucciones' && estado !== 'fin'; }
@@ -256,14 +266,32 @@
     }
 
     // Sale desde abajo del campo en parábola, como en Fruit Ninja.
+    // Sale a lo ancho, entera (la carpeta y el aviso miden 54 y 52) y con
+    // aire respecto a las que van saliendo, para que no se encimen y un
+    // globo no moje la torta de rebote.
+    function lugarDeSalida(tipo) {
+        var min = tipo.ancho / 2 + 2, max = W - tipo.ancho / 2 - 2;
+        if (max <= min) return W / 2;
+        var recien = cosas.filter(function (c) { return !c.mojado && c.y > H * 0.55; });
+        var mejor = 0, holgura = -Infinity;
+        for (var i = 0; i < 10; i++) {
+            var x = rand(min, max), h = Infinity;
+            recien.forEach(function (c) { h = Math.min(h, Math.abs(c.x - x) - (c.tipo.ancho + tipo.ancho) / 2); });
+            if (h >= 6) return x;
+            if (h > holgura) { holgura = h; mejor = x; }
+        }
+        return mejor;
+    }
+
     function lanzarCosa(tipo) {
         if (!tipo || !tipo.seco) return;
         var g = H * AJUSTES.gravedad * (tipo.rapida ? 1.35 : 1);
-        var x = W * (0.12 + Math.random() * 0.76);
+        var x = lugarDeSalida(tipo);
         var y = H + tipo.alto / 2 + 2;
         var subida = y - H * (0.1 + Math.random() * 0.42);
         var tAire = 2 * Math.sqrt(2 * subida / g);
-        var destino = W * (0.2 + Math.random() * 0.6);
+        // Cada una se va de lado poquito desde donde salió, sin cruzarse todas al centro
+        var destino = clamp(x + W * rand(-0.25, 0.25), tipo.ancho / 2, W - tipo.ancho / 2);
         cosas.push({
             tipo: tipo, x: x, y: y, r: (tipo.ancho + tipo.alto) / 2 * 0.42, g: g,
             vx: (destino - x) / tAire, vy: -Math.sqrt(2 * g * subida),
@@ -274,6 +302,8 @@
     function lanzarOla() {
         var d = clamp(jugado / AJUSTES.duracion, 0, 1);
         var n = 1 + Math.floor(Math.random() * (1.8 + d * 3));
+        // En el teléfono el campo es angosto: menos a la vez para que quepan
+        if (esTelefono) n = Math.min(n, Math.max(2, Math.floor(W / 55)));
         for (var i = 0; i < n; i++) pendientes.push({ t: i === 0 ? 0 : rand(0.05, 0.35), tipo: elegirTipo() });
         proxima = (1.4 - d * 0.7) * rand(0.8, 1.2);
     }
@@ -308,7 +338,9 @@
 
     function reventar(g) {
         var x = g.x1, y = g.y1;
-        var rs = RB * (g.tactil ? AJUSTES.ayudaTactil : 1);
+        // Con el dedo el salpicón mide al menos 22px de pantalla, aunque los
+        // pixeles del juego sean más chicos en el teléfono
+        var rs = g.tactil ? Math.max(RB * AJUSTES.ayudaTactil, 22 / PX) : RB;
         var tocados = cosas.filter(function (c) { return !c.mojado && Math.hypot(c.x - x, c.y - y) < c.r + rs; });
         salpicar(x, y, g.color, tocados.length ? 0.6 : 1);
         sonido('chapuzon');
@@ -419,11 +451,20 @@
     function empezarBonus() {
         cambiar('bonus');
         bonus.inflado = 0; bonus.resta = BONUS.duracion; bonus.bombeo = 0;
-        bonus.trono = false; bonus.ganado = 0; bonus.toques = 0;
+        bonus.trono = false; bonus.ganado = 0; bonus.toques = 0; bonus.ultimo = -1e9;
     }
 
-    function bombear() {
+    // Tope de bombazos por segundo: lo más que alcanza una persona. Así dos
+    // dedos, dedo y tecla juntos o un autoclic no truenan la cabeza antes.
+    var BOMBAZOS_MAX = 16;
+    function bombear(cuando) {
         if (estado !== 'bonus') return;
+        // Con la hora del toque mismo (e.timeStamp), no la de cuando el juego
+        // lo atiende: en un aparato lento los toques llegan amontonados entre
+        // cuadro y cuadro y aun así cuentan como lo que fueron
+        var ya = typeof cuando === 'number' ? cuando : performance.now();
+        if (ya - bonus.ultimo < 1000 / BOMBAZOS_MAX) return;
+        bonus.ultimo = ya;
         bonus.inflado += BONUS.porBombazo * (1 - bonus.inflado * 0.35);
         bonus.bombeo = 1;
         bonus.toques++;
@@ -437,11 +478,19 @@
     }
 
     // Dónde va la cabeza en la ronda bonus (en pixeles del juego)
+    // La bomba y la cabeza se acomodan en un alto de a lo más 1.6 veces el
+    // ancho; en teléfonos altos lo que sobra se reparte arriba y abajo, para
+    // que no queden pegadas al piso con media pantalla vacía encima.
+    function escenaBonus() {
+        var h = Math.min(H, Math.round(W * 1.6));
+        return { h: h, dy: Math.round((H - h) / 2) };
+    }
     function cabezaBonus() {
-        var max = Math.min(W * 0.56, H * 0.5) / TAM;
+        var esc = escenaBonus();
+        var max = Math.min(W * 0.56, esc.h * 0.5) / LEMUS.alto;
         var s = 1 + clamp(bonus.inflado, 0, 1) * (max - 1);
-        var cx = Math.round(W * 0.63), nudo = Math.round(H * 0.8);
-        return { s: s, cx: cx, nudo: nudo, cy: nudo - TAM * s / 2 - 2 };
+        var cx = Math.round(W * 0.63), nudo = Math.round(esc.h * 0.8) + esc.dy;
+        return { s: s, cx: cx, nudo: nudo, cy: nudo - LEMUS.alto * s / 2 - 2 };
     }
 
     function tronar() {
@@ -454,14 +503,14 @@
         for (i = 0; i < 110; i++) {
             var a = rand(0, Math.PI * 2), v = rand(0.3, 1) * U * 110;
             particulas.push({
-                x: cab.cx + Math.cos(a) * TAM * cab.s * 0.3, y: cab.cy + Math.sin(a) * TAM * cab.s * 0.3,
+                x: cab.cx + Math.cos(a) * LEMUS.alto * cab.s * 0.3, y: cab.cy + Math.sin(a) * LEMUS.alto * cab.s * 0.3,
                 vx: Math.cos(a) * v, vy: Math.sin(a) * v - U * 40, lado: Math.random() < 0.4 ? 2 : 1,
                 vida: rand(0.5, 1.1), t: 0,
                 color: ['#0000ff', '#00ffff', '#fff', '#e0a080', '#c07050'][Math.floor(Math.random() * 5)]
             });
         }
         for (i = 0; i < 9; i++) {
-            mancha(cab.cx + rand(-1, 1) * TAM * cab.s * 0.6, cab.cy + rand(-1, 1) * TAM * cab.s * 0.5,
+            mancha(cab.cx + rand(-1, 1) * LEMUS.alto * cab.s * 0.6, cab.cy + rand(-1, 1) * LEMUS.alto * cab.s * 0.5,
                    i % 2 ? '#0000ff' : '#00ffff', 1.6);
         }
         anillos.push({ x: cab.cx, y: cab.cy, t: 0, vida: 0.4 });
@@ -485,7 +534,7 @@
         conDedo = tactil;
         if (estado === 'titulo') { mostrarInstrucciones(); return; }
         if (estado === 'instrucciones') { if (estadoT > 0.4) empezar(); return; }
-        if (estado === 'bonus') { bombear(); return; }
+        if (estado === 'bonus') { bombear(e.timeStamp); return; }
         if (estado !== 'jugando') return;
         var p = aJuego(e);
         dedos[e.pointerId] = { x0: p.x, y0: p.y, pts: [{ x: p.x, y: p.y, t: performance.now() }], tactil: tactil };
@@ -750,12 +799,21 @@
     // y apaga y los colores le van dando la vuelta.
     function dibujarIntro() {
         var s = escalaQueQuepa(TITULO, W - 12, 6);
-        var k = Math.max(2, Math.floor(Math.min(W * 0.55, H * 0.36) / TAM));
-        var altoCabeza = TAM * k;
-        var ss = escalaQueQuepa(SUBTITULO, W - 12, 2);
+        var k = Math.max(2, Math.floor(Math.min(W * 0.55, H * 0.36) / LEMUS.alto));
+        var altoCabeza = LEMUS.alto * k;
+        var ss = escalaQueQuepa(SUBTITULO, W - 12, 2), sub = [SUBTITULO];
+        // En un renglón el subtítulo sale chiquito junto al título grande del
+        // teléfono: si cabe al doble en dos renglones, va en dos
+        if (ss < 2 && s >= 3) {
+            var mitad = SUBTITULO.length / 2, corte = -1;
+            SUBTITULO.split('').forEach(function (c, i) { if (c === ' ' && (corte < 0 || Math.abs(i - mitad) < Math.abs(corte - mitad))) corte = i; });
+            var dos = [SUBTITULO.slice(0, corte), SUBTITULO.slice(corte + 1)];
+            if (corte > 0 && escalaQueQuepa(dos[0], W - 12, 2) >= 2 && escalaQueQuepa(dos[1], W - 12, 2) >= 2) { sub = dos; ss = 2; }
+        }
+        var altoSub = sub.length * 10 * ss - 3 * ss;
         var aviso = conDedo ? 'TOCA PARA JUGAR' : 'HAZ CLIC PARA JUGAR';
         var sa = escalaQueQuepa(aviso, W - 30, 2);
-        var bloque = 7 * s + 14 + altoCabeza + 10 + 7 * ss + 18 + 7 * sa + 10;
+        var bloque = 7 * s + 14 + altoCabeza + 10 + altoSub + 18 + 7 * sa + 10;
         var y = Math.round((H - bloque) / 2);
 
         var letras = Math.min(TITULO.length, Math.floor(estadoT / 0.11) + 1);
@@ -775,8 +833,8 @@
         }
         y += altoCabeza + 10;
 
-        pintarTexto(SUBTITULO, W / 2, y, ss, '#ff0000', '#000');
-        y += 7 * ss + 18;
+        sub.forEach(function (l, i) { pintarTexto(l, W / 2, y + i * 10 * ss, ss, '#ff0000', '#000'); });
+        y += altoSub + 18;
 
         boton(aviso, y, sa);
     }
@@ -792,47 +850,69 @@
     }
 
     // Pantalla de instrucciones: qué sí se moja (con sus puntos) y qué no.
-    var BUENOS = ['lemus', 'cybertruck', 'rentas', 'investigacion', 'recibo'];
+    var BUENOS = ['lemus', 'cybertruck', 'se-renta', 'investigacion', 'recibo'];
     var MALOS = ['torta', 'hacer-algo'];
     // Cada fila va centrada, con el mismo aire entre icono e icono; los
     // iconos se centran en el alto de su fila y los puntos van en un mismo
     // renglón abajo. Si una fila no cabe, sus iconos van a la mitad.
-    var FILAS = [BUENOS.slice(0, 3), BUENOS.slice(3), MALOS];
+    var MITAD = Math.ceil(BUENOS.length / 2);     // 5 → 3 + 2, 4 → 2 + 2
+    var FILAS = [BUENOS.slice(0, MITAD), BUENOS.slice(MITAD), MALOS];
+    // Letras de la pantalla al doble cuando el campo es ancho (teléfono, o la
+    // ventana maximizada); en la ventana normal del escritorio, sencillas.
+    function letraInstr() { return W >= 230 ? 2 : 1; }
     function medidas(ids) {
-        var aire = clamp(Math.floor((W - 8 - 3 * TAM) / 2), 6, 24);
+        var aire = clamp(Math.floor((W - 8 - 3 * TAM) / 2), 6, 24 * letraInstr());
         var tipos = ids.map(porId), total = aire * (ids.length - 1), alto = TAM;
         tipos.forEach(function (t) { total += t.ancho; alto = Math.max(alto, t.alto); });
         var k = total <= W - 4 ? 1 : 0.5;
         return { tipos: tipos, aire: aire * k, total: total * k, alto: Math.round(alto * k), k: k };
     }
-    function altoFila(ids) { return medidas(ids).alto + 3 + 7; }   // iconos, aire y puntos
+    function altoFila(ids) { return medidas(ids).alto + 3 + 7 * letraInstr(); }   // iconos, aire y puntos
     function filaIconos(ids, y, color) {
         var m = medidas(ids), x = W / 2 - m.total / 2;
         m.tipos.forEach(function (t) {
             var w = Math.round(t.ancho * m.k), h = Math.round(t.alto * m.k), cx = Math.round(x + w / 2);
             if (t.seco) ctx.drawImage(t.seco, cx - Math.round(w / 2), y + Math.round((m.alto - h) / 2), w, h);
-            pintarTexto((t.puntos > 0 ? '+' : '') + t.puntos, cx, y + m.alto + 3, 1, color, '#000');
+            pintarTexto((t.puntos > 0 ? '+' : '') + t.puntos, cx, y + m.alto + 3, letraInstr(), color, '#000');
             x += w + m.aire;
         });
-        return m.alto + 3 + 7;
+        return m.alto + 3 + 7 * letraInstr();
     }
+    // Tres medidas, de la más holgada a la más apretada; se usa la primera
+    // que quepa. En la última se va la barra de título (teléfonos chaparros,
+    // con las barras de Safari). El botón siempre va al final, nunca encima.
+    var MEDIDAS_INSTR = [
+        { barra: true,  E: 8, fila: 4, globo: 5 },
+        { barra: true,  E: 4, fila: 1, globo: 3 },
+        { barra: false, E: 3, fila: 1, globo: 2 }
+    ];
     function dibujarInstrucciones() {
-        var y = 6;
-        y += banda('INSTRUCCIONES', y, escalaQueQuepa('INSTRUCCIONES', W - 20, 2));
         var l1 = conDedo ? 'TOCA DONDE QUIERAS' : 'HAZ CLIC DONDE QUIERAS', l2 = 'QUE CAIGA EL GLOBO';
-        var altoBoton = 17, altoPanel = 29, E = 8;   // E: el aire entre bloques
-        var bloque = 13 + 5 + altoFila(FILAS[0]) + 4 + altoFila(FILAS[1]) + E + 13 + 5 + altoFila(FILAS[2]) + E + altoBoton;
-        var conPanel = bloque + altoPanel + E <= H - y - 2 * E;
-        if (conPanel) bloque += altoPanel + E;
+        var sT = letraInstr(), sP = escalaQueQuepa(l1, W - 22, sT);
+        var altoGlobo = 7 * sT + 6, altoBoton = 7 * sT + 10, altoPanel = 17 * sP + 12;
+        var sBarra = escalaQueQuepa('INSTRUCCIONES', W - 20, 2);
+        var m, arriba, bloque;
+        for (var i = 0; i < MEDIDAS_INSTR.length; i++) {
+            m = MEDIDAS_INSTR[i];
+            arriba = m.barra ? 6 + 7 * sBarra + 12 : 2;
+            bloque = altoGlobo + m.globo + altoFila(FILAS[0]) + m.fila + altoFila(FILAS[1]) + m.E +
+                     altoGlobo + m.globo + altoFila(FILAS[2]) + m.E + altoBoton;
+            if (arriba + bloque + 2 * m.E <= H) break;
+        }
+        var conPanel = arriba + bloque + altoPanel + m.E + 2 * m.E <= H;
+        if (conPanel) bloque += altoPanel + m.E;
+        var y = 6;
+        if (m.barra) y += banda('INSTRUCCIONES', y, sBarra);
+        else y = arriba;
         // Centrado en lo que queda abajo de la barra
-        y += Math.max(E, Math.round((H - y - bloque) / 2));
-        globito('¡MÓJALOS!', y, 1); y += 13 + 5;
-        y += filaIconos(FILAS[0], y, '#fff') + 4;
-        y += filaIconos(FILAS[1], y, '#fff') + E;
-        globito('¡NO LOS MOJES!', y, 1, '#ff0000'); y += 13 + 5;
-        y += filaIconos(FILAS[2], y, '#ff0000') + E;
-        if (conPanel) y += panel([l1, l2], y, 1) + E;
-        boton('¡A JUGAR!', Math.min(y, H - altoBoton - 2), 1);
+        y += Math.max(m.E, Math.round((H - y - bloque) / 2));
+        globito('¡MÓJALOS!', y, sT); y += altoGlobo + m.globo;
+        y += filaIconos(FILAS[0], y, '#fff') + m.fila;
+        y += filaIconos(FILAS[1], y, '#fff') + m.E;
+        globito('¡NO LOS MOJES!', y, sT, '#ff0000'); y += altoGlobo + m.globo;
+        y += filaIconos(FILAS[2], y, '#ff0000') + m.E;
+        if (conPanel) y += panel([l1, l2], y, sP) + m.E;
+        boton('¡A JUGAR!', y, sT);
     }
 
     // La bomba, ahora sí de lámina: base con biselado, cilindro sombreado con
@@ -842,19 +922,25 @@
     var CILINDRO = ['#000', '#fff', '#dfdfdf', '#dfdfdf', '#c0c0c0', '#c0c0c0', '#c0c0c0', '#c0c0c0',
                     '#c0c0c0', '#a0a0a0', '#808080', '#808080', '#606060', '#404040', '#000'];
     function dibujarBomba() {
-        var cab = cabezaBonus();
-        var suelo = H - 6, bx = Math.round(W * 0.2);
+        var cab = cabezaBonus(), esc = escenaBonus();
+        var suelo = esc.h - 6 + esc.dy, bx = Math.round(W * 0.2);
+        // En el teléfono el campo es más ancho: la bomba va al doble para que
+        // no se vea enana junto a la cabeza (escala entera: sigue nítida)
+        var kb = W >= 220 ? 2 : 1;
+        var aEscala = function () { ctx.save(); ctx.translate(bx, suelo); ctx.scale(kb, kb); ctx.translate(-bx, -suelo); };
         var baja = Math.round(bonus.bombeo * 2);
         var baseY = suelo - 5, cilTop = baseY - 40 + baja;
         var palanca = cilTop - 18 + Math.round(bonus.bombeo * 14);
         var i, x, y;
 
         // Sombra en trama
+        aEscala();
         ctx.fillStyle = '#000';
         for (y = 0; y < 3; y++) for (x = -18 + y * 2; x <= 18 - y * 2; x++) if ((x + y) & 1) ctx.fillRect(bx + x, suelo + y, 1, 1);
+        ctx.restore();
 
         // Manguera gruesa: del pie de la bomba al nudo, colgando
-        var x0 = bx + 9, y0 = baseY - 3, x1 = cab.cx, y1 = cab.nudo + 4, mx = (x0 + x1) / 2, my = suelo + 3;
+        var x0 = bx + 9 * kb, y0 = suelo - (suelo - baseY + 3) * kb, x1 = cab.cx, y1 = cab.nudo + 4, mx = (x0 + x1) / 2, my = suelo + 3;
         var puntos = [];
         for (i = 0; i <= 80; i++) {
             var u = i / 80, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
@@ -864,6 +950,7 @@
         ctx.fillStyle = '#404040'; puntos.forEach(function (p) { ctx.fillRect(p[0], p[1], 2, 2); });
         ctx.fillStyle = '#808080'; puntos.forEach(function (p) { ctx.fillRect(p[0], p[1], 1, 1); });
         // Conector a la bomba
+        aEscala();
         realce(bx + 6, baseY - 7, 6, 6, '#808080');
 
         // Varilla cromada
@@ -913,12 +1000,13 @@
         // Base de lámina con biselado y patitas
         realce(bx - 17, baseY, 35, 5);
         ctx.fillStyle = '#000'; ctx.fillRect(bx - 16, suelo, 5, 2); ctx.fillRect(bx + 12, suelo, 5, 2);
+        ctx.restore();
 
         // La cabeza, inflándose; ya mero, tiembla
         if (!LEMUS.seco || bonus.trono) return;
         var tiembla = bonus.inflado > 0.75 ? Math.round(rand(-1, 1) * (bonus.inflado - 0.7) * 8) : 0;
         var apachurre = bonus.bombeo * 0.06;
-        var lado = TAM * cab.s, ancho = Math.round(lado * (1 + apachurre)), alto = Math.round(lado * (1 - apachurre));
+        var lado = LEMUS.alto * cab.s, ancho = Math.round(lado * (1 + apachurre)), alto = Math.round(lado * (1 - apachurre));
         // Boquilla de latón y nudo
         ctx.fillStyle = '#000'; ctx.fillRect(cab.cx - 4, cab.nudo + 1, 9, 5);
         ctx.fillStyle = '#808000'; ctx.fillRect(cab.cx - 3, cab.nudo + 2, 7, 3);
@@ -1032,7 +1120,7 @@
         var hud = puntos + '|' + seg;
         if (hud !== ultimoHud) {
             ultimoHud = hud;
-            elPuntos.textContent = String(Math.min(puntos, 9999)).padStart(4, '0');
+            elPuntos.textContent = String(puntos).padStart(4, '0');
             elTiempo.textContent = String(seg).padStart(3, '0');
             elTiempo.classList.toggle('poco', (estado === 'jugando' && seg <= 10) || (estado === 'bonus' && seg <= 3));
         }
@@ -1046,10 +1134,18 @@
     }
 
     var antes = performance.now();
+    // El juego corre en tiempo real aunque el aparato vaya lento: el tiempo
+    // que pasó se reparte en pasos de a lo más 1/30 s. Así la ronda dura lo
+    // mismo en cualquier aparato y nadie juega en cámara lenta. Un atorón de
+    // más de 1/4 s (pestaña escondida, que además pausa) no se cuenta.
     function cuadro(ahora) {
-        var dt = Math.min((ahora - antes) / 1000, 1 / 30);
+        var falta = Math.min((ahora - antes) / 1000, 0.25);
         antes = ahora;
-        if (W && !congelado()) actualizar(dt);
+        while (W && falta > 0 && !congelado()) {
+            var paso = Math.min(falta, 1 / 30);
+            actualizar(paso);
+            falta -= paso;
+        }
         if (W) dibujar();
         pintarHud();
         requestAnimationFrame(cuadro);
@@ -1076,7 +1172,7 @@
         dlg.hidden = false;
     }
     var COMO = '<p>Las cosas salen desde abajo. Toca o haz clic donde quieras que caiga el globo: tarda un poquito en llegar, así que apunta adelante.</p>' +
-               '<p>Mójalos: Lemus (25), la Cybertruck (20), el lazo coral (20), la Carpeta de investigación (15) y el Recibo de agua (15).</p>' +
+               '<p>Mójalos: Lemus (25), la Cybertruck (20), el letrero de SE RENTA (20), la carpeta con el sello de CARPETAZO (15) y el Recibo de agua (15).</p>' +
                '<p><b>No mojes la torta ni el aviso de «Hacer algo al respecto»:</b> te quitan 25.</p>' +
                '<p>Al final viene la ronda bonus: toca rápido (o dale a la barra espaciadora) para inflar la cabeza hasta que truene.</p>';
 
@@ -1122,6 +1218,7 @@
             '<p>¡Se acabó!</p>' +
             marcador(puntos, recordNuevo ? '<b>¡Nuevo récord!</b>' : 'Récord: ' + record) +
             resumen([
+                ['Puntos de la ronda', puntos - bonus.ganado],
                 ['Ronda bonus', '+' + bonus.ganado + (bonus.trono ? ' ¡tronó!' : '')],
                 ['Globos tirados', stats.tirados],
                 ['Le atinaste', tino + '%'],
@@ -1133,7 +1230,7 @@
 
     // Los puntos en LED rojo, como el contador de arriba
     function marcador(n, nota) {
-        return '<div class="marcador"><span class="counter">' + String(Math.min(n, 9999)).padStart(4, '0') + '</span>' +
+        return '<div class="marcador"><span class="counter">' + String(n).padStart(4, '0') + '</span>' +
                (nota ? '<span>' + nota + '</span>' : '') + '</div>';
     }
     // Renglones de nombre y número, alineados, en una caja hundida
@@ -1204,7 +1301,7 @@
             e.preventDefault();
             desbloquearAudio();
             // Dejar la tecla apretada no cuenta: hay que machacarla
-            if (estado === 'bonus' && !e.repeat) bombear();
+            if (estado === 'bonus' && !e.repeat) bombear(e.timeStamp);
             else if (estado === 'titulo') mostrarInstrucciones();
             else if (estado === 'instrucciones' && estadoT > 0.4) empezar();
         }
@@ -1225,7 +1322,8 @@
     document.addEventListener('visibilitychange', function () { if (document.hidden) pausar(); });
 
     // ?debug deja ver el estado desde la consola para probar sin dedos
-    if (/[?&]debug\b/.test(location.search)) {
+    var enCasa = /^(localhost|127\.0\.0\.1|\[::1\]|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(location.hostname);
+    if (enCasa && /[?&]debug\b/.test(location.search)) {
         window.globos = {
             cosas: function () { return cosas; }, globos: function () { return globos; },
             puntos: function () { return puntos; }, estado: function () { return estado; },

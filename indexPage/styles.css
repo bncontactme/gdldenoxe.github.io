@@ -2124,21 +2124,31 @@ body.arrastrando iframe {
         display: none;
     }
 
-    /* --- Globos (mobile, por ahora): a pantalla completa arriba de la
-       barra de tareas, encima de todo. Con ✕ se ve el escritorio. --- */
+    /* --- Globos (mobile, por ahora): a pantalla completa, de orilla a
+       orilla y encima de todo, también de la barra de tareas (son ~50px más
+       de juego). Con ✕ se ve el escritorio. Respeta el notch y la barrita
+       de abajo del iPhone si algún día se usa viewport-fit=cover. --- */
     .win95-window[data-window-id="globos"]:not(.hidden):not(.minimized) {
         display: flex !important;
         flex-direction: column;
         position: fixed !important;
-        top: 4px !important;
-        left: 4px !important;
-        right: 4px !important;
-        bottom: 48px !important;
+        top: env(safe-area-inset-top, 0px) !important;
+        left: env(safe-area-inset-left, 0px) !important;
+        right: env(safe-area-inset-right, 0px) !important;
+        bottom: env(safe-area-inset-bottom, 0px) !important;
         width: auto !important;
         height: auto !important;
         /* Encima del radio flotante (20000): mientras el juego está abierto
            lo tapa; al cerrarlo, el radio queda ahí. */
         z-index: 20500 !important;
+    }
+
+    /* La ✕ de tamaño de dedo */
+    .win95-window[data-window-id="globos"] .title-bar { padding: 3px 4px 3px 6px; }
+    .win95-window[data-window-id="globos"] .title-bar-controls button {
+        width: 30px;
+        height: 26px;
+        font-size: 14px;
     }
 
     .win95-window[data-window-id="globos"] .window-body {

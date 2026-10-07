@@ -301,6 +301,15 @@ body {
 @media (pointer: coarse) {
     .menu > span { padding: 4px 9px; font-size: 12px; }
     .dropdown li { padding: 8px 12px 8px 22px; font-size: 13px; }
-    .msgbox-botones .w95-btn { min-height: 34px; font-size: 13px; }
+    .msgbox-botones .w95-btn { min-height: 40px; min-width: 96px; font-size: 15px; }
     .face { width: 36px; height: 36px; font-size: 20px; line-height: 32px; }
+    /* Letras de teléfono: en la compu se quedan como estaban */
+    .tip { font-size: 14px; padding: 2px 6px; }
+    .msgbox { width: calc(100% - 16px); max-width: 380px; }
+    .msgbox .title-bar-text { font-size: 14px; }
+    .msgbox-cuerpo { font-size: 15px; gap: 10px; padding: 14px 10px 10px; }
+    .msgbox .marcador .counter { font-size: 26px; }
+    .msgbox .resumen { font-size: 14px; }
+    .msgbox .resumen td { padding: 3px 8px; }
+    .msgbox .chico { font-size: 13px; }
 }
