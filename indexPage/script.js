@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         TWITCH_POPUP:  false,   // BIP BIP RADIO X GDN stream popup
         ROBLOX_POPUP:  false,   // Roblox server ad popup
         TIENDA:        true,    // Tienda / store (desktop icon + easter egg unlock)
-        GLOBOS_AL_ENTRAR: true, // El juego de Globos sale como widget del escritorio (compu y teléfono)
+        GLOBOS_AL_ENTRAR: false, // true = Globazo!! se abre solo al entrar (compu y teléfono). Apagado: solo con su icono o el menú de Inicio
         EMPLEADO_MODAL: true,        // Certificado "Empleadx del Mes" (modal de bienvenida)
         EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
