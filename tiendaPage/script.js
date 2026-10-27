@@ -860,11 +860,13 @@ const tienda = (() => {
 
     const resizeFlipbook = () => {
         const wrapper = document.querySelector('.flipbook-scale-wrapper');
-        if (!wrapper) return;
+        if (!wrapper || !document.body.classList.contains('view-catalog')) return;
 
         const marqueeH = document.getElementById('marquee-bar')?.offsetHeight || 40;
+        /* navegar.exe sits in flow below the book on web — leave room for it */
+        const navH = document.getElementById('flipbook-nav')?.offsetHeight || 0;
         const availW = window.innerWidth - 16;
-        const availH = window.innerHeight - marqueeH - 32;
+        const availH = window.innerHeight - marqueeH - navH - 32;
         /* Scale to fit the OPEN spread (2 pages) so nothing is ever clipped */
         const scale = Math.min(availW / SPREAD_W, availH / DESIGN_H, 2.5);
 
@@ -913,7 +915,9 @@ const tienda = (() => {
     };
 
     /* ─────────────────────────────────────────────────────────
-       MOBILE STORE — Win95 card grid (image + price)
+       STORE — Win95 card grid (image + price)
+       First view at every width: 2 columns on phones, auto-fill
+       columns on web (with the catalog behind the arrow).
        ───────────────────────────────────────────────────────── */
 
     const buildMobileStore = (catalog) => {
@@ -925,7 +929,10 @@ const tienda = (() => {
             });
         }
 
-        const purchasable = (products || []).filter(p => !p.noModal && !p.mobileHide && p.price != null);
+        // Sold-out items go last; otherwise keep the catalog order (sort is stable)
+        const purchasable = (products || [])
+            .filter(p => !p.noModal && !p.mobileHide && p.price != null)
+            .sort((a, b) => !!a.soldOut - !!b.soldOut);
 
         const store = document.createElement('div');
         store.className = 'mobile-store';
@@ -998,13 +1005,96 @@ const tienda = (() => {
             card.appendChild(info);
 
             if (!product.soldOut) {
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('aria-label', (product.name || 'Producto') + (product.price != null ? ' — $' + product.price : ''));
                 card.addEventListener('click', () => tienda.emit('openModal', product));
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        tienda.emit('openModal', product);
+                    }
+                });
             }
             grid.appendChild(card);
         });
 
         store.appendChild(grid);
         catalogRoot.appendChild(store);
+    };
+
+    /* ─────────────────────────────────────────────────────────
+       VIEWS — store first, catalog behind the arrow (web)
+       body.view-store shows the grid + catalogo.exe bar;
+       body.view-catalog shows the flipbook + navegar.exe bar.
+       The flipbook is built on first open. #catalogo links
+       straight to it and the browser Back button returns.
+       ───────────────────────────────────────────────────────── */
+
+    const CATALOG_HASH = '#catalogo';
+
+    const initViews = (catalog) => {
+        const body = document.body;
+        let flipbookBuilt = false;
+        let storeScroll = 0;
+
+        // Phones never show the flipbook, so don't build it there
+        const ensureFlipbook = () => {
+            if (flipbookBuilt || isMobileWidth()) return;
+            flipbookBuilt = true;
+            buildFlipbook(catalog);
+        };
+
+        const setView = (view) => {
+            const toCatalog = view === 'catalog';
+            if (toCatalog && body.classList.contains('view-store')) {
+                storeScroll = catalogRoot.scrollTop;
+            }
+            body.classList.toggle('view-catalog', toCatalog);
+            body.classList.toggle('view-store', !toCatalog);
+            if (toCatalog) {
+                ensureFlipbook();
+                resizeFlipbook();
+            } else {
+                // resizeFlipbook sizes the root to the spread — give the grid its width back
+                catalogRoot.style.width = '';
+                catalogRoot.style.height = '';
+                catalogRoot.scrollTop = storeScroll;
+            }
+        };
+
+        const applyHash = () => setView(location.hash === CATALOG_HASH ? 'catalog' : 'store');
+
+        const openCatalog = () => {
+            if (location.hash !== CATALOG_HASH) {
+                history.pushState({ tiendaView: 'catalog' }, '', CATALOG_HASH);
+            }
+            setView('catalog');
+        };
+
+        const backToStore = () => {
+            // Came from the arrow → step back so Back/Forward stay in sync
+            if (history.state && history.state.tiendaView === 'catalog') {
+                history.back();
+                return;
+            }
+            history.replaceState(null, '', location.pathname + location.search);
+            setView('store');
+        };
+
+        document.querySelectorAll('[data-open-catalog]').forEach(el => {
+            el.addEventListener('click', openCatalog);
+        });
+        document.getElementById('fnav-store')?.addEventListener('click', backToStore);
+        window.addEventListener('popstate', applyHash);
+
+        // Opened on a phone with #catalogo, then widened: build it now
+        window.addEventListener('resize', () => {
+            if (body.classList.contains('view-catalog')) ensureFlipbook();
+        }, { passive: true });
+
+        body.classList.add('tienda-web');
+        applyHash();
     };
 
     /* ── Fetch & init ── */
@@ -1015,11 +1105,8 @@ const tienda = (() => {
             return res.json();
         })
         .then(catalog => {
-            if (isMobileWidth()) {
-                buildMobileStore(catalog);
-            } else {
-                buildFlipbook(catalog);
-            }
+            buildMobileStore(catalog);
+            initViews(catalog);
         })
         .catch(err => {
             console.error('[Catalog Engine] Failed to load catalog:', err);

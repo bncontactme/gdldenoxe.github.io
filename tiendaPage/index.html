@@ -47,13 +47,27 @@
             </p>
         </noscript>
 
-        <!-- Windows 95 Flipbook Navigation — sits below flipbook, right-aligned -->
+        <!-- Old-school 468×60 banner — bottom of the web store view, opens the catalog -->
+        <div id="catalog-cta" role="region" aria-label="Catálogo">
+            <button type="button" class="cta-banner" data-open-catalog aria-label="Visita nuestro catálogo">
+                <span class="cta-banner-text">
+                    <span class="cta-banner-title">¡VISITA NUESTRO CATÁLOGO!</span>
+                    <span class="cta-banner-sub">La movida se viste a la moda</span>
+                </span>
+                <span class="cta-banner-arrows" aria-hidden="true">&#9658;&#9658;&#9658;</span>
+                <img class="cta-banner-cover" src="assets/webAssets/pages/page1.webp" alt="" width="36" height="50">
+            </button>
+        </div>
+
+        <!-- Windows 95 Flipbook Navigation — bottom bar of the catalog view -->
         <div id="flipbook-nav" role="navigation" aria-label="Navegación del catálogo">
             <div class="fnav-titlebar">
                 <span class="fnav-titlebar-icon">&#128196;</span>
                 <span class="fnav-titlebar-text">navegar.exe</span>
             </div>
             <div class="fnav-body">
+                <button id="fnav-store" class="fnav-btn" type="button">&#9668; Volver a la tienda</button>
+                <span class="fnav-spacer"></span>
                 <button id="fnav-back" class="fnav-btn" aria-label="Página anterior" disabled>&#9668; Atrás</button>
                 <span id="fnav-counter" class="fnav-counter">1 / 1</span>
                 <button id="fnav-next" class="fnav-btn" aria-label="Página siguiente">Siguiente &#9658;</button>

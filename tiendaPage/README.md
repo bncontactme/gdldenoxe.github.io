@@ -148,6 +148,16 @@ Configured via `cover` and `backCover` objects in `catalog.json`:
 
 ---
 
+## Web Store View
+
+On every screen the tienda opens on the **store grid** (Win95 cards, same products and order as `products[]`, minus `mobileHide` and price-less entries).
+
+- **Phones (≤480px):** 2-column grid only, as before.
+- **Web (>480px):** the same Win95 cards as the phone, slightly larger, in auto-fill columns. Sold-out items go last (on phones too). The grid scrolls above a centered old-school **468×60 banner**, **"¡VISITA NUESTRO CATÁLOGO!"**. The banner sits in its own row with a margin, so it never covers products or touches the frame. Clicking it opens the flipbook, which is built on first open. A small **navegar.exe** window then sits centered under the book, with a **"◄ Volver a la tienda"** button.
+- **Deep link:** `index.html#catalogo` opens straight into the catalog. The browser Back button returns to the store.
+
+---
+
 ## Debug Mode
 
 Append `?debug` to the URL:

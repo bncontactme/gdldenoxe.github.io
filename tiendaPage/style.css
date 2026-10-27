@@ -1312,8 +1312,122 @@ main {
     overflow: hidden;
 }
 
-/* Mobile store is hidden by default (desktop shows flipbook) */
-.mobile-store { display: none; }
+/* ============================================================
+   STORE GRID — Win95 cards, shared by phone and web.
+   Sizes per width live in the media queries below.
+   ============================================================ */
+
+.mobile-store { width: 100%; }
+
+.ms-grid { display: grid; }
+
+/* ── Card — Win95 window (image + price only) ── */
+.ms-card {
+    background: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+.ms-card:active {
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
+}
+.ms-card--sold-out {
+    cursor: default;
+}
+.ms-card--sold-out:active {
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
+}
+.ms-card--sold-out .ms-img { opacity: 0.55; }
+.ms-card--sold-out .ms-price { color: #808080; text-decoration: line-through; }
+.ms-img-wrap .catalog-sold-out::after {
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    padding: 6px 0;
+}
+
+/* Image — sunken panel */
+.ms-img-wrap {
+    position: relative;
+    margin: 3px;
+    background: #fff;
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+.ms-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Logo */
+.ms-logo-wrap {
+    text-align: center;
+}
+.ms-logo {
+    width: auto;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+/* Info area: title + description + price */
+.ms-info {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title */
+.ms-title {
+    color: #000;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Description */
+.ms-desc {
+    color: #404040;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Price — sunken text field */
+.ms-price {
+    background: #fff;
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #dfdfdf;
+    border-bottom: 2px solid #dfdfdf;
+    box-shadow: inset 1px 1px 0 #808080;
+    color: #cc0000;
+    text-align: center;
+}
 
 /* ============================================================
    RESPONSIVE — Media Queries
@@ -1340,135 +1454,35 @@ main {
     .flipbook-scale-wrapper { display: none !important; }
     #flipbook-nav { display: none !important; }
 
-    /* Show mobile store */
+    /* Show store (card look is shared — see STORE GRID above) */
     .mobile-store {
         display: block !important;
         width: 100%;
         padding: 4px;
     }
+    #catalog-cta { display: none !important; }
 
     /* ── Grid ── */
     .ms-grid {
-        display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 4px;
     }
 
-    /* ── Card — Win95 window (image + price only) ── */
-    .ms-card {
-        background: #c0c0c0;
-        border-top: 2px solid #fff;
-        border-left: 2px solid #fff;
-        border-right: 2px solid #404040;
-        border-bottom: 2px solid #404040;
-        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-    }
-    .ms-card:active {
-        border-top: 2px solid #404040;
-        border-left: 2px solid #404040;
-        border-right: 2px solid #fff;
-        border-bottom: 2px solid #fff;
-        box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #dfdfdf;
-    }
-    .ms-card--sold-out {
-        cursor: default;
-    }
-    .ms-card--sold-out:active {
-        border-top: 2px solid #fff;
-        border-left: 2px solid #fff;
-        border-right: 2px solid #404040;
-        border-bottom: 2px solid #404040;
-        box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #808080;
-    }
-    .ms-card--sold-out .ms-img { opacity: 0.55; }
-    .ms-card--sold-out .ms-price { color: #808080; text-decoration: line-through; }
-    .ms-img-wrap .catalog-sold-out::after {
-        font-size: 0.85rem;
-        letter-spacing: 3px;
-        padding: 6px 0;
-    }
-
-    /* Image — sunken panel */
-    .ms-img-wrap {
-        position: relative;
-        margin: 3px;
-        background: #fff;
-        border-top: 2px solid #404040;
-        border-left: 2px solid #404040;
-        border-right: 2px solid #dfdfdf;
-        border-bottom: 2px solid #dfdfdf;
-        box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff;
-        aspect-ratio: 1;
-        overflow: hidden;
-    }
-    .ms-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
     /* Logo */
-    .ms-logo-wrap {
-        text-align: center;
-        padding: 8px 4px 4px;
-    }
-    .ms-logo {
-        height: 28px;
-        width: auto;
-        object-fit: contain;
-        opacity: 0.85;
-    }
+    .ms-logo-wrap { padding: 8px 4px 4px; }
+    .ms-logo { height: 28px; }
 
     /* Info area: title + desc + price */
     .ms-info {
         padding: 2px 3px 3px;
-        display: flex;
-        flex-direction: column;
         gap: 1px;
     }
-
-    /* Title */
-    .ms-title {
-        font: 700 9px/1.2 'MS Sans Serif', Tahoma, sans-serif;
-        color: #000;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Description */
-    .ms-desc {
-        font: 400 8px/1.2 'MS Sans Serif', Tahoma, sans-serif;
-        color: #404040;
-        text-align: center;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-    }
-
-    /* Price — sunken text field */
+    .ms-title { font: 700 9px/1.2 'MS Sans Serif', Tahoma, sans-serif; }
+    .ms-desc { font: 400 8px/1.2 'MS Sans Serif', Tahoma, sans-serif; }
     .ms-price {
         margin-top: 1px;
         padding: 2px 4px;
-        background: #fff;
-        border-top: 2px solid #404040;
-        border-left: 2px solid #404040;
-        border-right: 2px solid #dfdfdf;
-        border-bottom: 2px solid #dfdfdf;
-        box-shadow: inset 1px 1px 0 #808080;
         font: 700 11px/1.3 'Courier New', 'Fixedsys', monospace;
-        color: #cc0000;
-        text-align: center;
     }
 
     /* Win95 modal adjustments (existing) */
@@ -1480,6 +1494,81 @@ main {
     .win95-window .modal-product-description { font-size: 11px; }
     .win95-window .modal-price-text { font-size: 15px; }
     .win95-buy-btn { padding: 3px 16px; font-size: 11px; }
+}
+
+/* --- Web (tablets and up): store first, catalog behind the banner ---
+   The page becomes a column: marquee → scrolling content → bottom banner.
+   The banner and navegar.exe sit in flow, so they never cover products or
+   the book, and keep a margin so they don't touch the window frame.
+   Cards are the phone's Win95 cards, a bit larger. */
+@media (min-width: 481px) {
+    body.tienda-web {
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        justify-content: flex-start;
+        padding-top: 2.5rem;
+        padding-bottom: 0;
+    }
+    body.tienda-web main,
+    body.tienda-web #catalog-root {
+        flex: 1;
+        min-height: 0;
+    }
+
+    /* Store view: only the grid scrolls, the banner stays below it */
+    body.tienda-web.view-store #catalog-root {
+        overflow-x: hidden;
+        overflow-y: auto;
+        justify-content: flex-start;
+        align-items: stretch;
+    }
+    body.tienda-web.view-store #catalog-cta { display: flex; }
+    body.tienda-web.view-store .flipbook-scale-wrapper,
+    body.tienda-web.view-catalog .mobile-store,
+    body:not(.view-catalog) #flipbook-nav { display: none; }
+
+    .mobile-store {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 6px 8px 14px;
+    }
+    .ms-grid {
+        grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+        gap: 8px;
+    }
+    .ms-card:not(.ms-card--sold-out):hover { background: var(--w95-light); }
+    .ms-card:focus-visible { outline: 2px dotted #000; outline-offset: -6px; }
+
+    .ms-logo-wrap { padding: 8px 4px 12px; }
+    .ms-logo { height: 44px; }
+
+    /* Info grows so every price box lines up at the bottom of its row */
+    .ms-info {
+        flex: 1;
+        padding: 3px 5px 5px;
+        gap: 2px;
+    }
+    .ms-title { font: 700 13px/1.3 'MS Sans Serif', Tahoma, sans-serif; }
+    .ms-desc {
+        font: 400 12px/1.3 'MS Sans Serif', Tahoma, sans-serif;
+        min-height: 2.6em;
+    }
+    .ms-price {
+        margin-top: auto;
+        padding: 3px 4px;
+        font: 700 15px/1.3 'Courier New', 'Fixedsys', monospace;
+    }
+
+    /* Catalog view: navegar.exe is a small window centered under the book */
+    body.tienda-web #flipbook-nav {
+        position: static;
+        flex: none;
+        align-self: center;
+        margin: 4px 0 10px;
+        min-width: 0;
+    }
+    body.tienda-web .fnav-counter { flex: none; }
 }
 
 /* --- Tablets & small laptops --- */
@@ -1697,4 +1786,110 @@ main {
     padding: 2px 6px;
     min-width: 36px;
     white-space: nowrap;
+}
+
+/* Etched divider between "Volver a la tienda" and the page buttons */
+.fnav-spacer {
+    flex: none;
+    width: 2px;
+    height: 18px;
+    margin: 0 3px;
+    border-left: 1px solid var(--w95-dark);
+    border-right: 1px solid var(--w95-white);
+}
+
+/* ============================================================
+   CATALOG BANNER — old-school 468×60 banner, bottom of the web
+   store view. It keeps its own row below the grid (never covers
+   products), centered, with a margin so it doesn't touch the frame.
+   ============================================================ */
+
+#catalog-cta {
+    display: none; /* shown by body.view-store on web */
+    flex: none;
+    align-self: center;
+    margin: 8px 12px 12px;
+}
+
+/* Red Win95-style raised button, the whole banner is clickable */
+.cta-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 468px;
+    max-width: calc(100vw - 24px);
+    height: 60px;
+    padding: 0 10px 0 12px;
+    background: #cc0000;
+    border-top:    2px solid #ff6666;
+    border-left:   2px solid #ff6666;
+    border-right:  2px solid #660000;
+    border-bottom: 2px solid #660000;
+    outline: 1px solid #000;
+    cursor: pointer;
+    text-align: left;
+    user-select: none;
+}
+
+.cta-banner:hover { background: #e00000; }
+
+.cta-banner:active {
+    border-top-color:    #660000;
+    border-left-color:   #660000;
+    border-right-color:  #ff6666;
+    border-bottom-color: #ff6666;
+}
+
+.cta-banner:focus-visible {
+    outline: 2px dotted #000;
+    outline-offset: 3px;
+}
+
+.cta-banner-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.cta-banner-title {
+    font: italic 900 21px/1 'Roboto Condensed', Impact, sans-serif;
+    color: #ffd700;
+    letter-spacing: 0.3px;
+    text-shadow: 2px 2px 0 #000;
+    white-space: nowrap;
+}
+
+.cta-banner-sub {
+    font: 400 11px/1.2 var(--font-system);
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Classic hard blink */
+.cta-banner-arrows {
+    flex: none;
+    font: 900 18px/1 var(--font-system);
+    color: #ffd700;
+    letter-spacing: -2px;
+    text-shadow: 1px 1px 0 #000;
+    animation: cta-blink 1s steps(1) infinite;
+}
+
+@keyframes cta-blink {
+    50% { opacity: 0; }
+}
+
+.cta-banner-cover {
+    flex: none;
+    width: 36px;
+    height: 50px;
+    object-fit: cover;
+    border: 2px solid #000;
+    background: #fff;
+    transform: rotate(3deg);
 }
