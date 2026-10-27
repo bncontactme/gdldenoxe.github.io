@@ -18,6 +18,18 @@
     "pages": [
         {
             "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["bonnet-halloween"]
+        },
+        {
+            "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["bonnet-halloween-look"]
+        },
+        {
+            "template": "1-featured",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
             "products": ["camisa-negra"]
@@ -136,6 +148,39 @@
     },
 
     "products": [
+        {
+            "id": "bonnet-halloween",
+            "name": "Bonnet: Halloween Exxxxclusive",
+            "price": 550,
+            "image": "https://pics.paypal.com/00/p/ZWIxNTViYWYtZDllYy00NDFmLTgxNjgtZTM5OTQ3MTg1MGIy/image_3.JPG",
+            "imageBg": "#ffffff",
+            "description": "Bonnet malvado en vinil & lycra casino, confeccionado a mano y con detalle de bordado Guadalajara De Noche. Al pagar especifica: color, corte de cara redondo/corazón y si quieres apertura para coleta.",
+            "link": "https://www.paypal.com/ncp/payment/KQTA7X37DXBJW",
+            "info": "Hecho a mano",
+            "badge": "NUEVO",
+            "images": [
+                "https://pics.paypal.com/00/p/ZWIxNTViYWYtZDllYy00NDFmLTgxNjgtZTM5OTQ3MTg1MGIy/image_3.JPG",
+                "https://pics.paypal.com/00/p/YjQ3ZDRjZjgtNzhjMS00N2JkLTkxYWYtMDM1NTVkZDM5Zjc4/image_3.JPG",
+                "https://pics.paypal.com/00/p/YWM4Zjk4ZmItMzI0OC00ZmM3LTlkYTYtOWQ5ODM4MWUxOGQ4/image_3.JPG"
+            ]
+        },
+        {
+            "id": "bonnet-halloween-look",
+            "name": "Bonnet: Halloween Exxxxclusive",
+            "price": 550,
+            "noSplash": true,
+            "mobileHide": true,
+            "image": "https://pics.paypal.com/00/p/YjQ3ZDRjZjgtNzhjMS00N2JkLTkxYWYtMDM1NTVkZDM5Zjc4/image_3.JPG",
+            "imageBg": "#000000",
+            "description": "Bonnet malvado en vinil & lycra casino, confeccionado a mano y con detalle de bordado Guadalajara De Noche. Al pagar especifica: color, corte de cara redondo/corazón y si quieres apertura para coleta.",
+            "link": "https://www.paypal.com/ncp/payment/KQTA7X37DXBJW",
+            "info": "Hecho a mano",
+            "images": [
+                "https://pics.paypal.com/00/p/YjQ3ZDRjZjgtNzhjMS00N2JkLTkxYWYtMDM1NTVkZDM5Zjc4/image_3.JPG",
+                "https://pics.paypal.com/00/p/YWM4Zjk4ZmItMzI0OC00ZmM3LTlkYTYtOWQ5ODM4MWUxOGQ4/image_3.JPG",
+                "https://pics.paypal.com/00/p/ZWIxNTViYWYtZDllYy00NDFmLTgxNjgtZTM5OTQ3MTg1MGIy/image_3.JPG"
+            ]
+        },
         {
             "id": "boxer-gdn",
             "name": "Boxer GDN",
