@@ -165,6 +165,11 @@
   }
   #pw-submit:hover:not(:disabled) { background: linear-gradient(#4479CE, #2460B0); }
   #pw-submit:active { border-style: inset; }
+
+  /* Portadas de la radio: pantalla completa encima de la bandeja */
+  #radio-capa { position: fixed; inset: 0; z-index: 50000; background: #008080; display: none; }
+  #radio-capa.abierta { display: block; }
+  #radio-capa iframe { width: 100%; height: 100%; border: 0; display: block; }
 </style>
 </head>
 <body>
@@ -204,6 +209,10 @@
   <ul class="fe-dropdown" id="fe-dropdown-respaldo">
     <li class="fe-dd-item" data-action="respaldar">Respaldar ahora</li>
   </ul>
+  <div class="fe-menu-item" data-menu="radio" tabindex="0">Radio</div>
+  <ul class="fe-dropdown" id="fe-dropdown-radio">
+    <li class="fe-dd-item" data-action="portada">Portada de sesión...</li>
+  </ul>
 </div>
 
 <div id="toolbar">
@@ -224,6 +233,8 @@
 <div id="barra-estado">
   <span id="aviso" role="status" aria-live="polite"></span>
 </div>
+
+<div id="radio-capa"><iframe title="Portadas de la radio"></iframe></div>
 
 <script>
 (() => {
@@ -289,10 +300,26 @@
       else if (a === 'cerrar') location.href = '../index.html';
       else if (a === 'recargar') cargar();
       else if (a === 'respaldar') respaldar();
+      else if (a === 'portada') abrirPortada();
       cerrarMenus();
     });
   });
   document.addEventListener('click', cerrarMenus);
+
+  // ── Portadas de la radio ───────────────────────────────────────────────────
+  // Se carga la primera vez que se abre y luego solo se esconde: lo que llevas
+  // se queda. Adentro ve que la bandeja ya está abierta y no pide contraseña.
+  function abrirPortada() {
+    const marco = $('radio-capa').querySelector('iframe');
+    if (!marco.getAttribute('src')) marco.src = '../radioPage/portada.html';
+    $('radio-capa').classList.add('abierta');
+    marco.focus();
+  }
+  window.addEventListener('message', e => {
+    if (e.origin === location.origin && e.data && e.data.gdn === 'cerrar-portada') {
+      $('radio-capa').classList.remove('abierta');
+    }
+  });
 
   // ── Carga ──────────────────────────────────────────────────────────────────
   function cargar() { cargarPendientes(); cargarPublicados(); cargarFotosPendientes(); cargarFotos(); }

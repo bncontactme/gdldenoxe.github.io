@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#008080">
+<title>Portadas de la radio · GDN</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    font: 13px Tahoma, 'Segoe UI', 'MS Sans Serif', sans-serif;
+    background: #ECE9D8; color: #000; overflow: hidden;
+  }
+
+  button {
+    font: inherit; color: #000; cursor: pointer;
+    background: #ECE9D8; border: 1px outset #ECE9D8; padding: 3px 10px; min-width: 0; white-space: nowrap;
+  }
+  button:hover:not(:disabled) { background: #F4F3EE; }
+  button:active:not(:disabled) { border-style: inset; }
+  button:disabled { color: #808080; cursor: default; }
+  button.primario { font-weight: bold; }
+  input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], textarea, select {
+    font: inherit; color: #000; background: #fff; border: 1px solid #7F9DB9; padding: 3px 5px; width: 100%; min-width: 0;
+  }
+  textarea { resize: none; line-height: 1.35; }
+  input[type=color] { width: 34px; height: 24px; border: 1px solid #7F9DB9; padding: 0; background: #fff; cursor: pointer; flex: none; }
+  input[type=range] { min-width: 0; }
+  label { cursor: default; }
+
+  /* ── Puerta: el mismo "Acceso restringido" de admin ── */
+  #pw-overlay {
+    position: fixed; inset: 0; background: #008080;
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+  }
+  #pw-window { width: 340px; max-width: 90vw; background: #ECE9D8; border: 2px outset #ECE9D8; box-shadow: 2px 2px 10px rgba(0,0,0,.5); font-size: 11px; }
+  #pw-titlebar {
+    background: linear-gradient(#0054E3, #0042B3); color: #fff;
+    padding: 4px 8px; height: 26px; display: flex; align-items: center; gap: 6px; font-weight: bold; user-select: none;
+  }
+  #pw-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  #pw-body label { font-weight: bold; display: block; margin-bottom: 4px; }
+  #pw-input { border: 2px inset #fff; }
+  #pw-error { color: #900; min-height: 14px; }
+  #pw-fila { display: flex; justify-content: flex-end; }
+  #pw-submit { background: linear-gradient(#316AC5, #1A52A0); color: #fff; border: 2px outset #316AC5; padding: 4px 18px; }
+
+  /* ── La app: todo cabe en la pantalla; la página nunca hace scroll ── */
+  #app {
+    height: 100vh; height: 100dvh; display: grid;
+    grid-template-columns: minmax(0, 1fr) 410px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "cab cab" "vista ctl" "pie pie";
+  }
+
+  #cabecera {
+    grid-area: cab; display: flex; align-items: stretch; user-select: none;
+    background: #ECE9D8; border-bottom: 1px solid #ACA899; position: relative; z-index: 20;
+  }
+  .fe-menu-item { padding: 4px 10px; cursor: default; white-space: nowrap; }
+  .fe-menu-item:hover, .fe-menu-item.open { background: #316AC5; color: #fff; }
+  .fe-dropdown {
+    display: none; position: absolute; top: 100%; left: 0; background: #ECE9D8;
+    border: 1px solid #808080; box-shadow: 2px 2px 4px rgba(0,0,0,.25);
+    list-style: none; min-width: 190px; padding: 2px 0;
+  }
+  .fe-dropdown.open { display: block; }
+  .fe-dd-item { padding: 5px 20px 5px 24px; cursor: default; white-space: nowrap; }
+  .fe-dd-item:hover { background: #316AC5; color: #fff; }
+  .fe-dd-sep { border-top: 1px solid #ACA899; margin: 3px 2px; }
+  #titulo-app { margin-left: auto; align-self: center; padding: 0 10px; font-weight: bold; color: #333; white-space: nowrap; }
+  #btn-cerrar { border: none; background: none; padding: 0 14px; font-size: 15px; }
+  #btn-cerrar:hover { background: #E81123; color: #fff; }
+
+  /* ── Vista: una imagen a la vez, del alto que quepa ── */
+  #vista {
+    grid-area: vista; background: #008080; min-height: 0;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr) auto;
+    align-items: center; gap: 6px 8px; padding: 10px 8px 6px;
+  }
+  .flecha {
+    grid-row: 1; width: 42px; height: 66px; padding: 0; font-size: 20px;
+    background: #c0c0c0; border: 2px solid; border-color: #fff #000 #000 #fff;
+  }
+  .flecha:hover:not(:disabled) { background: #d4d4d4; }
+  .flecha:active:not(:disabled) { border-color: #000 #fff #fff #000; }
+  #lienzo-caja {
+    grid-column: 2; grid-row: 1; height: 100%; min-height: 0; container-type: size;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #lienzo-env {
+    position: relative; width: min(100cqw, 80cqh); height: min(100cqh, 125cqw);
+    background: #000; box-shadow: 0 0 0 1px #000, 3px 3px 0 1px rgba(0,0,0,.3);
+  }
+  #lienzo-env.encima { outline: 3px dashed #ff0; outline-offset: -3px; }
+  #lienzo-env canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #app[data-pagina=portada] #cv-tracklist, #app[data-pagina=tracklist] #cv-portada,
+  #app[data-pagina=tracklist] #pista { display: none; }
+  #cv-portada { cursor: grab; }
+  #cv-portada.arrastrando { cursor: grabbing; }
+  #cv-tracklist { cursor: pointer; }
+  @keyframes entra-der { from { opacity: .4; transform: translateX(20px); } }
+  @keyframes entra-izq { from { opacity: .4; transform: translateX(-20px); } }
+  .entra-der { animation: entra-der .15s ease-out; }
+  .entra-izq { animation: entra-izq .15s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .entra-der, .entra-izq { animation: none; } }
+
+  #pista, #cargando {
+    position: absolute; left: 0; right: 0; top: 0; display: grid; place-items: center; text-align: center;
+    color: #fff; padding: 16px; pointer-events: none; text-shadow: 0 1px 3px #000; font-size: 14px;
+  }
+  #pista { bottom: 19%; }
+  #cargando { bottom: 0; background: #000; }
+
+  #puntos { grid-column: 1 / -1; grid-row: 2; display: flex; justify-content: center; gap: 6px; }
+  #puntos button { border: none; background: none; color: #cfe; padding: 2px 8px; font-weight: bold; }
+  #puntos button::before { content: '○ '; }
+  #puntos button[aria-current=true] { color: #fff; }
+  #puntos button[aria-current=true]::before { content: '● '; }
+
+  /* Menú de un track (clic en la imagen del tracklist) */
+  #menu-track {
+    position: absolute; z-index: 5; width: 236px; padding: 4px;
+    background: #ECE9D8; border: 2px solid; border-color: #fff #404040 #404040 #fff; box-shadow: 2px 2px 6px rgba(0,0,0,.4);
+  }
+  #menu-track .nombre {
+    background: linear-gradient(90deg, #000080, #1084d0); color: #fff; font-weight: bold;
+    padding: 3px 6px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #menu-track .rejilla { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; margin-bottom: 4px; }
+  #menu-track .igual { grid-column: span 2; width: auto; font-size: 12px; }
+  #menu-track .ico { width: 36px; height: 36px; }
+  #menu-track button.resaltar { width: 100%; }
+
+  /* ── Panel de la derecha: cuadros con título, cada campo con su etiqueta ── */
+  #controles {
+    grid-area: ctl; min-height: 0; overflow: auto; padding: 10px;
+    border-left: 1px solid #808080; display: flex; flex-direction: column; gap: 10px;
+  }
+  #app[data-pagina=portada] #grupo-tracklist, #app[data-pagina=tracklist] #grupo-portada { display: none; }
+  fieldset { border: 1px solid #ACA899; border-radius: 3px; padding: 6px 10px 10px; min-width: 0; }
+  legend { color: #0046D5; font-weight: bold; padding: 0 4px; }
+  .campo { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 6px; margin-bottom: 7px; }
+  .campo:last-child { margin-bottom: 0; }
+  .campo.arriba { align-items: start; }
+  .campo.arriba > label { padding-top: 4px; }
+  .campo > label:first-child { color: #222; }
+  .dos { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px; }
+  .fila { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .fila > input[type=range] { flex: 1; }
+  .tenue { color: #707070; }
+  .enlace { border: none; background: none; color: #0046D5; padding: 2px 0; }
+  .enlace:hover:not(:disabled) { background: none; text-decoration: underline; }
+  .chips { display: flex; }
+  .chips button { padding: 3px 9px; }
+  .chips button + button { margin-left: -1px; }
+  .chips button.activo, .chips button.activo:hover:not(:disabled) { background: #316AC5; border-color: #316AC5; color: #fff; }
+  .colores { display: flex; gap: 4px; align-items: center; }
+  .colores button { width: 24px; height: 24px; padding: 0; border: 1px solid #808080; }
+  .colores button.activo { outline: 2px solid #316AC5; outline-offset: 1px; }
+  #grupo-portada[data-estilo=ventana] .solo-color { visibility: hidden; }
+
+  /* Íconos con su nombre, como en la primera versión */
+  .iconos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin-bottom: 8px; }
+  .ico {
+    padding: 3px 0 2px; display: flex; flex-direction: column; align-items: center; gap: 1px;
+    background: none; border: 1px solid transparent; font-size: 11px;
+  }
+  .ico:hover:not(:disabled) { background: #E8E8F0; border-color: #C0C0D0; }
+  .ico.activo, .ico.activo:hover:not(:disabled) { background: #316AC5; border-color: #316AC5; color: #fff; }
+  .ico canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+  .ico .mas { width: 32px; height: 32px; display: grid; place-items: center; font-size: 20px; color: #808080; border: 1px dashed #808080; }
+  .ico span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Tracks: una fila por track; si son muchos, solo esta lista se desplaza */
+  #grupo-tracklist { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  #tracks { flex: 1 1 auto; min-height: 64px; overflow-y: auto; margin: 2px -4px 8px 0; padding-right: 4px; }
+  .track { display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 82px 22px 22px 22px; gap: 3px; align-items: center; margin-bottom: 3px; }
+  .track .n { color: #808080; text-align: right; font-size: 12px; }
+  .track.sel .n { color: #316AC5; font-weight: bold; }
+  .track.sel input { background: #EEF3FF; }
+  .track select { padding: 2px 0; font-size: 12px; }
+  .track button { padding: 0; height: 24px; font-size: 11px; }
+  #tracks-acciones { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  #tabs { display: none; }
+
+  #pie {
+    grid-area: pie; display: flex; align-items: center; gap: 6px;
+    padding: 5px 8px calc(5px + env(safe-area-inset-bottom)); border-top: 1px solid #808080;
+  }
+  #aviso { flex: 1; min-width: 0; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #aviso.malo { color: #900; font-weight: bold; }
+  #pie button { padding: 4px 14px; }
+
+  /* ── Diálogos ── */
+  dialog {
+    margin: auto; border: none; padding: 0; background: #ECE9D8; width: 470px; max-width: 94vw;
+    border: 2px solid; border-color: #fff #404040 #404040 #fff; box-shadow: 3px 3px 10px rgba(0,0,0,.5);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.3); }
+  .dlg-cab { background: linear-gradient(90deg, #000080, #1084d0); color: #fff; font-weight: bold; padding: 5px 8px; }
+  .dlg-cuerpo { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .dlg-pie { display: flex; justify-content: flex-end; gap: 6px; padding: 0 12px 12px; }
+  #pegar-texto { height: 240px; font: 13px/1.4 'Courier New', monospace; white-space: pre; }
+
+  /* ── Celular: vista arriba y el panel abajo, con dos pestañas ── */
+  @media (max-width: 760px) {
+    input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], textarea, select {
+      font-size: 16px;   /* menos de 16px y el iPhone hace zoom al escribir */
+    }
+    #app {
+      grid-template-columns: 100%;
+      grid-template-rows: auto minmax(0, 1fr) auto min(50dvh, 290px) auto;
+      grid-template-areas: "cab" "vista" "tabs" "ctl" "pie";
+    }
+    #controles { border: none; padding: 8px; }
+    #app[data-hoja=sesion] #grupo-portada, #app[data-hoja=sesion] #grupo-tracklist,
+    #app[data-hoja=imagen] #grupo-sesion { display: none; }
+    #tabs { grid-area: tabs; display: flex; border-top: 1px solid #808080; }
+    #tabs button { flex: 1; border: none; border-bottom: 3px solid transparent; background: #ECE9D8; padding: 8px; }
+    #tabs button[aria-current=true] { border-bottom-color: #316AC5; font-weight: bold; background: #fff; }
+    /* Las flechas flotan sobre las orillas: la imagen se queda con todo el ancho */
+    #vista { padding: 6px 4px 4px; gap: 4px 0; }
+    .flecha { grid-column: 2; z-index: 3; width: 32px; height: 54px; opacity: .85; }
+    #ant { justify-self: start; }
+    #sig { justify-self: end; }
+    .campo { grid-template-columns: 76px minmax(0, 1fr); margin-bottom: 6px; }
+    fieldset { padding: 4px 8px 8px; }
+    .solo-compu { display: none !important; }
+    #t-contenido { height: 3.1em; }
+    .track { grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1fr) 70px 24px 24px 24px; }
+    #pie button { flex: 1; }
+    #aviso { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="pw-overlay" hidden>
+  <div id="pw-window">
+    <div id="pw-titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="10" height="8" rx="1" fill="#ECE9D8" stroke="#808080" stroke-width="1"/>
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="#ECE9D8" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="11" r="1.2" fill="#316AC5"/>
+      </svg>
+      Acceso restringido
+    </div>
+    <div id="pw-body">
+      <div>
+        <label for="pw-input">Contraseña de admin</label>
+        <input type="password" id="pw-input" autocomplete="current-password" maxlength="80">
+      </div>
+      <div id="pw-error"></div>
+      <div id="pw-fila"><button type="button" id="pw-submit">Entrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" data-pagina="portada" data-hoja="imagen" hidden>
+  <header id="cabecera">
+    <div class="fe-menu-item" data-menu="archivo" tabindex="0">Archivo</div>
+    <ul class="fe-dropdown" id="fe-dropdown-archivo">
+      <li class="fe-dd-item" data-action="nueva">Nueva sesión...</li>
+      <li class="fe-dd-item" data-action="plantilla">Plantilla...</li>
+      <li class="fe-dd-item" data-action="ejemplo">Cargar el ejemplo</li>
+      <li class="fe-dd-sep"></li>
+      <li class="fe-dd-item" data-action="cerrar">Cerrar</li>
+    </ul>
+    <span id="titulo-app">Sesión #</span>
+    <button type="button" id="btn-cerrar" title="Cerrar">✕</button>
+  </header>
+
+  <main id="vista">
+    <button type="button" class="flecha" id="ant" title="Anterior (←)">◀</button>
+    <div id="lienzo-caja">
+      <div id="lienzo-env">
+        <canvas id="cv-portada" width="1080" height="1350"></canvas>
+        <canvas id="cv-tracklist" width="1080" height="1350"></canvas>
+        <div id="pista" hidden>Suelta aquí la foto<br>(o toca para elegirla, o pégala con Ctrl+V)</div>
+        <div id="cargando">Cargando...</div>
+        <div id="menu-track" hidden></div>
+      </div>
+    </div>
+    <button type="button" class="flecha" id="sig" title="Siguiente (→)">▶</button>
+    <nav id="puntos">
+      <button type="button" data-ir="portada">Portada</button>
+      <button type="button" data-ir="tracklist">Tracklist</button>
+    </nav>
+  </main>
+
+  <nav id="tabs">
+    <button type="button" data-hoja="sesion">Sesión</button>
+    <button type="button" data-hoja="imagen" id="tab-imagen">Portada</button>
+  </nav>
+
+  <aside id="controles">
+    <fieldset id="grupo-sesion">
+      <legend>Sesión</legend>
+      <div class="campo"><label for="f-numero">Sesión #</label><input type="number" id="f-numero" data-campo="numero" min="1"></div>
+      <div class="campo"><label for="f-titulo">Título</label><input type="text" id="f-titulo" data-campo="titulo"></div>
+      <div class="campo"><label for="f-hashtag">Hashtag</label><input type="text" id="f-hashtag" data-campo="hashtag"></div>
+      <div class="campo"><label for="f-fecha">Fecha y hora</label>
+        <div class="dos"><input type="date" id="f-fecha" data-campo="fecha"><input type="time" id="f-hora" data-campo="hora" aria-label="Hora"></div>
+      </div>
+      <button type="button" class="enlace" id="btn-plantilla">▸ Más textos de la plantilla...</button>
+    </fieldset>
+
+    <fieldset id="grupo-portada" data-estilo="limpio">
+      <legend>Portada</legend>
+      <div class="campo"><label>Foto</label>
+        <div class="fila">
+          <button type="button" class="primario" id="btn-foto">Elegir foto...</button>
+          <button type="button" id="btn-quitar-foto">Quitar</button>
+        </div>
+      </div>
+      <div class="campo"><label for="f-zoom">Zoom</label>
+        <div class="fila"><input type="range" id="f-zoom" min="1" max="3" step="0.01"><button type="button" id="btn-centrar">Centrar</button></div>
+      </div>
+      <div class="campo arriba"><label for="t-contenido">Texto</label>
+        <textarea id="t-contenido" data-texto="contenido" rows="3" placeholder="Opcional. Luego lo arrastras en la imagen."></textarea>
+      </div>
+      <div class="campo"><label>Estilo</label>
+        <div class="chips">
+          <button type="button" data-estilo="limpio">Limpio</button>
+          <button type="button" data-estilo="etiqueta">Etiqueta</button>
+          <button type="button" data-estilo="ventana">Ventana 95</button>
+        </div>
+      </div>
+      <div class="campo"><label>Alinear</label>
+        <div class="chips">
+          <button type="button" data-alinear="izq">Izquierda</button>
+          <button type="button" data-alinear="centro">Centro</button>
+          <button type="button" data-alinear="der">Derecha</button>
+        </div>
+      </div>
+      <div class="campo"><label for="t-tam">Tamaño</label><input type="range" id="t-tam" data-texto="tam" min="28" max="140" step="1"></div>
+      <div class="campo solo-color"><label>Color</label>
+        <div class="colores">
+          <button type="button" data-color="#ffffff" style="background:#ffffff" title="Blanco"></button>
+          <button type="button" data-color="#000000" style="background:#000000" title="Negro"></button>
+          <button type="button" data-color="#ffff00" style="background:#ffff00" title="Amarillo"></button>
+          <button type="button" data-color="#ff0000" style="background:#ff0000" title="Rojo"></button>
+          <button type="button" data-color="#ff00ff" style="background:#ff00ff" title="Rosa"></button>
+          <button type="button" data-color="#00ffff" style="background:#00ffff" title="Cian"></button>
+          <input type="color" data-texto="color" title="Otro color">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="grupo-tracklist">
+      <legend>Tracklist</legend>
+      <div class="iconos" id="iconos"></div>
+      <div class="campo solo-compu"><label for="f-resaltado">Resaltado</label><select id="f-resaltado"></select></div>
+      <div class="campo solo-compu"><label>Opciones</label>
+        <div class="fila">
+          <label><input type="checkbox" data-campo="numerar"> Numerar</label>
+          <select data-campo="columnas" style="width:auto">
+            <option value="auto">Columnas: auto</option><option value="3">3 columnas</option><option value="4">4 columnas</option><option value="5">5 columnas</option><option value="6">6 columnas</option>
+          </select>
+          <input type="color" data-campo="fondo" title="Color de fondo">
+        </div>
+      </div>
+      <div id="tracks"></div>
+      <div id="tracks-acciones">
+        <button type="button" id="btn-agregar">+ Track</button>
+        <button type="button" class="primario" id="btn-pegar">Pegar lista...</button>
+        <button type="button" id="btn-vaciar">Vaciar</button>
+      </div>
+    </fieldset>
+  </aside>
+
+  <footer id="pie">
+    <span id="aviso" role="status" aria-live="polite">Listo.</span>
+    <button type="button" id="btn-esta">Descargar esta</button>
+    <button type="button" class="primario" id="btn-ambas">Descargar las dos</button>
+  </footer>
+</div>
+
+<dialog id="dlg-plantilla">
+  <div class="dlg-cab">Plantilla</div>
+  <div class="dlg-cuerpo">
+    <div class="campo"><label for="p-radio">Radio</label><input type="text" id="p-radio" data-campo="radio"></div>
+    <div class="campo"><label for="p-vivo">Línea de abajo</label><input type="text" id="p-vivo" data-campo="vivo"></div>
+    <div class="campo"><label for="p-boton">Botón</label><input type="text" id="p-boton" data-campo="boton"></div>
+    <div class="campo"><label for="p-sitio">Barra de tareas</label><input type="text" id="p-sitio" data-campo="sitio"></div>
+    <div class="campo arriba"><label for="p-logo">Logo</label>
+      <div class="fila">
+        <textarea id="p-logo" data-campo="logoTexto" rows="3"></textarea>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button type="button" id="btn-logo">Imagen...</button>
+          <button type="button" id="btn-logo-quitar">Quitar</button>
+        </div>
+      </div>
+    </div>
+    <div class="campo"><label>Tracklist</label>
+      <div class="fila">
+        <label><input type="checkbox" data-campo="numerar"> Numerar</label>
+        <select data-campo="columnas" style="width:auto">
+          <option value="auto">Columnas: auto</option><option value="3">3 columnas</option><option value="4">4 columnas</option><option value="5">5 columnas</option><option value="6">6 columnas</option>
+        </select>
+        <input type="color" data-campo="fondo" title="Color de fondo">
+      </div>
+    </div>
+  </div>
+  <div class="dlg-pie"><button type="button" class="primario" id="plantilla-ok">Listo</button></div>
+</dialog>
+
+<dialog id="dlg-pegar">
+  <div class="dlg-cab">Pegar tracklist</div>
+  <div class="dlg-cuerpo">
+    <div>Un track por línea. Los números del principio (01, 1., 1)) se quitan solos.</div>
+    <textarea id="pegar-texto" spellcheck="false" placeholder="Me Asusta Pero Me Gusta - Ana Bárbara&#10;Syncope - Arca&#10;..."></textarea>
+    <div class="fila">
+      <label><input type="radio" name="orden" value="ta" checked> Título - Artista</label>
+      <label><input type="radio" name="orden" value="at"> Artista - Título</label>
+    </div>
+  </div>
+  <div class="dlg-pie">
+    <button type="button" id="pegar-cancelar">Cancelar</button>
+    <button type="button" class="primario" id="pegar-ok">Reemplazar lista</button>
+  </div>
+</dialog>
+
+<input type="file" id="in-foto" accept="image/*" hidden>
+<input type="file" id="in-logo" accept="image/*" hidden>
+<input type="file" id="in-icono" accept="image/*" hidden>
+
+<script>
+// Puerta: dentro del panel de admin (con la sesión ya abierta) entra directo;
+// por link directo pide la contraseña de admin. Lo pesado (scripts y letras)
+// se carga solo después de entrar.
+(() => {
+  'use strict';
+  const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
+  const V = '3';   // súbelo cuando cambien los .js, para brincar la caché
+  const $ = id => document.getElementById(id);
+
+  const dentroDeAdmin = () => {
+    try {
+      return window.parent !== window && window.parent.location.origin === location.origin &&
+        !!window.parent.document.querySelector('#pw-overlay.oculto');
+    } catch (_) { return false; }
+  };
+
+  const cargarScript = src => new Promise((ok, mal) => {
+    const s = document.createElement('script');
+    s.src = src + '?v=' + V;
+    s.onload = ok; s.onerror = () => mal(new Error('No cargó ' + src));
+    document.body.append(s);
+  });
+
+  async function arrancar() {
+    $('pw-overlay').remove();
+    $('app').hidden = false;
+    const letra = document.createElement('link');
+    letra.id = 'letra-roboto'; letra.rel = 'stylesheet';
+    letra.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap';
+    document.head.append(letra);
+    try {
+      for (const s of ['iconos.js', 'motor.js', 'editor.js']) await cargarScript(s);
+    } catch (e) { $('cargando').textContent = e.message; }
+  }
+
+  async function entrar() {
+    const intento = $('pw-input').value;
+    if (!intento) return;
+    $('pw-submit').disabled = true; $('pw-error').textContent = '';
+    try {
+      const res = await fetch(WORKER, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ping', password: intento }),
+      });
+      const r = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(r.error || ('HTTP ' + res.status));
+      if (!r.admin) throw new Error('Esa es la de colaborador. Aquí va la de admin.');
+      $('pw-input').value = '';
+      arrancar();
+    } catch (e) {
+      $('pw-error').textContent = e.message === 'Unauthorized' ? 'Contraseña incorrecta.' : e.message;
+      $('pw-input').select();
+    } finally { $('pw-submit').disabled = false; }
+  }
+
+  if (dentroDeAdmin()) { arrancar(); return; }
+  $('pw-overlay').hidden = false;
+  $('pw-submit').addEventListener('click', entrar);
+  $('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  $('pw-input').focus();
+})();
+</script>
+</body>
+</html>
