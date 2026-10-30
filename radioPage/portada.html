@@ -395,7 +395,7 @@
     <div class="campo"><label for="p-sitio">Barra de tareas</label><input type="text" id="p-sitio" data-campo="sitio"></div>
     <div class="campo arriba"><label for="p-logo">Logo</label>
       <div class="fila">
-        <textarea id="p-logo" data-campo="logoTexto" rows="3"></textarea>
+        <textarea id="p-logo" data-campo="logoTexto" rows="3" placeholder="Vacío: el logo de GDN"></textarea>
         <div style="display:flex;flex-direction:column;gap:4px">
           <button type="button" id="btn-logo">Imagen...</button>
           <button type="button" id="btn-logo-quitar">Quitar</button>
@@ -442,7 +442,7 @@
 (() => {
   'use strict';
   const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
-  const V = '4';   // súbelo cuando cambien los .js, para brincar la caché
+  const V = '5';   // súbelo cuando cambien los .js, para brincar la caché
   const $ = id => document.getElementById(id);
 
   const dentroDeAdmin = () => {

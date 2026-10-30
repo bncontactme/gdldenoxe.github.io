@@ -74,12 +74,15 @@
     return c;
   }
 
+  // El logo de GDN es lo único que viene puesto: sale si no suben otro.
   async function cargarAssets() {
     const ruta = '../indexPage/indexImages/icons/';
-    const [computadora, media, carpeta, ie, notas] = await Promise.all(
-      ['computer_explorer-0.png', 'media_player-0.png', 'directory_closed-0.png', 'msie1-0.png', 'notepad_file-0.png']
-        .map(f => cargarImg(ruta + f)));
-    Object.assign(assets, { computadora, media, carpeta, ie, notas });
+    const [computadora, media, carpeta, ie, notas, logoGdn] = await Promise.all([
+      ...['computer_explorer-0.png', 'media_player-0.png', 'directory_closed-0.png', 'msie1-0.png', 'notepad_file-0.png']
+        .map(f => cargarImg(ruta + f)),
+      cargarImg('../tiendaPage/assets/webAssets/logo/gdn-text-black.jpg'),
+    ]);
+    Object.assign(assets, { computadora, media, carpeta, ie, notas, logoGdn });
   }
 
   async function cargarImagenesDelEstado() {

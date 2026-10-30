@@ -331,20 +331,23 @@
     ctx.restore();
   }
 
+  // La imagen que suban; si no, el texto que escriban; si no, el logo de GDN.
   function logo(ctx, s, a, x, y, lado) {
     marco(ctx, x, y, lado, lado, HUNDIDO);
     const ix = x + 2 * P, iy = y + 2 * P, il = lado - 4 * P;
     ctx.fillStyle = NEGRO; ctx.fillRect(ix, iy, il, il);
-    if (a.logo) {
-      const esc = Math.max(il / a.logo.naturalWidth, il / a.logo.naturalHeight);
-      const dw = a.logo.naturalWidth * esc, dh = a.logo.naturalHeight * esc;
+    const lineas = String(s.logoTexto || '').split('\n').map(l => l.trim()).filter(Boolean);
+    const img = a.logo || (lineas.length ? null : a.logoGdn);
+    if (img) {
+      const esc = Math.max(il / img.naturalWidth, il / img.naturalHeight);
+      const dw = img.naturalWidth * esc, dh = img.naturalHeight * esc;
       ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, il, il); ctx.clip();
-      ctx.drawImage(a.logo, ix + (il - dw) / 2, iy + (il - dh) / 2, dw, dh);
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, ix + (il - dw) / 2, iy + (il - dh) / 2, dw, dh);
       ctx.restore();
       return;
     }
-    // Sin imagen: el cuadro negro con el nombre en letras blancas.
-    const lineas = String(s.logoTexto || '').split('\n').map(l => l.trim()).filter(Boolean);
+    // El cuadro negro con el nombre en letras blancas.
     if (!lineas.length) return;
     let t = 22;
     ctx.font = f95(t, true);
