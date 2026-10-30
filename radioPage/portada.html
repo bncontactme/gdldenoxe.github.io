@@ -195,6 +195,7 @@
   #aviso { flex: 1; min-width: 0; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #aviso.malo { color: #900; font-weight: bold; }
   #pie button { padding: 4px 14px; }
+  .solo-cel { display: none; }
 
   /* ── Diálogos ── */
   dialog {
@@ -233,7 +234,8 @@
     .solo-compu { display: none !important; }
     #t-contenido { height: 3.1em; }
     .track { grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1fr) 70px 24px 24px 24px; }
-    #pie button { flex: 1; }
+    #pie button { flex: 1; padding: 4px 6px; }
+    .solo-cel { display: inline; }
     #aviso { display: none; }
   }
 </style>
@@ -267,11 +269,10 @@
     <ul class="fe-dropdown" id="fe-dropdown-archivo">
       <li class="fe-dd-item" data-action="nueva">Nueva sesión...</li>
       <li class="fe-dd-item" data-action="plantilla">Plantilla...</li>
-      <li class="fe-dd-item" data-action="ejemplo">Cargar el ejemplo</li>
       <li class="fe-dd-sep"></li>
       <li class="fe-dd-item" data-action="cerrar">Cerrar</li>
     </ul>
-    <span id="titulo-app">Sesión #</span>
+    <span id="titulo-app">Sesión nueva</span>
     <button type="button" id="btn-cerrar" title="Cerrar">✕</button>
   </header>
 
@@ -306,6 +307,9 @@
       <div class="campo"><label for="f-hashtag">Hashtag</label><input type="text" id="f-hashtag" data-campo="hashtag"></div>
       <div class="campo"><label for="f-fecha">Fecha y hora</label>
         <div class="dos"><input type="date" id="f-fecha" data-campo="fecha"><input type="time" id="f-hora" data-campo="hora" aria-label="Hora"></div>
+      </div>
+      <div class="campo" title="Opcional: solo sale en la portada si la llenas"><label for="f-retrans-fecha">Retrans&shy;misión</label>
+        <div class="dos"><input type="date" id="f-retrans-fecha" data-campo="retransFecha"><input type="time" id="f-retrans-hora" data-campo="retransHora" aria-label="Hora de la retransmisión"></div>
       </div>
       <button type="button" class="enlace" id="btn-plantilla">▸ Más textos de la plantilla...</button>
     </fieldset>
@@ -376,8 +380,9 @@
 
   <footer id="pie">
     <span id="aviso" role="status" aria-live="polite">Listo.</span>
-    <button type="button" id="btn-esta">Descargar esta</button>
-    <button type="button" class="primario" id="btn-ambas">Descargar las dos</button>
+    <button type="button" id="btn-marcos" title="Las dos imágenes sin foto, texto ni tracks: transparentes donde van">Solo marcos</button>
+    <button type="button" id="btn-esta"><span class="solo-compu">Descargar esta</span><span class="solo-cel">Bajar esta</span></button>
+    <button type="button" class="primario" id="btn-ambas"><span class="solo-compu">Descargar las dos</span><span class="solo-cel">Bajar las dos</span></button>
   </footer>
 </div>
 
@@ -414,7 +419,7 @@
   <div class="dlg-cab">Pegar tracklist</div>
   <div class="dlg-cuerpo">
     <div>Un track por línea. Los números del principio (01, 1., 1)) se quitan solos.</div>
-    <textarea id="pegar-texto" spellcheck="false" placeholder="Me Asusta Pero Me Gusta - Ana Bárbara&#10;Syncope - Arca&#10;..."></textarea>
+    <textarea id="pegar-texto" spellcheck="false" placeholder="Título - Artista&#10;Título - Artista&#10;..."></textarea>
     <div class="fila">
       <label><input type="radio" name="orden" value="ta" checked> Título - Artista</label>
       <label><input type="radio" name="orden" value="at"> Artista - Título</label>
@@ -437,7 +442,7 @@
 (() => {
   'use strict';
   const WORKER = 'https://archivo-upload.guadalajaradenoxe.workers.dev';
-  const V = '3';   // súbelo cuando cambien los .js, para brincar la caché
+  const V = '4';   // súbelo cuando cambien los .js, para brincar la caché
   const $ = id => document.getElementById(id);
 
   const dentroDeAdmin = () => {

@@ -7,52 +7,28 @@
   const app = $('app');
   const motor = window.motorPortada;
   const iconos = window.iconosRadio;
-  const CLAVE = 'gdn-radio-portada-v3', CLAVE_FOTO = 'gdn-radio-foto';
-  const CLAVE_V2 = 'gdn-radio-portada-v2', CLAVE_V1 = 'gdn-radio-portada-v1';
+  const CLAVE = 'gdn-radio-portada-v4', CLAVE_FOTO = 'gdn-radio-foto';
+  const CLAVE_V3 = 'gdn-radio-portada-v3', CLAVE_V2 = 'gdn-radio-portada-v2', CLAVE_V1 = 'gdn-radio-portada-v1';
   const PAGINAS = ['portada', 'tracklist'];
 
-  const EJEMPLO = {
-    numero: 19,
-    titulo: '¡Me gusta pero me asusta!',
-    hashtag: '#HALLOWEEN2026',
-    fecha: '2026-10-30',
-    hora: '19:00',
-    radio: 'Guadalajara De Noche Radio',
-    vivo: 'En vivo desde guadalajaradenoxe.com',
-    boton: 'Escuchar',
-    sitio: 'guadalajaradenoxe.com',
-    logoTexto: 'Guadalajara\nDe\nNoche',
-    logo: '',
+  // Cada sesión empieza en blanco: ni textos, ni tracks, ni ícono. Solo queda
+  // cómo se ve el texto libre (que algo tiene que tener) y el fondo de Windows.
+  const VACIO = {
+    numero: '', titulo: '', hashtag: '', fecha: '', hora: '', retransFecha: '', retransHora: '',
+    radio: '', vivo: '', boton: '', sitio: '', logoTexto: '', logo: '',
     foto: { zoom: 1, x: 0.5, y: 0.5 },          // la imagen va aparte (CLAVE_FOTO)
     texto: { contenido: '', estilo: 'limpio', tam: 64, color: '#ffffff', x: 0.5, y: 0.8, alinear: 'izq' },
-    icono: 'cuchillo',
+    icono: '',
     iconoPropio: '',
     fondo: '#008080',
     columnas: 'auto',
     numerar: true,
-    tracks: [
-      ['Me Asusta Pero Me Gusta', 'Ana Bárbara'],
-      ['Ronroneame (Remix)', 'Ruzzo Doblezz, DJ Drewther, El Malilla & DJ Hate'],
-      ['Syncope', 'Arca'],
-      ['The Totaled Angelica', 'Elysia Crampton Chuquimia'],
-      ['Liberty', 'Kitchen and the Plastic Spoons'],
-      ["The Ballad of St Nick's Park", '300SkullsAndCounting & Jenny Sparks'],
-      ['Pagan Poetry', 'Björk'],
-      ['Aldehydes and Ketones', 'Ecco2k'],
-      ['LIFE KEEPS GOING', 'Genesis Owusu'],
-      ['Cumbia de las Brujas (Exclusiva)', 'DJ Charly SLP'],
-      ['Huayño Phuju', 'Los Thuthanaka'],
-      ["Let's Lynch the Landlord", 'Dead Kennedys'],
-      ['Faulty', 'Boy Harsher'],
-      ['Dracula', 'Mister Chivo'],
-      ['¡Lemus Mamón!', 'Octapez'],
-      ['Psicofonía de San Juan de Dios (MUY ESCALOFRIANTE)', 'Audio Real'],
-    ].map(([titulo, artista], i) => ({ titulo, artista, icono: '', resaltar: i === 0 })),
+    tracks: [],
     pagina: 'portada',
   };
 
   const copia = o => JSON.parse(JSON.stringify(o));
-  let estado = copia(EJEMPLO);
+  let estado = copia(VACIO);
   let fotoSrc = '';
   const assets = { foto: null, logo: null, iconoPropio: null };
 
@@ -148,18 +124,19 @@
   const sucio = { portada: true, tracklist: true };
   let listo = false, cuadro = 0;
 
-  function pintar(p) {
-    const ctx = lienzos[p].getContext('2d');
-    if (p === 'portada') motor.dibujarPortada(ctx, estado, assets);
-    else motor.dibujarTracklist(ctx, estado, assets);
-    sucio[p] = false;
+  function dibujarEn(cv, p, op) {
+    const ctx = cv.getContext('2d');
+    if (p === 'portada') motor.dibujarPortada(ctx, estado, assets, op);
+    else motor.dibujarTracklist(ctx, estado, assets, op);
   }
+
+  function pintar(p) { dibujarEn(lienzos[p], p); sucio[p] = false; }
 
   function pintarVisible() { if (listo && sucio[estado.pagina]) pintar(estado.pagina); }
 
   function dibujar() {
     sucio.portada = sucio.tracklist = true;
-    $('titulo-app').textContent = 'Sesión #' + estado.numero;
+    $('titulo-app').textContent = estado.numero ? 'Sesión #' + estado.numero : 'Sesión nueva';
     $('pista').hidden = !listo || !!assets.foto;
     guardarLuego();
     if (!listo) return;
@@ -195,16 +172,16 @@
   const esImagen = v => typeof v === 'string' && /^data:image\//.test(v);
   const esColor = v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
 
-  // Lo guardado se mezcla con el ejemplo por si le faltan campos. Solo se
+  // Lo guardado se completa con lo vacío por si le faltan campos. Solo se
   // aceptan imágenes data: (nada que venga de otro sitio).
   function normalizar(o) {
-    const s = { ...copia(EJEMPLO), ...o };
-    s.foto = { ...EJEMPLO.foto, ...(o.foto || {}) };
+    const s = { ...copia(VACIO), ...o };
+    s.foto = { ...VACIO.foto, ...(o.foto || {}) };
     delete s.foto.src;
-    s.texto = { ...EJEMPLO.texto, ...(o.texto || {}) };
+    s.texto = { ...VACIO.texto, ...(o.texto || {}) };
     s.texto.contenido = String(s.texto.contenido || '');
-    if (!esColor(s.texto.color)) s.texto.color = EJEMPLO.texto.color;
-    if (!esColor(s.fondo)) s.fondo = EJEMPLO.fondo;
+    if (!esColor(s.texto.color)) s.texto.color = VACIO.texto.color;
+    if (!esColor(s.fondo)) s.fondo = VACIO.fondo;
     if (!esImagen(s.logo)) s.logo = '';
     if (!esImagen(s.iconoPropio)) s.iconoPropio = '';
     s.tracks = Array.isArray(o.tracks)
@@ -212,7 +189,7 @@
         titulo: String((t && t.titulo) || ''), artista: String((t && t.artista) || ''),
         icono: String((t && t.icono) || ''), resaltar: !!(t && t.resaltar),
       }))
-      : copia(EJEMPLO.tracks);
+      : [];
     if (!PAGINAS.includes(s.pagina)) s.pagina = 'portada';
     ['lista', 'orden', 'porTrack', 'resaltado', 'titular', 'titularTam', 'titularColor', 'barra', 'barraColor', 'oscurecer']
       .forEach(k => delete s[k]);
@@ -240,28 +217,28 @@
     });
   }
 
+  // Las versiones de antes arrancaban con el ejemplo de la sesión #19. Si nadie
+  // lo tocó, se tira (la foto, si pusieron una, se queda).
+  const esElEjemplo = o => +o.numero === 19 && o.titulo === '¡Me gusta pero me asusta!';
+
   function leerGuardado() {
     try {
-      const v3 = localStorage.getItem(CLAVE);
+      const actual = localStorage.getItem(CLAVE);
       const f = localStorage.getItem(CLAVE_FOTO);
       fotoSrc = esImagen(f) ? f : '';
-      if (v3) return normalizar(JSON.parse(v3));
-      const v2 = localStorage.getItem(CLAVE_V2);
-      if (v2) {
-        estado = deV2(JSON.parse(v2));
-        guardarAhora(); localStorage.removeItem(CLAVE_V2);
+      if (actual) return normalizar(JSON.parse(actual));
+      for (const [clave, migrar] of [[CLAVE_V3, normalizar], [CLAVE_V2, deV2], [CLAVE_V1, deV1]]) {
+        const txt = localStorage.getItem(clave);
+        if (!txt) continue;
+        const viejo = JSON.parse(txt);
+        if (clave === CLAVE_V1) fotoSrc = esImagen(viejo.foto && viejo.foto.src) ? viejo.foto.src : '';
+        estado = esElEjemplo(viejo) ? normalizar({ foto: viejo.foto }) : migrar(viejo);
+        guardarAhora(); localStorage.removeItem(clave);
+        if (clave === CLAVE_V1) guardarFoto();
         return estado;
       }
-      const v1 = localStorage.getItem(CLAVE_V1);
-      if (v1) {
-        const viejo = JSON.parse(v1);
-        fotoSrc = esImagen(viejo.foto && viejo.foto.src) ? viejo.foto.src : '';
-        estado = deV1(viejo);
-        guardarAhora(); guardarFoto(); localStorage.removeItem(CLAVE_V1);
-        return estado;
-      }
-    } catch (_) { /* sin storage o JSON roto: se queda el ejemplo */ }
-    return copia(EJEMPLO);
+    } catch (_) { /* sin storage o JSON roto: se empieza en blanco */ }
+    return copia(VACIO);
   }
 
   // ── Páginas y flechas ──────────────────────────────────────────────────────
@@ -480,8 +457,9 @@
   function pintarIconos() {
     const caja = $('iconos');
     caja.textContent = '';
+    // Otro clic en el que ya está lo quita: el tracklist se queda sin ícono.
     opcionesIcono().forEach(o => caja.append(botonIcono(o, estado.icono === o.id, true, () => {
-      estado.icono = o.id; pintarIconos(); dibujar();
+      estado.icono = estado.icono === o.id ? '' : o.id; pintarIconos(); dibujar();
     })));
     const subir = document.createElement('button');
     subir.type = 'button'; subir.className = 'ico'; subir.title = 'Usar una imagen tuya como ícono';
@@ -683,7 +661,8 @@
   $('btn-logo-quitar').addEventListener('click', () => { estado.logo = ''; assets.logo = null; dibujar(); });
 
   // ── Exportar ───────────────────────────────────────────────────────────────
-  const nombreArchivo = p => 'sesion-' + estado.numero + '-' + p + '.png';
+  const nombreArchivo = (p, marco) =>
+    (estado.numero ? 'sesion-' + estado.numero + '-' : '') + (marco ? 'marco-' : '') + p + '.png';
   const enCelular = () => matchMedia('(pointer: coarse)').matches;
 
   function bajar(file) {
@@ -694,11 +673,18 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
 
-  async function exportar(cuales) {
+  // marco: solo el cromo de Windows, transparente donde van la foto, el texto
+  // y los tracks. Se dibuja en un canvas aparte para no tocar la vista.
+  async function exportar(cuales, marco) {
     // Se dibuja ya, sin esperar al siguiente cuadro, para no bajar algo a medias.
     const archivos = await Promise.all(cuales.map(p => new Promise(ok => {
-      pintar(p);
-      lienzos[p].toBlob(b => ok(new File([b], nombreArchivo(p), { type: 'image/png' })), 'image/png');
+      let cv = lienzos[p];
+      if (marco) {
+        cv = document.createElement('canvas');
+        cv.width = motor.W; cv.height = motor.H;
+        dibujarEn(cv, p, { marco: true });
+      } else pintar(p);
+      cv.toBlob(b => ok(new File([b], nombreArchivo(p, marco), { type: 'image/png' })), 'image/png');
     })));
     // En el cel, "Compartir" deja guardarlas directo en Fotos.
     if (enCelular() && navigator.canShare && navigator.canShare({ files: archivos })) {
@@ -706,43 +692,26 @@
       catch (e) { if (e.name === 'AbortError') return; }
     }
     archivos.forEach((f, i) => setTimeout(() => bajar(f), i * 400));
-    avisar(archivos.length > 1 ? 'Descargando las dos.' : 'Descargando ' + archivos[0].name + '.');
+    avisar(marco ? 'Descargando los marcos.'
+      : archivos.length > 1 ? 'Descargando las dos.' : 'Descargando ' + archivos[0].name + '.');
   }
 
   $('btn-esta').addEventListener('click', () => exportar([estado.pagina]));
   $('btn-ambas').addEventListener('click', () => exportar(PAGINAS));
+  $('btn-marcos').addEventListener('click', () => exportar(PAGINAS, true));
 
-  // ── Sesión nueva y ejemplo ─────────────────────────────────────────────────
-  // Se queda la plantilla (radio, logo, íconos, estilo del texto) y se limpia
-  // lo de la semana. La fecha brinca 7 días: las sesiones son semanales.
+  // ── Sesión nueva ───────────────────────────────────────────────────────────
+  // Desde cero: no se queda nada de la sesión pasada, ni la plantilla.
   function sesionNueva() {
-    const sig = (+estado.numero || 0) + 1;
-    if (!confirm('¿Empezar la sesión #' + sig + '? Se limpian foto, texto y tracklist.')) return;
-    const f = /^(\d{4})-(\d{2})-(\d{2})$/.exec(estado.fecha);
-    let fecha = estado.fecha;
-    if (f) {
-      const d = new Date(+f[1], +f[2] - 1, +f[3] + 7);
-      fecha = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
-    }
-    Object.assign(estado, {
-      numero: sig, titulo: '', hashtag: '', fecha, tracks: [],
-      foto: { zoom: 1, x: 0.5, y: 0.5 }, texto: { ...estado.texto, contenido: '' },
-    });
-    fotoSrc = ''; assets.foto = null;
-    guardarFoto();
+    if (!confirm('¿Empezar una sesión nueva desde cero? Se borra todo lo de esta.')) return;
+    estado = copia(VACIO);
+    fotoSrc = '';
+    Object.assign(assets, { foto: null, logo: null, iconoPropio: null });
+    guardarFoto(); guardarAhora();
     pintarTodo(); irA('portada');
     hoja('sesion');
-    $('f-titulo').focus();
-    avisar('Sesión #' + sig + ' lista para llenar.');
-  }
-
-  async function cargarEjemplo() {
-    if (!confirm('¿Cargar el ejemplo de la sesión #19? Se pierde lo que tengas.')) return;
-    estado = copia(EJEMPLO);
-    fotoSrc = '';
-    guardarFoto();
-    await cargarImagenesDelEstado();
-    pintarTodo(); irA('portada');
+    $('f-numero').focus();
+    avisar('Sesión nueva: todo en blanco.');
   }
 
   function cerrar() {
@@ -770,7 +739,6 @@
       cerrarMenus();
       if (a === 'nueva') sesionNueva();
       else if (a === 'plantilla') abrirPlantilla();
-      else if (a === 'ejemplo') cargarEjemplo();
       else if (a === 'cerrar') cerrar();
     });
   });

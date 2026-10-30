@@ -45,6 +45,9 @@
   }
 
   const juntar = partes => partes.filter(Boolean).join('  ·  ');
+  // Títulos de ventana sin los pedazos vacíos: todo arranca en blanco.
+  const sesion = s => s.numero ? 'Sesión #' + s.numero : '';
+  const conGuion = partes => partes.filter(Boolean).join(' - ');
 
   // ── Primitivas ─────────────────────────────────────────────────────────────
   function marco(ctx, x, y, w, h, capas) {
@@ -371,7 +374,7 @@
     const x = 0, y = REPRO_Y, w = W, h = REPRO_H;
     ctx.fillStyle = GRIS; ctx.fillRect(x, y, w, h);
     marco(ctx, x, y, w, h, VENTANA);
-    barraTitulo(ctx, x + 6, y + 6, w - 12, 36, a.media, 'Sesión #' + s.numero + ' - ' + s.radio);
+    barraTitulo(ctx, x + 6, y + 6, w - 12, 36, a.media, conGuion([sesion(s), s.radio]));
 
     const cy = y + 42;
     logo(ctx, s, a, x + 22, cy + 14, 128);
@@ -380,16 +383,22 @@
     const bw = 196, bh = 50, bx = der - bw, by = cy + 88;
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 
+    // La retransmisión sale solo si hay; con ella son cuatro renglones y se
+    // juntan un poco para caber (el último queda al ras del logo).
+    const retrans = juntar([fechaBonita(s.retransFecha), horaBonita(s.retransHora)]);
+    const r = retrans ? { titulo: 48, fecha: 82, retrans: 111, vivo: 140 } : { titulo: 56, fecha: 94, vivo: 126 };
+
     let t = 33;
     ctx.font = f95(t, true);
     while (t > 18 && ctx.measureText(s.titulo || '').width > der - tx) { t--; ctx.font = f95(t, true); }
-    ctx.fillStyle = AZUL; ctx.fillText(cabe(ctx, s.titulo || '', der - tx), tx, cy + 56);
+    ctx.fillStyle = AZUL; ctx.fillText(cabe(ctx, s.titulo || '', der - tx), tx, cy + r.titulo);
 
     ctx.font = f95(22);
     ctx.fillStyle = '#404040';
-    ctx.fillText(cabe(ctx, juntar([s.hashtag, fechaBonita(s.fecha), horaBonita(s.hora)]), bx - 16 - tx), tx, cy + 94);
+    ctx.fillText(cabe(ctx, juntar([s.hashtag, fechaBonita(s.fecha), horaBonita(s.hora)]), bx - 16 - tx), tx, cy + r.fecha);
+    if (retrans) ctx.fillText(cabe(ctx, 'Retransmisión: ' + retrans, bx - 16 - tx), tx, cy + r.retrans);
     ctx.fillStyle = '#707070';
-    ctx.fillText(cabe(ctx, s.vivo || '', bx - 16 - tx), tx, cy + 126);
+    ctx.fillText(cabe(ctx, s.vivo || '', bx - 16 - tx), tx, cy + r.vivo);
 
     if (s.boton) botonEscuchar(ctx, bx, by, bw, bh, s.boton);
   }
@@ -398,14 +407,14 @@
   // (donde el navegador lo soporta) para que respire como la de Windows.
   const ESPACIO = '4px';
 
-  function dibujarPortada(ctx, s, a) {
+  // op.marco: solo el cromo, sin foto ni texto libre; ese hueco queda transparente.
+  function dibujarPortada(ctx, s, a, op = {}) {
     ctx.save();
     ctx.wordSpacing = ESPACIO;
     ctx.clearRect(0, 0, W, H);
-    foto(ctx, s, a.foto);
-    textoLibre(ctx, s, a);
+    if (!op.marco) { foto(ctx, s, a.foto); textoLibre(ctx, s, a); }
     reproductor(ctx, s, a);
-    barraTareas(ctx, s, a, { icono: a.media, texto: 'Sesión #' + s.numero });
+    barraTareas(ctx, s, a, { icono: a.media, texto: sesion(s) });
     ctx.restore();
   }
 
@@ -436,10 +445,11 @@
   // nueva conserva su ícono y su resaltado).
   const claveTrack = t => String(t.titulo || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
+  // Sin ícono escogido no se pinta ninguno.
   function iconoDe(t, s, a) {
     const id = t.icono || s.icono;
     if (id === 'propio') return a.iconoPropio || null;
-    return global.iconosRadio.porId[id] || global.iconosRadio.porId.cuchillo;
+    return global.iconosRadio.porId[id] || null;
   }
 
   function menu(ctx, items, x, y) {
@@ -451,14 +461,16 @@
     });
   }
 
-  function dibujarTracklist(ctx, s, a) {
+  // op.marco: la carpeta vacía, sin tracks y con el fondo transparente.
+  function dibujarTracklist(ctx, s, a, op = {}) {
     ctx.save();
     ctx.wordSpacing = ESPACIO;
-    ctx.fillStyle = s.fondo || '#008080'; ctx.fillRect(0, 0, W, H);
+    ctx.clearRect(0, 0, W, H);
+    if (!op.marco) { ctx.fillStyle = s.fondo || '#008080'; ctx.fillRect(0, 0, W, H); }
 
     ctx.fillStyle = GRIS; ctx.fillRect(VEN.x, VEN.y, VEN.w, VEN.h);
     marco(ctx, VEN.x, VEN.y, VEN.w, VEN.h, VENTANA);
-    barraTitulo(ctx, VEN.x + 6, VEN.y + 6, VEN.w - 12, 36, a.carpeta, 'Sesión #' + s.numero + ' - Tracklist');
+    barraTitulo(ctx, VEN.x + 6, VEN.y + 6, VEN.w - 12, 36, a.carpeta, conGuion([sesion(s), 'Tracklist']));
     menu(ctx, ['Archivo', 'Edición', 'Ver', 'Ayuda'], VEN.x + 14, VEN.y + 69);
 
     ctx.fillStyle = BLANCO; ctx.fillRect(CONT.x, CONT.y, CONT.w, CONT.h);
@@ -469,7 +481,7 @@
     ctx.save();
     ctx.beginPath(); ctx.rect(r.ix, r.iy, r.iw, r.ih); ctx.clip();
     ctx.font = f95(22); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    s.tracks.forEach((t, i) => {
+    (op.marco ? [] : s.tracks).forEach((t, i) => {
       const mx = Math.round(r.ix + r.colW * (i % r.cols) + r.colW / 2);
       const top = Math.round(r.iy + r.arriba + r.filaH * Math.floor(i / r.cols));
       const sel = !!t.resaltar;
@@ -501,10 +513,10 @@
     marco(ctx, p1.x, ESTADO_Y, p1.w, ESTADO_H, PANEL);
     marco(ctx, p2.x, ESTADO_Y, p2.w, ESTADO_H, PANEL);
     ctx.font = f95(22); ctx.fillStyle = NEGRO; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(cabe(ctx, s.tracks.length + ' objeto(s)', p1.w - 20), p1.x + 10, ESTADO_Y + ESTADO_H / 2 + 1);
+    if (!op.marco) ctx.fillText(cabe(ctx, s.tracks.length + ' objeto(s)', p1.w - 20), p1.x + 10, ESTADO_Y + ESTADO_H / 2 + 1);
     ctx.fillText(cabe(ctx, juntar([s.titulo, fechaBonita(s.fecha), horaBonita(s.hora)]), p2.w - 20), p2.x + 10, ESTADO_Y + ESTADO_H / 2 + 1);
 
-    barraTareas(ctx, s, a, { icono: a.carpeta, texto: 'Sesión #' + s.numero + ' - Tracklist' });
+    barraTareas(ctx, s, a, { icono: a.carpeta, texto: conGuion([sesion(s), 'Tracklist']) });
     ctx.restore();
   }
 
