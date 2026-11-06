@@ -214,6 +214,7 @@
   // cargar con las carpetas en pantalla y el estado diría una mentira.
   function avisarCollage() {
     if (explorerOverlay && explorerOverlay.classList.contains('open')) return;
+    if (lineaAbierta()) return;
     avisarMarco('collage', archiveImages.length ? archiveImages.length + ' imágenes' : '');
   }
 
@@ -526,21 +527,363 @@
   if (exploreBtn) exploreBtn.onclick = function(e) {
     e.stopPropagation();
     closeDetailsPopup();
+    cerrarLinea();
     try { openExplorer(); } catch(err) { console.error('Explorer error:', err); }
   };
+
+  // ===== Línea de tiempo (Ver › Línea de tiempo) =====
+  // Arriba, las fotos de una noche; abajo, la regla del tiempo: un control
+  // deslizante de Windows 95 con una barra por mes encima, como la de Internet
+  // Archive (entre más alta, más fotos). Va abajo como en la Tira de imágenes
+  // de XP o en Movie Maker; en el celular ahí cae el pulgar, y como las barras
+  // son muy angostas para atinarles, se desliza el dedo sobre la regla.
+  // Las fechas salen del campo `fecha` de cada foto (AAAA-MM-DD, o AAAA-MM si
+  // solo se sabe el mes). Lo que no tiene fecha espera en su cajita, al final.
+  const lineaEl = document.getElementById('linea-container');
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+    'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  // La perilla del trackbar de Windows 95, apuntando a las rayitas de abajo.
+  const PERILLA_SVG = '<svg class="ln-perilla" viewBox="0 0 11 20" width="11" height="20" aria-hidden="true">'
+    + '<path d="M0 0h11v14l-5.5 5.5L0 14z" fill="#c0c0c0"/>'
+    + '<path d="M.5 14V.5h10" fill="none" stroke="#fff"/><path d="M.5 14.2l5 5" stroke="#fff"/>'
+    + '<path d="M10.5 .5v13.8l-5 5" fill="none" stroke="#000"/><path d="M9.5 1.5v12.4l-4 4" fill="none" stroke="#808080"/></svg>';
+  let linea = null;   // se arma la primera vez que se abre
+
+  const fotosTxt = n => n + (n === 1 ? ' foto' : ' fotos');
+  const nochesTxt = n => n + (n === 1 ? ' noche' : ' noches');
+  const mayus = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const nombreMes = k => MESES[+k.slice(5, 7) - 1] + ' de ' + k.slice(0, 4);
+  const diaDe = f => new Date(+f.slice(0, 4), +f.slice(5, 7) - 1, +f.slice(8, 10));
+  function fechaLarga(f) {
+    if (f.length === 7) return mayus(nombreMes(f)) + ' (sin día)';
+    const d = diaDe(f);
+    return mayus(DIAS[d.getDay()]) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
+  }
+  function etiquetaNoche(f) {
+    if (f.length === 7) return 'sin día';
+    const d = diaDe(f);
+    return DIAS[d.getDay()].slice(0, 3) + ' ' + d.getDate();
+  }
+  function quienDe(path) {
+    const a = (imageMetadata[path] && imageMetadata[path].artista) || '';
+    const m = a.match(/@[\w.]+/);
+    return m ? m[0] : (a || 'Archivo GDN');
+  }
+
+  // Miniatura para la línea: 128px de alto en pantalla, el doble para retina.
+  // c_limit solo reduce: nunca recorta ni agranda. Los GIF, como en el collage.
+  function miniSrc(url) {
+    if (url.indexOf('res.cloudinary.com') === -1) return url;
+    if (esGif(url)) return collageSrc(url);
+    return url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,h_256/');
+  }
+
+  function lineaAbierta() {
+    return !!lineaEl && lineaEl.classList.contains('open');
+  }
+
+  // Mientras la línea está abierta el collage no corre: no se ve y bajaría
+  // fotos de a gratis.
+  function pausarCollage() {
+    paused = true;
+    clearTimeout(imageTimeout);
+    imageTimeout = null;
+    pendingPreloads.forEach(function(p) { p.src = ''; });
+    pendingPreloads = [];
+  }
+
+  function seguirCollage() {
+    if (document.hidden) return;
+    paused = false;
+    if (displayImages.length) startDisplaying();
+  }
+
+  function abrirLinea() {
+    if (!lineaEl) return;
+    if (explorerOverlay) explorerOverlay.classList.remove('open');
+    lineaEl.classList.add('open');
+    pausarCollage();
+    if (!linea && archiveImages.length) linea = armarLinea();
+    if (linea) { linea.ajustar(); linea.pintar(); }
+    else avisarMarco('linea', 'Cargando...');
+  }
+
+  function cerrarLinea() {
+    if (!lineaAbierta()) return;
+    lineaEl.classList.remove('open');
+    seguirCollage();
+  }
+
+  function armarLinea() {
+    const porFecha = {}, sinFecha = [];
+    archiveImages.forEach(function(p) {
+      const f = ((imageMetadata[p] && imageMetadata[p].fecha) || '').trim();
+      if (/^\d{4}-\d{2}(-\d{2})?$/.test(f)) (porFecha[f] = porFecha[f] || []).push(p);
+      else sinFecha.push(p);
+    });
+    const noches = Object.keys(porFecha).sort().map(f => ({ fecha: f, fotos: porFecha[f] }));
+    const porMes = {};
+    noches.forEach(function(n) {
+      const k = n.fecha.slice(0, 7);
+      (porMes[k] = porMes[k] || []).push(n);
+    });
+    const meses = Object.keys(porMes).sort();
+    const cuenta = k => porMes[k].reduce((s, n) => s + n.fotos.length, 0);
+    const max = Math.max(1, ...meses.map(cuenta));
+    const anios = [];
+    if (meses.length) {
+      for (let y = +meses[0].slice(0, 4); y <= +meses[meses.length - 1].slice(0, 4); y++) anios.push(y);
+    }
+    const conFecha = noches.reduce((s, n) => s + n.fotos.length, 0);
+    const resumen = fotosTxt(conFecha) + ' con fecha en ' + nochesTxt(noches.length) + ' · ' + sinFecha.length + ' sin fecha';
+
+    // Se abre en la noche más nueva.
+    let sel = noches.length ? noches[noches.length - 1].fecha : 'sin';
+    let generacion = 0;
+
+    lineaEl.innerHTML = '<div class="ln-fotos"><div class="ln-cab"></div><div class="ln-rej"></div></div>'
+      + '<div class="ln-panel"><div class="ln-noches"></div>'
+      + '<div class="ln-regla" tabindex="0" aria-label="Línea de tiempo: las flechas del teclado cambian de mes">'
+      + '<div class="ln-anios">' + anios.map(function(y) {
+        return '<div class="ln-anio" data-y="' + y + '"><div class="ln-meses">'
+          + MESES.map(function(_, i) {
+            const k = y + '-' + String(i + 1).padStart(2, '0'), c = porMes[k] ? cuenta(k) : 0;
+            return '<span class="ln-mes' + (c ? ' con' : '') + '" data-m="' + k + '">'
+              + (c ? '<i style="height:' + Math.max(4, Math.round(c / max * 40)) + 'px"></i>' : '') + '</span>';
+          }).join('')
+          + '</div><div class="ln-canal"></div><div class="ln-tk">' + '<span></span>'.repeat(12) + '</div>'
+          + '<div class="ln-ini">' + 'EFMAMJJASOND'.split('').map(l => '<span>' + l + '</span>').join('') + '</div>'
+          + '<span class="ln-y">' + y + '</span></div>';
+      }).join('') + '</div>'
+      + '<button type="button" class="ln-sin"><b>' + sinFecha.length + '</b>sin fecha</button>'
+      + PERILLA_SVG + '</div><div class="ln-ayuda"></div></div>';
+
+    const fotosEl = lineaEl.querySelector('.ln-fotos');
+    const cab = lineaEl.querySelector('.ln-cab');
+    const rej = lineaEl.querySelector('.ln-rej');
+    const nochesEl = lineaEl.querySelector('.ln-noches');
+    const regla = lineaEl.querySelector('.ln-regla');
+    const aniosEl = lineaEl.querySelector('.ln-anios');
+    const sinBtn = lineaEl.querySelector('.ln-sin');
+    const perilla = lineaEl.querySelector('.ln-perilla');
+    const ayuda = lineaEl.querySelector('.ln-ayuda');
+    const slots = Array.from(lineaEl.querySelectorAll('.ln-mes'));
+    const tip = document.createElement('div');
+    tip.className = 'ln-tip';
+    tip.hidden = true;
+    lineaEl.appendChild(tip);
+
+    // Angosta (celular) = letreros cortos; táctil = botones más grandes y la
+    // ayuda habla del dedo. Son cosas aparte: en una compu chica la ventana
+    // de Galería también sale angosta, pero ahí se usa el mouse.
+    function ajustar() {
+      const tactil = window.matchMedia('(pointer: coarse)').matches;
+      lineaEl.classList.toggle('ln-v', lineaEl.clientWidth < 440);
+      lineaEl.classList.toggle('ln-tactil', tactil);
+      lineaEl.classList.toggle('ln-iniciales', !!slots[0] && slots[0].offsetWidth >= 13);
+      ayuda.textContent = 'Cada barra es un mes: entre más alta, más fotos. '
+        + (tactil ? 'Desliza el dedo sobre la regla.' : 'Arrastra la flecha o dale clic a una barra.');
+    }
+
+    function ponerPerilla() {
+      const blanco = sel === 'sin' ? sinBtn : lineaEl.querySelector('.ln-mes[data-m="' + sel.slice(0, 7) + '"]');
+      if (!blanco) return;
+      const r = regla.getBoundingClientRect(), b = blanco.getBoundingClientRect();
+      // La primera vez se pone en su lugar sin deslizarse desde la orilla.
+      const primera = !perilla.style.transform;
+      if (primera) perilla.style.transition = 'none';
+      perilla.style.transform = 'translateX(' + (b.left - r.left + b.width / 2 - 5.5) + 'px)';
+      if (primera) { perilla.getBoundingClientRect(); perilla.style.transition = ''; }
+    }
+
+    function fotoEl(path) {
+      const m = imageMetadata[path] || {};
+      const img = document.createElement('img');
+      img.alt = m.descripcion || m.artista || '';
+      img.decoding = 'async';
+      img.dataset.src = path;
+      if (m.artista) img.dataset.artista = m.artista;
+      if (m.descripcion) img.dataset.descripcion = m.descripcion;
+      if (m.fecha) img.dataset.fecha = m.fecha;
+      if (m.width && m.height) {
+        img.width = m.width;   // la proporción, para apartar su lugar
+        img.height = m.height;
+        img.dataset.width = m.width;
+        img.dataset.height = m.height;
+      }
+      img.src = miniSrc(path);
+      return img;
+    }
+
+    // Con medidas (las manda el worker) cada foto aparta su lugar desde el
+    // principio. Sin ellas, cada una entra ya cargada y en orden, al final de
+    // la cuadrícula: así nada de lo que ya está se recorre cuando llega otra.
+    function pintarFotos(lista) {
+      const gen = ++generacion;
+      rej.innerHTML = '';
+      if (lista.every(p => imageMetadata[p] && imageMetadata[p].width && imageMetadata[p].height)) {
+        lista.forEach(function(p) {
+          const img = fotoEl(p);
+          img.loading = 'lazy';
+          rej.appendChild(img);
+        });
+        return;
+      }
+      const listas = new Map();
+      let lanzadas = 0, siguiente = 0;
+      function empujar() {
+        while (listas.has(siguiente)) {
+          const el = listas.get(siguiente);
+          listas.delete(siguiente);
+          if (el) rej.appendChild(el);
+          siguiente++;
+        }
+      }
+      function lanzar() {
+        if (gen !== generacion || lanzadas >= lista.length) return;
+        const k = lanzadas++, el = fotoEl(lista[k]);
+        const fin = function(ok) {
+          if (gen !== generacion) return;
+          listas.set(k, ok ? el : null);
+          empujar();
+          lanzar();
+        };
+        el.decode().then(function() { fin(true); }, function() { fin(false); });
+      }
+      for (let n = 0; n < 8; n++) lanzar();
+    }
+
+    function pintar() {
+      const mes = sel === 'sin' ? '' : sel.slice(0, 7);
+      const corto = lineaEl.classList.contains('ln-v');
+      slots.forEach(b => b.classList.toggle('sel', b.dataset.m === mes));
+      lineaEl.querySelectorAll('.ln-anio').forEach(a => a.classList.toggle('sel', a.dataset.y === mes.slice(0, 4)));
+      sinBtn.classList.toggle('sel', sel === 'sin');
+      const i = noches.findIndex(n => n.fecha === sel);
+
+      let h = '<span class="ln-mesnom">' + (sel === 'sin' ? 'Sin fecha' : mayus(nombreMes(mes))) + '</span>';
+      if (sel !== 'sin') {
+        h += porMes[mes].map(n => '<button type="button" class="w95-btn' + (n.fecha === sel ? ' hundido' : '')
+          + '" data-n="' + n.fecha + '">' + etiquetaNoche(n.fecha) + ' · '
+          + (corto ? n.fotos.length : fotosTxt(n.fotos.length)) + '</button>').join('');
+      }
+      h += '<span class="ln-der">'
+        + '<button type="button" class="w95-btn ln-ant"' + (i === 0 || !noches.length ? ' disabled' : '') + '>◀' + (corto ? '' : ' Anterior') + '</button>'
+        + '<button type="button" class="w95-btn ln-sig"' + (sel === 'sin' ? ' disabled' : '') + '>' + (corto ? '' : 'Siguiente ') + '▶</button></span>';
+      nochesEl.innerHTML = h;
+
+      let lista;
+      if (sel === 'sin') {
+        lista = sinFecha;
+        cab.innerHTML = '<b>' + fotosTxt(sinFecha.length) + ' sin fecha</b> <span>· todavía nadie dice qué noche fueron</span>';
+      } else {
+        const n = noches[i];
+        lista = n.fotos;
+        const quien = Array.from(new Set(n.fotos.map(quienDe))).join(', ');
+        cab.innerHTML = '<b>' + fechaLarga(n.fecha) + '</b> <span>· ' + fotosTxt(n.fotos.length) + ' · ' + escapeHtml(quien) + '</span>';
+      }
+      fotosEl.scrollTop = 0;
+      pintarFotos(lista);
+      ponerPerilla();
+      avisarMarco('linea', resumen);
+    }
+
+    function mostrarTip(b) {
+      const k = b.dataset.m, ns = porMes[k] || [];
+      tip.textContent = mayus(nombreMes(k)) + ' — ' + (ns.length ? nochesTxt(ns.length) + ', ' + fotosTxt(cuenta(k)) : 'sin fotos');
+      tip.hidden = false;
+      const r = lineaEl.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      const x = rb.left - r.left + rb.width / 2 - tip.offsetWidth / 2;
+      tip.style.left = Math.max(4, Math.min(x, lineaEl.clientWidth - tip.offsetWidth - 4)) + 'px';
+      tip.style.top = (rb.top - r.top - tip.offsetHeight - (lineaEl.classList.contains('ln-tactil') ? 14 : 4)) + 'px';
+    }
+
+    // Arrastrar sobre la regla: el mes bajo el dedo, o el más cercano con fotos.
+    function mesEn(x) {
+      let mejor = null, d = 1e9;
+      slots.forEach(function(b) {
+        const r = b.getBoundingClientRect(), dd = Math.abs(r.left + r.width / 2 - x);
+        if (dd < d) { d = dd; mejor = b; }
+      });
+      return mejor;
+    }
+    function conFotosCerca(b) {
+      const i = slots.indexOf(b);
+      for (let k = 0; k < slots.length; k++) {
+        if (slots[i - k] && slots[i - k].classList.contains('con')) return slots[i - k];
+        if (slots[i + k] && slots[i + k].classList.contains('con')) return slots[i + k];
+      }
+      return null;
+    }
+    function irA(b) {
+      if (!b) return;
+      const k = b.dataset.m;
+      if (sel === 'sin' || sel.slice(0, 7) !== k) {
+        sel = porMes[k][porMes[k].length - 1].fecha;
+        pintar();
+      }
+      mostrarTip(b);
+    }
+    let arrastrando = false;
+    aniosEl.addEventListener('pointerdown', function(e) {
+      arrastrando = true;
+      try { aniosEl.setPointerCapture(e.pointerId); } catch (err) { /* sin captura, igual sirve */ }
+      irA(conFotosCerca(mesEn(e.clientX)));
+    });
+    aniosEl.addEventListener('pointermove', function(e) {
+      if (arrastrando) irA(conFotosCerca(mesEn(e.clientX)));
+      else if (e.pointerType === 'mouse') { const b = mesEn(e.clientX); if (b) mostrarTip(b); }
+    });
+    function soltar() { arrastrando = false; tip.hidden = true; }
+    aniosEl.addEventListener('pointerup', soltar);
+    aniosEl.addEventListener('pointercancel', soltar);
+    aniosEl.addEventListener('pointerleave', function() { if (!arrastrando) tip.hidden = true; });
+
+    // Teclado: ← → de mes en mes (solo los que tienen fotos).
+    regla.addEventListener('keydown', function(e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const i = sel === 'sin' ? meses.length : meses.indexOf(sel.slice(0, 7));
+      const j = i + (e.key === 'ArrowRight' ? 1 : -1);
+      if (j >= meses.length) sel = 'sin';
+      else if (j >= 0) sel = porMes[meses[j]][porMes[meses[j]].length - 1].fecha;
+      else return;
+      pintar();
+    });
+
+    lineaEl.addEventListener('click', function(e) {
+      const noche = e.target.closest('[data-n]'), img = e.target.closest('.ln-rej img');
+      const i = noches.findIndex(n => n.fecha === sel);
+      if (noche) { sel = noche.dataset.n; pintar(); }
+      else if (e.target.closest('.ln-sin')) { sel = 'sin'; pintar(); }
+      else if (e.target.closest('.ln-ant')) { sel = sel === 'sin' ? noches[noches.length - 1].fecha : noches[i - 1].fecha; pintar(); }
+      else if (e.target.closest('.ln-sig')) { sel = i === noches.length - 1 ? 'sin' : noches[i + 1].fecha; pintar(); }
+      else if (img) openDetails(img);
+    });
+
+    return { pintar: pintar, ajustar: ajustar, ponerPerilla: ponerPerilla, resumen: resumen };
+  }
+
+  window.addEventListener('resize', function() {
+    if (linea && lineaAbierta()) { linea.ajustar(); linea.ponerPerilla(); }
+  });
 
   // Órdenes del marco (validadas por origen). La barra de la ventana de
   // Galería no toca nada de aquí adentro: manda un aviso y esto obedece.
   window.addEventListener('message', function(e) {
     if (e.origin !== location.origin) return;
     const tipo = e.data?.type;
-    if (tipo === 'open-file-explorer')  openExplorer();
-    if (tipo === 'galeria-collage')     closeExplorer();
+    if (tipo === 'open-file-explorer')  { cerrarLinea(); openExplorer(); }
+    if (tipo === 'galeria-collage')     { cerrarLinea(); closeExplorer(); }
+    if (tipo === 'galeria-linea')       abrirLinea();
     if (tipo === 'galeria-select-all')  selectAllImages();
     if (tipo === 'galeria-vista')       setExplorerView(e.data.vista);
     // El marco acaba de montarse y pregunta qué se está viendo.
     if (tipo === 'galeria-dime-estado') {
-      if (!explorerOverlay?.classList.contains('open')) {
+      if (lineaAbierta()) {
+        avisarMarco('linea', linea ? linea.resumen : 'Cargando...');
+      } else if (!explorerOverlay?.classList.contains('open')) {
         avisarCollage();
       } else if (explorerCurrentFolder === null) {
         renderFolderList();
@@ -618,7 +961,9 @@
               artista:     entry.artista     || '',
               descripcion: entry.descripcion || '',
               fecha:       entry.fecha       || '',
-              thumbUrl:    entry.thumbUrl    || ''
+              thumbUrl:    entry.thumbUrl    || '',
+              width:       entry.width       || 0,
+              height:      entry.height      || 0
             };
           }
         }
@@ -636,6 +981,11 @@
       [displayImages[i], displayImages[j]] = [displayImages[j], displayImages[i]];
     }
 
+    // Si ya pidieron la línea de tiempo, se arma ahora y el collage espera.
+    if (lineaAbierta()) {
+      if (!linea) { linea = armarLinea(); linea.ajustar(); linea.pintar(); }
+      return;
+    }
     if (displayImages.length) startDisplaying();
   }
 
@@ -651,7 +1001,7 @@
       // Cancel in-flight preloads
       pendingPreloads.forEach(function(p) { p.src = ''; });
       pendingPreloads = [];
-    } else if (paused) {
+    } else if (paused && !lineaAbierta()) {
       paused = false;
       if (displayImages.length) startDisplaying();
     }
@@ -669,7 +1019,7 @@
       pendingPreloads.forEach(function(p) { p.src = ''; });
       pendingPreloads = [];
     } else if (e.data.type === 'galeria-resume') {
-      if (paused) {
+      if (paused && !lineaAbierta()) {
         paused = false;
         if (displayImages.length) startDisplaying();
       }
@@ -704,6 +1054,7 @@
 
   // Every 5 min: wipe all images and start fresh
   function reset() {
+    if (lineaAbierta()) return;
     clearTimeout(imageTimeout);
     imageTimeout = null;
     // Remove all collage images

@@ -376,6 +376,9 @@ async function handleList(env, origin) {
       instagram:   ctx.instagram   || '',
       descripcion: ctx.descripcion || '',
       fecha:       ctx.fecha       || '',
+      // La línea de tiempo aparta el lugar de cada foto antes de que baje.
+      width:       r.width  || 0,
+      height:      r.height || 0,
     };
   });
 

@@ -767,3 +767,73 @@ body.con-marco #file-explorer-statusbar {
   color: #316AC5;
   font-weight: bold;
 }
+
+/* ===== Línea de tiempo (Ver › Línea de tiempo) =====
+   Arriba, las fotos de una noche; abajo, la regla del tiempo: un control
+   deslizante de Windows 95 con una barra por mes encima. La arma
+   liveCollage.js la primera vez que se abre. */
+#linea-container {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  flex-direction: column;
+  background: #fff;
+  font: 11px Tahoma, 'MS Sans Serif', sans-serif;
+  color: #000;
+}
+#linea-container.open { display: flex; }
+.ln-fotos { flex: 1; min-height: 0; overflow: auto; padding: 9px 10px 10px; -webkit-overflow-scrolling: touch; }
+.ln-cab { margin-bottom: 7px; }
+.ln-cab span { color: #808080; }
+.ln-rej { display: flex; flex-wrap: wrap; gap: 4px; }
+.ln-rej img { height: 128px; width: auto; display: block; cursor: pointer; background: #eee; }
+.ln-panel { flex-shrink: 0; background: #ECE9D8; border-top: 1px solid #ACA899; padding: 7px 10px 6px; }
+.ln-noches { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 9px; }
+.ln-mesnom { font-weight: bold; margin-right: 4px; }
+.ln-der { margin-left: auto; display: flex; gap: 4px; }
+.ln-noches .w95-btn { padding: 2px 8px; min-height: 23px; white-space: nowrap; }
+.ln-noches .w95-btn.hundido {
+  border-top: var(--border-sunken); border-left: var(--border-sunken);
+  border-right: var(--border-raised); border-bottom: var(--border-raised);
+  background: #dfdfdf;
+}
+.ln-regla { position: relative; display: flex; gap: 10px; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; }
+.ln-regla:focus-visible .ln-canal { outline: 1px dotted #000; outline-offset: 2px; }
+.ln-anios { flex: 1; display: flex; min-width: 0; cursor: pointer; }
+.ln-anio { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ln-meses { display: flex; height: 42px; }
+.ln-anio + .ln-anio .ln-meses { box-shadow: inset 1px 0 #c8c4b4; }
+.ln-mes { flex: 1; min-width: 0; display: flex; align-items: flex-end; justify-content: center; }
+.ln-mes i { display: block; width: min(9px, 72%); background: #000; }
+.ln-mes:hover { background: rgba(49, 106, 197, .13); }
+.ln-mes.sel i { background: #316AC5; }
+.ln-canal { height: 6px; margin-top: 9px; background: #fff; border-top: 1px solid #808080; border-bottom: 1px solid #fff; box-shadow: inset 0 1px #404040; }
+.ln-anio:first-child .ln-canal { border-left: 1px solid #808080; }
+.ln-anio:last-child .ln-canal { border-right: 1px solid #fff; }
+.ln-tk { display: flex; height: 4px; margin-top: 9px; }
+.ln-tk span { flex: 1; position: relative; }
+.ln-tk span::after { content: ''; position: absolute; left: 50%; top: 0; width: 1px; height: 3px; background: #000; }
+.ln-tk span:first-child::after { height: 4px; }
+.ln-ini { display: none; }
+.ln-ini span { flex: 1; text-align: center; color: #555; font-size: 10px; }
+#linea-container.ln-iniciales .ln-ini { display: flex; padding-top: 1px; }
+.ln-y { padding: 2px 0 0 1px; color: #555; }
+.ln-anio.sel .ln-y { color: #000; font-weight: bold; }
+/* Se mueve con transform: moverla con left contaría como layout shift. */
+.ln-perilla { position: absolute; top: 44px; left: 0; width: 11px; height: 20px; pointer-events: none; transition: transform .12s; }
+.ln-sin { width: 60px; height: 42px; flex-shrink: 0; border: 1px dashed #808080; background: none; color: #555;
+  font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; cursor: pointer; line-height: 1.2; padding: 0; }
+.ln-sin b { color: #000; }
+.ln-sin:hover { background: rgba(49, 106, 197, .13); }
+.ln-sin.sel { border: 1px solid #316AC5; background: #fff; }
+.ln-ayuda { color: #555; margin-top: 5px; }
+.ln-tip { position: absolute; z-index: 2; background: #ffffe1; border: 1px solid #000; padding: 1px 5px; pointer-events: none; white-space: nowrap; }
+/* Angosta (celular): fotos un poco más chicas */
+#linea-container.ln-v .ln-rej img { height: 110px; }
+#linea-container.ln-v .ln-sin { width: 50px; }
+/* Táctil: botones más fáciles de atinar y un letrero que se lea bajo el dedo */
+#linea-container.ln-tactil .ln-noches .w95-btn { min-height: 30px; padding: 3px 10px; }
+#linea-container.ln-tactil .ln-der .w95-btn { min-width: 40px; }
+#linea-container.ln-tactil .ln-tip { font-size: 13px; padding: 3px 7px; }

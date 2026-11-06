@@ -747,6 +747,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 decirGaleria({ type: 'open-file-explorer' });
             } else if (accion === 'modo-collage') {
                 decirGaleria({ type: 'galeria-collage' });
+            } else if (accion === 'modo-linea') {
+                decirGaleria({ type: 'galeria-linea' });
             }
         });
         document.addEventListener('click', cerrarGalMenu);
@@ -758,6 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (galStatus) galStatus.textContent = e.data.estado || '';
             $('#gal-ver-collage')?.classList.toggle('checked', e.data.modo === 'collage');
             $('#gal-ver-carpetas')?.classList.toggle('checked', e.data.modo === 'carpetas');
+            $('#gal-ver-linea')?.classList.toggle('checked', e.data.modo === 'linea');
         });
 
         // Al abrir la ventana, preguntar en qué quedó el iframe.

@@ -315,6 +315,7 @@
                 <li class="fe-dd-sep"></li>
                 <li class="fe-dd-item" data-gal="modo-collage" id="gal-ver-collage">Collage</li>
                 <li class="fe-dd-item" data-gal="modo-carpetas" id="gal-ver-carpetas">Carpetas</li>
+                <li class="fe-dd-item" data-gal="modo-linea" id="gal-ver-linea">Línea de tiempo</li>
             </ul>
         </div>
         <div class="frame-content" id="frame-content">
@@ -473,6 +474,8 @@
                     decirGaleria({ type: 'open-file-explorer' });
                 } else if (accion === 'modo-collage') {
                     decirGaleria({ type: 'galeria-collage' });
+                } else if (accion === 'modo-linea') {
+                    decirGaleria({ type: 'galeria-linea' });
                 }
             });
 
@@ -489,6 +492,8 @@
                     .classList.toggle('checked', e.data.modo === 'collage');
                 document.getElementById('gal-ver-carpetas')
                     .classList.toggle('checked', e.data.modo === 'carpetas');
+                document.getElementById('gal-ver-linea')
+                    .classList.toggle('checked', e.data.modo === 'linea');
             });
 
             document.getElementById('frame-iframe').addEventListener('load', function() {
