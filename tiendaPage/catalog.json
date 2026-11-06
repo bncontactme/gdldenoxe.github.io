@@ -18,6 +18,12 @@
     "pages": [
         {
             "template": "1-featured",
+            "background": "assets/webAssets/background/Guadalajara De Noche_PDF_Background_image193.webp",
+            "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
+            "products": ["playera-colonias"]
+        },
+        {
+            "template": "1-featured",
             "background": "assets/webAssets/background/Guadalajara De Noche_PDF_image2852.webp",
             "logo": { "variant": "dark", "x": 10, "y": 2, "w": 80, "h": 14 },
             "products": ["bonnet-halloween"]
@@ -148,6 +154,22 @@
     },
 
     "products": [
+        {
+            "id": "playera-colonias",
+            "name": "Playera Colonias",
+            "price": 450,
+            "image": "https://pics.paypal.com/00/p/YTQ4ZGVjZTYtZWJmNy00ZTBiLWE0ODItNWQ0OTNmMWU0Zjkw/image_3.JPG",
+            "imageBg": "#ffffff",
+            "description": "Playera de algodón 100%, serigrafía y parche bordado hecho a mano. Al pagar especifica color: blanco o negro.",
+            "link": "https://www.paypal.com/ncp/payment/Q78GHXQP2BUM2",
+            "info": "Blanco o negro",
+            "badge": "NUEVO",
+            "images": [
+                "https://pics.paypal.com/00/p/YTQ4ZGVjZTYtZWJmNy00ZTBiLWE0ODItNWQ0OTNmMWU0Zjkw/image_3.JPG",
+                "https://pics.paypal.com/00/p/OTNmYmU5YzAtMGM1Mi00ZTU5LTg0M2ItZGZlZmJiNzAxZTM4/image_3.JPG",
+                "https://pics.paypal.com/00/p/MWJiMGViYTYtMzc0Ny00YWNmLThmOTItNmZjYjU0NDk0OWU1/image_35.JPG"
+            ]
+        },
         {
             "id": "bonnet-halloween",
             "name": "Bonnet: Halloween Exxxxclusive",
