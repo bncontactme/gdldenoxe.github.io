@@ -172,6 +172,7 @@
         },
         {
             "id": "bonnet-halloween",
+            "soldOut": true,
             "name": "Bonnet: Halloween Exxxxclusive",
             "price": 550,
             "image": "https://pics.paypal.com/00/p/ZWIxNTViYWYtZDllYy00NDFmLTgxNjgtZTM5OTQ3MTg1MGIy/image_3.JPG",
@@ -188,6 +189,7 @@
         },
         {
             "id": "bonnet-halloween-look",
+            "soldOut": true,
             "name": "Bonnet: Halloween Exxxxclusive",
             "price": 550,
             "noSplash": true,
