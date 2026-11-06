@@ -1893,3 +1893,165 @@ main {
     background: #fff;
     transform: rotate(3deg);
 }
+/* ============================================================
+   DROP — one product only (catalog.json → "drop")
+   One plain Win95 window on the teal desktop, sized to the screen
+   so nothing scrolls. Built by buildDrop() in script.js.
+   ============================================================ */
+
+body.tienda-drop {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    padding: 12px;
+    background: #008080;
+    justify-content: center;
+    align-items: center;
+}
+body.tienda-drop #marquee-bar,
+body.tienda-drop #catalog-cta,
+body.tienda-drop #flipbook-nav,
+body.tienda-drop .flipbook-scale-wrapper { display: none !important; }
+body.tienda-drop main,
+body.tienda-drop #catalog-root {
+    width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: visible;
+}
+
+.drop-window {
+    width: 100%;
+    max-width: 720px;
+    max-height: calc(100dvh - 24px);
+    display: flex;
+    flex-direction: column;
+    background: var(--w95-bg);
+    color: var(--w95-text);
+    font: 400 12px/1.35 var(--w95-font);
+    border-top: 2px solid var(--w95-light);
+    border-left: 2px solid var(--w95-light);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset 1px 1px 0 var(--w95-white), inset -1px -1px 0 var(--w95-dark);
+    padding: 2px;
+}
+
+.drop-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+}
+
+/* Sunken white frame; the photo always fits inside it */
+.drop-photo {
+    flex: none;
+    width: min(340px, calc(100dvh - 90px));
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border-top: 2px solid var(--w95-dark);
+    border-left: 2px solid var(--w95-dark);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-darker);
+}
+.drop-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.drop-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.drop-name { font: 700 18px/1.2 Tahoma, var(--w95-font); }
+.drop-price { font: 700 16px/1.2 Tahoma, var(--w95-font); }
+.drop-desc { font-size: 12px; }
+
+/* Win95 group box with radio buttons */
+.drop-options {
+    border: 1px solid var(--w95-dark);
+    box-shadow: 1px 1px 0 var(--w95-white), inset 1px 1px 0 var(--w95-white);
+    padding: 6px 10px 8px;
+}
+.drop-options legend { padding: 0 3px; }
+.drop-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 16px;
+    min-height: 24px;
+    cursor: pointer;
+}
+.drop-radio input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    margin: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-white),
+                inset 2px 2px 0 var(--w95-darker), inset -2px -2px 0 var(--w95-light);
+    flex: none;
+    cursor: pointer;
+}
+.drop-radio input:checked {
+    background: radial-gradient(circle, #000 0 2px, #fff 2.5px);
+}
+.drop-radio input:focus-visible + span { outline: 1px dotted #000; outline-offset: 1px; }
+.drop-hint { margin-top: 4px; font-size: 11px; }
+.drop-count { font-size: 12px; }
+
+/* Push button with the black "default button" outline */
+.drop-buy {
+    margin-top: auto;
+    display: block;
+    padding: 6px 12px;
+    text-align: center;
+    background: var(--w95-bg);
+    color: #000;
+    font: 700 13px/1.2 Tahoma, var(--w95-font);
+    outline: 1px solid #000;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    box-shadow: inset -1px -1px 0 var(--w95-dark), inset 1px 1px 0 var(--w95-light);
+    cursor: pointer;
+}
+.drop-buy:active {
+    border-top-color: var(--w95-darker);
+    border-left-color: var(--w95-darker);
+    border-right-color: var(--w95-white);
+    border-bottom-color: var(--w95-white);
+    box-shadow: inset 1px 1px 0 var(--w95-dark);
+    padding: 7px 11px 5px 13px;
+}
+.drop-buy:focus-visible { box-shadow: inset 0 0 0 3px var(--w95-bg), inset 0 0 0 4px #000; }
+.drop-buy--off,
+.drop-buy--off:active {
+    color: var(--w95-dark);
+    text-shadow: 1px 1px 0 var(--w95-white);
+    cursor: default;
+    padding: 6px 12px;
+    border-top-color: var(--w95-white);
+    border-left-color: var(--w95-white);
+    border-right-color: var(--w95-darker);
+    border-bottom-color: var(--w95-darker);
+}
+
+/* Narrow: stack; the photo takes whatever height is left */
+@media (max-width: 600px) {
+    body.tienda-drop { padding: 8px; }
+    body.tienda-drop main,
+    body.tienda-drop #catalog-root { height: 100%; }
+    .drop-window { height: 100%; max-height: none; }
+    .drop-body { flex-direction: column; padding: 8px; gap: 8px; }
+    .drop-photo { flex: 1; min-height: 0; width: auto; aspect-ratio: auto; }
+    .drop-info { flex: none; gap: 6px; }
+    .drop-buy { margin-top: 2px; padding: 10px 12px; }
+    .drop-buy:active { padding: 11px 11px 9px 13px; }
+}

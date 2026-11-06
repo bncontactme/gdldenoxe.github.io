@@ -158,6 +158,18 @@ On every screen the tienda opens on the **store grid** (Win95 cards, same produc
 
 ---
 
+## Drop Mode (un solo artículo)
+
+`catalog.json` → `drop` turns the whole tienda into one plain Win95 window for a single product, sized to the screen so nothing scrolls (grid, catalog, marquee and banner are hidden).
+
+- `enabled`: `true` shows only `drop.product`; `false` returns to the normal store.
+- Preview without publishing: `index.html?drop=on` / `index.html?drop=off`.
+- `window`: title bar text. `bullets`: one line under the price (falls back to the product `description`).
+- `options.choices`: radio buttons (e.g. Negro / Blanco) that swap the photo and tell the buyer what to write in PayPal's option field (`{opcion}` in `options.hint`).
+- `endsAt` (optional ISO date): shows "Termina en …" and closes the sale at zero. `soldOut` on the product shows **Agotado**.
+
+---
+
 ## Debug Mode
 
 Append `?debug` to the URL:

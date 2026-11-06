@@ -1097,6 +1097,146 @@ const tienda = (() => {
         applyHash();
     };
 
+    /* ─────────────────────────────────────────────────────────
+       DROP — one product only (catalog.json → "drop")
+       A single big Win95 window instead of the grid + catalog.
+       drop.enabled turns it on; ?drop=on / ?drop=off override it
+       for previewing without publishing.
+       ───────────────────────────────────────────────────────── */
+
+    const dropConfig = (catalog) => {
+        const drop = catalog.drop;
+        if (!drop || !drop.product) return null;
+        const q = new URLSearchParams(location.search).get('drop');
+        const on = q === 'on' ? true : q === 'off' ? false : !!drop.enabled;
+        if (!on) return null;
+        const product = (catalog.products || []).find(p => p.id === drop.product);
+        if (!product) {
+            console.warn('[Drop] Product not found:', drop.product);
+            return null;
+        }
+        return { ...drop, item: product };
+    };
+
+    const buildDrop = (catalog, drop) => {
+        const p = drop.item;
+        const el = (tag, cls, text) => {
+            const n = document.createElement(tag);
+            if (cls) n.className = cls;
+            if (text != null) n.textContent = text;
+            return n;
+        };
+
+        document.body.classList.add('tienda-drop');
+        if (p.name) document.title = p.name + ' — GDLDENOXE';
+
+        const choices = (drop.options && drop.options.choices) || [];
+
+        // ── Window: title bar + body, nothing else ──
+        const win = el('section', 'drop-window');
+        win.setAttribute('aria-label', p.name || 'Producto');
+
+        const bar = el('div', 'win95-titlebar');
+        bar.appendChild(el('span', 'win95-titlebar-text', drop.window || 'oferta.exe'));
+        const btns = el('div', 'win95-titlebar-buttons');
+        ['_', '□', '×'].forEach((t, i) => {
+            const b = el('button', i === 2 ? 'win95-btn-close' : '', t);
+            b.type = 'button';
+            b.tabIndex = -1;
+            b.disabled = true;
+            b.setAttribute('aria-hidden', 'true');
+            btns.appendChild(b);
+        });
+        bar.appendChild(btns);
+        win.appendChild(bar);
+
+        const body = el('div', 'drop-body');
+
+        const frame = el('div', 'drop-photo');
+        const img = el('img');
+        img.alt = p.name || '';
+        img.src = (choices[0] && choices[0].image) || p.image || '';
+        img.fetchPriority = 'high';
+        frame.appendChild(img);
+        body.appendChild(frame);
+
+        const info = el('div', 'drop-info');
+        info.appendChild(el('h1', 'drop-name', p.name || ''));
+        info.appendChild(el('div', 'drop-price',
+            '$' + p.price + '.' + (p.cents || '00') + ' ' + (p.currency || 'MXN')));
+        const desc = drop.bullets && drop.bullets.length ? drop.bullets.join(' · ') : p.description;
+        if (desc) info.appendChild(el('p', 'drop-desc', desc));
+
+        // Color: Win95 radio group. The PayPal link has no option
+        // param, so the choice swaps the photo and says what to
+        // write in PayPal's color field.
+        if (choices.length) {
+            const fs = el('fieldset', 'drop-options');
+            fs.appendChild(el('legend', '', drop.options.label || 'Opción'));
+            const hint = el('div', 'drop-hint');
+            const pick = (c) => {
+                if (c.image) img.src = c.image;
+                hint.textContent = '';
+                (drop.options.hint || '').split('{opcion}').forEach((part, k, all) => {
+                    hint.appendChild(document.createTextNode(part));
+                    if (k < all.length - 1) hint.appendChild(el('b', '', c.label.toUpperCase()));
+                });
+            };
+            choices.forEach((c, i) => {
+                const lab = el('label', 'drop-radio');
+                const r = el('input');
+                r.type = 'radio';
+                r.name = 'drop-option';
+                r.checked = i === 0;
+                r.addEventListener('change', () => pick(c));
+                lab.appendChild(r);
+                lab.appendChild(el('span', '', c.label));
+                fs.appendChild(lab);
+            });
+            fs.appendChild(hint);
+            info.appendChild(fs);
+            pick(choices[0]);
+        }
+
+        const buy = el('a', 'drop-buy', 'Comprar');
+        buy.href = p.link || '#';
+        buy.target = '_blank';
+        buy.rel = 'noopener noreferrer';
+
+        const closeSale = (label) => {
+            buy.textContent = label;
+            buy.removeAttribute('href');
+            buy.setAttribute('aria-disabled', 'true');
+            buy.classList.add('drop-buy--off');
+        };
+
+        // Optional deadline (drop.endsAt)
+        const ends = drop.endsAt ? new Date(drop.endsAt) : null;
+        if (p.soldOut) {
+            closeSale('Agotado');
+        } else if (ends && !isNaN(ends)) {
+            const count = el('div', 'drop-count');
+            info.appendChild(count);
+            const pad = n => String(n).padStart(2, '0');
+            const tick = () => {
+                const ms = ends - Date.now();
+                if (ms <= 0) { count.textContent = 'Oferta terminada'; closeSale('Terminado'); return; }
+                const t = Math.floor(ms / 1000), d = Math.floor(t / 86400);
+                count.textContent = 'Termina en ' + (d ? d + 'd ' : '')
+                    + pad(Math.floor(t / 3600) % 24) + ':' + pad(Math.floor(t / 60) % 60) + ':' + pad(t % 60);
+                setTimeout(tick, 1000);
+            };
+            tick();
+        }
+
+        info.appendChild(buy);
+        body.appendChild(info);
+        win.appendChild(body);
+
+        catalogRoot.textContent = '';
+        catalogRoot.appendChild(win);
+    };
+
     /* ── Fetch & init ── */
 
     fetch(CATALOG_URL)
@@ -1105,6 +1245,8 @@ const tienda = (() => {
             return res.json();
         })
         .then(catalog => {
+            const drop = dropConfig(catalog);
+            if (drop) { buildDrop(catalog, drop); return; }
             buildMobileStore(catalog);
             initViews(catalog);
         })

@@ -1,6 +1,27 @@
 {
     "marqueeText": "*** BIENVENIDO A LA TIENDA GDLDENOXE *** NUEVOS BOXERS EXCLUSIVOS *** ENVÍOS A TODO MÉXICO *** SÍGUENOS EN NUESTRAS REDES ***",
 
+    "drop": {
+        "_info": "Modo de un solo artículo. enabled:false vuelve a la tienda normal. Para probar sin publicar: index.html?drop=on / ?drop=off. endsAt (opcional, ej. 2026-11-30T23:59:00-06:00) muestra una cuenta regresiva y cierra la venta al llegar.",
+        "enabled": true,
+        "product": "playera-colonias",
+        "window": "playera_colonias.exe",
+        "endsAt": null,
+        "options": {
+            "label": "Color",
+            "hint": "Al pagar, escribe {opcion} en el campo de color en PayPal.",
+            "choices": [
+                { "label": "Negro",  "swatch": "#000000", "image": "https://pics.paypal.com/00/p/YTQ4ZGVjZTYtZWJmNy00ZTBiLWE0ODItNWQ0OTNmMWU0Zjkw/image_3.JPG" },
+                { "label": "Blanco", "swatch": "#ffffff", "image": "https://pics.paypal.com/00/p/OTNmYmU5YzAtMGM1Mi00ZTU5LTg0M2ItZGZlZmJiNzAxZTM4/image_3.JPG" }
+            ]
+        },
+        "bullets": [
+            "Algodón 100%",
+            "Serigrafía",
+            "Parche bordado hecho a mano"
+        ]
+    },
+
     "cover": {
         "title": "CATÁLOGO 2026",
         "subtitle": "EDICIÓN ESPECIAL",
