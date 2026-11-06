@@ -1128,15 +1128,24 @@ const tienda = (() => {
         };
 
         document.body.classList.add('tienda-drop');
+        const marquee = drop.marqueeText || catalog.marqueeText;
+        if (marquee) {
+            document.querySelectorAll('.marquee-text').forEach(m => { m.textContent = marquee; });
+        }
         if (p.name) document.title = p.name + ' — GDLDENOXE';
 
         const choices = (drop.options && drop.options.choices) || [];
+        const photos = [...new Set(
+            (p.images && p.images.length ? p.images : [p.image]).filter(Boolean)
+        )];
+        let photoIdx = 0;
 
-        // ── Window: title bar + body, nothing else ──
+        // ── Window shell ──
         const win = el('section', 'drop-window');
         win.setAttribute('aria-label', p.name || 'Producto');
 
         const bar = el('div', 'win95-titlebar');
+        bar.appendChild(el('span', 'win95-titlebar-icon', '\u{1F455}'));
         bar.appendChild(el('span', 'win95-titlebar-text', drop.window || 'oferta.exe'));
         const btns = el('div', 'win95-titlebar-buttons');
         ['_', '□', '×'].forEach((t, i) => {
@@ -1150,88 +1159,164 @@ const tienda = (() => {
         bar.appendChild(btns);
         win.appendChild(bar);
 
+        const menu = el('div', 'win95-menubar');
+        menu.setAttribute('aria-hidden', 'true');
+        menu.innerHTML = '<span class="win95-menu-item"><u>A</u>rchivo</span>'
+            + '<span class="win95-menu-item"><u>E</u>dición</span>'
+            + '<span class="win95-menu-item"><u>V</u>er</span>'
+            + '<span class="win95-menu-item">A<u>y</u>uda</span>';
+        win.appendChild(menu);
+
         const body = el('div', 'drop-body');
 
+        // ── Left: photo viewer ──
+        const viewer = el('div', 'drop-viewer');
         const frame = el('div', 'drop-photo');
-        const img = el('img');
-        img.alt = p.name || '';
-        img.src = (choices[0] && choices[0].image) || p.image || '';
-        img.fetchPriority = 'high';
-        frame.appendChild(img);
-        body.appendChild(frame);
+        if (p.imageBg) frame.style.backgroundColor = p.imageBg;
+        const big = el('img', 'drop-photo-img');
+        big.alt = p.name || '';
+        big.src = photos[0] || '';
+        big.fetchPriority = 'high';
+        frame.appendChild(big);
+        if (p.badge) frame.appendChild(el('span', 'drop-badge', p.badge));
+        viewer.appendChild(frame);
 
+        const thumbs = el('div', 'drop-thumbs');
+        const showPhoto = (i) => {
+            photoIdx = (i + photos.length) % photos.length;
+            big.src = photos[photoIdx];
+            thumbBtns.forEach((b, j) => b.classList.toggle('sel', j === photoIdx));
+        };
+        const thumbBtns = photos.map((src, i) => {
+            const b = el('button', 'drop-thumb');
+            b.type = 'button';
+            b.setAttribute('aria-label', 'Foto ' + (i + 1) + ' de ' + photos.length);
+            const t = el('img');
+            t.src = src;
+            t.alt = '';
+            t.loading = 'lazy';
+            b.appendChild(t);
+            b.addEventListener('click', () => showPhoto(i));
+            thumbs.appendChild(b);
+            return b;
+        });
+        if (photos.length > 1) viewer.appendChild(thumbs);
+        showPhoto(0);
+        body.appendChild(viewer);
+
+        // ── Right: info panel ──
         const info = el('div', 'drop-info');
+        if (drop.kicker) info.appendChild(el('div', 'drop-kicker', drop.kicker));
         info.appendChild(el('h1', 'drop-name', p.name || ''));
-        info.appendChild(el('div', 'drop-price',
-            '$' + p.price + '.' + (p.cents || '00') + ' ' + (p.currency || 'MXN')));
-        const desc = drop.bullets && drop.bullets.length ? drop.bullets.join(' · ') : p.description;
-        if (desc) info.appendChild(el('p', 'drop-desc', desc));
 
-        // Color: Win95 radio group. The PayPal link has no option
-        // param, so the choice swaps the photo and says what to
-        // write in PayPal's color field.
+        const price = el('div', 'drop-price');
+        price.appendChild(el('span', 'drop-price-num', '$' + p.price + '.' + (p.cents || '00')));
+        price.appendChild(el('span', 'drop-price-cur', p.currency || 'MXN'));
+        info.appendChild(price);
+
+        if (drop.bullets && drop.bullets.length) {
+            const ul = el('ul', 'drop-bullets');
+            drop.bullets.forEach(t => ul.appendChild(el('li', '', t)));
+            info.appendChild(ul);
+        } else if (p.description) {
+            info.appendChild(el('p', 'drop-desc', p.description));
+        }
+
+        // Options group box (Win95 fieldset). The PayPal link has no
+        // option param, so the choice swaps the photo and tells the
+        // buyer what to write in PayPal's color field.
         if (choices.length) {
             const fs = el('fieldset', 'drop-options');
             fs.appendChild(el('legend', '', drop.options.label || 'Opción'));
-            const hint = el('div', 'drop-hint');
-            const pick = (c) => {
-                if (c.image) img.src = c.image;
-                hint.textContent = '';
-                (drop.options.hint || '').split('{opcion}').forEach((part, k, all) => {
-                    hint.appendChild(document.createTextNode(part));
-                    if (k < all.length - 1) hint.appendChild(el('b', '', c.label.toUpperCase()));
+            const row = el('div', 'drop-choices');
+            const hintEl = el('div', 'drop-hint');
+            const pick = (i) => {
+                const c = choices[i];
+                choiceBtns.forEach((b, j) => {
+                    b.classList.toggle('sel', j === i);
+                    b.setAttribute('aria-pressed', j === i ? 'true' : 'false');
                 });
+                hintEl.textContent = '';
+                (drop.options.hint || '').split('{opcion}').forEach((part, k, all) => {
+                    hintEl.appendChild(document.createTextNode(part));
+                    if (k < all.length - 1) hintEl.appendChild(el('b', '', c.label.toUpperCase()));
+                });
+                if (c.image) {
+                    const at = photos.indexOf(c.image);
+                    if (at >= 0) showPhoto(at); else big.src = c.image;
+                }
             };
-            choices.forEach((c, i) => {
-                const lab = el('label', 'drop-radio');
-                const r = el('input');
-                r.type = 'radio';
-                r.name = 'drop-option';
-                r.checked = i === 0;
-                r.addEventListener('change', () => pick(c));
-                lab.appendChild(r);
-                lab.appendChild(el('span', '', c.label));
-                fs.appendChild(lab);
+            const choiceBtns = choices.map((c, i) => {
+                const b = el('button', 'drop-choice');
+                b.type = 'button';
+                b.setAttribute('aria-pressed', 'false');
+                const sw = el('span', 'drop-swatch');
+                sw.style.background = c.swatch || '#c0c0c0';
+                b.appendChild(sw);
+                b.appendChild(el('span', '', c.label));
+                b.addEventListener('click', () => pick(i));
+                row.appendChild(b);
+                return b;
             });
-            fs.appendChild(hint);
+            fs.appendChild(row);
+            fs.appendChild(hintEl);
             info.appendChild(fs);
-            pick(choices[0]);
+            pick(0);
         }
 
-        const buy = el('a', 'drop-buy', 'Comprar');
+        // Countdown (optional)
+        let countEl = null;
+        const ends = drop.endsAt ? new Date(drop.endsAt) : null;
+        if (ends && !isNaN(ends)) {
+            const box = el('div', 'drop-count');
+            box.appendChild(el('span', 'drop-count-label', 'TERMINA EN'));
+            countEl = el('span', 'drop-count-num', '--');
+            box.appendChild(countEl);
+            info.appendChild(box);
+        }
+
+        const buy = el('a', 'win95-buy-btn drop-buy', '¡COMPRAR AHORA!');
         buy.href = p.link || '#';
         buy.target = '_blank';
         buy.rel = 'noopener noreferrer';
+        info.appendChild(buy);
 
         const closeSale = (label) => {
             buy.textContent = label;
             buy.removeAttribute('href');
             buy.setAttribute('aria-disabled', 'true');
             buy.classList.add('drop-buy--off');
+            win.classList.add('drop-window--off');
         };
+        if (p.soldOut) closeSale('AGOTADO');
 
-        // Optional deadline (drop.endsAt)
-        const ends = drop.endsAt ? new Date(drop.endsAt) : null;
-        if (p.soldOut) {
-            closeSale('Agotado');
-        } else if (ends && !isNaN(ends)) {
-            const count = el('div', 'drop-count');
-            info.appendChild(count);
+        if (countEl && !p.soldOut) {
             const pad = n => String(n).padStart(2, '0');
             const tick = () => {
                 const ms = ends - Date.now();
-                if (ms <= 0) { count.textContent = 'Oferta terminada'; closeSale('Terminado'); return; }
-                const t = Math.floor(ms / 1000), d = Math.floor(t / 86400);
-                count.textContent = 'Termina en ' + (d ? d + 'd ' : '')
-                    + pad(Math.floor(t / 3600) % 24) + ':' + pad(Math.floor(t / 60) % 60) + ':' + pad(t % 60);
+                if (ms <= 0) {
+                    countEl.textContent = '00:00:00';
+                    closeSale('OFERTA TERMINADA');
+                    return;
+                }
+                const s = Math.floor(ms / 1000);
+                const d = Math.floor(s / 86400);
+                countEl.textContent = (d ? d + 'd ' : '')
+                    + pad(Math.floor(s / 3600) % 24) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60);
                 setTimeout(tick, 1000);
             };
             tick();
         }
 
-        info.appendChild(buy);
         body.appendChild(info);
         win.appendChild(body);
+
+        // ── Status bar ──
+        const status = el('div', 'win95-statusbar');
+        status.appendChild(el('span', 'win95-status-section win95-etched',
+            p.soldOut ? 'Agotado' : (drop.footer || 'Listo')));
+        status.appendChild(el('span', 'win95-status-section win95-etched', 'GDLDENOXE.COM'));
+        win.appendChild(status);
 
         catalogRoot.textContent = '';
         catalogRoot.appendChild(win);

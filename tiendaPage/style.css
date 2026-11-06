@@ -1895,20 +1895,20 @@ main {
 }
 /* ============================================================
    DROP — one product only (catalog.json → "drop")
-   One plain Win95 window on the teal desktop, sized to the screen
-   so nothing scrolls. Built by buildDrop() in script.js.
+   A single Win95 window on the teal desktop, sized to the screen so
+   nothing scrolls. Built by buildDrop() in script.js; body.tienda-drop
+   hides the grid, catalog and banner.
    ============================================================ */
 
 body.tienda-drop {
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
-    padding: 12px;
     background: #008080;
     justify-content: center;
     align-items: center;
+    padding: calc(2.5rem + 12px) 16px 16px;
 }
-body.tienda-drop #marquee-bar,
 body.tienda-drop #catalog-cta,
 body.tienda-drop #flipbook-nav,
 body.tienda-drop .flipbook-scale-wrapper { display: none !important; }
@@ -1918,12 +1918,14 @@ body.tienda-drop #catalog-root {
     max-height: 100%;
     min-height: 0;
     overflow: visible;
+    flex: none;
 }
 
 .drop-window {
     width: 100%;
-    max-width: 720px;
-    max-height: calc(100dvh - 24px);
+    max-width: 880px;
+    max-height: calc(100dvh - 2.5rem - 28px);
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     background: var(--w95-bg);
@@ -1933,8 +1935,17 @@ body.tienda-drop #catalog-root {
     border-left: 2px solid var(--w95-light);
     border-right: 2px solid var(--w95-darker);
     border-bottom: 2px solid var(--w95-darker);
-    box-shadow: inset 1px 1px 0 var(--w95-white), inset -1px -1px 0 var(--w95-dark);
+    box-shadow: inset 1px 1px 0 var(--w95-white),
+                inset -1px -1px 0 var(--w95-dark),
+                4px 4px 0 rgba(0, 0, 0, 0.35);
     padding: 2px;
+    animation: drop-open 0.18s steps(3);
+}
+/* Scale only: if the animation never runs (hidden iframe, throttled tab)
+   the window is still there */
+@keyframes drop-open {
+    from { transform: scale(0.85); }
+    to   { transform: scale(1); }
 }
 
 .drop-body {
@@ -1945,10 +1956,17 @@ body.tienda-drop #catalog-root {
     padding: 12px;
 }
 
-/* Sunken white frame; the photo always fits inside it */
-.drop-photo {
+/* ── Photo viewer: square, as big as the screen height allows ── */
+.drop-viewer {
     flex: none;
-    width: min(340px, calc(100dvh - 90px));
+    width: min(52%, calc(100dvh - 2.5rem - 230px));
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.drop-photo {
+    position: relative;
     aspect-ratio: 1 / 1;
     background: #fff;
     border-top: 2px solid var(--w95-dark);
@@ -1956,102 +1974,196 @@ body.tienda-drop #catalog-root {
     border-right: 2px solid var(--w95-white);
     border-bottom: 2px solid var(--w95-white);
     box-shadow: inset 1px 1px 0 var(--w95-darker);
+    overflow: hidden;
 }
-.drop-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-
-.drop-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.drop-name { font: 700 18px/1.2 Tahoma, var(--w95-font); }
-.drop-price { font: 700 16px/1.2 Tahoma, var(--w95-font); }
-.drop-desc { font-size: 12px; }
-
-/* Win95 group box with radio buttons */
-.drop-options {
-    border: 1px solid var(--w95-dark);
-    box-shadow: 1px 1px 0 var(--w95-white), inset 1px 1px 0 var(--w95-white);
-    padding: 6px 10px 8px;
-}
-.drop-options legend { padding: 0 3px; }
-.drop-radio {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-right: 16px;
-    min-height: 24px;
-    cursor: pointer;
-}
-.drop-radio input {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    margin: 0;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-white),
-                inset 2px 2px 0 var(--w95-darker), inset -2px -2px 0 var(--w95-light);
-    flex: none;
-    cursor: pointer;
-}
-.drop-radio input:checked {
-    background: radial-gradient(circle, #000 0 2px, #fff 2.5px);
-}
-.drop-radio input:focus-visible + span { outline: 1px dotted #000; outline-offset: 1px; }
-.drop-hint { margin-top: 4px; font-size: 11px; }
-.drop-count { font-size: 12px; }
-
-/* Push button with the black "default button" outline */
-.drop-buy {
-    margin-top: auto;
-    display: block;
-    padding: 6px 12px;
+.drop-photo-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.drop-badge {
+    position: absolute;
+    top: 10px;
+    left: -30px;
+    width: 120px;
+    padding: 3px 0;
+    transform: rotate(-45deg);
+    background: var(--store-red);
+    color: #fff;
+    font: 900 11px/1 var(--font-impact);
+    letter-spacing: 1px;
     text-align: center;
+    box-shadow: 0 1px 0 #000;
+}
+.drop-thumbs { display: flex; gap: 6px; flex: none; }
+.drop-thumb {
+    width: 64px;
+    height: 64px;
+    padding: 2px;
     background: var(--w95-bg);
-    color: #000;
-    font: 700 13px/1.2 Tahoma, var(--w95-font);
-    outline: 1px solid #000;
     border-top: 2px solid var(--w95-white);
     border-left: 2px solid var(--w95-white);
     border-right: 2px solid var(--w95-darker);
     border-bottom: 2px solid var(--w95-darker);
-    box-shadow: inset -1px -1px 0 var(--w95-dark), inset 1px 1px 0 var(--w95-light);
     cursor: pointer;
 }
-.drop-buy:active {
+.drop-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; background: #fff; }
+.drop-thumb.sel {
     border-top-color: var(--w95-darker);
     border-left-color: var(--w95-darker);
     border-right-color: var(--w95-white);
     border-bottom-color: var(--w95-white);
-    box-shadow: inset 1px 1px 0 var(--w95-dark);
-    padding: 7px 11px 5px 13px;
+    background: var(--w95-light);
 }
-.drop-buy:focus-visible { box-shadow: inset 0 0 0 3px var(--w95-bg), inset 0 0 0 4px #000; }
-.drop-buy--off,
-.drop-buy--off:active {
+.drop-thumb:focus-visible { outline: 1px dotted #000; outline-offset: -5px; }
+
+/* ── Info panel ── */
+.drop-info { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.drop-kicker {
+    align-self: flex-start;
+    background: var(--w95-blue);
+    color: #ffd700;
+    font: 900 13px/1 var(--font-impact);
+    letter-spacing: 1px;
+    padding: 4px 8px;
+    animation: cta-blink 1s steps(1) infinite;
+}
+.drop-name {
+    font: 900 clamp(26px, 4.2vw, 40px)/1 var(--font-impact);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.drop-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    align-self: flex-start;
+    padding: 6px 12px;
+    background: #000;
+    border-top: 2px solid var(--w95-dark);
+    border-left: 2px solid var(--w95-dark);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+}
+.drop-price-num { font: 700 30px/1 'Courier New', var(--w95-mono); color: #00ff00; }
+.drop-price-cur { font: 700 13px/1 'Courier New', var(--w95-mono); color: #00aa00; }
+.drop-bullets { list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.drop-bullets li::before { content: '\25BA'; color: var(--w95-blue); margin-right: 6px; font-size: 10px; }
+.drop-desc { font-size: 13px; }
+
+/* Win95 group box */
+.drop-options {
+    border: 1px solid var(--w95-dark);
+    box-shadow: 1px 1px 0 var(--w95-white), inset 1px 1px 0 var(--w95-white);
+    padding: 8px 10px 10px;
+}
+.drop-options legend { padding: 0 4px; font-size: 12px; }
+.drop-choices { display: flex; gap: 6px; flex-wrap: wrap; }
+.drop-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 4px 14px;
+    background: var(--w95-bg);
+    color: #000;
+    font: 400 12px/1 var(--w95-font);
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    cursor: pointer;
+}
+.drop-choice.sel {
+    border-top-color: var(--w95-darker);
+    border-left-color: var(--w95-darker);
+    border-right-color: var(--w95-white);
+    border-bottom-color: var(--w95-white);
+    background: var(--w95-light);
+    font-weight: 700;
+}
+.drop-choice:focus-visible { outline: 1px dotted #000; outline-offset: -5px; }
+.drop-swatch { width: 14px; height: 14px; border: 1px solid #000; flex: none; }
+.drop-hint { margin-top: 8px; font-size: 11px; color: #222; }
+
+/* Countdown */
+.drop-count { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.drop-count-label { font-weight: 700; }
+.drop-count-num {
+    padding: 3px 8px;
+    background: #000;
+    color: #ff3333;
+    font: 700 16px/1 'Courier New', var(--w95-mono);
+    border-top: 2px solid var(--w95-dark);
+    border-left: 2px solid var(--w95-dark);
+    border-right: 2px solid var(--w95-white);
+    border-bottom: 2px solid var(--w95-white);
+}
+
+/* Big buy button — the shared Win95 button, scaled up, with the
+   thick black "default button" border Win95 gives the Enter button */
+.win95-buy-btn.drop-buy {
+    flex: none;
+    align-self: stretch;
+    text-align: center;
+    padding: 12px 24px;
+    font-size: 16px;
+    letter-spacing: 1px;
+    outline: 1px solid #000;
+    outline-offset: 0;
+    margin: 2px 1px 0;
+}
+.win95-buy-btn.drop-buy:active { padding: 13px 23px 11px 25px; }
+.win95-buy-btn.drop-buy:focus-visible { outline: 1px solid #000; box-shadow: inset 0 0 0 3px var(--w95-bg), inset 0 0 0 4px #000; }
+.win95-buy-btn.drop-buy--off,
+.win95-buy-btn.drop-buy--off:hover,
+.win95-buy-btn.drop-buy--off:active {
     color: var(--w95-dark);
     text-shadow: 1px 1px 0 var(--w95-white);
     cursor: default;
-    padding: 6px 12px;
-    border-top-color: var(--w95-white);
-    border-left-color: var(--w95-white);
-    border-right-color: var(--w95-darker);
-    border-bottom-color: var(--w95-darker);
+    padding: 12px 24px;
+    border-top: 2px solid var(--w95-white);
+    border-left: 2px solid var(--w95-white);
+    border-right: 2px solid var(--w95-darker);
+    border-bottom: 2px solid var(--w95-darker);
+    background: var(--w95-bg);
+}
+.drop-window--off .drop-photo-img { filter: grayscale(1); opacity: 0.7; }
+
+/* Short screens (wide layout): drop the menu bar, smaller thumbs */
+@media (min-width: 681px) and (max-height: 620px) {
+    .drop-window .win95-menubar { display: none; }
+    .drop-viewer { width: min(52%, calc(100dvh - 2.5rem - 190px)); }
+    .drop-thumb { width: 48px; height: 48px; }
+    .drop-info { gap: 7px; }
 }
 
-/* Narrow: stack; the photo takes whatever height is left */
-@media (max-width: 600px) {
-    body.tienda-drop { padding: 8px; }
+/* Narrow: stack; the photo takes whatever height is left, so the
+   window always fits the screen */
+@media (max-width: 680px) {
+    body.tienda-drop { padding: calc(2.5rem + 8px) 8px 8px; }
     body.tienda-drop main,
     body.tienda-drop #catalog-root { height: 100%; }
     .drop-window { height: 100%; max-height: none; }
     .drop-body { flex-direction: column; padding: 8px; gap: 8px; }
-    .drop-photo { flex: 1; min-height: 0; width: auto; aspect-ratio: auto; }
-    .drop-info { flex: none; gap: 6px; }
-    .drop-buy { margin-top: 2px; padding: 10px 12px; }
-    .drop-buy:active { padding: 11px 11px 9px 13px; }
+    .drop-viewer { flex: 1; min-height: 0; width: auto; gap: 6px; }
+    .drop-photo { flex: 1; min-height: 0; aspect-ratio: auto; }
+    .drop-thumbs { justify-content: center; }
+    .drop-thumb { width: 48px; height: 48px; }
+    .drop-info { flex: none; gap: 7px; }
+    .drop-name { font-size: 28px; }
+    .drop-price-num { font-size: 24px; }
+    .drop-bullets { flex-direction: row; flex-wrap: wrap; column-gap: 10px; font-size: 12px; }
+    .drop-options { padding: 6px 8px 8px; }
+    .drop-hint { margin-top: 6px; }
+    .win95-buy-btn.drop-buy { font-size: 15px; padding: 12px 16px; }
+}
+/* Narrow and short (small phones, the Win95 desktop window) */
+@media (max-width: 680px) and (max-height: 720px) {
+    .drop-window .win95-menubar,
+    .drop-window .win95-statusbar,
+    .drop-thumbs { display: none; }
+    .drop-kicker { display: none; }
+}
+@media (max-width: 480px) {
+    body.tienda-drop { background: #008080; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .drop-window, .drop-kicker { animation: none; }
 }

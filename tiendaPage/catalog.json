@@ -6,6 +6,8 @@
         "enabled": true,
         "product": "playera-colonias",
         "window": "playera_colonias.exe",
+        "kicker": "¡EDICIÓN ÚNICA!",
+        "marqueeText": "*** PLAYERA COLONIAS *** EDICIÓN ÚNICA GUADALAJARA DE NOCHE *** $450 MXN *** ENVÍOS A TODO MÉXICO *** ¡NO TE QUEDES SIN LA TUYA! ***",
         "endsAt": null,
         "options": {
             "label": "Color",
@@ -19,7 +21,8 @@
             "Algodón 100%",
             "Serigrafía",
             "Parche bordado hecho a mano"
-        ]
+        ],
+        "footer": "Envíos a todo México"
     },
 
     "cover": {
