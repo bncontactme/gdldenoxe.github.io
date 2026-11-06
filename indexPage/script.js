@@ -1060,7 +1060,9 @@ juntxs y brillando.`
                 const ancho = Math.min(anchoNat, Math.floor((disponible - marcoH) * 4 / 5) + marcoW);
                 if (ancho >= 130) {
                     if (ancho < anchoNat) win.style.width = ancho + 'px';
-                    win.style.left = fotoLeft + 'px';
+                    // Orilla derecha con la de la foto: pegada a la columna
+                    // del artículo, como los demás frames
+                    win.style.left = (fotoLeft + foto.offsetWidth - ancho) + 'px';
                     win.style.top = top + 'px';
                     return;
                 }
