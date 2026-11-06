@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
         EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
                                       // no queda nada. (null = todos los días)
+        JOSUESY_HASTA: '2026-11-28',  // Ventanita de boletos de Josuesy: sale hasta
+                                      // ese día incluido (null = nunca sale)
     };
 
     // ─────────────────────────────────────────
@@ -36,6 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = $('.start-button');
     const startMenu = $('#start-menu');
     const musicPlayer = $('#musicPlayer');
+    // Boletos de Josuesy: pasado el día del show, la ventanita ya no sale.
+    {
+        const win = $('[data-window-id="josuesy"]');
+        const hasta = FEATURES.JOSUESY_HASTA;
+        let vigente = false;
+        if (hasta) {
+            const [anio, mes, dia] = hasta.split('-').map(Number);
+            vigente = new Date() < new Date(anio, mes - 1, dia + 1);
+        }
+        if (win && !vigente) win.classList.add('hidden');
+    }
+
     const allWindows = $$('.win95-window');
     
     let highestZIndex = 100;
@@ -1012,6 +1026,53 @@ juntxs y brillando.`
     }
     window.addEventListener('resize', acomodarJuego);
 
+    // Lugar de la ventanita de Josuesy en compu: abajo del radio (o de la
+    // foto, si el radio no está al aire), con la misma orilla izquierda. Si
+    // ahí no cabe —pantallas bajitas, o la foto quedó encima del artículo—,
+    // va arriba, pegada a la izquierda de la foto (o del logo del fondo, si
+    // queda antes), sin meterse en los iconos.
+    function acomodarJosuesy() {
+        const win = $('[data-window-id="josuesy"]');
+        if (!win || isMobile() || win.classList.contains('hidden') || win.classList.contains('maximized')) return;
+        win.style.width = ''; // de vuelta a su ancho del CSS antes de medir
+        const gap = 12;
+        const iconAreaW = 120;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight - 44; // sin la barra de tareas
+        const foto = $('[data-window-id="random"]');
+        const colW = foto?.offsetWidth || 280;
+        let borde = screenW - colW - gap;
+        if (foto && !foto.classList.contains('hidden')) {
+            const fotoLeft = parseInt(foto.style.left) || foto.getBoundingClientRect().left;
+            if (fotoLeft + foto.offsetWidth <= borde + 1) {
+                borde = fotoLeft;
+                // Foto a un lado del artículo: abajo del radio, si cabe
+                const visible = el => el && !el.classList.contains('hidden') && el.offsetHeight;
+                const arriba = visible(musicPlayer) ? musicPlayer : foto;
+                const top = (parseInt(arriba.style.top) || arriba.getBoundingClientRect().top) + arriba.offsetHeight + gap;
+                // Si le falta alto, se encoge (el póster es 4:5) hasta 130px
+                // de ancho antes de rendirse e irse arriba.
+                const img = win.querySelector('.josuesy-poster img');
+                const anchoNat = win.offsetWidth || 180;
+                const marcoH = win.offsetHeight - (img?.offsetHeight || 0);
+                const marcoW = anchoNat - (img?.offsetWidth || 0);
+                const disponible = screenH - gap - top;
+                const ancho = Math.min(anchoNat, Math.floor((disponible - marcoH) * 4 / 5) + marcoW);
+                if (ancho >= 130) {
+                    if (ancho < anchoNat) win.style.width = ancho + 'px';
+                    win.style.left = fotoLeft + 'px';
+                    win.style.top = top + 'px';
+                    return;
+                }
+            }
+        }
+        const logoIzq = ($('.desktop')?.clientWidth || screenW) / 2 - 100;
+        const limite = Math.min(borde, logoIzq);
+        const ancho = win.offsetWidth || 180;
+        win.style.left = Math.max(iconAreaW + gap, limite - gap - ancho) + 'px';
+        win.style.top = gap + 'px';
+    }
+
     function randomizeWindowPositions() {
         centerYtPopup();
         positionRobloxPopup();
@@ -1208,6 +1269,7 @@ juntxs y brillando.`
             musicPlayer.style.transform = 'none';
         }
 
+        acomodarJosuesy();
         acomodarJuego();
     }
 

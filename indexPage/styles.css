@@ -1098,6 +1098,49 @@ body.arrastrando iframe {
     border-bottom: var(--border-raised);
 }
 
+/* Boletos de Josuesy: ventanita con el póster entero y su botón */
+.win95-window[data-window-id="josuesy"] {
+    width: 180px;
+}
+
+.josuesy-poster {
+    display: block;
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
+.josuesy-poster img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+}
+
+.josuesy-btn {
+    display: block;
+    margin-top: 4px;
+    background: var(--win95-gray);
+    border-top: var(--border-raised);
+    border-left: var(--border-raised);
+    border-right: var(--border-sunken);
+    border-bottom: var(--border-sunken);
+    padding: 5px 0;
+    font: bold 12px var(--font-system);
+    color: var(--win95-black);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.josuesy-btn:active {
+    border-top: var(--border-sunken);
+    border-left: var(--border-sunken);
+    border-right: var(--border-raised);
+    border-bottom: var(--border-raised);
+}
+
 /* Compact modes — applied by JS when the right column runs out of height,
    so the lonche always keeps its full original size */
 .win95-window.art-compact .article-image {

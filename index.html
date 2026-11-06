@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://archivo-upload.guadalajaradenoxe.workers.dev" crossorigin>
 
     <link rel="stylesheet" href="shared/win95.css">
-    <link rel="stylesheet" href="indexPage/styles.css?v=20261007b">
+    <link rel="stylesheet" href="indexPage/styles.css?v=20261106">
 </head>
 <body>
     <div class="desktop">
@@ -527,6 +527,25 @@
             </div>
         </div>
 
+        <!-- Ventana: boletos de Josuesy. Se esconde sola después de
+             FEATURES.JOSUESY_HASTA (indexPage/script.js); la acomoda
+             acomodarJosuesy(), abajo del radio. -->
+        <div class="win95-window" data-window-id="josuesy" style="left: 700px; top: 404px;">
+            <div class="title-bar">
+                <div class="title-bar-text">JOSUESY.exe</div>
+                <div class="title-bar-controls">
+                    <button class="minimize-btn" aria-label="Minimizar">_</button>
+                    <button class="close-btn" aria-label="Cerrar">✕</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <a class="josuesy-poster" href="https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche" target="_blank" rel="noopener">
+                    <img src="indexPage/indexImages/josuesy-poster.webp" width="400" height="500" alt="Guadalajara De Noche presenta: Josuesy en Guanatos, show de stand up con El Jimmy. 28 de noviembre en Staditche." loading="lazy">
+                </a>
+                <a class="josuesy-btn" href="https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche" target="_blank" rel="noopener">🎟️ Comprar boletos</a>
+            </div>
+        </div>
+
         <!-- Ventana YouTube popup -->
         <div class="win95-window hidden" data-window-id="yt-popup" style="left: 0; top: 0; width: 492px; z-index: 10;">
             <div class="title-bar">
@@ -648,6 +667,6 @@
 
     <script src="shared/win95.js" defer></script>
     <script src="shared/articulos-api.js?v=20260923" defer></script>
-    <script src="indexPage/script.js?v=20261105" defer></script>
+    <script src="indexPage/script.js?v=20261106" defer></script>
 </body>
 </html>
