@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hasta: '2026-11-28',
         },
     ];
-    const EVENTOS_SEGUNDOS = 6; // cada cuánto cambia sola la lámina
+    const EVENTOS_SEGUNDOS = 15; // cada cuánto cambia solo el póster
 
     // ─────────────────────────────────────────
     // LONCHE LAYOUT
