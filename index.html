@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://archivo-upload.guadalajaradenoxe.workers.dev" crossorigin>
 
     <link rel="stylesheet" href="shared/win95.css">
-    <link rel="stylesheet" href="indexPage/styles.css?v=20261106">
+    <link rel="stylesheet" href="indexPage/styles.css?v=20261110d">
 </head>
 <body>
     <div class="desktop">
@@ -43,7 +43,7 @@
             </div>
             
             <div class="desktop-icon" data-folder="tienda">
-                <div class="icon-image"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="Tienda" loading="lazy"></div>
+                <div class="icon-image"><img src="indexPage/indexImages/icons/tienda-playera.webp" alt="Tienda" class="icono-foto" width="96" height="96"></div>
                 <div class="icon-label">Tienda</div>
             </div>
             
@@ -388,7 +388,7 @@
         <!-- Ventana de Tienda -->
         <div class="win95-window hidden" data-window-id="tienda" style="left: 250px; top: 120px;">
             <div class="title-bar">
-                <div class="title-bar-text"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="" class="titlebar-icon"> Tienda</div>
+                <div class="title-bar-text"><img src="indexPage/indexImages/icons/tienda-playera.webp" alt="" class="titlebar-icon icono-foto" loading="lazy"> Tienda</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="maximize-btn" aria-label="Maximizar">□</button>
@@ -527,22 +527,23 @@
             </div>
         </div>
 
-        <!-- Ventana: boletos de Josuesy. Se esconde sola después de
-             FEATURES.JOSUESY_HASTA (indexPage/script.js); la acomoda
-             acomodarJosuesy(), abajo del radio, a la derecha. -->
-        <div class="win95-window" data-window-id="josuesy" style="left: 796px; top: 404px;">
+        <!-- Ventana: EVENTOS.exe, los pósters de lo que se anuncia; cambian
+             solos. Salen de la lista EVENTOS de indexPage/script.js; el de
+             aquí es solo el primero, para que se vea desde el principio. En compu la acomoda acomodarEventos()
+             (abajo del radio, a la derecha); en celular va donde iba el
+             poema. -->
+        <div class="win95-window" data-window-id="eventos" style="left: 796px; top: 404px;">
             <div class="title-bar">
-                <div class="title-bar-text">JOSUESY.exe</div>
+                <div class="title-bar-text" id="eventosTitulo">MOTERO.exe</div>
                 <div class="title-bar-controls">
                     <button class="minimize-btn" aria-label="Minimizar">_</button>
                     <button class="close-btn" aria-label="Cerrar">✕</button>
                 </div>
             </div>
             <div class="window-body">
-                <a class="josuesy-poster" href="https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche" target="_blank" rel="noopener">
-                    <img src="indexPage/indexImages/josuesy-poster.webp" width="400" height="500" alt="Guadalajara De Noche presenta: Josuesy en Guanatos, show de stand up con El Jimmy. 28 de noviembre en Staditche." loading="lazy">
+                <a class="eventos-poster" id="eventosPoster" href="https://www.instagram.com/p/De2YBGuGSRD/" target="_blank" rel="noopener">
+                    <img id="eventosImg" src="indexPage/indexImages/motero-poster.webp" width="480" height="600" alt="Guadalajara De Noche presenta: Cine de mis vergüenzas, taller de cortometraje por Motero Tranquilo. 16, 17 y 18 de noviembre; gala premier el 22.">
                 </a>
-                <a class="josuesy-btn" href="https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche" target="_blank" rel="noopener">🎟️ Comprar boletos</a>
             </div>
         </div>
 
@@ -589,7 +590,7 @@
         <div class="start-menu-header">LaMovida95</div>
         <div class="start-menu-items">
             <div class="menu-item" data-shortcut="galeria"><img src="indexPage/indexImages/icons/kodak_imaging-0.png" alt="" class="menu-icon"> Galería</div>
-            <div class="menu-item" data-shortcut="tienda"><img src="indexPage/indexImages/icons/directory_e-0.png" alt="" class="menu-icon"> Tienda</div>
+            <div class="menu-item" data-shortcut="tienda"><img src="indexPage/indexImages/icons/tienda-playera.webp" alt="" class="menu-icon icono-foto" loading="lazy"> Tienda</div>
             <div class="menu-item" data-shortcut="articulos"><img src="indexPage/indexImages/icons/directory_closed-0.png" alt="" class="menu-icon"> Artículos</div>
             <div class="menu-item" data-shortcut="minesweeper"><img src="indexPage/indexImages/icons/minesweeper-0.png" alt="" class="menu-icon"> Buscaminas</div>
             <div class="menu-item" data-shortcut="globos"><img src="globos/icono.svg?v=2" alt="" class="menu-icon"> Globazo!!</div>
@@ -667,6 +668,6 @@
 
     <script src="shared/win95.js" defer></script>
     <script src="shared/articulos-api.js?v=20260923" defer></script>
-    <script src="indexPage/script.js?v=20261106b" defer></script>
+    <script src="indexPage/script.js?v=20261110e" defer></script>
 </body>
 </html>

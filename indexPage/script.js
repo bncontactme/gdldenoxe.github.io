@@ -14,9 +14,36 @@ document.addEventListener('DOMContentLoaded', () => {
         EMPLEADO_FECHA: '2026-09-15', // Único día en que sale: de las 00:00 de esa
                                       // fecha a las 00:00 del día siguiente. Después
                                       // no queda nada. (null = todos los días)
-        JOSUESY_HASTA: '2026-11-28',  // Ventanita de boletos de Josuesy: sale hasta
-                                      // ese día incluido (null = nunca sale)
+        POEMA_CELULAR: false,         // Poema.txt en el teléfono. Apagado por ahora: ahí
+                                      // va EVENTOS.exe. (En compu el poema siempre sale.)
     };
+
+    // ─────────────────────────────────────────
+    // EVENTOS.exe — los pósters que se anuncian al entrar: la ventana
+    // muestra uno y cambia sola al siguiente cada EVENTOS_SEGUNDOS.
+    // Cada uno: titulo (barra de la ventana), img (póster 4:5), alt, href
+    // (a dónde lleva al tocarlo) y hasta ('AAAA-MM-DD': último día que
+    // sale; sin él, sale siempre). Para anunciar otro evento, agrégalo
+    // aquí. Sin ninguno vigente, la ventana no sale. El primero de la
+    // lista es también el que trae index.html, para que se vea desde ya.
+    // ─────────────────────────────────────────
+    const EVENTOS = [
+        {
+            titulo: 'MOTERO.exe',
+            img: 'indexPage/indexImages/motero-poster.webp',
+            alt: 'Guadalajara De Noche presenta: Cine de mis vergüenzas, taller de cortometraje por Motero Tranquilo. 16, 17 y 18 de noviembre; gala premier el 22.',
+            href: 'https://www.instagram.com/p/De2YBGuGSRD/',
+            hasta: '2026-11-22',
+        },
+        {
+            titulo: 'JOSUESY.exe',
+            img: 'indexPage/indexImages/josuesy-poster.webp',
+            alt: 'Guadalajara De Noche presenta: Josuesy en Guanatos, show de stand up con El Jimmy. 28 de noviembre en Staditche.',
+            href: 'https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche',
+            hasta: '2026-11-28',
+        },
+    ];
+    const EVENTOS_SEGUNDOS = 6; // cada cuánto cambia sola la lámina
 
     // ─────────────────────────────────────────
     // LONCHE LAYOUT
@@ -38,16 +65,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = $('.start-button');
     const startMenu = $('#start-menu');
     const musicPlayer = $('#musicPlayer');
-    // Boletos de Josuesy: pasado el día del show, la ventanita ya no sale.
+    // En el teléfono el poema descansa: EVENTOS.exe ocupa su lugar
+    if (!FEATURES.POEMA_CELULAR && window.innerWidth <= MOBILE_BP) {
+        $('[data-window-id="poema1"]')?.classList.add('hidden');
+    }
+
+    // EVENTOS.exe: arma el carrusel con las láminas vigentes de EVENTOS
     {
-        const win = $('[data-window-id="josuesy"]');
-        const hasta = FEATURES.JOSUESY_HASTA;
-        let vigente = false;
-        if (hasta) {
-            const [anio, mes, dia] = hasta.split('-').map(Number);
-            vigente = new Date() < new Date(anio, mes - 1, dia + 1);
+        const win = $('[data-window-id="eventos"]');
+        const hoy = new Date();
+        const laminas = EVENTOS.filter(ev => {
+            if (!ev.hasta) return true;
+            const [anio, mes, dia] = ev.hasta.split('-').map(Number);
+            return hoy < new Date(anio, mes - 1, dia + 1);
+        });
+        if (win && !laminas.length) win.classList.add('hidden');
+        if (win && laminas.length) {
+            const titulo = $('#eventosTitulo');
+            const poster = $('#eventosPoster');
+            const img = $('#eventosImg');
+            let actual = 0;
+
+            const mostrar = (i) => {
+                actual = (i + laminas.length) % laminas.length;
+                const ev = laminas[actual];
+                titulo.textContent = ev.titulo;
+                if (img.getAttribute('src') !== ev.img) img.src = ev.img;
+                img.alt = ev.alt || '';
+                poster.href = ev.href;
+                if (typeof updateTaskbar === 'function' && taskbarItems?.children.length) updateTaskbar();
+            };
+
+            // Cambia sola; espera si el mouse está encima, si la pestaña
+            // está escondida o si la persona pidió menos movimiento.
+            const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            if (laminas.length > 1 && !quieto) {
+                setInterval(() => {
+                    if (document.hidden || win.classList.contains('hidden') || win.matches(':hover')) return;
+                    mostrar(actual + 1);
+                }, EVENTOS_SEGUNDOS * 1000);
+                // Los demás pósters se piden ya con la página cargada
+                window.addEventListener('load', () => {
+                    laminas.forEach(ev => { new Image().src = ev.img; });
+                });
+            }
+            mostrar(0);
         }
-        if (win && !vigente) win.classList.add('hidden');
     }
 
     const allWindows = $$('.win95-window');
@@ -632,17 +695,39 @@ document.addEventListener('DOMContentLoaded', () => {
             revelarEscritorio();
         });
 
-    // Mobile: keep the poema widget below the articulo widget. Runs
-    // immediately (not just after the articles fetch) so the widget never
-    // sits at its desktop inline coords overlapping the other widgets.
+    // Celular: lo que va abajo del widget de artículo —EVENTOS.exe y, si
+    // está prendido, el poema—. Corre desde el principio (no solo cuando
+    // llegan los artículos) para que nada se quede en sus coordenadas de
+    // compu, encima de los otros widgets.
+    // EVENTOS.exe va siempre abajo del artículo y nunca se le encima al
+    // radio: si no le alcanza el alto, se encoge (el póster es 4:5).
     function positionPoemaWidget() {
         if (!isMobile()) return;
         const aw = $('[data-window-id="articulo-widget"]');
-        const pw = $('[data-window-id="poema1"]');
-        if (!aw || !pw) return;
+        if (!aw) return;
         const awRect = aw.getBoundingClientRect();
         const parentRect = aw.offsetParent?.getBoundingClientRect() || { top: 0 };
-        pw.style.top = (awRect.bottom - parentRect.top + 10) + 'px';
+        const gap = 10;
+        let top = awRect.bottom - parentRect.top + gap;
+
+        const ew = $('[data-window-id="eventos"]');
+        if (ew && !ew.classList.contains('hidden')) {
+            ew.style.width = ''; // de vuelta al ancho del CSS antes de medir
+            ew.style.top = top + 'px';
+            const img = ew.querySelector('.eventos-poster img');
+            const radio = musicPlayer && musicPlayer.offsetHeight
+                ? musicPlayer.getBoundingClientRect().top - parentRect.top
+                : (desktop?.clientHeight || window.innerHeight);
+            const anchoNat = ew.offsetWidth;
+            const marcoH = ew.offsetHeight - (img?.offsetHeight || 0);
+            const marcoW = anchoNat - (img?.offsetWidth || 0);
+            const ancho = Math.min(anchoNat, Math.floor((radio - gap - top - marcoH) * 4 / 5) + marcoW);
+            if (ancho < anchoNat) ew.style.width = Math.max(40, ancho) + 'px';
+            top += ew.offsetHeight + gap;
+        }
+
+        const pw = $('[data-window-id="poema1"]');
+        if (pw && !pw.classList.contains('hidden')) pw.style.top = top + 'px';
         acomodarJuego();
     }
     if (isMobile()) {
@@ -877,24 +962,40 @@ juntxs y brillando.`
         const poema1El = $('[data-window-id="poema1"] .poem-text');
         const flowerArt = `\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠋⠉⠉⠳⡴⠒⠒⠒⠲⠤⢤⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣠⠊⠀⠀⡴⠚⡩⠟⠓⠒⡖⠲⡄⠀⠀⠈⡆⠀⠀⠀\n⠀⠀⢀⡞⠁⢠⠒⠾⢥⣀⣇⣚⣹⡤⡟⠀⡇⢠⠀⢠⠇⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⢸⣄⣀⠀⡇⠀⠀⠀⠀⠀⢀⡜⠁⣸⢠⠎⣰⣃⠀⠀⠀⠀\n⠀⠀⠀⠸⡍⠀⠉⠉⠛⠦⣄⠀⢀⡴⣫⠴⠋⢹⡏⡼⠁⠈⠙⢦⡀⠀\n⠀⠀⠀⣀⡽⣄⠀⠀⠀⠀⠈⠙⠻⣎⡁⠀⠀⣸⡾⠀⠀⠀⠀⣀⡹⠂\n⠀⢀⡞⠁⠀⠈⢣⡀⠀⠀⠀⠀⠀⠀⠉⠓⠶⢟⠀⢀⡤⠖⠋⠁⠀⠀\n⠀⠀⠉⠙⠒⠦⡀⠙⠦⣀⠀⠀⠀⠀⠀⠀⢀⣴⡷⠋⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢦⣀⠈⠓⣦⣤⣤⣤⢶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀\n⢤⣤⣤⡤⠤⠤⠤⠤⣌⡉⠉⠁⠀⠀⢸⢸⠁⡠⠖⠒⠒⢒⣒⡶⣶⠤\n⠀⠉⠲⣍⠓⠦⣄⠀⠀⠙⣆⠀⠀⠀⡞⡼⡼⢀⣠⠴⠊⢉⡤⠚⠁⠀\n⠀⠀⠀⠈⠳⣄⠈⠙⢦⡀⢸⡀⠀⢰⢣⡧⠷⣯⣤⠤⠚⠉⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⠑⣲⠤⠬⠿⠧⣠⢏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡴⠚⠉⠉⢉⣳⣄⣠⠏⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⣠⣴⣟⣒⣋⣉⣉⡭⠟⢡⠏⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⠏⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠘⠓⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
         if (poema1El) {
-            // Strip trailing braille-blank padding and blank lines — they
-            // inflate the text block width and clip the flower off-center
-            poema1El.textContent = flowerArt.split('\n')
-                .map(l => l.replace(/[⠀\s]+$/, ''))
-                .filter(l => l.length)
-                .join('\n');
-            // Scale the art to exactly fit the widget — braille glyph widths
-            // vary per device font, so a hardcoded zoom clips on some phones
-            const fitFlower = () => {
-                const box = poema1El.parentElement;
-                poema1El.style.zoom = 1;
-                const natW = poema1El.scrollWidth;
-                const availW = box.clientWidth - 4;
-                if (natW > 0 && availW > 0) poema1El.style.zoom = Math.min(1, availW / natW);
-            };
-            fitFlower();
-            document.fonts?.ready.then(fitFlower);
-            window.addEventListener('resize', fitFlower);
+            // La flor se dibuja como SVG, punto por punto, a partir de los
+            // caracteres braille (cada uno es una celda de 2x4 puntos). Antes
+            // era texto escalado con `zoom` según lo que midiera el JS: el
+            // ancho de esos glifos cambia con la fuente de cada teléfono y en
+            // algunos (el navegador de Instagram en iPhone) la medida fallaba,
+            // la flor quedaba enorme, recortada y encima del radio. El SVG no
+            // depende de fuentes ni de medir nada: siempre cabe en la ventana.
+            const lineas = flowerArt.split('\n')
+                .map(l => l.replace(/[\u2800\s]+$/, ''))
+                .filter(l => l.length);
+            // bit del carácter braille → [columna, fila] dentro de la celda
+            const PUNTOS = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [0, 3], [1, 3]];
+            const PASO = 3, CELDA_W = 6.6, CELDA_H = 12, LADO = 1.7;
+            const pts = [];
+            lineas.forEach((linea, fila) => {
+                Array.from(linea).forEach((ch, col) => {
+                    const bits = ch.codePointAt(0) - 0x2800;
+                    if (bits <= 0 || bits > 255) return;
+                    PUNTOS.forEach(([dc, df], i) => {
+                        if (bits & (1 << i)) pts.push([col * CELDA_W + dc * PASO, fila * CELDA_H + df * PASO]);
+                    });
+                });
+            });
+            if (pts.length) {
+                const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+                const x0 = Math.min(...xs), y0 = Math.min(...ys);
+                const w = Math.max(...xs) - x0 + LADO, h = Math.max(...ys) - y0 + LADO;
+                const d = pts.map(([x, y]) =>
+                    `M${+(x - x0).toFixed(1)} ${+(y - y0).toFixed(1)}h${LADO}v${LADO}h-${LADO}z`).join('');
+                poema1El.classList.add('poem-art');
+                poema1El.innerHTML =
+                    `<svg viewBox="-2 -2 ${+(w + 4).toFixed(1)} ${+(h + 4).toFixed(1)}" role="img" aria-label="Flor">` +
+                    `<path d="${d}" fill="currentColor"/></svg>`;
+            }
         }
     }
 
@@ -1026,13 +1127,13 @@ juntxs y brillando.`
     }
     window.addEventListener('resize', acomodarJuego);
 
-    // Lugar de la ventanita de Josuesy en compu: abajo del radio (o de la
+    // Lugar de EVENTOS.exe en compu: abajo del radio (o de la
     // foto, si el radio no está al aire), con la misma orilla izquierda. Si
     // ahí no cabe —pantallas bajitas, o la foto quedó encima del artículo—,
     // va arriba, pegada a la izquierda de la foto (o del logo del fondo, si
     // queda antes), sin meterse en los iconos.
-    function acomodarJosuesy() {
-        const win = $('[data-window-id="josuesy"]');
+    function acomodarEventos() {
+        const win = $('[data-window-id="eventos"]');
         if (!win || isMobile() || win.classList.contains('hidden') || win.classList.contains('maximized')) return;
         win.style.width = ''; // de vuelta a su ancho del CSS antes de medir
         const gap = 12;
@@ -1052,7 +1153,7 @@ juntxs y brillando.`
                 const top = (parseInt(arriba.style.top) || arriba.getBoundingClientRect().top) + arriba.offsetHeight + gap;
                 // Si le falta alto, se encoge (el póster es 4:5) hasta 130px
                 // de ancho antes de rendirse e irse arriba.
-                const img = win.querySelector('.josuesy-poster img');
+                const img = win.querySelector('.eventos-poster img');
                 const anchoNat = win.offsetWidth || 180;
                 const marcoH = win.offsetHeight - (img?.offsetHeight || 0);
                 const marcoW = anchoNat - (img?.offsetWidth || 0);
@@ -1271,12 +1372,12 @@ juntxs y brillando.`
             musicPlayer.style.transform = 'none';
         }
 
-        acomodarJosuesy();
+        acomodarEventos();
         acomodarJuego();
     }
 
     // Mobile widget IDs that should not be draggable
-    const mobileFixedWidgets = ['random', 'articulo-widget', 'poema1'];
+    const mobileFixedWidgets = ['random', 'articulo-widget', 'poema1', 'eventos'];
 
     // Hacer las ventanas arrastrables
     function makeDraggable(windowElement) {

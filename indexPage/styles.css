@@ -1024,7 +1024,7 @@ body.arrastrando iframe {
 /* Mientras script.js acomoda las ventanas, no se ven (la clase la pone el
    <head> de index.html). Antes se pintaban en las coordenadas del HTML y luego
    brincaban a su lugar: eso es lo que Cloudflare contaba como layout shift.
-   En escritorio se esconden todas; en celular solo el poema, que es la única
+   En escritorio se esconden todas; en celular solo el poema y EVENTOS.exe, las únicas
    que acomoda el JS (las demás las fija el CSS). */
 @media (min-width: 769px) {
     .acomodando .desktop .win95-window,
@@ -1034,7 +1034,8 @@ body.arrastrando iframe {
 }
 
 @media (max-width: 768px) {
-    .acomodando .desktop [data-window-id="poema1"] {
+    .acomodando .desktop [data-window-id="poema1"],
+    .acomodando .desktop [data-window-id="eventos"] {
         visibility: hidden;
     }
 }
@@ -1098,47 +1099,33 @@ body.arrastrando iframe {
     border-bottom: var(--border-raised);
 }
 
-/* Boletos de Josuesy: ventanita con el póster entero y su botón */
-.win95-window[data-window-id="josuesy"] {
+/* EVENTOS.exe: un póster (4:5) en su marco; script.js lo cambia solo
+   (lista EVENTOS). */
+.win95-window[data-window-id="eventos"] {
     width: 180px;
 }
 
-.josuesy-poster {
+.eventos-poster {
     display: block;
+    background: var(--win95-black);
     border-top: var(--border-sunken);
     border-left: var(--border-sunken);
     border-right: var(--border-raised);
     border-bottom: var(--border-raised);
 }
 
-.josuesy-poster img {
+.eventos-poster img {
     display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 4 / 5;
+    object-fit: contain;
 }
 
-.josuesy-btn {
-    display: block;
-    margin-top: 4px;
-    background: var(--win95-gray);
-    border-top: var(--border-raised);
-    border-left: var(--border-raised);
-    border-right: var(--border-sunken);
-    border-bottom: var(--border-sunken);
-    padding: 5px 0;
-    font: bold 12px var(--font-system);
-    color: var(--win95-black);
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.josuesy-btn:active {
-    border-top: var(--border-sunken);
-    border-left: var(--border-sunken);
-    border-right: var(--border-raised);
-    border-bottom: var(--border-raised);
+/* Iconos que son foto o animación (la playera de la Tienda), no pixel art */
+.icono-foto {
+    image-rendering: auto;
+    object-fit: contain;
 }
 
 /* Compact modes — applied by JS when the right column runs out of height,
@@ -2362,8 +2349,40 @@ body.arrastrando iframe {
         display: none !important;
     }
 
-    /* --- Poema Widget (below articulo widget, half width) --- */
-    .win95-window[data-window-id="poema1"] {        display: block !important;
+    /* --- EVENTOS.exe (abajo del widget de artículo, donde iba el poema).
+       El top y, si falta alto, el ancho los pone positionPoemaWidget() en
+       script.js: por eso aquí el ancho va sin !important. --- */
+    .win95-window[data-window-id="eventos"]:not(.hidden) {
+        display: block !important;
+        position: absolute !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: calc(50% - 24px);
+        max-width: 200px;
+        z-index: 5;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .win95-window[data-window-id="eventos"] .title-bar {
+        padding: 2px 4px;
+        font-size: 11px;
+        cursor: default;
+        touch-action: auto;
+        -webkit-user-drag: none;
+    }
+
+    .win95-window[data-window-id="eventos"] .title-bar-controls {
+        display: none;
+    }
+
+    .win95-window[data-window-id="eventos"] .window-body {
+        padding: 3px;
+    }
+
+    /* --- Poema Widget (abajo de EVENTOS.exe; apagado con FEATURES.POEMA) --- */
+    .win95-window[data-window-id="poema1"]:not(.hidden) {
+        display: block !important;
         position: absolute !important;
         right: 12px !important;
         left: auto !important;
@@ -2409,7 +2428,23 @@ body.arrastrando iframe {
         text-align: center;
         -webkit-text-size-adjust: none;
         text-size-adjust: none;
-        zoom: 0.4;
+    }
+
+    /* La flor es un SVG (lo arma script.js): llena el ancho de la ventana y
+       su alto sale solo de la proporción, sin medir ni escalar texto. */
+    .win95-window[data-window-id="poema1"] .poem-text.poem-art {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        font-size: 0;
+        line-height: 0;
+        letter-spacing: 0;
+    }
+
+    .win95-window[data-window-id="poema1"] .poem-art svg {
+        display: block;
+        width: 100%;
+        height: auto;
     }
 
     /* --- Radio Player (floating frame, like the image widget) --- */
@@ -2762,8 +2797,24 @@ body.arrastrando iframe {
         display: none !important;
     }
 
+    /* EVENTOS.exe smaller */
+    .win95-window[data-window-id="eventos"]:not(.hidden) {
+        width: calc(45% - 16px);
+        max-width: 155px;
+        right: 8px !important;
+    }
+
+    .win95-window[data-window-id="eventos"] .title-bar {
+        font-size: 10px;
+        padding: 2px 3px;
+    }
+
+    .win95-window[data-window-id="eventos"] .window-body {
+        padding: 2px;
+    }
+
     /* Poema widget smaller */
-    .win95-window[data-window-id="poema1"] {
+    .win95-window[data-window-id="poema1"]:not(.hidden) {
         width: calc(22% - 8px) !important;
         max-width: 78px !important;
         right: 8px !important;
@@ -2797,7 +2848,6 @@ body.arrastrando iframe {
         text-align: center;
         -webkit-text-size-adjust: none;
         text-size-adjust: none;
-        zoom: 0.3;
     }
 
     /* Start menu */
