@@ -2358,8 +2358,8 @@ body.arrastrando iframe {
         right: 12px !important;
         left: auto !important;
         bottom: auto !important;
-        width: calc(50% - 24px);
-        max-width: 200px;
+        width: calc(30% - 14px); /* 60% del widget de artículo, en cualquier ancho */
+        max-width: 120px;
         z-index: 5;
         box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
     }
@@ -2799,8 +2799,8 @@ body.arrastrando iframe {
 
     /* EVENTOS.exe smaller */
     .win95-window[data-window-id="eventos"]:not(.hidden) {
-        width: calc(45% - 16px);
-        max-width: 155px;
+        width: calc(27% - 10px); /* 60% del widget de artículo */
+        max-width: 93px;
         right: 8px !important;
     }
 
