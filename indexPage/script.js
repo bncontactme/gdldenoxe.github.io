@@ -19,24 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ─────────────────────────────────────────
-    // EVENTOS.exe — los pósters que se anuncian al entrar: la ventana
-    // muestra uno y cambia sola al siguiente cada EVENTOS_SEGUNDOS.
-    // Cada uno: titulo (barra de la ventana), img (póster 4:5), alt, href
-    // (a dónde lleva al tocarlo) y hasta ('AAAA-MM-DD': último día que
-    // sale; sin él, sale siempre). Para anunciar otro evento, agrégalo
-    // aquí. Sin ninguno vigente, la ventana no sale. El primero de la
-    // lista es también el que trae index.html, para que se vea desde ya.
+    // Eventos.exe — los pósters que se anuncian al entrar: la ventana
+    // (siempre con el mismo nombre) arranca en uno al azar y cambia sola
+    // al siguiente cada EVENTOS_SEGUNDOS. Cada póster: img (4:5), alt,
+    // href (a dónde lleva al tocarlo) y hasta ('AAAA-MM-DD': último día
+    // que sale; sin él, sale siempre). Para anunciar otro evento,
+    // agrégalo aquí. Sin ninguno vigente, la ventana no sale.
     // ─────────────────────────────────────────
     const EVENTOS = [
         {
-            titulo: 'MOTERO.exe',
             img: 'indexPage/indexImages/motero-poster.webp',
             alt: 'Guadalajara De Noche presenta: Cine de mis vergüenzas, taller de cortometraje por Motero Tranquilo. 16, 17 y 18 de noviembre; gala premier el 22.',
             href: 'https://www.instagram.com/p/De2YBGuGSRD/',
             hasta: '2026-11-22',
         },
         {
-            titulo: 'JOSUESY.exe',
             img: 'indexPage/indexImages/josuesy-poster.webp',
             alt: 'Guadalajara De Noche presenta: Josuesy en Guanatos, show de stand up con El Jimmy. 28 de noviembre en Staditche.',
             href: 'https://www.passline.com/eventos/josuesy-en-guadalajara-de-noche',
@@ -81,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (win && !laminas.length) win.classList.add('hidden');
         if (win && laminas.length) {
-            const titulo = $('#eventosTitulo');
             const poster = $('#eventosPoster');
             const img = $('#eventosImg');
             let actual = 0;
@@ -89,11 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const mostrar = (i) => {
                 actual = (i + laminas.length) % laminas.length;
                 const ev = laminas[actual];
-                titulo.textContent = ev.titulo;
                 if (img.getAttribute('src') !== ev.img) img.src = ev.img;
                 img.alt = ev.alt || '';
                 poster.href = ev.href;
-                if (typeof updateTaskbar === 'function' && taskbarItems?.children.length) updateTaskbar();
             };
 
             // Cambia sola; espera si el mouse está encima, si la pestaña
@@ -109,7 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     laminas.forEach(ev => { new Image().src = ev.img; });
                 });
             }
-            mostrar(0);
+            // Empieza en uno al azar, para que no siempre salga el mismo
+            mostrar(Math.floor(Math.random() * laminas.length));
         }
     }
 
